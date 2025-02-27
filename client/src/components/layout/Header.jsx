@@ -119,7 +119,7 @@ const Header = () => {
                 </div>
               )
             ) : (
-              <div className="flex space-x-2">
+              <div className="md:flex hidden space-x-2">
                 <Button
                   onClick={() => navigate("/login")}
                   className="bg-[#4CAF50] text-white hover:bg-[#388E3C]"

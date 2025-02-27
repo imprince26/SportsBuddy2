@@ -120,12 +120,13 @@ const LoginForm = () => {
                         field.onChange(e);
                         handleInputChange("email", e.target.value);
                       }}
+                      autoComplete="off"
                       className={`pl-10 pr-3 
                           bg-[#1D4E4E]/30 
                           border-[#2E7D32]/30
                           text-[#E0F2F1] 
                           placeholder-[#607D8B]
-                          transition-all duration-300 ease-in-out
+                          
                           focus:outline-none
                           focus-visible:ring-0
                           ${
@@ -182,12 +183,13 @@ const LoginForm = () => {
                         field.onChange(e);
                         handleInputChange("password", e.target.value);
                       }}
+
                       className={`pl-10 pr-10 
                           bg-[#1D4E4E]/30 
                           border-[#2E7D32]/30
                           text-[#E0F2F1] 
                           placeholder-[#607D8B]
-                          transition-all duration-300 ease-in-out
+                         
                           focus:outline-none
                           focus-visible:ring-0
                           ${

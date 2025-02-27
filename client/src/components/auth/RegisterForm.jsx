@@ -44,10 +44,10 @@ const registerSchema = z.object({
   password: z
     .string()
     .min(6, "Password must be at least 6 characters")
-    // .regex(
-    //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-    //   "Password must include uppercase, lowercase, number, and special character"
-    // ),
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+      "Password must include uppercase, lowercase, number, and special character"
+    ),
 });
 const RegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false);

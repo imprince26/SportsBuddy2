@@ -25,7 +25,7 @@ const Login = () => {
       <Card
         className="w-full max-w-md relative z-10 border-none shadow-2xl backdrop-blur-lg 
         bg-[#0F2C2C]/70 rounded-2xl overflow-hidden transform transition-all duration-300 
-        hover:scale-[1.02] hover:shadow-4xl"
+        hover:shadow-4xl"
       >
         <div
           className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r 

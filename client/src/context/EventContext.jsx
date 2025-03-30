@@ -1,6 +1,5 @@
 import { createContext, useState, useContext, useCallback } from "react";
 import api from "@/utils/api";
-import { redirect } from "react-router-dom";
 
 const EventContext = createContext();
 
@@ -10,8 +9,8 @@ export const EventProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchEvents = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await api.get("/events");
       setEvents(response.data.data);
     } catch (error) {

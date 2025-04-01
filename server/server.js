@@ -25,8 +25,6 @@ app.use(cookieParser());
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
 
-console.log(process.env.CLIENT_URL);
-console.log(process.env.NODE_ENV);
 
 mongoose.connect(MONGO_URL)
   .then(() => console.log("Database connected successfully"))

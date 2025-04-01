@@ -134,7 +134,7 @@ export const logout = (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: true,
-      sameSite: "None"
+      sameSite: "None",
     };
 
     if (process.env.NODE_ENV === "production") {

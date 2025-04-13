@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,96 +23,18 @@ import { toast } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEvents } from "@/context/EventContext";
 import { useAuth } from "@/context/AuthContext";
-import { AlertCircleIcon, PencilRuler } from "lucide-react";
-
-const eventSchema = z.object({
-  name: z
-    .string()
-    .min(3, "Event name must be at least 3 characters")
-    .max(100, "Event name cannot exceed 100 characters"),
-  category: z.enum([
-    "Football",
-    "Basketball",
-    "Tennis",
-    "Running",
-    "Cycling",
-    "Swimming",
-    "Volleyball",
-    "Cricket",
-    "Other",
-  ]),
-  description: z
-    .string()
-    .min(10, "Description must be at least 10 characters")
-    .max(1000, "Description cannot exceed 1000 characters"),
-  date: z.string().refine((val) => new Date(val) > new Date(), {
-    message: "Event date must be in the future",
-  }),
-  time: z
-    .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format"),
-  location: z.object({
-    address: z.string().min(3, "Address is required"),
-    city: z.string().min(2, "City is required"),
-    state: z.string().optional(),
-  }),
-  maxParticipants: z.coerce
-    .number()
-    .int("Must be a whole number")
-    .min(1, "At least 1 participant required")
-    .max(1000, "Maximum 1000 participants allowed"),
-  difficulty: z.enum(["Beginner", "Intermediate", "Advanced"]),
-  registrationFee: z.coerce
-    .number()
-    .min(0, "Fee cannot be negative")
-    .optional(),
-});
+import { CalendarIcon, AlertCircleIcon } from "lucide-react";
+import { eventSchema } from "@/utils/validation";
+import ImageUpload from "@/components/ui/image-upload";
 
 const EditEventForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getEventById, updateEvent } = useEvents();
   const { user } = useAuth();
-  const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
-
-  useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        const fetchedEvent = await getEventById(id);
-        if (!fetchedEvent) {
-          navigate("/events");
-          return;
-        }
-
-        // Check if user is creator or admin
-        setIsAuthorized(
-          fetchedEvent.createdBy === user.id || user.role === "admin"
-        );
-
-        setEvent(fetchedEvent);
-        form.reset({
-          name: fetchedEvent.name,
-          category: fetchedEvent.category,
-          description: fetchedEvent.description,
-          date: new Date(fetchedEvent.date).toISOString().split("T")[0],
-          time: fetchedEvent.time,
-          location: {
-            address: fetchedEvent.location.address,
-            city: fetchedEvent.location.city,
-            state: fetchedEvent.location.state || "",
-          },
-          maxParticipants: fetchedEvent.maxParticipants,
-          difficulty: fetchedEvent.difficulty,
-          registrationFee: fetchedEvent.registrationFee || 0,
-        });
-      } catch (error) {
-        navigate("/events");
-      }
-    };
-    fetchEvent();
-  }, [id, getEventById, navigate, user]);
+  const [uploadedImages, setUploadedImages] = useState([]);
 
   const form = useForm({
     resolver: zodResolver(eventSchema),
@@ -134,10 +55,60 @@ const EditEventForm = () => {
     },
   });
 
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const fetchedEvent = await getEventById(id);
+        if (!fetchedEvent) {
+          navigate("/events");
+          return;
+        }
+
+        setIsAuthorized(
+          fetchedEvent.createdBy._id === user.id || user.role === "admin"
+        );
+
+        // Initialize uploaded images with existing ones
+        setUploadedImages(fetchedEvent.images || []);
+
+        form.reset({
+          name: fetchedEvent.name,
+          category: fetchedEvent.category,
+          description: fetchedEvent.description,
+          date: new Date(fetchedEvent.date).toISOString().split("T")[0],
+          time: fetchedEvent.time,
+          location: {
+            address: fetchedEvent.location.address,
+            city: fetchedEvent.location.city,
+            state: fetchedEvent.location.state || "",
+          },
+          maxParticipants: fetchedEvent.maxParticipants,
+          difficulty: fetchedEvent.difficulty,
+          registrationFee: fetchedEvent.registrationFee || 0,
+        });
+      } catch {
+        toast.error("Failed to fetch event details", {
+          icon: <AlertCircleIcon className="text-red-500" />,
+          style: {
+            background: "#2C3E50",
+            color: "#ECF0F1",
+          },
+        });
+        navigate("/events");
+      }
+    };
+    fetchEvent();
+  }, [id, getEventById, navigate, user, form]);
+
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      await updateEvent(id, data);
+      const validatedData = eventSchema.parse({
+        ...data,
+        images: uploadedImages,
+      });
+      await updateEvent(id, validatedData);
+      
       toast.success("Event updated successfully!", {
         icon: "🎉",
         style: {
@@ -148,15 +119,26 @@ const EditEventForm = () => {
       });
       navigate(`/events/${id}`);
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to update event";
-      toast.error(errorMessage, {
-        icon: <AlertCircleIcon className="text-red-500" />,
-        style: {
-          background: "#2C3E50",
-          color: "#ECF0F1",
-        },
-      });
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((err) => err.message);
+        toast.error(errorMessages[0], {
+          icon: <AlertCircleIcon className="text-red-500" />,
+          style: {
+            background: "#2C3E50",
+            color: "#ECF0F1",
+          },
+        });
+      } else {
+        const errorMessage =
+          error.response?.data?.message || "Failed to update event";
+        toast.error(errorMessage, {
+          icon: <AlertCircleIcon className="text-red-500" />,
+          style: {
+            background: "#2C3E50",
+            color: "#ECF0F1",
+          },
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -166,14 +148,14 @@ const EditEventForm = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A1A1A] via-[#0F2C2C] to-[#0A1A1A]">
         <div className="text-center text-[#E0F2F1]">
-          <AlertCircleIcon className="mx-auto text-[#FF5252] mb-4" size={64} />
-          <h2 className="text-2xl font-bold mb-4">Unauthorized Access</h2>
-          <p className="text-[#81C784] mb-6">
+          <AlertCircleIcon className="mx-auto h-16 w-16 text-[#FF5252] mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+          <p className="text-[#81C784] mb-4">
             You are not authorized to edit this event.
           </p>
           <Button
             onClick={() => navigate("/events")}
-            className="bg-[#4CAF50] hover:bg-[#388E3C]"
+            className="bg-[#4CAF50] text-white hover:bg-[#388E3C]"
           >
             Back to Events
           </Button>
@@ -186,18 +168,18 @@ const EditEventForm = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A1A1A] via-[#0F2C2C] to-[#0A1A1A] p-4">
       <div className="w-full max-w-2xl bg-[#0F2C2C]/70 rounded-xl shadow-2xl p-8">
         <div className="text-center mb-8">
-          <PencilRuler
+          <CalendarIcon
             className="mx-auto h-16 w-16 text-[#4CAF50] mb-4 animate-pulse"
             strokeWidth={1.5}
           />
-          <h2 className="text-4xl font-bold text-[#E0F2F1]">Update Event</h2>
-          <p className="text-[#81C784] mt-2">
-            Edit the details of your event below.
-          </p>
+          <h2 className="text-4xl font-bold text-[#E0F2F1]">Edit Event</h2>
+          <p className="text-[#81C784] mt-2">Update your event details</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Form fields - same as CreateEventForm */}
+            {/* ... Event Name ... */}
             <FormField
               control={form.control}
               name="name"
@@ -206,20 +188,19 @@ const EditEventForm = () => {
                   <FormLabel className="text-[#B0BEC5]">Event Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Event Name"
                       {...field}
+                      placeholder="Enter event name"
                       className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
+                      focus:ring-2 focus:ring-[#4CAF50]/50"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-[#FF5252]" />
                 </FormItem>
               )}
             />
 
-            {/* Category and Difficulty Row */}
+            {/* ... Category and Difficulty ... */}
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Category */}
               <FormField
                 control={form.control}
                 name="category"
@@ -233,13 +214,14 @@ const EditEventForm = () => {
                       <FormControl>
                         <SelectTrigger
                           className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 
-                            text-[#E0F2F1] focus:ring-2 focus:ring-[#4CAF50]/50"
+                          text-[#E0F2F1] focus:ring-2 focus:ring-[#4CAF50]/50"
                         >
-                          <SelectValue placeholder="Select Category" />
+                          <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-[#1D4E4E] border-[#2E7D32]/30 text-[#E0F2F1]">
                         {[
+                          "Cricket",
                           "Football",
                           "Basketball",
                           "Tennis",
@@ -247,7 +229,6 @@ const EditEventForm = () => {
                           "Cycling",
                           "Swimming",
                           "Volleyball",
-                          "Cricket",
                           "Other",
                         ].map((category) => (
                           <SelectItem key={category} value={category}>
@@ -256,11 +237,11 @@ const EditEventForm = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-[#FF5252]" />
                   </FormItem>
                 )}
               />
-              {/* Difficulty */}
+
               <FormField
                 control={form.control}
                 name="difficulty"
@@ -274,9 +255,9 @@ const EditEventForm = () => {
                       <FormControl>
                         <SelectTrigger
                           className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 
-                            text-[#E0F2F1] focus:ring-2 focus:ring-[#4CAF50]/50"
+                          text-[#E0F2F1] focus:ring-2 focus:ring-[#4CAF50]/50"
                         >
-                          <SelectValue placeholder="Select Difficulty" />
+                          <SelectValue placeholder="Select difficulty" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-[#1D4E4E] border-[#2E7D32]/30 text-[#E0F2F1]">
@@ -289,12 +270,13 @@ const EditEventForm = () => {
                         )}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-[#FF5252]" />
                   </FormItem>
                 )}
               />
             </div>
 
+            {/* ... Description ... */}
             <FormField
               control={form.control}
               name="description"
@@ -303,24 +285,25 @@ const EditEventForm = () => {
                   <FormLabel className="text-[#B0BEC5]">Description</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Event Description"
                       {...field}
+                      placeholder="Enter event description"
                       className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
+                      focus:ring-2 focus:ring-[#4CAF50]/50"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-[#FF5252]" />
                 </FormItem>
               )}
             />
-            {/* Date and Time */}
+
+            {/* ... Date and Time ... */}
             <div className="grid md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">Date</FormLabel>
+                    <FormLabel className="text-[#B0BEC5]">Event Date</FormLabel>
                     <FormControl>
                       <Input
                         type="date"
@@ -329,7 +312,7 @@ const EditEventForm = () => {
                         focus:ring-2 focus:ring-[#4CAF50]/50"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-[#FF5252]" />
                   </FormItem>
                 )}
               />
@@ -339,7 +322,7 @@ const EditEventForm = () => {
                 name="time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">Time</FormLabel>
+                    <FormLabel className="text-[#B0BEC5]">Event Time</FormLabel>
                     <FormControl>
                       <Input
                         type="time"
@@ -348,12 +331,13 @@ const EditEventForm = () => {
                         focus:ring-2 focus:ring-[#4CAF50]/50"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-[#FF5252]" />
                   </FormItem>
                 )}
               />
             </div>
 
+            {/* ... Location Fields ... */}
             <FormField
               control={form.control}
               name="location.address"
@@ -362,17 +346,17 @@ const EditEventForm = () => {
                   <FormLabel className="text-[#B0BEC5]">Address</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Address"
                       {...field}
+                      placeholder="Enter event address"
                       className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
+                      focus:ring-2 focus:ring-[#4CAF50]/50"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-[#FF5252]" />
                 </FormItem>
               )}
             />
-            {/* Date and Time */}
+
             <div className="grid md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -382,13 +366,13 @@ const EditEventForm = () => {
                     <FormLabel className="text-[#B0BEC5]">City</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="City"
                         {...field}
+                        placeholder="Enter city"
                         className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
                         focus:ring-2 focus:ring-[#4CAF50]/50"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-[#FF5252]" />
                   </FormItem>
                 )}
               />
@@ -398,70 +382,107 @@ const EditEventForm = () => {
                 name="location.state"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">State</FormLabel>
+                    <FormLabel className="text-[#B0BEC5]">
+                      State (optional)
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="State"
                         {...field}
+                        placeholder="Enter state"
                         className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
                         focus:ring-2 focus:ring-[#4CAF50]/50"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-[#FF5252]" />
                   </FormItem>
                 )}
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="maxParticipants"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#B0BEC5]">
-                    Max Participants
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
+            {/* ... Max Participants and Registration Fee ... */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="maxParticipants"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#B0BEC5]">
+                      Max Participants
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        placeholder="Enter max participants"
+                        className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
                         focus:ring-2 focus:ring-[#4CAF50]/50"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[#FF5252]" />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="registrationFee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#B0BEC5]">
-                    Registration Fee
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
+              <FormField
+                control={form.control}
+                name="registrationFee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#B0BEC5]">
+                      Registration Fee (optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        placeholder="Enter registration fee"
+                        className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
                         focus:ring-2 focus:ring-[#4CAF50]/50"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[#FF5252]" />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            <div className="flex justify-end mt-6">
+            {/* Image Upload Section */}
+            <div className="space-y-2">
+              <label className="text-[#B0BEC5] block">Event Images</label>
+              <ImageUpload
+                maxFiles={5}
+                maxSize={5}
+                existingImages={uploadedImages}
+                onChange={() => {}} // We handle this through onUploadComplete
+                onUploadComplete={(urls) => {
+                  setUploadedImages(prev => [...prev, ...urls]);
+                }}
+                onRemove={(index) => {
+                  setUploadedImages(prev => prev.filter((_, i) => i !== index));
+                }}
+                className="mt-1"
+              />
+              <p className="text-xs text-[#81C784]">
+                Upload up to 5 images (max 5MB each)
+              </p>
+            </div>
+
+            {/* ... Submit Button ... */}
+            <div className="flex space-x-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(`/events/${id}`)}
+                className="flex-1 border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50]/10"
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
-                className="w-full bg-[#4CAF50] text-[#E0F2F1] hover:bg-[#388E3C] transition duration-200"
                 disabled={isLoading}
+                className="flex-1 bg-[#4CAF50] text-[#E0F2F1] hover:bg-[#388E3C]"
               >
-                {isLoading ? "Updating..." : "Update Event"}
+                {isLoading ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>

@@ -1,10 +1,33 @@
 import express from "express";
-import { login, register, logout, getCurrentUser } from "../controllers/authController.js";
 import { isAuthenticated } from "../middleware/authMiddleware.js";
+import {
+  register,
+  login,
+  logout,
+  getCurrentUser,
+  getProfile,
+  updateProfile,
+  updatePassword,
+  getNotifications,
+  markNotificationRead,
+  addAchievement
+} from "../controllers/authController.js";
+
 const router = express.Router();
 
-router.post("/login", login);
+// Public routes
 router.post("/register", register);
+router.post("/login", login);
 router.post("/logout", logout);
-router.get("/me",isAuthenticated,getCurrentUser);
+
+// Protected routes
+router.use(isAuthenticated);
+router.get("/me", getCurrentUser);
+router.get("/profile", getProfile);
+router.put("/profile", updateProfile);
+router.put("/password", updatePassword);
+router.get("/notifications", getNotifications);
+router.put("/notifications/:notificationId", markNotificationRead);
+router.post("/achievements", addAchievement);
+
 export default router;

@@ -6,16 +6,22 @@ import { Toaster } from "react-hot-toast";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { EventProvider } from "./context/EventContext";
+import { SocketProvider } from "./context/SocketContext";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-    <AuthProvider>
-      <EventProvider>
-      <App />
-      <Toaster />
-      </EventProvider>
-    </AuthProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="sports-buddy-theme">
+        <AuthProvider>
+          <SocketProvider>
+            <EventProvider>
+              <App />
+              <Toaster />
+            </EventProvider>
+          </SocketProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
 );

@@ -68,31 +68,36 @@ const RegisterForm = () => {
       email: "",
       password: "",
     },
+    mode: "onChange",
   });
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      const response = await api.post("/auth/register", data);
-      toast.success("Registration Successful!", {
+      await api.post("/auth/register", data);
+      toast.success("Registration successful! Please log in.", {
         style: {
           background: "#0F2C2C",
           color: "#E0F2F1",
           border: "1px solid #1D4E4E",
         },
         iconTheme: {
-          primary: "#2E7D32",
+          primary: "#4CAF50",
           secondary: "#E0F2F1",
         },
+        duration: 5000,
       });
-
-      navigate("/");
+      navigate("/login");
     } catch (error) {
-      const errorMessage = error.response.data;
-      toast.error(errorMessage.message, {
+      toast.error(error.response?.data?.message || "Registration failed", {
         style: {
-          background: "#2C3E50",
-          color: "#ECF0F1",
+          background: "#0F2C2C",
+          color: "#E0F2F1",
+          border: "1px solid #1D4E4E",
+        },
+        iconTheme: {
+          primary: "#FF5252",
+          secondary: "#E0F2F1",
         },
       });
     } finally {
@@ -157,19 +162,21 @@ const RegisterForm = () => {
                       {...field}
                       type="text"
                       placeholder="Enter your full name"
+                      disabled={isLoading}
                       onFocus={() => handleInputFocus("name", true)}
                       onBlur={() => handleInputFocus("name", false)}
                       onChange={(e) => {
                         field.onChange(e);
                         handleInputChange("name", e.target.value);
                       }}
-                      autoComplete="off"
+                      autoComplete="name"
                       className={`pl-10 pr-3 
                           bg-[#1D4E4E]/30 
                           border-[#2E7D32]/30
                           text-[#E0F2F1] 
                           placeholder-[#607D8B]
-                          
+                          disabled:opacity-50
+                          disabled:cursor-not-allowed
                           focus:outline-none
                           focus-visible:ring-0
                           ${
@@ -221,19 +228,21 @@ const RegisterForm = () => {
                       {...field}
                       type="text"
                       placeholder="Enter your username"
+                      disabled={isLoading}
                       onFocus={() => handleInputFocus("username", true)}
                       onBlur={() => handleInputFocus("username", false)}
                       onChange={(e) => {
                         field.onChange(e);
                         handleInputChange("username", e.target.value);
                       }}
-                      autoComplete="off"
+                      autoComplete="username"
                       className={`pl-10 pr-3 
                           bg-[#1D4E4E]/30 
                           border-[#2E7D32]/30
                           text-[#E0F2F1] 
                           placeholder-[#607D8B]
-                        
+                          disabled:opacity-50
+                          disabled:cursor-not-allowed
                           focus:outline-none
                           focus-visible:ring-0
                           ${
@@ -283,21 +292,23 @@ const RegisterForm = () => {
                       {...field}
                       type="email"
                       placeholder="Enter your email"
+                      disabled={isLoading}
                       onFocus={() => handleInputFocus("email", true)}
                       onBlur={() => handleInputFocus("email", false)}
                       onChange={(e) => {
                         field.onChange(e);
                         handleInputChange("email", e.target.value);
                       }}
-                      autoComplete="off"
+                      autoComplete="email"
                       className={`pl-10 pr-3 
                           bg-[#1D4E4E]/30 
                           border-[#2E7D32]/30
                           text-[#E0F2F1] 
                           placeholder-[#607D8B]
-                          
+                          disabled:opacity-50
+                          disabled:cursor-not-allowed
                           focus:outline-none
-                           focus-visible:ring-0
+                          focus-visible:ring-0
                           ${
                             inputStates.email.isFocused
                               ? "ring-2 ring-[#4CAF50]/50 border-[#4CAF50]/70"
@@ -347,19 +358,21 @@ const RegisterForm = () => {
                       {...field}
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      disabled={isLoading}
                       onFocus={() => handleInputFocus("password", true)}
                       onBlur={() => handleInputFocus("password", false)}
                       onChange={(e) => {
                         field.onChange(e);
                         handleInputChange("password", e.target.value);
                       }}
-                      autoComplete="off"
+                      autoComplete="new-password"
                       className={`pl-10 pr-10 
                           bg-[#1D4E4E]/30 
                           border-[#2E7D32]/30
                           text-[#E0F2F1] 
                           placeholder-[#607D8B]
-                         
+                          disabled:opacity-50
+                          disabled:cursor-not-allowed
                           focus:outline-none
                           focus-visible:ring-0
                           ${
@@ -373,13 +386,13 @@ const RegisterForm = () => {
                               : ""
                           }`}
                     />
-
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
+                      disabled={isLoading}
                       onClick={togglePasswordVisibility}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 text-[#607D8B] hover:bg-[#1D4E4E] hover:text-[#4CAF50]"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 text-[#607D8B] hover:bg-[#1D4E4E] hover:text-[#4CAF50] disabled:opacity-50"
                     >
                       {showPassword ? (
                         <EyeOffIcon size={20} />
@@ -390,25 +403,35 @@ const RegisterForm = () => {
                   </div>
                 </FormControl>
                 <FormMessage className="text-[#FF5252] text-sm" />
+                <p className="text-xs text-[#81C784] mt-1">
+                  Password must contain at least 6 characters, including uppercase, lowercase, 
+                  number and special character
+                </p>
               </FormItem>
             )}
           />
 
-          {/* Register Button */}
           <Button
             type="submit"
             className="w-full bg-[#4CAF50] hover:bg-[#388E3C] 
                 text-[#E0F2F1] font-semibold tracking-wide
                 transition-all duration-300 group
                 flex items-center justify-center gap-2
-                shadow-md hover:shadow-lg"
-            disabled={isLoading}
+                shadow-md hover:shadow-lg
+                disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || !form.formState.isValid}
           >
-            {isLoading ? "Registering..." : "Register"}
-            <ArrowRight
-              className="ml-2 group-hover:translate-x-1 transition-transform"
-              size={20}
-            />
+            {isLoading ? (
+              <>
+                <span className="animate-pulse">Registering...</span>
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              </>
+            ) : (
+              <>
+                Register
+                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
+              </>
+            )}
           </Button>
         </form>
       </Form>
@@ -418,7 +441,8 @@ const RegisterForm = () => {
           Already have an account?{" "}
           <Button
             variant="link"
-            className="text-[#4CAF50] hover:text-[#388E3C]"
+            disabled={isLoading}
+            className="text-[#4CAF50] hover:text-[#388E3C] disabled:opacity-50"
             onClick={() => navigate("/login")}
           >
             Login Here

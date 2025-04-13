@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "react-hot-toast";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -27,16 +28,8 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [inputStates, setInputStates] = useState({
-    email: {
-      value: "",
-      isFocused: false,
-      hasContent: false,
-    },
-    password: {
-      value: "",
-      isFocused: false,
-      hasContent: false,
-    },
+    email: { value: "", isFocused: false, hasContent: false },
+    password: { value: "", isFocused: false, hasContent: false },
   });
   const navigate = useNavigate();
 
@@ -46,14 +39,36 @@ const LoginForm = () => {
       email: "",
       password: "",
     },
+    mode: "onChange", // Enable real-time validation
   });
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      const response = await login(data);
+      await login(data);
+      toast.success("Welcome back!", {
+        style: {
+          background: "#0F2C2C",
+          color: "#E0F2F1",
+          border: "1px solid #1D4E4E",
+        },
+        iconTheme: {
+          primary: "#4CAF50",
+          secondary: "#E0F2F1",
+        },
+      });
     } catch (error) {
-      console.error("Error logging in:", error);
+      toast.error(error.response?.data?.message || "Login failed", {
+        style: {
+          background: "#0F2C2C",
+          color: "#E0F2F1",
+          border: "1px solid #1D4E4E",
+        },
+        iconTheme: {
+          primary: "#FF5252",
+          secondary: "#E0F2F1",
+        },
+      });
     } finally {
       setIsLoading(false);
     }
@@ -83,10 +98,12 @@ const LoginForm = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
   return (
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Email Input */}
           <FormField
             control={form.control}
             name="email"
@@ -115,25 +132,27 @@ const LoginForm = () => {
                       {...field}
                       type="email"
                       placeholder="Enter your email"
+                      disabled={isLoading}
                       onFocus={() => handleInputFocus("email", true)}
                       onBlur={() => handleInputFocus("email", false)}
                       onChange={(e) => {
                         field.onChange(e);
                         handleInputChange("email", e.target.value);
                       }}
-                      autoComplete="off"
+                      autoComplete="email"
                       className={`pl-10 pr-3 
                           bg-[#1D4E4E]/30 
                           border-[#2E7D32]/30
                           text-[#E0F2F1] 
                           placeholder-[#607D8B]
-                          
+                          disabled:opacity-50
+                          disabled:cursor-not-allowed
                           focus:outline-none
                           focus-visible:ring-0
                           ${
                             inputStates.email.isFocused
                               ? "ring-2 ring-[#4CAF50]/50 border-[#4CAF50]/70"
-                              : "hover:border-[ #2E7D32]"
+                              : "hover:border-[#2E7D32]"
                           }
                           ${
                             inputStates.email.hasContent
@@ -148,6 +167,7 @@ const LoginForm = () => {
             )}
           />
 
+          {/* Password Input */}
           <FormField
             control={form.control}
             name="password"
@@ -178,19 +198,21 @@ const LoginForm = () => {
                       {...field}
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      disabled={isLoading}
                       onFocus={() => handleInputFocus("password", true)}
                       onBlur={() => handleInputFocus("password", false)}
                       onChange={(e) => {
                         field.onChange(e);
                         handleInputChange("password", e.target.value);
                       }}
-
+                      autoComplete="current-password"
                       className={`pl-10 pr-10 
                           bg-[#1D4E4E]/30 
                           border-[#2E7D32]/30
                           text-[#E0F2F1] 
                           placeholder-[#607D8B]
-                         
+                          disabled:opacity-50
+                          disabled:cursor-not-allowed
                           focus:outline-none
                           focus-visible:ring-0
                           ${
@@ -208,8 +230,9 @@ const LoginForm = () => {
                       type="button"
                       variant="ghost"
                       size="icon"
+                      disabled={isLoading}
                       onClick={togglePasswordVisibility}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 text-[#607D8B] hover:bg-[#1D4E4E] hover:text-[#4CAF50]"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 text-[#607D8B] hover:bg-[#1D4E4E] hover:text-[#4CAF50] disabled:opacity-50"
                     >
                       {showPassword ? (
                         <EyeOffIcon size={20} />
@@ -230,14 +253,21 @@ const LoginForm = () => {
                 text-[#E0F2F1] font-semibold tracking-wide
                 transition-all duration-300 group
                 flex items-center justify-center gap-2
-                shadow-md hover:shadow-lg"
-            disabled={isLoading}
+                shadow-md hover:shadow-lg
+                disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || !form.formState.isValid}
           >
-            {isLoading ? "Logging In..." : "Login"}
-            <ArrowRight
-              className="ml-2 group-hover:translate-x-1 transition-transform"
-              size={20}
-            />
+            {isLoading ? (
+              <>
+                <span className="animate-pulse">Logging In...</span>
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              </>
+            ) : (
+              <>
+                Login
+                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
+              </>
+            )}
           </Button>
         </form>
       </Form>
@@ -247,7 +277,8 @@ const LoginForm = () => {
           Don&apos;t have an account?{" "}
           <Button
             variant="link"
-            className="text-[#4CAF50] hover:text-[#388E3C]"
+            disabled={isLoading}
+            className="text-[#4CAF50] hover:text-[#388E3C] disabled:opacity-50"
             onClick={() => navigate("/register")}
           >
             Register Now

@@ -1,288 +1,267 @@
-/* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { useEvents } from "@/context/EventContext";
 import { useAuth } from "@/context/AuthContext";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import { useSocket } from "@/context/SocketContext";
 import { Button } from "@/components/ui/button";
-import {
-  CalendarIcon,
-  MapPinIcon,
-  UsersIcon,
-  TagIcon,
-  TrophyIcon,
-  IndianRupee,
-  UserPlus,
-  UserMinus,
-  EditIcon,
-  TrashIcon,
-} from "lucide-react";
-import { formatDate, formatTime, formatCurrency } from "@/utils/formatters";
-import { toast } from "react-hot-toast";
-import SportsBuddyLoader from "../layout/Loader";
+import { Card } from "@/components/ui/card";
+import { Avatar } from "@/components/ui/avatar";
+import EventChat from "./EventChat";
+import { formatDate, formatTime } from "@/utils/formatters";
+import { MapPin, Users, Calendar, Clock, Star } from "lucide-react";
+import api from "@/utils/api";
+import ImageGallery from "./ImageGallery";
 
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getEventById,deleteEvent, participateInEvent, leaveEvent } = useEvents();
   const { user } = useAuth();
+  const { joinEventRoom, leaveEventRoom } = useSocket();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false)
+  const [error, setError] = useState(null);
+  const [userRating, setUserRating] = useState(0);
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const fetchedEvent = await getEventById(id);
-        if (!fetchedEvent) {
-          navigate("/");
-          return;
-        }
-        setEvent(fetchedEvent);
-           // Check if user is creator or admin
-           setIsAuthorized(
-            fetchedEvent.createdBy === user.id || user.role === "admin"
-          );
-         
-      } catch (error) {
-        navigate("/");
+        const response = await api.get(`/api/events/${id}`);
+        setEvent(response.data);
+        // Join the event's socket room
+        joinEventRoom(id);
+      } catch (err) {
+        setError(err.response?.data?.message || "Error fetching event");
       } finally {
         setLoading(false);
       }
     };
-    fetchEvent();
-  }, [id, getEventById, navigate, user, setIsAuthorized]);
 
-  const handleParticipate = async () => {
+    fetchEvent();
+
+    // Cleanup function to leave the event room
+    return () => {
+      leaveEventRoom(id);
+    };
+  }, [id, joinEventRoom, leaveEventRoom]);
+
+  const handleJoinEvent = async () => {
     try {
-      await participateInEvent(id);
-      toast.success("Successfully joined the event!", {
-        style: {
-          background: "#0F2C2C",
-          color: "#E0F2F1",
-        },
-        icon: <UserPlus className="text-[#4CAF50]" />,
-      });
-      const updatedEvent = await getEventById(id);
-      setEvent(updatedEvent);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to join event", {
-        style: {
-          background: "#2C3E50",
-          color: "#ECF0F1",
-        },
-      });
+      const response = await api.post(`/api/events/${id}/join`);
+      setEvent(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error joining event");
     }
   };
 
   const handleLeaveEvent = async () => {
     try {
-      const confirmLeave = window.confirm("Are you sure you want to leave?");
-      if (confirmLeave) {
-        await leaveEvent(id);
-        toast.success("Left the event successfully", {
-          style: {
-            background: "#0F2C2C",
-            color: "#E0F2F1",
-          },
-          icon: <UserMinus className="text-red-500" />,
-        });
-        const updatedEvent = await getEventById(id);
-        setEvent(updatedEvent);
-      }
-      return null;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to leave event", {
-        style: {
-          background: "#2C3E50",
-          color: "#ECF0F1",
-        },
-      });
+      const response = await api.post(`/api/events/${id}/leave`);
+      setEvent(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error leaving event");
     }
   };
 
-   const handleDelete = async (eventId) => {
-      try {
-        await deleteEvent(eventId);
-        toast.success("Event deleted successfully!", {
-          style: {
-            background: "#0F2C2C",
-            color: "#E0F2F1",
-          },
-        });
-      } catch (error) {
-        const errorMessage = error.response?.data?.message || "Failed to delete event";
-        toast.error(errorMessage, {
-          style: {
-            background: "#2C3E50",
-            color: "#ECF0F1",
-          },
-        });
-      }
-    };
-
-  if (loading) return <SportsBuddyLoader />;
-  if (!event) return <div>Event not found</div>;
-
-  const isParticipating = event.participants.some(
-    (participant) => participant.toString() === user.id
-  );
-
-  const difficultyColors = {
-    Beginner: "bg-green-500/20 text-green-600 border-green-500",
-    Intermediate: "bg-yellow-500/20 text-yellow-600 border-yellow-500",
-    Advanced: "bg-red-500/20 text-red-600 border-red-500",
+  const handleRateEvent = async (rating) => {
+    try {
+      const response = await api.post(`/api/events/${id}/ratings`, {
+        rating,
+      });
+      setEvent(response.data);
+      setUserRating(rating);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error rating event");
+    }
   };
 
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="text-red-500 mb-4">{error}</p>
+        <Button onClick={() => navigate("/events")}>Back to Events</Button>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="mb-4">Event not found</p>
+        <Button onClick={() => navigate("/events")}>Back to Events</Button>
+      </div>
+    );
+  }
+
+  const isParticipant = event.participants.some(
+    (p) => p.user._id === user._id
+  );
+  const isOrganizer = event.createdBy._id === user._id;
+  const averageRating =
+    event.ratings.reduce((acc, curr) => acc + curr.rating, 0) /
+    event.ratings.length || 0;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A1A1A] via-[#0F2C2C] to-[#0A1A1A] text-[#E0F2F1]">
-      <Header />
+    <div className="container mx-auto px-4 py-8">
+      <Card className="overflow-hidden">
+        {/* Image Gallery Section */}
+        {event.images?.length > 0 && (
+          <div className="mb-8">
+            <ImageGallery images={event.images} />
+          </div>
+        )}
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="container mx-auto px-4 py-16 relative z-10"
-      >
-        <div className="max-w-4xl mx-auto bg-[#0F2C2C]/70 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="p-6">
           {/* Event Header */}
-          <div className="bg-[#2E7D32]/20 p-6 border-b border-[#2E7D32]/30 ">
-            <div className="w-full md:flex md:flex-row flex-col md:justify-between justify-center items-center">
-              <div className="">
-              <h1 className="text-3xl font-bold text-[#4CAF50] mb-2">
-                {event.name}
-              </h1>
-              <div
-                className={`inline-block px-4 py-1 rounded-full text-sm font-semibold 
-                ${difficultyColors[event.difficulty]}`}
-              >
-                {event.difficulty} Level
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">{event.name}</h1>
+              <div className="flex items-center space-x-4 text-muted-foreground">
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  {formatDate(event.date)}
+                </div>
+                <div className="flex items-center">
+                  <Clock className="w-4 h-4 mr-1" />
+                  {formatTime(event.time)}
+                </div>
+                <div className="flex items-center">
+                  <MapPin className="w-4 h-4 mr-1" />
+                  {event.location}
+                </div>
               </div>
-              </div>
-                {/* Author actions */}
-            {isAuthorized && (
-            <div className="flex  justify-start mt-4 lg:mt-1  ">
-            <Button
-                onClick={() => navigate(`/events/edit/${event._id}`)}
-                className="bg-[#4CAF50] hover:bg-[#388E3C] mr-4 "
-              >
-                <EditIcon className="mr-1" /> Edit
-              </Button>
-              <Button
-                onClick={() => handleDelete(event._id)}
-                className="bg-red-500 hover:bg-red-600"
-              >
-                <TrashIcon className="mr-1" /> Delete
-              </Button>
-            </div>
-          )}
             </div>
 
-        
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-2">
+              {!isOrganizer && (
+                <Button
+                  onClick={isParticipant ? handleLeaveEvent : handleJoinEvent}
+                  variant={isParticipant ? "destructive" : "default"}
+                >
+                  {isParticipant ? "Leave Event" : "Join Event"}
+                </Button>
+              )}
+              {isOrganizer && (
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/events/edit/${id}`)}
+                >
+                  Edit Event
+                </Button>
+              )}
+            </div>
           </div>
 
-          {/* Event Details Grid */}
-          <div className="grid md:grid-cols-2 gap-8 p-6">
-            {/* Left Column */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <CalendarIcon className="text-[#4CAF50]" size={24} />
-                <div>
-                  <p className="text-[#81C784]">Date</p>
-                  <p className="font-semibold">
-                    {formatDate(event.date)} at {formatTime(event.time)}
-                  </p>
-                </div>
+          {/* Event Details */}
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="md:col-span-2 space-y-6">
+              {/* Description */}
+              <div>
+                <h2 className="text-xl font-semibold mb-2">About this event</h2>
+                <p className="text-muted-foreground">{event.description}</p>
               </div>
 
-              <div className="flex items-center space-x-4">
-                <MapPinIcon className="text-[#4CAF50]" size={24} />
-                <div>
-                  <p className="text-[#81C784]">Location</p>
-                  <p className="font-semibold">
-                    {event.location.address}, {event.location.city},{" "}
-                    {event.location.state}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <UsersIcon className="text-[#4CAF50]" size={24} />
-                <div>
-                  <p className="text-[#81C784]">Participants</p>
-                  <p className="font-semibold">
+              {/* Participants */}
+              <div>
+                <h2 className="text-xl font-semibold mb-2">Participants</h2>
+                <div className="flex items-center space-x-2 mb-2">
+                  <Users className="w-4 h-4" />
+                  <span>
                     {event.participants.length}/{event.maxParticipants}
-                  </p>
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {event.participants.map((participant) => (
+                    <div
+                      key={participant.user._id}
+                      className="flex items-center space-x-2 p-2 rounded-lg bg-muted"
+                    >
+                      <Avatar>
+                        <img
+                          src={
+                            participant.user.avatar ||
+                            `https://ui-avatars.com/api/?name=${participant.user.name}`
+                          }
+                          alt={participant.user.name}
+                        />
+                      </Avatar>
+                      <span>{participant.user.name}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
+
+              {/* Chat Section */}
+              {isParticipant && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Event Chat</h2>
+                  <EventChat eventId={id} initialMessages={event.chat} />
+                </div>
+              )}
             </div>
 
-            {/* Right Column */}
+            {/* Sidebar */}
             <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <TagIcon className="text-[#4CAF50]" size={24} />
-                <div>
-                  <p className="text-[#81C784]">Category</p>
-                  <p className="font-semibold">{event.category}</p>
+              {/* Organizer */}
+              <div>
+                <h2 className="text-xl font-semibold mb-2">Organizer</h2>
+                <div className="flex items-center space-x-2 p-2 rounded-lg bg-muted">
+                  <Avatar>
+                    <img
+                      src={
+                        event.createdBy.avatar ||
+                        `https://ui-avatars.com/api/?name=${event.createdBy.name}`
+                      }
+                      alt={event.createdBy.name}
+                    />
+                  </Avatar>
+                  <span>{event.createdBy.name}</span>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4">
-                <IndianRupee className="text-[#4CAF50]" size={24} />
-                <div>
-                  <p className="text-[#81C784]">Registration Fee</p>
-                  <p className="font-semibold">
-                    {event.registrationFee > 0
-                      ? formatCurrency(event.registrationFee)
-                      : "Free"}
-                  </p>
+              {/* Ratings */}
+              <div>
+                <h2 className="text-xl font-semibold mb-2">Ratings</h2>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Star
+                    className={`w-6 h-6 ${
+                      averageRating > 0
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
+                    }`}
+                  />
+                  <span>
+                    {averageRating.toFixed(1)} ({event.ratings.length} reviews)
+                  </span>
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <TrophyIcon className="text-[#4CAF50]" size={24} />
-                <div>
-                  <p className="text-[#81C784]">Difficulty</p>
-                  <p className="font-semibold">{event.difficulty}</p>
-                </div>
+                {isParticipant && !userRating && (
+                  <div className="flex space-x-1">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <Button
+                        key={rating}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRateEvent(rating)}
+                      >
+                        <Star
+                          className={`w-5 h-5 ${
+                            rating <= userRating
+                              ? "text-yellow-400 fill-current"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      </Button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Description Section */}
-          <div className="p-6 bg-[#0F2C2C]/50">
-            <h2 className="text-xl font-bold text-[#4CAF50] mb-4">
-              Event Description
-            </h2>
-            <p className="text-[#B2DFDB]">{event.description}</p>
-          </div>
-
-          {/* Participation Button */}
-          <div className="flex justify-center p-6">
-            {isParticipating ? (
-              <Button
-                onClick={handleLeaveEvent}
-                className="bg-red-500 hover:bg-red-600 text-white"
-              >
-                Leave Event
-              </Button>
-            ) : (
-              <Button
-                onClick={handleParticipate}
-                disabled={event.participants.length >= event.maxParticipants}
-                className="bg-[#4CAF50] hover:bg-[#388E3C] text-white"
-              >
-                {event.participants.length >= event.maxParticipants
-                  ? "Event Full"
-                  : "Participate"}
-              </Button>
-            )}
           </div>
         </div>
-      </motion.div>
-
-      <Footer />
+      </Card>
     </div>
   );
 };

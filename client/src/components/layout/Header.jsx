@@ -14,6 +14,16 @@ import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import NotificationBell from "./NotificationBell";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar } from "@/components/ui/avatar";
+import { Plus, LogOut, User } from "lucide-react";
 
 const NavLink = ({ to, children, icon: Icon, onClick }) => {
   const location = useLocation();
@@ -135,6 +145,39 @@ const Header = () => {
                 </Button>
               </div>
             )}
+            <NotificationBell />
+            <ThemeToggle />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
+                  {/* <Avatar className="h-8 w-8">
+                    <img
+                      src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}`}
+                      alt={user.name}
+                      className="rounded-full"
+                    />
+                  </Avatar> */}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-600 dark:text-red-400"
+                  onClick={logout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               className="md:hidden   bg-[#4CAF50] text-white hover:bg-[#388E3C]"
               onClick={toggleMobileMenu}

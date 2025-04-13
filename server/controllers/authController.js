@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
+import { validationResult } from "express-validator";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -10,6 +11,11 @@ const generateToken = (user) => {
 
 export const register = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { name, username, email, password } = req.body;
 
     const existingUser = await User.findOne({
@@ -194,6 +200,167 @@ export const getCurrentUser = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching user details",
+      error: error.message,
+    });
+  }
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select("-password")
+      .populate("participatedEvents")
+      .populate("createdEvents");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      data: user.getProfile(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching profile",
+      error: error.message,
+    });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const updates = req.body;
+    delete updates.password; // Prevent password update through this route
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update allowed fields
+    const allowedUpdates = [
+      "name",
+      "avatar",
+      "sportsPreferences",
+      "location",
+      "socialLinks",
+      "bio",
+    ];
+
+    allowedUpdates.forEach((field) => {
+      if (updates[field] !== undefined) {
+        user[field] = updates[field];
+      }
+    });
+
+    await user.save();
+
+    res.json({
+      success: true,
+      data: user.getProfile(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating profile",
+      error: error.message,
+    });
+  }
+};
+
+export const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating password",
+      error: error.message,
+    });
+  }
+};
+
+export const getNotifications = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select("notifications")
+      .sort({ "notifications.createdAt": -1 });
+
+    res.json({
+      success: true,
+      data: user.notifications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching notifications",
+      error: error.message,
+    });
+  }
+};
+
+export const markNotificationRead = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+
+    const user = await User.findOneAndUpdate(
+      { 
+        "_id": req.user._id,
+        "notifications._id": notificationId
+      },
+      {
+        "$set": {
+          "notifications.$.read": true
+        }
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      data: user.notifications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating notification",
+      error: error.message,
+    });
+  }
+};
+
+export const addAchievement = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.achievements.push(req.body);
+    await user.save();
+
+    res.json({
+      success: true,
+      data: user.achievements,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error adding achievement",
       error: error.message,
     });
   }

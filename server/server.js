@@ -19,7 +19,6 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
-// Connect to MongoDB
 connectDB();
 
 const app = express();

@@ -1,21 +1,33 @@
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
+import cloudinary from "../config/cloudinary.js"; // Import Cloudinary
 
 // Create Event
 export const createEvent = async (req, res) => {
   try {
-    const { name, description, date, time, location, maxParticipants, category } =
-      req.body;
+    const {
+      name,
+      description,
+      date,
+      time,
+      location,
+      maxParticipants,
+      category,
+    } = req.body;
 
     const images =
-      req.files?.map((file) => `/uploads/events/${file.filename}`) || [];
+      req.files?.map((file) => ({
+        url: file.path,
+        public_id: file.filename,
+        caption: "", // Add caption if provided in req.body
+      })) || [];
 
     const event = new Event({
       name,
       description,
       date,
       time,
-      location,
+      location: typeof location === "string" ? JSON.parse(location) : location,
       maxParticipants,
       category,
       images,
@@ -35,6 +47,118 @@ export const createEvent = async (req, res) => {
     res.status(201).json(populatedEvent);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// Update Event
+export const updateEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Check if user is authorized to update
+    if (
+      event.createdBy.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const updates = { ...req.body };
+    if (typeof updates.location === "string") {
+      updates.location = JSON.parse(updates.location);
+    }
+
+    if (req.files?.length > 0) {
+      // Optionally delete old images from Cloudinary
+      if (event.images.length > 0) {
+        for (const image of event.images) {
+          await cloudinary.uploader.destroy(image.public_id);
+        }
+      }
+      updates.images = req.files.map((file) => ({
+        url: file.path,
+        public_id: file.filename,
+        caption: "", // Add caption if provided
+      }));
+    }
+
+    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+    })
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar")
+      .populate("teams.captain", "name avatar")
+      .populate("teams.members", "name avatar");
+
+    // Notify participants about the update
+    const io = req.app.get("io");
+    event.participants.forEach((participant) => {
+      io.to(`user:${participant.user}`).emit("eventUpdated", updatedEvent);
+    });
+
+    res.json(updatedEvent);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Delete Event
+export const deleteEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (
+      event.createdBy.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    // Delete images from Cloudinary
+    if (event.images.length > 0) {
+      for (const image of event.images) {
+        await cloudinary.uploader.destroy(image.public_id);
+      }
+    }
+
+    // Notify participants about the deletion
+    const io = req.app.get("io");
+    event.participants.forEach((participant) => {
+      io.to(`user:${participant.user}`).emit("eventDeleted", event._id);
+    });
+
+    await event.remove();
+
+    // Remove event from users' lists
+    await User.updateMany(
+      {
+        $or: [{ createdEvents: event._id }, { participatedEvents: event._id }],
+      },
+      {
+        $pull: {
+          createdEvents: event._id,
+          participatedEvents: event._id,
+        },
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Event deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting event",
+      error: error.message,
+    });
   }
 };
 
@@ -153,99 +277,6 @@ export const getEventById = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Error fetching event",
-      error: error.message,
-    });
-  }
-};
-
-// Update Event
-export const updateEvent = async (req, res) => {
-  try {
-    const event = await Event.findById(req.params.id);
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    // Check if user is authorized to update
-    if (
-      event.createdBy.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    ) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
-
-    const updates = { ...req.body };
-    if (req.files?.length > 0) {
-      updates.images = req.files.map(
-        (file) => `/uploads/events/${file.filename}`
-      );
-    }
-
-    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, updates, {
-      new: true,
-    })
-      .populate("createdBy", "name avatar")
-      .populate("participants.user", "name avatar")
-      .populate("teams.captain", "name avatar")
-      .populate("teams.members", "name avatar");
-
-    // Notify participants about the update
-    const io = req.app.get("io");
-    event.participants.forEach((participant) => {
-      io.to(`user:${participant.user}`).emit("eventUpdated", updatedEvent);
-    });
-
-    res.json(updatedEvent);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// Delete Event
-export const deleteEvent = async (req, res) => {
-  try {
-    const event = await Event.findById(req.params.id);
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    if (
-      event.createdBy.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    ) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
-
-    // Notify participants about the deletion
-    const io = req.app.get("io");
-    event.participants.forEach((participant) => {
-      io.to(`user:${participant.user}`).emit("eventDeleted", event._id);
-    });
-
-    await event.remove();
-
-    // Remove event from users' lists
-    await User.updateMany(
-      {
-        $or: [{ createdEvents: event._id }, { participatedEvents: event._id }],
-      },
-      {
-        $pull: {
-          createdEvents: event._id,
-          participatedEvents: event._id,
-        },
-      }
-    );
-
-    res.json({
-      success: true,
-      message: "Event deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error deleting event",
       error: error.message,
     });
   }

@@ -1,10 +1,10 @@
-import express from "express";
-import { isAuthenticated } from "../middleware/authMiddleware.js";
-import { upload } from "../middleware/uploadMiddleware.js";
+import express from 'express';
+import { cloudinaryUpload } from '../middleware/cloudinaryUpload.js';
+import { isAuthenticated } from '../middleware/authMiddleware.js';
 import {
   createEvent,
-  getEventById,
   getAllEvents,
+  getEventById,
   updateEvent,
   deleteEvent,
   joinEvent,
@@ -13,24 +13,20 @@ import {
   addRating,
   sendMessage,
   getUserEvents,
-} from "../controllers/eventController.js";
+} from '../controllers/eventController.js';
 
 const router = express.Router();
 
-// Public routes
-router.get("/",getAllEvents);
-router.get("/:id", getEventById);
-
-// Protected routes
-router.use(isAuthenticated);
-router.post("/", upload.array("eventImages", 5), createEvent);
-router.put("/:id", upload.array("eventImages", 5), updateEvent);
-router.delete("/:id", deleteEvent);
-router.post("/:id/join", joinEvent);
-router.post("/:id/leave", leaveEvent);
-router.post("/:id/teams", addTeam);
-router.post("/:id/ratings", addRating);
-router.get("/user/my-events", getUserEvents);
-router.post("/:id/message",sendMessage)
+router.post('/', isAuthenticated, cloudinaryUpload.array('eventImages', 5), createEvent);
+router.get('/', getAllEvents);
+router.get('/:id', getEventById);
+router.put('/:id', isAuthenticated, cloudinaryUpload.array('eventImages', 5), updateEvent);
+router.delete('/:id', isAuthenticated, deleteEvent);
+router.post('/:id/join', isAuthenticated, joinEvent);
+router.post('/:id/leave', isAuthenticated, leaveEvent);
+router.post('/:id/teams', isAuthenticated, addTeam);
+router.post('/:id/ratings', isAuthenticated, addRating);
+router.post('/:id/chat', isAuthenticated, sendMessage);
+router.get('/user/events', isAuthenticated, getUserEvents);
 
 export default router;

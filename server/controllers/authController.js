@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
+import cloudinary from "../config/cloudinary.js"; // Import Cloudinary
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -88,7 +89,7 @@ export const login = async (req, res) => {
       });
     }
 
-    const isMatch = user.comparePassword(password);
+    const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
       return res.status(401).json({
@@ -98,7 +99,6 @@ export const login = async (req, res) => {
     }
 
     const token = generateToken(user);
-    console.log(token);
 
     if (process.env.NODE_ENV === "production") {
       res.cookie("SportsBuddyToken", token, {
@@ -231,10 +231,19 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Handle avatar upload
+    if (req.file) {
+      // Delete old avatar from Cloudinary if it exists
+      if (user.avatar && user.avatar.includes('cloudinary')) {
+        const publicId = user.avatar.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`avatars/${publicId}`);
+      }
+      user.avatar = req.file.path; // Cloudinary URL
+    }
+
     // Update allowed fields
     const allowedUpdates = [
       "name",
-      "avatar",
       "sportsPreferences",
       "location",
       "socialLinks",

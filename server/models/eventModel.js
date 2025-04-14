@@ -132,8 +132,24 @@ const eventSchema = new mongoose.Schema(
     },
     images: [
       {
-        url: String,
-        caption: String,
+        url: {
+          type: String,
+          required: true,
+          validate: {
+            validator: function (url) {
+              return /^https?:\/\//.test(url);
+            },
+            message: "Invalid image URL",
+          },
+        },
+        public_id: {
+          type: String,
+          required: true,
+        },
+        caption: {
+          type: String,
+          trim: true,
+        },
       },
     ],
     teams: [
@@ -199,18 +215,6 @@ const eventSchema = new mongoose.Schema(
       temperature: Number,
       updated: Date,
     },
-    images: [
-      {
-        type: String,
-        validate: {
-          validator: function (url) {
-            // Basic URL validation
-            return /^https?:\/\//.test(url);
-          },
-          message: "Invalid image URL",
-        },
-      },
-    ],
   },
   {
     timestamps: true,

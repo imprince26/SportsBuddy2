@@ -2,19 +2,14 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import multer from "multer";
 import morgan from "morgan";
-import path from "path";
-import { fileURLToPath } from "url";
 import { createServer } from "http";
 import authRoute from "./routes/authRoute.js";
 import eventRoute from "./routes/eventRoute.js";
 import uploadRoute from "./routes/uploadRoute.js";
 import connectDB from "./config/db.js";
 import configureSocket from "./config/socket.js";
-import { handleUploadError } from "./middleware/uploadMiddleware.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -41,22 +36,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Serve static files
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// Create uploads directories if they don't exist
-import fs from "fs";
-const avatarDir = path.join(__dirname, "uploads/avatars");
-const eventsDir = path.join(__dirname, "uploads/events");
-[avatarDir, eventsDir].forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
-
-// File upload error handling
-app.use(handleUploadError);
-
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
@@ -65,6 +44,13 @@ app.use("/api/upload", uploadRoute);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  // Handle multer-specific errors
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
+      message: `Upload error: ${err.message}`,
+    });
+  }
   res.status(500).json({
     success: false,
     message: err.message || "Something went wrong!",

@@ -4,18 +4,21 @@ import { upload } from "../middleware/uploadMiddleware.js";
 import {
   createEvent,
   getEventById,
+  getAllEvents,
   updateEvent,
   deleteEvent,
   joinEvent,
   leaveEvent,
   addTeam,
   addRating,
+  sendMessage,
   getUserEvents,
 } from "../controllers/eventController.js";
 
 const router = express.Router();
 
 // Public routes
+router.get("/",getAllEvents);
 router.get("/:id", getEventById);
 
 // Protected routes
@@ -28,5 +31,6 @@ router.post("/:id/leave", leaveEvent);
 router.post("/:id/teams", addTeam);
 router.post("/:id/ratings", addRating);
 router.get("/user/my-events", getUserEvents);
+router.post("/:id/message",sendMessage)
 
 export default router;

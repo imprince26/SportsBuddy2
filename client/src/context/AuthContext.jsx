@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import * as api from "@/utils/api";
+import { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import * as api from '@/utils/api';
 
 const AuthContext = createContext();
 
@@ -18,11 +18,12 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await api.get("/auth/me");
+      const response = await api.get('/auth/me');
       setUser(response.data.data);
       await fetchNotifications();
     } catch (error) {
       setUser(null);
+      localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
@@ -31,18 +32,19 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setLoading(true);
-      const response = await api.post("/auth/register", userData);
+      const response = await api.post('/auth/register', userData);
       setUser(response.data.user);
+      localStorage.setItem('token', response.data.token);
       toast({
-        title: "Success",
-        description: "Registration successful",
+        title: 'Success',
+        description: 'Registration successful',
       });
-      navigate("/");
+      navigate('/dashboard');
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Registration failed",
+        variant: 'destructive',
+        title: 'Error',
+        description: error.response?.data?.message || 'Registration failed',
       });
       throw error;
     } finally {
@@ -53,19 +55,20 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      const response = await api.post("/auth/login", credentials);
+      const response = await api.post('/auth/login', credentials);
       setUser(response.data.user);
+      localStorage.setItem('token', response.data.token);
       await fetchNotifications();
       toast({
-        title: "Success",
-        description: "Login successful",
+        title: 'Success',
+        description: 'Login successful',
       });
-      navigate("/");
+      navigate('/dashboard');
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Login failed",
+        variant: 'destructive',
+        title: 'Error',
+        description: error.response?.data?.message || 'Login failed',
       });
       throw error;
     } finally {
@@ -75,37 +78,50 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await api.post("/auth/logout");
+      await api.post('/auth/logout');
       setUser(null);
       setNotifications([]);
+      localStorage.removeItem('token');
       toast({
-        title: "Success",
-        description: "Logged out successfully",
+        title: 'Success',
+        description: 'Logged out successfully',
       });
-      navigate("/login");
+      navigate('/login');
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Logout failed",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Logout failed',
       });
     }
   };
 
-  const updateProfile = async (profileData) => {
+  const updateProfile = async (profileData, avatarFile) => {
     try {
       setLoading(true);
-      const response = await api.put("/auth/profile", profileData);
+      let avatarUrl = profileData.avatar;
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append('avatar', avatarFile);
+        const uploadRes = await api.post('/upload/avatar', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        avatarUrl = uploadRes.data.fileUrl.url;
+      }
+      const response = await api.put('/auth/profile', {
+        ...profileData,
+        avatar: avatarUrl,
+      });
       setUser(response.data.data);
       toast({
-        title: "Success",
-        description: "Profile updated successfully",
+        title: 'Success',
+        description: 'Profile updated successfully',
       });
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update profile",
+        variant: 'destructive',
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to update profile',
       });
       throw error;
     } finally {
@@ -116,16 +132,16 @@ export const AuthProvider = ({ children }) => {
   const updatePassword = async (passwordData) => {
     try {
       setLoading(true);
-      await api.put("/auth/password", passwordData);
+      await api.put('/auth/password', passwordData);
       toast({
-        title: "Success",
-        description: "Password updated successfully",
+        title: 'Success',
+        description: 'Password updated successfully',
       });
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update password",
+        variant: 'destructive',
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to update password',
       });
       throw error;
     } finally {
@@ -135,10 +151,10 @@ export const AuthProvider = ({ children }) => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await api.get("/auth/notifications");
+      const response = await api.get('/auth/notifications');
       setNotifications(response.data.data);
     } catch (error) {
-      console.error("Failed to fetch notifications:", error);
+      console.error('Failed to fetch notifications:', error);
     }
   };
 
@@ -148,9 +164,9 @@ export const AuthProvider = ({ children }) => {
       setNotifications(response.data.data);
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to mark notification as read",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to mark notification as read',
       });
     }
   };
@@ -158,20 +174,20 @@ export const AuthProvider = ({ children }) => {
   const addAchievement = async (achievementData) => {
     try {
       setLoading(true);
-      const response = await api.post("/auth/achievements", achievementData);
-      setUser(prev => ({
+      const response = await api.post('/auth/achievements', achievementData);
+      setUser((prev) => ({
         ...prev,
-        achievements: response.data.data
+        achievements: response.data.data,
       }));
       toast({
-        title: "Success",
-        description: "Achievement added successfully",
+        title: 'Success',
+        description: 'Achievement added successfully',
       });
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Failed to add achievement",
+        variant: 'destructive',
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to add achievement',
       });
       throw error;
     } finally {
@@ -181,6 +197,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    isAuthenticated: !!user,
     loading,
     notifications,
     register,
@@ -188,6 +205,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     updatePassword,
+    fetchNotifications,
     markNotificationAsRead,
     addAchievement,
   };
@@ -198,7 +216,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };

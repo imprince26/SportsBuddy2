@@ -1,23 +1,34 @@
-/* eslint-disable react/prop-types */
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-
+import { Routes, Route, Navigate } from 'react-router-dom';
+import SportsBuddyLoader from './components/layout/Loader';
+import { useAuth } from './context/AuthContext';
 // Pages
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import Events from "./pages/Events";
-import CreateEvent from "./pages/CreateEvent";
-import EventDetails from "./components/events/EventDetails";
-import SportsBuddyLoader from "./components/layout/Loader";
-import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Profile";
-import EditEvent from "./pages/EditEvent";
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Events from './pages/Events';
+import EventDetails from './pages/EventDetails';
+import PublicProfile from './pages/PublicProfile';
+import CreateEvent from './pages/CreateEvent';
+import EditEvent from './pages/EditEvent';
+import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
+import PublicProfile from './pages/PublicProfile';
+import Notifications from './pages/Notifications';
+import EventChat from './pages/EventChat';
+import ManageUsers from './pages/admin/ManageUsers';
+import ManageEvents from './pages/admin/ManageEvents';
+import ManageNotifications from './pages/admin/ManageNotifications';
+import NotFound from './pages/NotFound';
+import Notifications from './pages/Notifications';
+import EventChat from './pages/EventChat';
+import ManageEvents from './pages/admin/ManageEvents';
+import ManageNotifications from './pages/admin/ManageNotifications';
+import ManageUsers from './pages/admin/ManageUsers';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
-  if (isLoading) {
+  if (loading) {
     return <SportsBuddyLoader />;
   }
 
@@ -25,8 +36,8 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && user?.role !== "admin") {
-    return <Navigate to="/" replace />;
+  if (adminOnly && user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
@@ -34,19 +45,25 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
 function App() {
   return (
+
     <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<Home />} />
+      <Route path="/events" element={<Events />} />
+      <Route path="/events/:id" element={<EventDetails />} />
+      <Route path="/profile/:userId" element={<PublicProfile />} />
+
+      {/* Protected Routes */}
       <Route
-        path="/events"
+        path="/dashboard"
         element={
           <ProtectedRoute>
-            <Events />
+            <Dashboard />
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/events/create"
         element={
@@ -63,27 +80,61 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
-        path="/events/:id"
+        path="/profile"
         element={
           <ProtectedRoute>
-            <EventDetails />
+            <Profile />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/events/user/my-events"
+        path="/notifications"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <Notifications />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chat/:eventId"
+        element={
+          <ProtectedRoute>
+            <EventChat />
           </ProtectedRoute>
         }
       />
 
-      {/* 404 Route */}
+      {/* Admin Routes */}
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute adminOnly>
+            <ManageUsers />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/events"
+        element={
+          <ProtectedRoute adminOnly>
+            <ManageEvents />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/notifications"
+        element={
+          <ProtectedRoute adminOnly>
+            <ManageNotifications />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Fallback Route */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+
   );
 }
 

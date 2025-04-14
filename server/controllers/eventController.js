@@ -4,10 +4,12 @@ import User from "../models/userModel.js";
 // Create Event
 export const createEvent = async (req, res) => {
   try {
-    const { name, description, date, time, location, maxParticipants, sport } = req.body;
-    
-    const images = req.files?.map(file => `/uploads/events/${file.filename}`) || [];
-    
+    const { name, description, date, time, location, maxParticipants, sport } =
+      req.body;
+
+    const images =
+      req.files?.map((file) => `/uploads/events/${file.filename}`) || [];
+
     const event = new Event({
       name,
       description,
@@ -18,17 +20,17 @@ export const createEvent = async (req, res) => {
       sport,
       images,
       createdBy: req.user._id,
-      participants: [{ user: req.user._id, role: 'organizer' }]
+      participants: [{ user: req.user._id, role: "organizer" }],
     });
 
     const savedEvent = await event.save();
     const populatedEvent = await Event.findById(savedEvent._id)
-      .populate('createdBy', 'name avatar')
-      .populate('participants.user', 'name avatar');
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar");
 
     // Notify followers or nearby users about the new event
-    const io = req.app.get('io');
-    io.emit('newEvent', populatedEvent);
+    const io = req.app.get("io");
+    io.emit("newEvent", populatedEvent);
 
     res.status(201).json(populatedEvent);
   } catch (error) {
@@ -39,9 +41,9 @@ export const createEvent = async (req, res) => {
 // Get All Events
 export const getAllEvents = async (req, res) => {
   try {
-    const { 
-      category, 
-      difficulty, 
+    const {
+      category,
+      difficulty,
       search,
       location,
       radius,
@@ -49,11 +51,11 @@ export const getAllEvents = async (req, res) => {
       endDate,
       sortBy,
       page = 1,
-      limit = 10
+      limit = 10,
     } = req.query;
 
     const query = {};
-    
+
     // Category filter
     if (category && category !== "ALL") {
       query.category = category;
@@ -166,30 +168,32 @@ export const updateEvent = async (req, res) => {
     }
 
     // Check if user is authorized to update
-    if (event.createdBy.toString() !== req.user._id.toString() && 
-        req.user.role !== "admin") {
+    if (
+      event.createdBy.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
     const updates = { ...req.body };
     if (req.files?.length > 0) {
-      updates.images = req.files.map(file => `/uploads/events/${file.filename}`);
+      updates.images = req.files.map(
+        (file) => `/uploads/events/${file.filename}`
+      );
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(
-      req.params.id,
-      updates,
-      { new: true }
-    )
-    .populate('createdBy', 'name avatar')
-    .populate('participants.user', 'name avatar')
-    .populate('teams.captain', 'name avatar')
-    .populate('teams.members', 'name avatar');
+    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+    })
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar")
+      .populate("teams.captain", "name avatar")
+      .populate("teams.members", "name avatar");
 
     // Notify participants about the update
-    const io = req.app.get('io');
-    event.participants.forEach(participant => {
-      io.to(`user:${participant.user}`).emit('eventUpdated', updatedEvent);
+    const io = req.app.get("io");
+    event.participants.forEach((participant) => {
+      io.to(`user:${participant.user}`).emit("eventUpdated", updatedEvent);
     });
 
     res.json(updatedEvent);
@@ -207,30 +211,31 @@ export const deleteEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (event.createdBy.toString() !== req.user._id.toString() && 
-        req.user.role !== "admin") {
+    if (
+      event.createdBy.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
     // Notify participants about the deletion
-    const io = req.app.get('io');
-    event.participants.forEach(participant => {
-      io.to(`user:${participant.user}`).emit('eventDeleted', event._id);
+    const io = req.app.get("io");
+    event.participants.forEach((participant) => {
+      io.to(`user:${participant.user}`).emit("eventDeleted", event._id);
     });
 
     await event.remove();
 
     // Remove event from users' lists
     await User.updateMany(
-      { $or: [
-        { createdEvents: event._id },
-        { participatedEvents: event._id }
-      ]},
-      { 
-        $pull: { 
+      {
+        $or: [{ createdEvents: event._id }, { participatedEvents: event._id }],
+      },
+      {
+        $pull: {
           createdEvents: event._id,
-          participatedEvents: event._id
-        }
+          participatedEvents: event._id,
+        },
       }
     );
 
@@ -265,14 +270,14 @@ export const joinEvent = async (req, res) => {
 
     event.participants.push({
       user: req.user._id,
-      status: "confirmed"
+      status: "confirmed",
     });
 
     await event.save();
 
     // Add event to user's participated events
     await User.findByIdAndUpdate(req.user._id, {
-      $push: { participatedEvents: event._id }
+      $push: { participatedEvents: event._id },
     });
 
     // Notify event creator
@@ -281,21 +286,21 @@ export const joinEvent = async (req, res) => {
         notifications: {
           type: "event",
           message: `${req.user.name} has joined your event: ${event.name}`,
-        }
-      }
+        },
+      },
     });
 
     const updatedEvent = await Event.findById(event._id)
-      .populate('createdBy', 'name avatar')
-      .populate('participants.user', 'name avatar')
-      .populate('teams.captain', 'name avatar')
-      .populate('teams.members', 'name avatar');
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar")
+      .populate("teams.captain", "name avatar")
+      .populate("teams.members", "name avatar");
 
     // Notify event creator
-    const io = req.app.get('io');
-    io.to(`user:${event.createdBy}`).emit('userJoinedEvent', {
+    const io = req.app.get("io");
+    io.to(`user:${event.createdBy}`).emit("userJoinedEvent", {
       event: updatedEvent,
-      user: req.user
+      user: req.user,
     });
 
     res.json(updatedEvent);
@@ -328,20 +333,20 @@ export const leaveEvent = async (req, res) => {
 
     // Remove event from user's participated events
     await User.findByIdAndUpdate(req.user._id, {
-      $pull: { participatedEvents: event._id }
+      $pull: { participatedEvents: event._id },
     });
 
     const updatedEvent = await Event.findById(event._id)
-      .populate('createdBy', 'name avatar')
-      .populate('participants.user', 'name avatar')
-      .populate('teams.captain', 'name avatar')
-      .populate('teams.members', 'name avatar');
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar")
+      .populate("teams.captain", "name avatar")
+      .populate("teams.members", "name avatar");
 
     // Notify event creator
-    const io = req.app.get('io');
-    io.to(`user:${event.createdBy}`).emit('userLeftEvent', {
+    const io = req.app.get("io");
+    io.to(`user:${event.createdBy}`).emit("userLeftEvent", {
       event: updatedEvent,
-      user: req.user
+      user: req.user,
     });
 
     res.json(updatedEvent);
@@ -362,30 +367,36 @@ export const addTeam = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (!event.participants.some(p => p.user.toString() === req.user._id.toString())) {
-      return res.status(403).json({ message: 'Must be a participant to create team' });
+    if (
+      !event.participants.some(
+        (p) => p.user.toString() === req.user._id.toString()
+      )
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Must be a participant to create team" });
     }
 
     const team = {
       name: req.body.name,
       captain: req.user._id,
-      members: [req.user._id]
+      members: [req.user._id],
     };
 
     event.teams.push(team);
     await event.save();
 
     const updatedEvent = await Event.findById(event._id)
-      .populate('createdBy', 'name avatar')
-      .populate('participants.user', 'name avatar')
-      .populate('teams.captain', 'name avatar')
-      .populate('teams.members', 'name avatar');
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar")
+      .populate("teams.captain", "name avatar")
+      .populate("teams.members", "name avatar");
 
     // Notify participants about new team
-    const io = req.app.get('io');
-    io.to(`event:${event._id}`).emit('teamCreated', {
+    const io = req.app.get("io");
+    io.to(`event:${event._id}`).emit("teamCreated", {
       event: updatedEvent,
-      team: updatedEvent.teams[updatedEvent.teams.length - 1]
+      team: updatedEvent.teams[updatedEvent.teams.length - 1],
     });
 
     res.json(updatedEvent);
@@ -407,7 +418,9 @@ export const addRating = async (req, res) => {
     }
 
     if (!event.isParticipant(req.user._id)) {
-      return res.status(403).json({ message: "Only participants can rate events" });
+      return res
+        .status(403)
+        .json({ message: "Only participants can rate events" });
     }
 
     const existingRating = event.ratings.find(
@@ -421,23 +434,23 @@ export const addRating = async (req, res) => {
     event.ratings.push({
       user: req.user._id,
       rating: req.body.rating,
-      review: req.body.review
+      review: req.body.review,
     });
 
     await event.save();
 
     const updatedEvent = await Event.findById(event._id)
-      .populate('createdBy', 'name avatar')
-      .populate('participants.user', 'name avatar')
-      .populate('teams.captain', 'name avatar')
-      .populate('teams.members', 'name avatar')
-      .populate('ratings.user', 'name avatar');
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar")
+      .populate("teams.captain", "name avatar")
+      .populate("teams.members", "name avatar")
+      .populate("ratings.user", "name avatar");
 
     // Notify event creator about new rating
-    const io = req.app.get('io');
-    io.to(`user:${event.createdBy}`).emit('newRating', {
+    const io = req.app.get("io");
+    io.to(`user:${event.createdBy}`).emit("newRating", {
       event: updatedEvent,
-      rating: updatedEvent.ratings[updatedEvent.ratings.length - 1]
+      rating: updatedEvent.ratings[updatedEvent.ratings.length - 1],
     });
 
     res.json(updatedEvent);
@@ -458,27 +471,34 @@ export const sendMessage = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (!event.isParticipant(req.user._id) && 
-        event.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ 
-        message: "Only participants and creator can send messages" 
+    if (
+      !event.isParticipant(req.user._id) &&
+      event.createdBy.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        message: "Only participants and creator can send messages",
       });
     }
 
     event.chat.push({
       user: req.user._id,
-      message: req.body.message
+      message: req.body.message,
     });
 
     await event.save();
 
     // Populate the new message with user details
-    const populatedEvent = await Event.findById(event._id)
-      .populate("chat.user", "name avatar");
+    const populatedEvent = await Event.findById(event._id).populate(
+      "chat.user",
+      "name avatar"
+    );
 
     // Broadcast message to event participants
-    const io = req.app.get('io');
-    io.to(`event:${event._id}`).emit('newMessage', populatedEvent.chat[populatedEvent.chat.length - 1]);
+    const io = req.app.get("io");
+    io.to(`event:${event._id}`).emit(
+      "newMessage",
+      populatedEvent.chat[populatedEvent.chat.length - 1]
+    );
 
     res.json(populatedEvent.chat[populatedEvent.chat.length - 1]);
   } catch (error) {
@@ -493,14 +513,14 @@ export const sendMessage = async (req, res) => {
 export const getUserEvents = async (req, res) => {
   try {
     const events = await Event.find({
-      'participants.user': req.user._id
+      "participants.user": req.user._id,
     })
-    .populate('createdBy', 'name avatar')
-    .populate('participants.user', 'name avatar')
-    .populate('teams.captain', 'name avatar')
-    .populate('teams.members', 'name avatar')
-    .populate('ratings.user', 'name avatar')
-    .populate('chat.user', 'name avatar');
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar")
+      .populate("teams.captain", "name avatar")
+      .populate("teams.members", "name avatar")
+      .populate("ratings.user", "name avatar")
+      .populate("chat.user", "name avatar");
 
     res.json(events);
   } catch (error) {

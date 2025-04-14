@@ -4,7 +4,7 @@ import User from "../models/userModel.js";
 // Create Event
 export const createEvent = async (req, res) => {
   try {
-    const { name, description, date, time, location, maxParticipants, sport } =
+    const { name, description, date, time, location, maxParticipants, category } =
       req.body;
 
     const images =
@@ -17,7 +17,7 @@ export const createEvent = async (req, res) => {
       time,
       location,
       maxParticipants,
-      sport,
+      category,
       images,
       createdBy: req.user._id,
       participants: [{ user: req.user._id, role: "organizer" }],

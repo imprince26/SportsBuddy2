@@ -27,7 +27,7 @@ const httpServer = createServer(app);
 
 // Configure Socket.io
 const io = configureSocket(httpServer);
-app.set('io', io); // Make io available in routes
+app.set("io", io); // Make io available in routes
 
 // Middleware
 app.use(express.json());
@@ -51,7 +51,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 import fs from "fs";
 const avatarDir = path.join(__dirname, "uploads/avatars");
 const eventsDir = path.join(__dirname, "uploads/events");
-[avatarDir, eventsDir].forEach(dir => {
+[avatarDir, eventsDir].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }

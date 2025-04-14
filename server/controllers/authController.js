@@ -313,14 +313,14 @@ export const markNotificationRead = async (req, res) => {
     const { notificationId } = req.params;
 
     const user = await User.findOneAndUpdate(
-      { 
-        "_id": req.user._id,
-        "notifications._id": notificationId
+      {
+        _id: req.user._id,
+        "notifications._id": notificationId,
       },
       {
-        "$set": {
-          "notifications.$.read": true
-        }
+        $set: {
+          "notifications.$.read": true,
+        },
       },
       { new: true }
     );

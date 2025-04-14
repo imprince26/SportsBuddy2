@@ -13,7 +13,6 @@ import connectDB from "./config/db.js";
 import configureSocket from "./config/socket.js";
 import { handleUploadError } from "./middleware/uploadMiddleware.js";
 
-// ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

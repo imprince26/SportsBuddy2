@@ -7,7 +7,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { EventProvider } from "./context/EventContext";
 import { SocketProvider } from "./context/SocketContext";
-import { ThemeProvider } from "./components/ThemeProvider";
+import { ThemeProvider } from "./context/ThemeProvider";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

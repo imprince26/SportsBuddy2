@@ -28,7 +28,6 @@ const loginSchema = z.object({
 
 const Login = () => {
   const { user, login } = useAuth();
-  const { theme } = useTheme();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,8 +47,8 @@ const Login = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      await login(data);
-      toast.success('Logged in successfully!');
+      await login({ email: data.email, password: data.password });
+      // toast.success('Logged in successfully!');
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Login failed');
     } finally {

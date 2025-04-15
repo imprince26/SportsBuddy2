@@ -42,33 +42,6 @@ import {
 import { cn } from '@/lib/utils';
 import EditProfileForm from '@/components/profile/EditProfileForm';
 
-// Zod schema
-const profileSchema = z.object({
-  name: z
-    .string()
-    .min(2, 'Full name must be at least 2 characters')
-    .max(50, 'Full name cannot exceed 50 characters')
-    .regex(/^[A-Za-z\s]+$/, 'Full name can only contain letters'),
-  username: z
-    .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username cannot exceed 20 characters')
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      'Username can only contain letters, numbers, and underscores'
-    ),
-  email: z.string().email('Invalid email address'),
-  bio: z.string().max(200, 'Bio cannot exceed 200 characters').optional(),
-  location: z.object({
-    city: z.string().max(50, 'City cannot exceed 50 characters').optional(),
-    state: z.string().max(50, 'State cannot exceed 50 characters').optional(),
-    country: z.string().max(50, 'Country cannot exceed 50 characters').optional(),
-  }),
-  sportsPreferences: z.array(z.object({
-    sport: z.array(z.string()).max(3, 'You can select up to 3 sports').optional(),
-    skillLevel: z.string().optional(),
-  })),
-});
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(6, 'Password must be at least 6 characters'),
@@ -82,7 +55,7 @@ const passwordSchema = z.object({
 });
 
 const Profile = () => {
-  const { user, updateProfile, updatePassword } = useAuth();
+  const { user, updatePassword } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [avatar, setAvatar] = useState(user?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg');
@@ -93,28 +66,7 @@ const Profile = () => {
     }
   }, [user, navigate]);
 
-  // Profile Form
-  const profileForm = useForm({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: user?.name || '',
-      username: user?.username || '',
-      bio: user?.bio || '',
-      email: user?.email || '',
-      location: {
-        city: user?.location?.city || '',
-        state: user?.location?.state || '',
-        country: user?.location?.country || '',
-      },
-      sportsPreferences: user?.sportsPreferences || [],
-      socialLinks: {
-        facebook: user?.socialLinks?.facebook || '',
-        twitter: user?.socialLinks?.twitter || '',
-        instagram: user?.socialLinks?.instagram || '',
-      }
-    },
-    mode: 'onChange',
-  });
+
 
   // Password Form
   const passwordForm = useForm({
@@ -126,32 +78,6 @@ const Profile = () => {
     mode: 'onChange',
   });
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const onProfileSubmit = async (data) => {
-    setIsLoading(true);
-    const toastId = showToast.loading('Updating profile...');
-    try {
-      await updateProfile({ ...data, avatar });
-      showToast.success('Profile updated successfully!', { id: toastId });
-    } catch (error) {
-      showToast.error(error.response?.data?.message || 'Failed to update profile', {
-        id: toastId,
-      });
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const onPasswordSubmit = async (data) => {
     setIsLoading(true);
@@ -275,7 +201,7 @@ const Profile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                <EditProfileForm/>
+                <EditProfileForm setAvatar={setAvatar}/>
                 </CardContent>
               </Card>
 

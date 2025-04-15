@@ -1,21 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { showToast } from '@/components/CustomToast';
 
-// import{
-//   select,
-//   SelectGroup,
-//   SelectValue,
-//   SelectTrigger,
-//   SelectContent,
-//   SelectItem,
-//   SelectSeparator
-// } from '@/components/ui/select';
 import {
     Form,
     FormControl,
@@ -34,6 +25,8 @@ import {
     Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import MultiSelect from '@/components/ui/multi-select'; // Assume you have a custom multi-select
 
 // Zod schema
 const profileSchema = z.object({
@@ -50,23 +43,28 @@ const profileSchema = z.object({
             /^[a-zA-Z0-9_]+$/,
             'Username can only contain letters, numbers, and underscores'
         ),
-    email: z.string().email('Invalid email address'),
     bio: z.string().max(200, 'Bio cannot exceed 200 characters').optional(),
     location: z.object({
-        city: z.string().max(50, 'City cannot exceed 50 characters').optional(),
-        state: z.string().max(50, 'State cannot exceed 50 characters').optional(),
-        country: z.string().max(50, 'Country cannot exceed 50 characters').optional(),
+        city: z.string().max(50).optional(),
+        state: z.string().max(50).optional(),
+        country: z.string().max(50).optional(),
     }),
     sportsPreferences: z.array(z.object({
-        sport: z.array(z.string()).max(3, 'You can select up to 3 sports').optional(),
-        skillLevel: z.string().optional(),
+        sport: z
+            .array(z.enum([
+                "Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket", "Other"
+            ]))
+            .max(3, 'You can select up to 3 sports')
+            .optional(),
+        skillLevel: z.enum(["Beginner", "Intermediate", "Advanced"]).optional(),
     })),
 });
 
 const EditProfileForm = (setAvatar) => {
-    const { user, updateProfile, updatePassword } = useAuth();
+    const { user, updateProfile } = useAuth();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [avatar, setAvatarPreview] = useState(null);
 
     const profileForm = useForm({
         resolver: zodResolver(profileSchema),
@@ -74,20 +72,21 @@ const EditProfileForm = (setAvatar) => {
             name: user?.name || '',
             username: user?.username || '',
             bio: user?.bio || '',
-            email: user?.email || '',
             location: {
                 city: user?.location?.city || '',
                 state: user?.location?.state || '',
                 country: user?.location?.country || '',
             },
-            sportsPreferences: user?.sportsPreferences || [],
-            socialLinks: {
-                facebook: user?.socialLinks?.facebook || '',
-                twitter: user?.socialLinks?.twitter || '',
-                instagram: user?.socialLinks?.instagram || '',
-            }
+            sportsPreferences: user?.sportsPreferences || [
+                { sport: [], skillLevel: "Beginner" }
+            ],
         },
         mode: 'onChange',
+    });
+
+    const { fields, append, remove } = useFieldArray({
+        control: profileForm.control,
+        name: "sportsPreferences"
     });
 
     const handleAvatarChange = (e) => {
@@ -95,6 +94,7 @@ const EditProfileForm = (setAvatar) => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
+                setAvatarPreview(reader.result);
                 setAvatar(reader.result);
             };
             reader.readAsDataURL(file);
@@ -116,13 +116,21 @@ const EditProfileForm = (setAvatar) => {
             setIsLoading(false);
         }
     };
+
+    const sportsOptions = [
+        "Football", "Basketball", "Tennis", "Running",
+        "Cycling", "Swimming", "Volleyball", "Cricket", "Other"
+    ];
+
+    const skillLevels = ["Beginner", "Intermediate", "Advanced"];
+
     return (
         <Form {...profileForm}>
             <form
                 onSubmit={profileForm.handleSubmit(onProfileSubmit)}
                 className="space-y-6"
             >
-                <FormField
+                        <FormField
                     control={profileForm.control}
                     name="name"
                     render={({ field }) => (
@@ -215,43 +223,145 @@ const EditProfileForm = (setAvatar) => {
                         </FormItem>
                     )}
                 />
+
                 <FormField
                     control={profileForm.control}
-                    name="location"
+                    name="location.city"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel
-                                className={cn(
-                                    'text-foreground-light dark:text-foreground-dark'
-                                )}
-                            >
-                                Location
+                            <FormLabel className={cn('text-foreground-light dark:text-foreground-dark')}>
+                                City
                             </FormLabel>
                             <FormControl>
-                                <Input
-                                    {...field}
-                                    placeholder="New York, USA"
-                                    disabled={isLoading}
-                                    className={cn(
-                                        'bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
-                                        'text-foreground-light dark:text-foreground-dark'
-                                    )}
-                                />
+                                <Input {...field} placeholder="City" disabled={isLoading}
+                                    className={cn('bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                        'text-foreground-light dark:text-foreground-dark')} />
                             </FormControl>
-                            <FormMessage
-                                className={cn(
-                                    'text-destructive-light dark:text-destructive-dark'
-                                )}
-                            />
+                            <FormMessage className={cn('text-destructive-light dark:text-destructive-dark')} />
                         </FormItem>
                     )}
                 />
+
+                <FormField
+                    control={profileForm.control}
+                    name="location.state"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className={cn('text-foreground-light dark:text-foreground-dark')}>
+                                State
+                            </FormLabel>
+                            <FormControl>
+                                <Input {...field} placeholder="State" disabled={isLoading}
+                                    className={cn('bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                        'text-foreground-light dark:text-foreground-dark')} />
+                            </FormControl>
+                            <FormMessage className={cn('text-destructive-light dark:text-destructive-dark')} />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={profileForm.control}
+                    name="location.country"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className={cn('text-foreground-light dark:text-foreground-dark')}>
+                                Country
+                            </FormLabel>
+                            <FormControl>
+                                <Input {...field} placeholder="Country" disabled={isLoading}
+                                    className={cn('bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                        'text-foreground-light dark:text-foreground-dark')} />
+                            </FormControl>
+                            <FormMessage className={cn('text-destructive-light dark:text-destructive-dark')} />
+                        </FormItem>
+                    )}
+                />
+
+                {/* sportsPreferences array field */}
+                {fields.map((item, index) => (
+                    <div key={item.id} className="space-y-4 border p-4 rounded-2xl border-border-light dark:border-border-dark">
+                        <FormField
+                            control={profileForm.control}
+                            name={`sportsPreferences.${index}.sport`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className={cn('text-foreground-light dark:text-foreground-dark')}>
+                                        Select Sports (max 3)
+                                    </FormLabel>
+                                    <FormControl>
+                                        <MultiSelect
+                                            options={sportsOptions}
+                                            value={field.value || []}
+                                            onChange={field.onChange}
+                                            maxSelected={3}
+                                            disabled={isLoading}
+                                        />
+                                    </FormControl>
+                                    <FormMessage className={cn('text-destructive-light dark:text-destructive-dark')} />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={profileForm.control}
+                            name={`sportsPreferences.${index}.skillLevel`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className={cn('text-foreground-light dark:text-foreground-dark')}>
+                                        Skill Level
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            disabled={isLoading}
+                                        >
+                                            <SelectTrigger
+                                                className={cn('bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                                    'text-foreground-light dark:text-foreground-dark')}
+                                            >
+                                                <SelectValue placeholder="Select skill level" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {skillLevels.map((level) => (
+                                                    <SelectItem key={level} value={level}>
+                                                        {level}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormControl>
+                                    <FormMessage className={cn('text-destructive-light dark:text-destructive-dark')} />
+                                </FormItem>
+                            )}
+                        />
+
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => remove(index)}
+                            className="text-sm"
+                        >
+                            Remove Preference
+                        </Button>
+                    </div>
+                ))}
+
+                <Button
+                    type="button"
+                    onClick={() => append({ sport: [], skillLevel: "Beginner" })}
+                    className={cn(
+                        'bg-primary-light dark:bg-primary-dark hover:bg-primary-light/80 dark:hover:bg-primary-dark/80',
+                        'text-foreground-dark dark:text-foreground-light'
+                    )}
+                >
+                    + Add Sport Preference
+                </Button>
+
+                {/* Avatar upload */}
                 <div>
-                    <FormLabel
-                        className={cn(
-                            'text-foreground-light dark:text-foreground-dark'
-                        )}
-                    >
+                    <FormLabel className={cn('text-foreground-light dark:text-foreground-dark')}>
                         Avatar
                     </FormLabel>
                     <Input
@@ -266,6 +376,8 @@ const EditProfileForm = (setAvatar) => {
                         )}
                     />
                 </div>
+
+                {/* Submit button */}
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                         type="submit"
@@ -282,7 +394,7 @@ const EditProfileForm = (setAvatar) => {
                 </motion.div>
             </form>
         </Form>
-    )
-}
+    );
+};
 
-export default EditProfileForm
+export default EditProfileForm;

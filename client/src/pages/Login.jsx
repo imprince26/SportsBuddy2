@@ -56,7 +56,7 @@ const Login = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-                <LoginForm/>
+              <LoginForm />
             </CardContent>
           </Card>
         </motion.div>

@@ -1,5 +1,5 @@
-import {  useEffect } from 'react';
-import {  useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 const Register = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
- 
+
 
   useEffect(() => {
     if (user) {
@@ -56,7 +56,7 @@ const Register = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-                <RegisterForm/>
+              <RegisterForm />
             </CardContent>
           </Card>
         </motion.div>

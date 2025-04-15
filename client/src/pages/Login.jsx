@@ -7,50 +7,99 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeProvider';
 import Header from '../components/layout/Header';
+import { showToast } from '@/components/CustomToast';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LogIn, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, LogIn, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import toast from 'react-hot-toast';
 
-// Zod schema
+// Validation schema
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    // .regex(
+    //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+    //   'Password must include uppercase, lowercase, number, and special character'
+    // ),
 });
 
 const Login = () => {
   const { user, login } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (user) navigate('/dashboard');
-  }, [user, navigate]);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(loginSchema),
+  const [inputStates, setInputStates] = useState({
+    email: { value: '', isFocused: false, hasContent: false },
+    password: { value: '', isFocused: false, hasContent: false },
   });
 
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+    mode: 'onChange',
+  });
+
+  const handleInputChange = (name, value) => {
+    setInputStates((prev) => ({
+      ...prev,
+      [name]: {
+        ...prev[name],
+        value,
+        hasContent: value.length > 0,
+      },
+    }));
+  };
+
+  const handleInputFocus = (name, isFocused) => {
+    setInputStates((prev) => ({
+      ...prev,
+      [name]: {
+        ...prev[name],
+        isFocused,
+      },
+    }));
+  };
+
   const onSubmit = async (data) => {
+    const toastId = showToast.loading('Logging in...');
     setIsLoading(true);
     try {
-      await login({ email: data.email, password: data.password });
-      // toast.success('Logged in successfully!');
+      await login({
+        email: data.email,
+        password: data.password,
+      });
+      showToast.success('Logged in successfully!', { id: toastId });
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'Login failed');
+      showToast.error(error.response?.data?.message || 'Login failed', {
+        id: toastId,
+      });
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -58,128 +107,215 @@ const Login = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark"
+      className={cn(
+        'min-h-screen flex flex-col',
+        'bg-background-light dark:bg-background-dark'
+      )}
     >
       <Header />
       <main className="flex-grow flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
           className="w-full max-w-md"
         >
           <Card
-            className="backdrop-blur-lg border bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark shadow-2xl"
+            className={cn(
+              'backdrop-blur-lg border shadow-2xl',
+              'bg-card-light/90 border-border-light dark:bg-card-dark/90 dark:border-border-dark'
+            )}
           >
             <CardHeader>
               <CardTitle
-                className="text-2xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-primary-light to-secondary-light dark:from-primary-dark dark:to-secondary-dark"
+                className={cn(
+                  'text-2xl font-extrabold text-center bg-clip-text text-transparent',
+                  'bg-gradient-to-r from-primary-light to-secondary-light dark:from-primary-dark dark:to-secondary-dark'
+                )}
               >
                 Login to SportsBuddy
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Email */}
-                <div>
-                  <Label
-                    htmlFor="email"
-                    className="text-foreground-light dark:text-foreground-dark"
-                  >
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...register('email')}
-                    className="mt-1 bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark border-border-light dark:border-border-dark "
-                    placeholder="you@example.com"
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Email Field */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            'text-foreground-light dark:text-foreground-dark transition-all duration-300',
+                            inputStates.email.isFocused ? 'text-secondary-light dark:text-secondary-dark' : ''
+                          )}
+                          htmlFor="email"
+                        >
+                          Email Address
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <Mail
+                              className={cn(
+                                'absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-300',
+                                inputStates.email.isFocused
+                                  ? 'text-secondary-light dark:text-secondary-dark scale-110'
+                                  : 'text-muted-foreground-light dark:text-muted-foreground-dark'
+                              )}
+                              size={20}
+                            />
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder="Enter your email"
+                              disabled={isLoading}
+                              onFocus={() => handleInputFocus('email', true)}
+                              onBlur={() => handleInputFocus('email', false)}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                handleInputChange('email', e.target.value);
+                              }}
+                              autoComplete="email"
+                              className={cn(
+                                'pl-10 pr-3 bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                'text-foreground-light dark:text-foreground-dark placeholder-muted-foreground-light dark:placeholder-muted-foreground-dark',
+                                'disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-0',
+                                inputStates.email.isFocused
+                                  ? 'ring-2 ring-secondary-light/50 dark:ring-secondary-dark/50 border-secondary-light/70 dark:border-secondary-dark/70'
+                                  : 'hover:border-secondary-light dark:hover:border-secondary-dark',
+                                inputStates.email.hasContent ? 'border-secondary-light dark:border-secondary-dark' : ''
+                              )}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-destructive-light dark:text-destructive-dark text-sm" />
+                      </FormItem>
+                    )}
                   />
-                  <AnimatePresence>
-                    {errors.email && (
-                      <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="mt-1 text-sm text-destructive-light dark:text-destructive-dark"
-                      >
-                        {errors.email.message}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </div>
 
-                {/* Password */}
-                <div>
-                  <Label
-                    htmlFor="password"
-                    className="text-foreground-light dark:text-foreground-dark"
-                  >
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      {...register('password')}
-                      className="bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark border-border-light dark:border-border-dark "
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3"
-                    >
-                      {showPassword ? (
-                        <EyeOff
-                          className="h-5 w-5 text-muted-foreground-light dark:text-muted-foreground-dark"
-                        />
-                      ) : (
-                        <Eye
-                          className="h-5 w-5 text-muted-foreground-light dark:text-muted-foreground-dark"
-                        />
+                  {/* Password Field */}
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            'text-foreground-light dark:text-foreground-dark transition-all duration-300',
+                            inputStates.password.isFocused ? 'text-secondary-light dark:text-secondary-dark' : ''
+                          )}
+                          htmlFor="password"
+                        >
+                          Password
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <Lock
+                              className={cn(
+                                'absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-300',
+                                inputStates.password.isFocused
+                                  ? 'text-secondary-light dark:text-secondary-dark scale-110'
+                                  : 'text-muted-foreground-light dark:text-muted-foreground-dark'
+                              )}
+                              size={20}
+                            />
+                            <Input
+                              {...field}
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="Enter your password"
+                              disabled={isLoading}
+                              onFocus={() => handleInputFocus('password', true)}
+                              onBlur={() => handleInputFocus('password', false)}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                handleInputChange('password', e.target.value);
+                              }}
+                              autoComplete="current-password"
+                              className={cn(
+                                'pl-10 pr-10 bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                'text-foreground-light dark:text-foreground-dark placeholder-muted-foreground-light dark:placeholder-muted-foreground-dark',
+                                'disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-0',
+                                inputStates.password.isFocused
+                                  ? 'ring-2 ring-secondary-light/50 dark:ring-secondary-dark/50 border-secondary-light/70 dark:border-secondary-dark/70'
+                                  : 'hover:border-secondary-light dark:hover:border-secondary-dark',
+                                inputStates.password.hasContent ? 'border-secondary-light dark:border-secondary-dark' : ''
+                              )}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={isLoading}
+                              onClick={() => setShowPassword(!showPassword)}
+                              className={cn(
+                                'absolute right-1 top-1/2 -translate-y-1/2',
+                                'text-muted-foreground-light dark:text-muted-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark',
+                                'hover:text-secondary-light dark:hover:text-secondary-dark disabled:opacity-50'
+                              )}
+                            >
+                              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-destructive-light dark:text-destructive-dark text-sm" />
+                        {/* <p className="text-xs text-success-light dark:text-success-dark mt-1">
+                          Password must contain at least 6 characters, including uppercase, lowercase, number, and special character
+                        </p> */}
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Submit Button */}
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      type="submit"
+                      className={cn(
+                        'w-full flex items-center justify-center gap-2',
+                        'bg-gradient-to-r from-primary-light dark:from-primary-dark to-secondary-light dark:to-secondary-dark',
+                        'text-foreground-light dark:text-foreground-dark font-semibold tracking-wide',
+                        'shadow-md hover:shadow-lg transition-all duration-300',
+                        'disabled:opacity-50 disabled:cursor-not-allowed'
                       )}
-                    </button>
-                  </div>
-                  <AnimatePresence>
-                    {errors.password && (
-                      <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="mt-1 text-sm text-destructive-light dark:text-destructive-dark"
-                      >
-                        {errors.password.message}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </div>
+                      disabled={isLoading || !form.formState.isValid}
+                    >
+                      {isLoading ? (
+                        <>
+                          <span className="animate-pulse">Logging in...</span>
+                          <div className="h-4 w-4 border-2 border-foreground-dark dark:border-foreground-light border-t-transparent rounded-full animate-spin"></div>
+                        </>
+                      ) : (
+                        <>
+                          Log In
+                          <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
+                        </>
+                      )}
+                    </Button>
+                  </motion.div>
+                </form>
+              </Form>
 
-                {/* Submit */}
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full flex items-center space-x-2 bg-gradient-to-r from-primary-light to-secondary-light dark:from-primary-light/80 dark:to-secondary-light/80 text-foreground-light dark:text-foreground-dark"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    <span>{isLoading ? 'Logging in...' : 'Log In'}</span>
-                  </Button>
-                </motion.div>
-              </form>
-
-              {/* Sign up link */}
-              <p
-                className="mt-4 text-center text-sm text-muted-foreground-light dark:text-muted-foreground-dark"
-              >
-                Don’t have an account?{' '}
-                <Link
-                  to="/register"
-                  className="font-semibold text-accent-light dark:text-accent-dark hover:text-accent-light/80 dark:hover:text-accent-dark/80"
+              <div className="mt-6 text-center">
+                <p
+                  className={cn(
+                    'text-sm',
+                    'text-foreground-light dark:text-foreground-dark'
+                  )}
                 >
-                  Sign up
-                </Link>
-              </p>
+                  Don’t have an account?{' '}
+                  <Button
+                    variant="link"
+                    disabled={isLoading}
+                    className={cn(
+                      'text-accent-light dark:text-accent-dark hover:text-accent-light/80 dark:hover:text-accent-dark/80',
+                      'disabled:opacity-50'
+                    )}
+                    onClick={() => navigate('/register')}
+                  >
+                    Sign up
+                  </Button>
+                </p>
+              </div>
             </CardContent>
           </Card>
         </motion.div>

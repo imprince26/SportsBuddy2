@@ -14,18 +14,42 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { UserPlus, Eye, EyeOff } from 'lucide-react';
+import { User, AtSign, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Validation schema
 const registerSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Please enter a valid email').min(1, 'Email is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  name: z
+    .string()
+    .min(2, 'Full name must be at least 2 characters')
+    .max(50, 'Full name cannot exceed 50 characters')
+    .regex(/^[A-Za-z\s]+$/, 'Full name can only contain letters'),
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(20, 'Username cannot exceed 20 characters')
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      'Username can only contain letters, numbers, and underscores'
+    ),
+  email: z.string().email('Invalid email address'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+      'Password must include uppercase, lowercase, number, and special character'
+    ),
 });
 
 const Register = () => {
@@ -34,6 +58,12 @@ const Register = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [inputStates, setInputStates] = useState({
+    name: { value: '', isFocused: false, hasContent: false },
+    username: { value: '', isFocused: false, hasContent: false },
+    email: { value: '', isFocused: false, hasContent: false },
+    password: { value: '', isFocused: false, hasContent: false },
+  });
 
   useEffect(() => {
     if (user) {
@@ -41,13 +71,37 @@ const Register = () => {
     }
   }, [user, navigate]);
 
-  const {
-    register: formRegister,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const form = useForm({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      username: '',
+      email: '',
+      password: '',
+    },
+    mode: 'onChange',
   });
+
+  const handleInputChange = (name, value) => {
+    setInputStates((prev) => ({
+      ...prev,
+      [name]: {
+        ...prev[name],
+        value,
+        hasContent: value.length > 0,
+      },
+    }));
+  };
+
+  const handleInputFocus = (name, isFocused) => {
+    setInputStates((prev) => ({
+      ...prev,
+      [name]: {
+        ...prev[name],
+        isFocused,
+      },
+    }));
+  };
 
   const onSubmit = async (data) => {
     const toastId = showToast.loading('Registering...');
@@ -59,9 +113,10 @@ const Register = () => {
         email: data.email,
         password: data.password,
       });
-      showToast.success('Registered successfully', { id: toastId });
+      showToast.success('Registration successful! Please log in.', { id: toastId });
+      navigate('/login');
     } catch (error) {
-      showToast.error(error.response?.data?.message || 'Failed to register', {
+      showToast.error(error.response?.data?.message || 'Registration failed', {
         id: toastId,
       });
       console.error(error);
@@ -74,7 +129,7 @@ const Register = () => {
     <div
       className={cn(
         'min-h-screen flex flex-col',
-        theme === 'dark' ? 'bg-background-dark' : 'bg-background-light'
+        'bg-background-light dark:bg-background-dark'
       )}
     >
       <Header />
@@ -88,261 +143,309 @@ const Register = () => {
           <Card
             className={cn(
               'backdrop-blur-lg border',
-              theme === 'dark'
-                ? 'bg-card-dark/90 border-border-dark'
-                : 'bg-card-light/90 border-border-light'
+              'bg-card-light/90 border-border-light dark:bg-card-dark/90 dark:border-border-dark'
             )}
           >
             <CardHeader>
               <CardTitle
                 className={cn(
                   'text-2xl font-extrabold text-center bg-clip-text text-transparent',
-                  theme === 'dark'
-                    ? 'bg-gradient-to-r from-primary-dark to-secondary-dark'
-                    : 'bg-gradient-to-r from-primary-light to-secondary-light'
+                  'bg-gradient-to-r from-primary-light to-secondary-light dark:from-primary-dark dark:to-secondary-dark'
                 )}
               >
                 Join SportsBuddy
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Name Field */}
-                <div>
-                  <Label
-                    htmlFor="name"
-                    className={cn(
-                      theme === 'dark' ? 'text-foreground-dark' : 'text-foreground-light'
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Name Field */}
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            'text-foreground-light dark:text-foreground-dark transition-all duration-300',
+                            inputStates.name.isFocused ? 'text-secondary-light dark:text-secondary-dark' : ''
+                          )}
+                          htmlFor="name"
+                        >
+                          Full Name
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <User
+                              className={cn(
+                                'absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-300',
+                                inputStates.name.isFocused
+                                  ? 'text-secondary-light dark:text-secondary-dark scale-110'
+                                  : 'text-muted-foreground-light dark:text-muted-foreground-dark'
+                              )}
+                              size={20}
+                            />
+                            <Input
+                              {...field}
+                              type="text"
+                              placeholder="Enter your full name"
+                              disabled={isLoading}
+                              onFocus={() => handleInputFocus('name', true)}
+                              onBlur={() => handleInputFocus('name', false)}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                handleInputChange('name', e.target.value);
+                              }}
+                              autoComplete="name"
+                              className={cn(
+                                'pl-10 pr-3 bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                'text-foreground-light dark:text-foreground-dark placeholder-muted-foreground-light dark:placeholder-muted-foreground-dark',
+                                'disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-0',
+                                inputStates.name.isFocused
+                                  ? 'ring-2 ring-secondary-light/50 dark:ring-secondary-dark/50 border-secondary-light/70 dark:border-secondary-dark/70'
+                                  : 'hover:border-secondary-light dark:hover:border-secondary-dark',
+                                inputStates.name.hasContent ? 'border-secondary-light dark:border-secondary-dark' : ''
+                              )}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-destructive-light dark:text-destructive-dark text-sm" />
+                      </FormItem>
                     )}
-                  >
-                    Name
-                  </Label>
-                  <motion.div
-                    whileFocus={{ scale: 1.02 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <Input
-                      id="name"
-                      type="text"
-                      {...formRegister('name')}
-                      className={cn(
-                        'mt-1',
-                        theme === 'dark'
-                          ? 'bg-muted-dark border-border-dark text-foreground-dark focus:ring-primary-dark'
-                          : 'bg-muted-light/50 border-border-light text-foreground-light focus:ring-primary-light'
-                      )}
-                      placeholder="John Doe"
-                    />
-                  </motion.div>
-                  <AnimatePresence>
-                    {errors.name && (
-                      <motion.p
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className={cn(
-                          'mt-1 text-sm',
-                          theme === 'dark' ? 'text-destructive-dark' : 'text-destructive-light'
-                        )}
-                      >
-                        {errors.name.message}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </div>
+                  />
 
-                {/* Username Field */}
-                <div>
-                  <Label
-                    htmlFor="username"
-                    className={cn(
-                      theme === 'dark' ? 'text-foreground-dark' : 'text-foreground-light'
+                  {/* Username Field */}
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            'text-foreground-light dark:text-foreground-dark transition-all duration-300',
+                            inputStates.username.isFocused ? 'text-secondary-light dark:text-secondary-dark' : ''
+                          )}
+                          htmlFor="username"
+                        >
+                          Username
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <AtSign
+                              className={cn(
+                                'absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-300',
+                                inputStates.username.isFocused
+                                  ? 'text-secondary-light dark:text-secondary-dark scale-110'
+                                  : 'text-muted-foreground-light dark:text-muted-foreground-dark'
+                              )}
+                              size={20}
+                            />
+                            <Input
+                              {...field}
+                              type="text"
+                              placeholder="Enter your username"
+                              disabled={isLoading}
+                              onFocus={() => handleInputFocus('username', true)}
+                              onBlur={() => handleInputFocus('username', false)}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                handleInputChange('username', e.target.value);
+                              }}
+                              autoComplete="username"
+                              className={cn(
+                                'pl-10 pr-3 bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                'text-foreground-light dark:text-foreground-dark placeholder-muted-foreground-light dark:placeholder-muted-foreground-dark',
+                                'disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-0',
+                                inputStates.username.isFocused
+                                  ? 'ring-2 ring-secondary-light/50 dark:ring-secondary-dark/50 border-secondary-light/70 dark:border-secondary-dark/70'
+                                  : 'hover:border-secondary-light dark:hover:border-secondary-dark',
+                                inputStates.username.hasContent ? 'border-secondary-light dark:border-secondary-dark' : ''
+                              )}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-destructive-light dark:text-destructive-dark text-sm" />
+                      </FormItem>
                     )}
-                  >
-                    Username
-                  </Label>
-                  <motion.div
-                    whileFocus={{ scale: 1.02 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <Input
-                      id="username"
-                      type="text"
-                      {...formRegister('username')}
-                      className={cn(
-                        'mt-1',
-                        theme === 'dark'
-                          ? 'bg-muted-dark border-border-dark text-foreground-dark focus:ring-primary-dark'
-                          : 'bg-muted-light/50 border-border-light text-foreground-light focus:ring-primary-light'
-                      )}
-                      placeholder="johndoe123"
-                    />
-                  </motion.div>
-                  <AnimatePresence>
-                    {errors.username && (
-                      <motion.p
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className={cn(
-                          'mt-1 text-sm',
-                          theme === 'dark' ? 'text-destructive-dark' : 'text-destructive-light'
-                        )}
-                      >
-                        {errors.username.message}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </div>
+                  />
 
-                {/* Email Field */}
-                <div>
-                  <Label
-                    htmlFor="email"
-                    className={cn(
-                      theme === 'dark' ? 'text-foreground-dark' : 'text-foreground-light'
+                  {/* Email Field */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            'text-foreground-light dark:text-foreground-dark transition-all duration-300',
+                            inputStates.email.isFocused ? 'text-secondary-light dark:text-secondary-dark' : ''
+                          )}
+                          htmlFor="email"
+                        >
+                          Email Address
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <Mail
+                              className={cn(
+                                'absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-300',
+                                inputStates.email.isFocused
+                                  ? 'text-secondary-light dark:text-secondary-dark scale-110'
+                                  : 'text-muted-foreground-light dark:text-muted-foreground-dark'
+                              )}
+                              size={20}
+                            />
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder="Enter your email"
+                              disabled={isLoading}
+                              onFocus={() => handleInputFocus('email', true)}
+                              onBlur={() => handleInputFocus('email', false)}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                handleInputChange('email', e.target.value);
+                              }}
+                              autoComplete="email"
+                              className={cn(
+                                'pl-10 pr-3 bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                'text-foreground-light dark:text-foreground-dark placeholder-muted-foreground-light dark:placeholder-muted-foreground-dark',
+                                'disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-0',
+                                inputStates.email.isFocused
+                                  ? 'ring-2 ring-secondary-light/50 dark:ring-secondary-dark/50 border-secondary-light/70 dark:border-secondary-dark/70'
+                                  : 'hover:border-secondary-light dark:hover:border-secondary-dark',
+                                inputStates.email.hasContent ? 'border-secondary-light dark:border-secondary-dark' : ''
+                              )}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-destructive-light dark:text-destructive-dark text-sm" />
+                      </FormItem>
                     )}
-                  >
-                    Email
-                  </Label>
-                  <motion.div
-                    whileFocus={{ scale: 1.02 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <Input
-                      id="email"
-                      type="email"
-                      {...formRegister('email')}
-                      className={cn(
-                        'mt-1',
-                        theme === 'dark'
-                          ? 'bg-muted-dark border-border-dark text-foreground-dark focus:ring-primary-dark'
-                          : 'bg-muted-light/50 border-border-light text-foreground-light focus:ring-primary-light'
-                      )}
-                      placeholder="you@example.com"
-                    />
-                  </motion.div>
-                  <AnimatePresence>
-                    {errors.email && (
-                      <motion.p
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className={cn(
-                          'mt-1 text-sm',
-                          theme === 'dark' ? 'text-destructive-dark' : 'text-destructive-light'
-                        )}
-                      >
-                        {errors.email.message}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </div>
+                  />
 
-                {/* Password Field */}
-                <div>
-                  <Label
-                    htmlFor="password"
-                    className={cn(
-                      theme === 'dark' ? 'text-foreground-dark' : 'text-foreground-light'
+                  {/* Password Field */}
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel
+                          className={cn(
+                            'text-foreground-light dark:text-foreground-dark transition-all duration-300',
+                            inputStates.password.isFocused ? 'text-secondary-light dark:text-secondary-dark' : ''
+                          )}
+                          htmlFor="password"
+                        >
+                          Password
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <Lock
+                              className={cn(
+                                'absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-300',
+                                inputStates.password.isFocused
+                                  ? 'text-secondary-light dark:text-secondary-dark scale-110'
+                                  : 'text-muted-foreground-light dark:text-muted-foreground-dark'
+                              )}
+                              size={20}
+                            />
+                            <Input
+                              {...field}
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="Enter your password"
+                              disabled={isLoading}
+                              onFocus={() => handleInputFocus('password', true)}
+                              onBlur={() => handleInputFocus('password', false)}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                handleInputChange('password', e.target.value);
+                              }}
+                              autoComplete="new-password"
+                              className={cn(
+                                'pl-10 pr-10 bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
+                                'text-foreground-light dark:text-foreground-dark placeholder-muted-foreground-light dark:placeholder-muted-foreground-dark',
+                                'disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-0',
+                                inputStates.password.isFocused
+                                  ? 'ring-2 ring-secondary-light/50 dark:ring-secondary-dark/50 border-secondary-light/70 dark:border-secondary-dark/70'
+                                  : 'hover:border-secondary-light dark:hover:border-secondary-dark',
+                                inputStates.password.hasContent ? 'border-secondary-light dark:border-secondary-dark' : ''
+                              )}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={isLoading}
+                              onClick={() => setShowPassword(!showPassword)}
+                              className={cn(
+                                'absolute right-1 top-1/2 -translate-y-1/2',
+                                'text-muted-foreground-light dark:text-muted-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark',
+                                'hover:text-secondary-light dark:hover:text-secondary-dark disabled:opacity-50'
+                              )}
+                            >
+                              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-destructive-light dark:text-destructive-dark text-sm" />
+                        <p className="text-xs text-success-light dark:text-success-dark mt-1">
+                          Password must contain at least 6 characters, including uppercase, lowercase, number, and special character
+                        </p>
+                      </FormItem>
                     )}
-                  >
-                    Password
-                  </Label>
-                  <motion.div
-                    whileFocus={{ scale: 1.02 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                    className="relative"
-                  >
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      {...formRegister('password')}
+                  />
+
+                  {/* Submit Button */}
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      type="submit"
                       className={cn(
-                        'mt-1 pr-10',
-                        theme === 'dark'
-                          ? 'bg-muted-dark border-border-dark text-foreground-dark focus:ring-primary-dark'
-                          : 'bg-muted-light/50 border-border-light text-foreground-light focus:ring-primary-light'
+                        'w-full flex items-center justify-center gap-2',
+                        'bg-gradient-to-r from-primary-light dark:from-primary-dark to-secondary-light dark:to-secondary-dark',
+                        'text-foreground-dark dark:text-foreground-light font-semibold tracking-wide',
+                        'shadow-md hover:shadow-lg transition-all duration-300',
+                        'disabled:opacity-50 disabled:cursor-not-allowed'
                       )}
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3"
+                      disabled={isLoading || !form.formState.isValid}
                     >
-                      {showPassword ? (
-                        <EyeOff
-                          className={cn(
-                            'h-5 w-5',
-                            theme === 'dark' ? 'text-muted-foreground-dark' : 'text-muted-foreground-light'
-                          )}
-                        />
+                      {isLoading ? (
+                        <>
+                          <span className="animate-pulse">Registering...</span>
+                          <div className="h-4 w-4 border-2 border-foreground-dark dark:border-foreground-light border-t-transparent rounded-full animate-spin"></div>
+                        </>
                       ) : (
-                        <Eye
-                          className={cn(
-                            'h-5 w-5',
-                            theme === 'dark' ? 'text-muted-foreground-dark' : 'text-muted-foreground-light'
-                          )}
-                        />
+                        <>
+                          Register
+                          <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
+                        </>
                       )}
-                    </button>
+                    </Button>
                   </motion.div>
-                  <AnimatePresence>
-                    {errors.password && (
-                      <motion.p
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className={cn(
-                          'mt-1 text-sm',
-                          theme === 'dark' ? 'text-destructive-dark' : 'text-destructive-light'
-                        )}
-                      >
-                        {errors.password.message}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </div>
+                </form>
+              </Form>
 
-                {/* Submit Button */}
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className={cn(
-                      'w-full flex items-center space-x-2',
-                      theme === 'dark'
-                        ? 'bg-primary-dark hover:bg-primary-dark/80 text-foreground-light'
-                        : 'bg-primary-light hover:bg-primary-light/80 text-foreground-dark'
-                    )}
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    <span>{isLoading ? 'Registering...' : 'Register'}</span>
-                  </Button>
-                </motion.div>
-              </form>
-
-              {/* Login Link */}
-              <p
-                className={cn(
-                  'mt-4 text-center text-sm',
-                  theme === 'dark' ? 'text-foreground-dark' : 'text-foreground-light'
-                )}
-              >
-                Already have an account?{' '}
-                <Link
-                  to="/login"
+              <div className="mt-6 text-center">
+                <p
                   className={cn(
-                    'font-semibold',
-                    theme === 'dark'
-                      ? 'text-accent-dark hover:text-accent-dark/80'
-                      : 'text-accent-light hover:text-accent-light/80'
+                    'text-sm',
+                    'text-foreground-light dark:text-foreground-dark'
                   )}
                 >
-                  Log in
-                </Link>
-              </p>
+                  Already have an account?{' '}
+                  <Button
+                    variant="link"
+                    disabled={isLoading}
+                    className={cn(
+                      'text-accent-light dark:text-accent-dark hover:text-accent-light/80 dark:hover:text-accent-dark/80',
+                      'disabled:opacity-50'
+                    )}
+                    onClick={() => navigate('/login')}
+                  >
+                    Log in
+                  </Button>
+                </p>
+              </div>
             </CardContent>
           </Card>
         </motion.div>

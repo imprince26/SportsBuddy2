@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import SportsBuddyLoader from './components/layout/Loader';
+import SportsBuddyLoader from './components/Loader';
 import { useAuth } from './context/AuthContext';
+import Layout from '@/components/layout/Layout';
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -43,22 +44,27 @@ function App() {
 
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/events" element={<Events />} />
-      <Route path="/events/:id" element={<EventDetails />} />
-      <Route path="/profile/:userId" element={<PublicProfile />} />
+      <Route path="/" element={<Layout />}>
+      
+      <Route path="" element={<Home />} />
+      <Route path="login" element={<Login />} />
+      <Route path="register" element={<Register />} />
+      <Route path="events" element={<Events />} />
+      <Route path="events/:id" element={<EventDetails />} />
+      <Route path="profile/:userId" element={<PublicProfile />} />
+      {/* <Route path="/teams/:id" element={<TeamPage />} /> */}
+
 
       {/* Protected Routes */}
       <Route
-        path="/dashboard"
+        path="dashboard"
         element={
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
         }
-      />
+        />
+        </Route>
       <Route
         path="/events/create"
         element={

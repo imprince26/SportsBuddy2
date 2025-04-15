@@ -1,8 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { AlertTriangleIcon, HomeIcon, RefreshCwIcon } from "lucide-react";
 
 const NotFound = () => {
@@ -65,8 +63,6 @@ const NotFound = () => {
         <BackgroundElements />
       </div>
 
-      {/* Header */}
-      <Header />
 
       {/* Main Content */}
       <motion.div
@@ -126,7 +122,6 @@ const NotFound = () => {
         </div>
       </motion.div>
 
-      <Footer />
     </div>
   );
 };

@@ -84,6 +84,7 @@ export const EventProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await api.get('/events', { params: filters });
+      console.log(response.data.data);
       setEvents(response.data.data);
       setError(null);
     } catch (err) {

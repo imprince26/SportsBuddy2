@@ -367,3 +367,26 @@ export const addAchievement = async (req, res) => {
     });
   }
 };
+
+export const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId)
+      .select("-password")
+      .populate("participatedEvents")
+      .populate("createdEvents");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      data: user.getProfile(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching user profile",
+      error: error.message,
+    });
+  }
+};

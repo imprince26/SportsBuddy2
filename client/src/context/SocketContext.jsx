@@ -12,7 +12,7 @@ export const SocketProvider = ({ children }) => {
     if (user) {
       const socketInstance = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
         withCredentials: true,
-        auth: { token: localStorage.getItem('token') }, // For JWT auth if enabled
+        auth: { token: user.token }, // For JWT auth if enabled
       });
 
       socketInstance.on('connect', () => {

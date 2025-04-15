@@ -5,8 +5,8 @@ import { useEvents } from "@/context/EventContext";
 import { useAuth } from "@/context/AuthContext";
 
 
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+// import Header from "@/components/layout/Header";
+// import Footer from "@/components/layout/Footer";
 import EventCard from "@/components/events/EventCard";
 
 
@@ -131,7 +131,6 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0A1A1A] via-[#0F2C2C] to-[#0A1A1A] text-[#E0F2F1] relative">
-      <Header />
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -280,7 +279,6 @@ const Events = () => {
         )}
       </motion.div>
 
-      <Footer />
     </div>
   );
 };

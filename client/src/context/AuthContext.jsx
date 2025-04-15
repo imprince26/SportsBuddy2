@@ -166,6 +166,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getUserProfile = async (userId) => {
+    try {
+      const response = await api.get(`/auth/user/${userId}`);
+      return response.data.data;
+    } catch (error) {
+      showToast.error('Failed to fetch user profile');
+      throw error;
+    }
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
@@ -179,6 +189,7 @@ export const AuthProvider = ({ children }) => {
     fetchNotifications,
     markNotificationAsRead,
     addAchievement,
+    getUserProfile
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

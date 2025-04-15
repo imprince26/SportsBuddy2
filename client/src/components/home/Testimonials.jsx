@@ -1,6 +1,6 @@
 import React from 'react'
 
-const CreateEvent = () => {
+const Testimonials = () => {
   return (
     <div>
       
@@ -8,4 +8,4 @@ const CreateEvent = () => {
   )
 }
 
-export default CreateEvent
+export default Testimonials

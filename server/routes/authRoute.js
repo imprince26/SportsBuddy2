@@ -10,7 +10,8 @@ import {
   updatePassword,
   getNotifications,
   markNotificationRead,
-  addAchievement
+  addAchievement,
+  getUserProfile
 } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -19,7 +20,7 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
-
+router.get("/user/:userId", getUserProfile);
 // Protected routes
 router.use(isAuthenticated);
 router.get("/me", getCurrentUser);

@@ -7,7 +7,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Events from './pages/Events';
 import EventDetails from './pages/EventDetails';
-import PublicProfile from './pages/PublicProfile';
 import CreateEvent from './pages/CreateEvent';
 import EditEvent from './pages/EditEvent';
 import Dashboard from './pages/Dashboard';
@@ -19,11 +18,7 @@ import ManageUsers from './pages/admin/ManageUsers';
 import ManageEvents from './pages/admin/ManageEvents';
 import ManageNotifications from './pages/admin/ManageNotifications';
 import NotFound from './pages/NotFound';
-import Notifications from './pages/Notifications';
-import EventChat from './pages/EventChat';
-import ManageEvents from './pages/admin/ManageEvents';
-import ManageNotifications from './pages/admin/ManageNotifications';
-import ManageUsers from './pages/admin/ManageUsers';
+
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();

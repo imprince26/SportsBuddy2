@@ -4,36 +4,28 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children, defaultTheme = 'system', storageKey = 'sportsbuddy-theme' }) {
   const [theme, setTheme] = useState(() => {
-    // Get stored theme or fallback to default
     const storedTheme = localStorage.getItem(storageKey);
     return storedTheme || defaultTheme;
   });
 
-  // Apply theme to document and handle system preference
   useEffect(() => {
     const root = window.document.documentElement;
-
-    // Remove existing theme classes
     root.classList.remove('light', 'dark');
 
     if (theme === 'system') {
-      // Detect system preference
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light';
       root.classList.add(systemTheme);
     } else {
-      // Apply selected theme
       root.classList.add(theme);
     }
   }, [theme]);
 
-  // Listen for system theme changes when theme is 'system'
   useEffect(() => {
     if (theme !== 'system') return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
     const handleChange = () => {
       const root = window.document.documentElement;
       root.classList.remove('light', 'dark');

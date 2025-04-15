@@ -13,6 +13,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+// import{
+//   select,
+//   SelectGroup,
+//   SelectValue,
+//   SelectTrigger,
+//   SelectContent,
+//   SelectItem,
+//   SelectSeparator
+// } from '@/components/ui/select';
 import {
   Form,
   FormControl,
@@ -31,7 +40,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import api from '@/utils/api';
+import EditProfileForm from '@/components/profile/EditProfileForm';
 
 // Zod schema
 const profileSchema = z.object({
@@ -50,6 +59,15 @@ const profileSchema = z.object({
     ),
   email: z.string().email('Invalid email address'),
   bio: z.string().max(200, 'Bio cannot exceed 200 characters').optional(),
+  location: z.object({
+    city: z.string().max(50, 'City cannot exceed 50 characters').optional(),
+    state: z.string().max(50, 'State cannot exceed 50 characters').optional(),
+    country: z.string().max(50, 'Country cannot exceed 50 characters').optional(),
+  }),
+  sportsPreferences: z.array(z.object({
+    sport: z.array(z.string()).max(3, 'You can select up to 3 sports').optional(),
+    skillLevel: z.string().optional(),
+  })),
 });
 
 const passwordSchema = z.object({
@@ -64,8 +82,7 @@ const passwordSchema = z.object({
 });
 
 const Profile = () => {
-  const { user, updateUser, changePassword } = useAuth();
-  const { theme } = useTheme();
+  const { user, updateProfile, updatePassword } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [avatar, setAvatar] = useState(user?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg');
@@ -82,8 +99,19 @@ const Profile = () => {
     defaultValues: {
       name: user?.name || '',
       username: user?.username || '',
-      email: user?.email || '',
       bio: user?.bio || '',
+      email: user?.email || '',
+      location: {
+        city: user?.location?.city || '',
+        state: user?.location?.state || '',
+        country: user?.location?.country || '',
+      },
+      sportsPreferences: user?.sportsPreferences || [],
+      socialLinks: {
+        facebook: user?.socialLinks?.facebook || '',
+        twitter: user?.socialLinks?.twitter || '',
+        instagram: user?.socialLinks?.instagram || '',
+      }
     },
     mode: 'onChange',
   });
@@ -113,7 +141,7 @@ const Profile = () => {
     setIsLoading(true);
     const toastId = showToast.loading('Updating profile...');
     try {
-      await updateUser({ ...data, avatar });
+      await updateProfile({ ...data, avatar });
       showToast.success('Profile updated successfully!', { id: toastId });
     } catch (error) {
       showToast.error(error.response?.data?.message || 'Failed to update profile', {
@@ -129,7 +157,7 @@ const Profile = () => {
     setIsLoading(true);
     const toastId = showToast.loading('Changing password...');
     try {
-      await changePassword(data.currentPassword, data.newPassword);
+      await updatePassword(data.currentPassword, data.newPassword);
       showToast.success('Password changed successfully!', { id: toastId });
       passwordForm.reset();
     } catch (error) {
@@ -247,172 +275,7 @@ const Profile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Form {...profileForm}>
-                    <form
-                      onSubmit={profileForm.handleSubmit(onProfileSubmit)}
-                      className="space-y-6"
-                    >
-                      <FormField
-                        control={profileForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel
-                              className={cn(
-                                'text-foreground-light dark:text-foreground-dark'
-                              )}
-                            >
-                              Full Name
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="John Doe"
-                                disabled={isLoading}
-                                className={cn(
-                                  'bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
-                                  'text-foreground-light dark:text-foreground-dark'
-                                )}
-                              />
-                            </FormControl>
-                            <FormMessage
-                              className={cn(
-                                'text-destructive-light dark:text-destructive-dark'
-                              )}
-                            />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={profileForm.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel
-                              className={cn(
-                                'text-foreground-light dark:text-foreground-dark'
-                              )}
-                            >
-                              Username
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="johndoe123"
-                                disabled={isLoading}
-                                className={cn(
-                                  'bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
-                                  'text-foreground-light dark:text-foreground-dark'
-                                )}
-                              />
-                            </FormControl>
-                            <FormMessage
-                              className={cn(
-                                'text-destructive-light dark:text-destructive-dark'
-                              )}
-                            />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={profileForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel
-                              className={cn(
-                                'text-foreground-light dark:text-foreground-dark'
-                              )}
-                            >
-                              Email
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="email"
-                                placeholder="you@example.com"
-                                disabled={isLoading}
-                                className={cn(
-                                  'bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
-                                  'text-foreground-light dark:text-foreground-dark'
-                                )}
-                              />
-                            </FormControl>
-                            <FormMessage
-                              className={cn(
-                                'text-destructive-light dark:text-destructive-dark'
-                              )}
-                            />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={profileForm.control}
-                        name="bio"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel
-                              className={cn(
-                                'text-foreground-light dark:text-foreground-dark'
-                              )}
-                            >
-                              Bio
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...field}
-                                placeholder="Tell us about yourself"
-                                disabled={isLoading}
-                                className={cn(
-                                  'bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
-                                  'text-foreground-light dark:text-foreground-dark'
-                                )}
-                              />
-                            </FormControl>
-                            <FormMessage
-                              className={cn(
-                                'text-destructive-light dark:text-destructive-dark'
-                              )}
-                            />
-                          </FormItem>
-                        )}
-                      />
-                      <div>
-                        <FormLabel
-                          className={cn(
-                            'text-foreground-light dark:text-foreground-dark'
-                          )}
-                        >
-                          Avatar
-                        </FormLabel>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleAvatarChange}
-                          disabled={isLoading}
-                          className={cn(
-                            'mt-1',
-                            'bg-muted-light/30 dark:bg-muted-dark/30 border-border-light dark:border-border-dark',
-                            'text-foreground-light dark:text-foreground-dark'
-                          )}
-                        />
-                      </div>
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button
-                          type="submit"
-                          disabled={isLoading || !profileForm.formState.isValid}
-                          className={cn(
-                            'w-full',
-                            'bg-primary-light dark:bg-primary-dark hover:bg-primary-light/80 dark:hover:bg-primary-dark/80',
-                            'text-foreground-dark dark:text-foreground-light'
-                          )}
-                        >
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Profile
-                        </Button>
-                      </motion.div>
-                    </form>
-                  </Form>
+                <EditProfileForm/>
                 </CardContent>
               </Card>
 

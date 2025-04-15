@@ -248,6 +248,7 @@ export const updateProfile = async (req, res) => {
       "location",
       "socialLinks",
       "bio",
+      "username",
     ];
 
     allowedUpdates.forEach((field) => {

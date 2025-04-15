@@ -201,7 +201,7 @@ const Profile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                <EditProfileForm setAvatar={setAvatar}/>
+                  <EditProfileForm setAvatar={setAvatar} />
                 </CardContent>
               </Card>
 

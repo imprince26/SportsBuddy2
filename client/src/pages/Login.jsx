@@ -48,7 +48,6 @@ const Login = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      console.log(data)
       await login(data);
       toast.success('Logged in successfully!');
     } catch (error) {

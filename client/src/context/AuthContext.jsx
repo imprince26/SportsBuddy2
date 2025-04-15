@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/components/CustomToast';
 import api from '@/utils/api';
 
 const AuthContext = createContext();
@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     checkAuthStatus();
@@ -23,28 +22,24 @@ export const AuthProvider = ({ children }) => {
       await fetchNotifications();
     } catch (error) {
       setUser(null);
-      localStorage.removeItem('token');
+      // localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
   };
 
   const register = async (userData) => {
+    const toastId = showToast.loading('Registering...');
     try {
       setLoading(true);
       const response = await api.post('/auth/register', userData);
       setUser(response.data.user);
-      localStorage.setItem('token', response.data.token);
-      toast({
-        title: 'Success',
-        description: 'Registration successful',
-      });
+      // localStorage.setItem('token', response.data.token);
+      showToast.success('Registration successful', { id: toastId });
       navigate('/dashboard');
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.response?.data?.message || 'Registration failed',
+      showToast.error(error.response?.data?.message || 'Registration failed', {
+        id: toastId,
       });
       throw error;
     } finally {
@@ -53,50 +48,40 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
+    const toastId = showToast.loading('Logging in...');
     try {
       setLoading(true);
       const response = await api.post('/auth/login', credentials);
       setUser(response.data.user);
-      localStorage.setItem('token', response.data.token);
-      // await fetchNotifications();
-      toast({
-        title: 'Success',
-        description: 'Login successful',
-      });
+      // localStorage.setItem('token', response.data.token);
+      showToast.success('Login successful', { id: toastId });
       navigate('/dashboard');
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.response?.data?.message || 'Login failed',
+      showToast.error(error.response?.data?.message || 'Login failed', {
+        id: toastId,
       });
-     console.error(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
   const logout = async () => {
+    const toastId = showToast.loading('Logging out...');
     try {
       await api.post('/auth/logout');
       setUser(null);
       setNotifications([]);
-      localStorage.removeItem('token');
-      toast({
-        title: 'Success',
-        description: 'Logged out successfully',
-      });
+      // localStorage.removeItem('token');
+      showToast.success('Logged out successfully', { id: toastId });
       navigate('/login');
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Logout failed',
-      });
+      showToast.error('Logout failed', { id: toastId });
     }
   };
 
   const updateProfile = async (profileData, avatarFile) => {
+    const toastId = showToast.loading('Updating profile...');
     try {
       setLoading(true);
       let avatarUrl = profileData.avatar;
@@ -113,15 +98,10 @@ export const AuthProvider = ({ children }) => {
         avatar: avatarUrl,
       });
       setUser(response.data.data);
-      toast({
-        title: 'Success',
-        description: 'Profile updated successfully',
-      });
+      showToast.success('Profile updated successfully', { id: toastId });
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to update profile',
+      showToast.error(error.response?.data?.message || 'Failed to update profile', {
+        id: toastId,
       });
       throw error;
     } finally {
@@ -130,18 +110,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updatePassword = async (passwordData) => {
+    const toastId = showToast.loading('Updating password...');
     try {
       setLoading(true);
-      await api.put('/auth/password', passwordData);
-      toast({
-        title: 'Success',
-        description: 'Password updated successfully',
-      });
+      const response = await api.put('/auth/password', passwordData);
+      showToast.success('Password updated successfully', { id: toastId });
+      return response.data;
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to update password',
+      showToast.error(error.response?.data?.message || 'Failed to update password', {
+        id: toastId,
       });
       throw error;
     } finally {
@@ -154,24 +131,23 @@ export const AuthProvider = ({ children }) => {
       const response = await api.get('/auth/notifications');
       setNotifications(response.data.data);
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      showToast.error('Failed to fetch notifications');
     }
   };
 
   const markNotificationAsRead = async (notificationId) => {
+    const toastId = showToast.loading('Marking notification as read...');
     try {
       const response = await api.put(`/auth/notifications/${notificationId}`);
       setNotifications(response.data.data);
+      showToast.success('Notification marked as read', { id: toastId });
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to mark notification as read',
-      });
+      showToast.error('Failed to mark notification as read', { id: toastId });
     }
   };
 
   const addAchievement = async (achievementData) => {
+    const toastId = showToast.loading('Adding achievement...');
     try {
       setLoading(true);
       const response = await api.post('/auth/achievements', achievementData);
@@ -179,15 +155,10 @@ export const AuthProvider = ({ children }) => {
         ...prev,
         achievements: response.data.data,
       }));
-      toast({
-        title: 'Success',
-        description: 'Achievement added successfully',
-      });
+      showToast.success('Achievement added successfully', { id: toastId });
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to add achievement',
+      showToast.error(error.response?.data?.message || 'Failed to add achievement', {
+        id: toastId,
       });
       throw error;
     } finally {

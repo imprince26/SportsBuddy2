@@ -1,297 +1,286 @@
-/* eslint-disable react/prop-types */
-import { useState } from "react";
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeProvider';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '../ui/button';
+import { DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { Avatar,AvatarFallback,AvatarImage } from '../ui/avatar';
 import {
-  MenuIcon,
-  ActivityIcon,
-  UserIcon,
-  LogOutIcon,
-  HomeIcon,
-  CalendarIcon,
-  PlusCircleIcon,
-  XIcon,
-} from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
-import { Button } from "@/components/ui/button";
-import { useNavigate, Link, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import NotificationBell from "./NotificationBell";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar } from "@/components/ui/avatar";
-import { Plus, LogOut, User } from "lucide-react";
+  Menu,
+  X,
+  LogOut,
+  User,
+  Home,
+  Calendar,
+  Shield,
+  Sun,
+  Moon,
+  Monitor,
+  Trophy,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const NavLink = ({ to, children, icon: Icon, onClick }) => {
-  const location = useLocation();
-  const isActive = location.pathname === to;
-
-  return (
-    <Link
-      to={to}
-      onClick={onClick}
-      className={`
-        flex items-center space-x-2 px-4 py-2 rounded-md
-        transition-all duration-300 
-        ${
-          isActive
-            ? "bg-[#4CAF50]/20 text-[#4CAF50]"
-            : "text-[#81C784] hover:bg-[#4CAF50]/10 hover:text-[#4CAF50]"
-        }
-      `}
-    >
-      {Icon && <Icon className="h-5 w-5" />}
-      <span>{children}</span>
-    </Link>
-  );
-};
 
 const Header = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  const navLinks = [
+    { to: '/', label: 'Home', icon: Home },
+    { to: '/events', label: 'Events', icon: Calendar },
+    ...(user ? [{ to: '/dashboard', label: 'Dashboard', icon: User }] : []),
+    ...(user?.role === 'admin' ? [{ to: '/admin/users', label: 'Admin', icon: Shield }] : []),
+  ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsMobileMenuOpen(false);
   };
 
-  const sidebarVariants = {
-    hidden: {
-      x: "100%",
-      transition: {
-        type: "tween",
-        duration: 0.3,
-      },
-    },
-    visible: {
-      x: 0,
-      transition: {
-        type: "tween",
-        duration: 0.3,
-      },
-    },
-  };
-
   return (
-    <>
-      {/* Main Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0F2C2C]/70 backdrop-blur-md border-b border-[#2E7D32]/20">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-3">
-            <ActivityIcon
-              className="h-8 w-8 text-[#4CAF50] animate-pulse"
-              strokeWidth={1.5}
-            />
-            <h1 className="text-xl font-bold text-[#E0F2F1] tracking-tight">
-              Sports Buddy
-            </h1>
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-lg shadow-md"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex-shrink-0 flex items-center">
+            <Link to="/" className="flex items-center space-x-2">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 10 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
+                <Trophy className="h-8 w-8 text-primary" />
+              </motion.div>
+              <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                SportsBuddy
+              </span>
+            </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/events">Events</NavLink>
-          </nav>
+          {/* Desktop Links */}
+          <div className="hidden md:flex items-center space-x-2">
+            {navLinks.map(({ to, label, icon: Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                className={cn(
+                  'flex items-center space-x-1 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300',
+                  location.pathname === to
+                    ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-glow'
+                    : 'text-foreground hover:bg-muted/50 hover:text-primary'
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{label}</span>
+              </Link>
+            ))}
+          </div>
 
-          {/* User Actions */}
-          <div className="flex items-center space-x-4">
-            {user ? (
-              user.role === "guest" ? (
-                <div className="hidden"></div>
-              ) : (
-                <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Right Section */}
+          <div className="hidden md:flex items-center space-x-3">
+            {!user ? (
+              <>
+                <Link to="/login">
                   <Button
-                    onClick={() => navigate("/events/user/my-events")}
-                    className="flex items-center bg-transparent hover:bg-[#4CAF50]/10 space-x-1"
+                    variant="outline"
+                    className="border-primary text-foreground-light
+                    dark:text-foreground-dark hover:bg-primary/10 hover:shadow-glow"
                   >
-                    <UserIcon className="text-[#4CAF50]" />
-                    <span className="text-[#E0F2F1] text-sm font-semibold">
-                      {user ? user.name : "Guest"}
-                    </span>
+                    Login
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="text-[#FF5252] hover:bg-[#FF5252]/10 hover:text-[#FF5252]/80"
-                    onClick={handleLogout}
-                  >
-                    <LogOutIcon className="h-5 w-5" />
-                    Logout
+                </Link>
+                <Link to="/register">
+                  <Button className="bg-gradient-to-r from-primary to-secondary hover:shadow-glow">
+                    Register
                   </Button>
-                </div>
-              )
+                </Link>
+              </>
             ) : (
-              <div className="md:flex hidden space-x-2">
-                <Button
-                  onClick={() => navigate("/login")}
-                  className="bg-[#4CAF50] text-white hover:bg-[#388E3C]"
-                >
-                  Login
-                </Button>
-                <Button
-                  onClick={() => navigate("/register")}
-                  variant="outline"
-                  className="border-[#4CAF50] bg-transparent text-[#4CAF50] hover:text-[#4CAF50]/80 hover:bg-[#4CAF50]/10"
-                >
-                  Register
-                </Button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                    <Avatar className="cursor-pointer ring-2 ring-primary">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className="text-foreground-light dark:text-foreground-dark bg-muted">{user.name?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                  </motion.div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-            <NotificationBell />
-            <ThemeToggle />
+            {/* Theme Toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
+                  variant="outline"
+                  size="icon"
+                  className=" hover:bg-primary-dark/20 dark:hover:bg-primary-light/20 text-foreground-light dark:text-foreground-dark  hover:shadow-glow"
                 >
-                  {/* <Avatar className="h-8 w-8">
-                    <img
-                      src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}`}
-                      alt={user.name}
-                      className="rounded-full"
-                    />
-                  </Avatar> */}
+                  <motion.div
+                    animate={{ rotate: theme === 'system' ? 360 : 0 }}
+                    transition={{ duration: 1 }}
+                  >
+                    {theme === 'light' && <Sun className="h-5 w-5" />}
+                    {theme === 'dark' && <Moon className="h-5 w-5" />}
+                    {theme === 'system' && <Monitor className="h-5 w-5" />}
+                  </motion.div>
+                  <span className="sr-only ">Toggle theme</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
+              <DropdownMenuContent align="end" className="bg-popover">
+                <DropdownMenuItem onClick={() => setTheme('light')} >
+                  <Sun className="mr-2 h-4 w-4" />
+                  Light
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-red-600 dark:text-red-400"
-                  onClick={logout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
+                <DropdownMenuItem onClick={() => setTheme('dark')}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  Dark
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme('system')}>
+                  <Monitor className="mr-2 h-4 w-4" />
+                  System
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
             <Button
-              className="md:hidden   bg-[#4CAF50] text-white hover:bg-[#388E3C]"
-              onClick={toggleMobileMenu}
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              <MenuIcon className="h-6 w-6 text-[#E0F2F1]" />
+              <motion.div
+                animate={{ rotate: isMobileMenuOpen ? 90 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </motion.div>
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black z-50 md:hidden"
-              onClick={toggleMobileMenu}
-            />
-
-            {/* Sidebar */}
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              variants={sidebarVariants}
-              className="fixed top-0 right-0 w-64 h-full bg-[#0F2C2C] z-50 shadow-2xl md:hidden"
-            >
-              {/* Sidebar Header */}
-              <div className="flex justify-between items-center p-4 border-b border-[#2E7D32]/20">
-                <Button
-                  onClick={() => navigate("/events/user/my-events")}
-                  className="flex items-center bg-transparent hover:bg-[#4CAF50]/10 space-x-2"
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="md:hidden bg-background-card-light/95 dark:bg-background-card-dark/95 backdrop-blur-lg"
+          >
+            <div className="px-4 pt-2 pb-4 space-y-2">
+              {navLinks.map(({ to, label, icon: Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={cn(
+                    'flex items-center space-x-2 px-4 py-3 rounded-lg text-base font-semibold',
+                    location.pathname === to
+                      ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
+                      : 'text-foreground hover:bg-muted hover:text-primary'
+                  )}
                 >
-                  <UserIcon className="h-6 w-6 text-[#4CAF50]" />
-                  <span className="text-[#E0F2F1] font-semibold">
-                    {user ? user.name : "Guest"}
-                  </span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="hover:bg-[#FF5252]/10"
-                  onClick={toggleMobileMenu}
-                >
-                  <XIcon className=" text-[#FF5252]" />
-                </Button>
-              </div>
-
-              {/* Sidebar Navigation */}
-              <nav className="flex flex-col space-y-2 p-4">
-                {/* Always visible links */}
-                <NavLink to="/" icon={HomeIcon} onClick={toggleMobileMenu}>
-                  Home
-                </NavLink>
-                <NavLink
-                  to="/events"
-                  icon={CalendarIcon}
-                  onClick={toggleMobileMenu}
-                >
-                  Events
-                </NavLink>
-
-                {user && (
-                  <NavLink
-                    to="/events/create"
-                    icon={PlusCircleIcon}
-                    onClick={toggleMobileMenu}
+                  <Icon className="h-5 w-5" />
+                  <span>{label}</span>
+                </Link>
+              ))}
+              {!user ? (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-4 py-3 rounded-lg text-base font-semibold text-foreground hover:bg-muted"
                   >
-                    Create Event
-                  </NavLink>
-                )}
-
-                {user ? (
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-[#FF5252] hover:bg-[#FF5252]/10 hover:text-[#FF5252]/80 px-4 py-2 w-full"
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-4 py-3 rounded-lg text-base font-semibold text-foreground hover:bg-muted"
+                  >
+                    Register
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center space-x-2 px-4 py-3 rounded-lg text-base font-semibold text-foreground hover:bg-muted"
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Profile</span>
+                  </Link>
+                  <button
                     onClick={handleLogout}
+                    className="flex items-center space-x-2 px-4 py-3 rounded-lg text-base font-semibold text-foreground hover:bg-muted w-full text-left"
                   >
-                    <LogOutIcon className="mr-2 h-4 w-4" />
-                    Logout
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              )}
+              {/* Mobile Theme Toggle */}
+              <div className="px-4 py-3">
+                <span className="text-sm font-semibold text-foreground">Theme</span>
+                <div className="flex space-x-2 mt-2">
+                  <Button
+                    variant={theme === 'light' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTheme('light')}
+                    className={theme === 'light' ? 'bg-gradient-to-r from-primary to-secondary' : ''}
+                  >
+                    <Sun className="h-4 w-4 mr-1" />
+                    Light
                   </Button>
-                ) : (
-                  <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      className="w-full bg-transparent border-[#4CAF50] text-[#4CAF50] hover:text-[#4CAF50]/80 hover:bg-[#4CAF50]/10"
-                      onClick={() => {
-                        navigate("/login");
-                        toggleMobileMenu();
-                      }}
-                    >
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      Login
-                    </Button>
-                    <Button
-                      className="w-full bg-[#4CAF50] text-white hover:bg-[#388E3C]"
-                      onClick={() => {
-                        navigate("/register");
-                        toggleMobileMenu();
-                      }}
-                    >
-                      <PlusCircleIcon className="mr-2 h-4 w-4" />
-                      Register
-                    </Button>
-                  </div>
-                )}
-              </nav>
-            </motion.div>
-          </>
+                  <Button
+                    variant={theme === 'dark' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTheme('dark')}
+                    className={theme === 'dark' ? 'bg-gradient-to-r from-primary to-secondary' : ''}
+                  >
+                    <Moon className="h-4 w-4 mr-1" />
+                    Dark
+                  </Button>
+                  <Button
+                    variant={theme === 'system' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTheme('system')}
+                    className={theme === 'system' ? 'bg-gradient-to-r from-primary to-secondary' : ''}
+                  >
+                    <Monitor className="h-4 w-4 mr-1" />
+                    System
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </motion.nav>
   );
 };
 

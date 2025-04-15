@@ -8,7 +8,7 @@ body {
 
   ::selection {
     background-color: #2E7D32;
-    color: #E8F5E9
+    color: #E8F5E9;
   }
 
   ::-moz-selection {
@@ -25,39 +25,61 @@ body {
 
 @layer base {
   :root {
-    --primary: 221 83% 53%; /* #2563eb */
+    --primary: 221 73% 47%; /* #1e40af */
     --primary-foreground: 0 0% 100%; /* #ffffff */
-    --secondary: 134 87% 41%; /* #16a34a */
+    --secondary: 137 67% 33%; /* #15803d */
     --secondary-foreground: 0 0% 100%; /* #ffffff */
-    --accent: 39 96% 48%; /* #f59e0b */
-    --background: 210 40% 98%; /* #f8fafc */
-    --foreground: 215 20% 17%; /* #1e293b */
+    --accent: 33 95% 39%; /* #d97706 */
+    --accent-foreground: 217 71% 15%; /* #111827 */
+    --background: 214 46% 98%; /* #f9fafb */
+    --foreground: 217 71% 15%; /* #111827 */
     --card: 0 0% 100%; /* #ffffff */
-    --card-foreground: 215 20% 17%; /* #1e293b */
-    --muted: 210 38% 94%; /* #e2e8f0 */
-    --muted-foreground: 215 16% 47%; /* #64748b */
-    --border: 210 38% 94%; /* #e2e8f0 */
-    --error: 0 84% 44%; /* #dc2626 */
-    --success: 134 87% 41%; /* #16a34a */
-    --warning: 39 96% 48%; /* #f59e0b */
+    --card-foreground: 217 71% 15%; /* #111827 */
+    --popover: 0 0% 100%; /* #ffffff */
+    --popover-foreground: 217 71% 15%; /* #111827 */
+    --muted: 214 20% 92%; /* #e5e7eb */
+    --muted-foreground: 215 14% 47%; /* #6b7280 */
+    --border: 214 20% 84%; /* #d1d5db */
+    --input: 214 20% 84%; /* #d1d5db */
+    --ring: 221 73% 47%; /* #1e40af */
+    --destructive: 0 83% 41%; /* #b91c1c */
+    --destructive-foreground: 0 0% 100%; /* #ffffff */
+    --success: 137 67% 33%; /* #15803d */
+    --warning: 33 95% 39%; /* #d97706 */
+    --chart-1: 221 73% 47%; /* #1e40af */
+    --chart-2: 137 67% 33%; /* #15803d */
+    --chart-3: 33 95% 39%; /* #d97706 */
+    --chart-4: 215 14% 47%; /* #6b7280 */
+    --chart-5: 0 83% 41%; /* #b91c1c */
   }
-  
+
   .dark {
-    --primary: 214 96% 74%; /* #60a5fa */
-    --primary-foreground: 215 20% 17%; /* #1e293b */
-    --secondary: 142 71% 60%; /* #4ade80 */
-    --secondary-foreground: 215 20% 17%; /* #1e293b */
-    --accent: 45 92% 58%; /* #fbbf24 */
-    --background: 215 20% 17%; /* #1e293b */
-    --foreground: 210 38% 94%; /* #e2e8f0 */
-    --card: 215 25% 27%; /* #334155 */
-    --card-foreground: 210 38% 94%; /* #e2e8f0 */
-    --muted: 215 25% 35%; /* #475569 */
-    --muted-foreground: 215 16% 66%; /* #94a3b8 */
-    --border: 215 25% 35%; /* #475569 */
-    --error: 0 84% 67%; /* #f87171 */
-    --success: 142 71% 60%; /* #4ade80 */
-    --warning: 45 92% 58%; /* #fbbf24 */
+    --primary: 214 94% 69%; /* #3b82f6 */
+    --primary-foreground: 217 71% 15%; /* #111827 */
+    --secondary: 134 76% 53%; /* #22c55e */
+    --secondary-foreground: 217 71% 15%; /* #111827 */
+    --accent: 36 94% 47%; /* #f59e0b */
+    --accent-foreground: 217 71% 15%; /* #111827 */
+    --background: 217 71% 15%; /* #111827 */
+    --foreground: 214 20% 92%; /* #e5e7eb */
+    --card: 217 46% 22%; /* #1f2937 */
+    --card-foreground: 214 20% 92%; /* #e5e7eb */
+    --popover: 217 46% 22%; /* #1f2937 */
+    --popover-foreground: 214 20% 92%; /* #e5e7eb */
+    --muted: 217 30% 28%; /* #374151 */
+    --muted-foreground: 214 12% 65%; /* #9ca3af */
+    --border: 217 22% 36%; /* #4b5563 */
+    --input: 217 22% 36%; /* #4b5563 */
+    --ring: 214 94% 69%; /* #3b82f6 */
+    --destructive: 0 83% 62%; /* #ef4444 */
+    --destructive-foreground: 0 0% 100%; /* #ffffff */
+    --success: 134 76% 53%; /* #22c55e */
+    --warning: 36 94% 47%; /* #f59e0b */
+    --chart-1: 214 94% 69%; /* #3b82f6 */
+    --chart-2: 134 76% 53%; /* #22c55e */
+    --chart-3: 36 94% 47%; /* #f59e0b */
+    --chart-4: 214 12% 65%; /* #9ca3af */
+    --chart-5: 0 83% 62%; /* #ef4444 */
   }
 }
 
@@ -68,5 +90,12 @@ body {
 
   html {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Custom Glow Shadow for Interactive Elements */
+@layer utilities {
+  .shadow-glow {
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1), 0 0 24px hsl(var(--primary)/0.3);
   }
 }

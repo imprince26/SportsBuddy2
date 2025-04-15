@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import * as api from '@/utils/api';
+import api from '@/utils/api';
 
 const AuthContext = createContext();
 
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/login', credentials);
       setUser(response.data.user);
       localStorage.setItem('token', response.data.token);
-      await fetchNotifications();
+      // await fetchNotifications();
       toast({
         title: 'Success',
         description: 'Login successful',
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         title: 'Error',
         description: error.response?.data?.message || 'Login failed',
       });
-      throw error;
+     console.error(error);
     } finally {
       setLoading(false);
     }

@@ -45,26 +45,26 @@ function App() {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Layout />}>
-      
-      <Route path="" element={<Home />} />
-      <Route path="login" element={<Login />} />
-      <Route path="register" element={<Register />} />
-      <Route path="events" element={<Events />} />
-      <Route path="events/:id" element={<EventDetails />} />
-      <Route path="profile/:userId" element={<PublicProfile />} />
-      {/* <Route path="/teams/:id" element={<TeamPage />} /> */}
+
+        <Route path="" element={<Home />} />
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
+        <Route path="events" element={<Events />} />
+        <Route path="events/:id" element={<EventDetails />} />
+        <Route path="profile/:userId" element={<PublicProfile />} />
+        {/* <Route path="/teams/:id" element={<TeamPage />} /> */}
 
 
-      {/* Protected Routes */}
-      <Route
-        path="dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
+        {/* Protected Routes */}
+        <Route
+          path="dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
-        </Route>
+      </Route>
       <Route
         path="/events/create"
         element={

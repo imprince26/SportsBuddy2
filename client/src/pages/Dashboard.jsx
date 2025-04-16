@@ -1,437 +1,287 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeProvider';
-import { showToast } from '@/components/CustomToast';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  Calendar,
-  Users,
-  Trophy,
-  ChevronRight,
-  Filter,
-  Bell,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import api from '@/utils/api';
+"use client"
+
+import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
+import { useEvents } from "../context/EventContext"
+import { format } from "date-fns"
+import { Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell } from "lucide-react"
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [sportFilter, setSportFilter] = useState('all');
-  const [events, setEvents] = useState([]);
-  const [teams, setTeams] = useState([]);
-  const [activity, setActivity] = useState([]);
+  const { user } = useAuth()
+  const { getUserEvents, loading } = useEvents()
+  const [userEvents, setUserEvents] = useState({
+    participating: [],
+    created: [],
+    past: [],
+  })
+  const [stats, setStats] = useState({
+    totalEvents: 0,
+    upcomingEvents: 0,
+    completedEvents: 0,
+    achievements: 0,
+  })
 
-  // useEffect(() => {
-  //   if (!user) {
-  //     navigate('/login');
-  //     return;
-  //   }
+  useEffect(() => {
+    const fetchUserEvents = async () => {
+      try {
+        const events = await getUserEvents()
+  
+        // Separate events into categories
+        const now = new Date()
+        const participating = []
+        const created = []
+        const past = []
 
-  //   const fetchData = async () => {
-  //     setIsLoading(true);
-  //     try {
-  //       // Mock API calls (replace with actual endpoints)
-  //       const eventsRes = await api.get('/user/events');
-  //       const teamsRes = await api.get('/user/teams');
-  //       const activityRes = await api.get('/user/activity');
-  //       setEvents(eventsRes.data || mockEvents);
-  //       setTeams(teamsRes.data || mockTeams);
-  //       setActivity(activityRes.data || mockActivity);
-  //     } catch (error) {
-  //       showToast.error('Failed to load dashboard data');
-  //       console.error(error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
+        events.forEach((event) => {
+          const eventDate = new Date(event.date)
 
-  //   fetchData();
-  // }, [user, navigate]);
+          if (eventDate < now) {
+            past.push(event)
+          } else if (event.createdBy === user.id) {
+            created.push(event)
+          } else {
+            participating.push(event)
+          }
+        })
 
-  // Mock data for demo
-  const mockEvents = [
-    {
-      id: 1,
-      title: 'City Basketball Tournament',
-      sport: 'Basketball',
-      date: '2025-05-10',
-      location: 'Downtown Arena',
-      image: 'https://images.unsplash.com/photo-1515524738708-327f6b0037a7',
-      joined: true,
-    },
-    {
-      id: 2,
-      title: 'Beach Volleyball Open',
-      sport: 'Volleyball',
-      date: '2025-06-15',
-      location: 'Coastal Beach',
-      image: 'https://images.unsplash.com/photo-1595437178050-7c1577ad1570',
-      joined: false,
-    },
-  ];
+        setUserEvents({
+          participating,
+          created,
+          past,
+        })
 
-  const mockTeams = [
-    { id: 1, name: 'Thunder Hoops', sport: 'Basketball', members: 12 },
-    { id: 2, name: 'Beach Spikers', sport: 'Volleyball', members: 8 },
-  ];
-
-  const mockActivity = [
-    { id: 1, message: 'You joined City Basketball Tournament', date: '2025-04-10' },
-    { id: 2, message: 'Invited to Thunder Hoops team', date: '2025-04-09' },
-  ];
-
-  const filteredEvents =
-    sportFilter === 'all'
-      ? events
-      : events.filter((event) => event.sport === sportFilter);
-
-  const handleJoinEvent = async (eventId) => {
-    try {
-      await api.post(`/events/${eventId}/join`);
-      setEvents(events.map((e) =>
-        e.id === eventId ? { ...e, joined: true } : e
-      ));
-      showToast.success('Joined event successfully!');
-    } catch (error) {
-      showToast.error('Failed to join event');
-      console.error(error);
+        // Calculate stats
+        setStats({
+          totalEvents: events.length,
+          upcomingEvents: participating.length + created.length,
+          completedEvents: past.length,
+          achievements: user.achievements?.length || 0,
+        })
+      } catch (error) {
+        console.error("Error fetching user events:", error)
+      }
     }
-  };
+
+    if (user) {
+      fetchUserEvents()
+    }
+  }, [user, getUserEvents])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-light dark:border-primary-dark"></div>
+      </div>
+    )
+  }
 
   return (
-    <div
-      className={cn(
-        'min-h-screen flex flex-col',
-        'bg-background-light dark:bg-background-dark'
-      )}
-    >
-      <main className="flex-grow container mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          {/* Welcome Banner */}
-          <Card
-            className={cn(
-              'mb-8 border',
-              'bg-card-light/90 border-border-light dark:bg-card-dark/90 dark:border-border-dark'
-            )}
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground-light dark:text-foreground-dark mb-2">
+            Welcome, {user?.name || "Athlete"}!
+          </h1>
+          <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
+            Manage your sports events and activities
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0 flex gap-3">
+          <Link
+            to="/notifications"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
           >
-            <CardContent className="p-6 text-center">
-              <motion.h1
-                className={cn(
-                  'text-3xl md:text-4xl font-bold mb-4',
-                  'bg-clip-text text-transparent bg-gradient-to-r from-primary-light to-secondary-light dark:from-primary-dark dark:to-secondary-dark'
-                )}
-              >
-                Welcome, {user?.name}!
-              </motion.h1>
-              <p
-                className={cn(
-                  'text-lg mb-6',
-                  'text-muted-foreground-light dark:text-muted-foreground-dark'
-                )}
-              >
-                Ready to hit the court? Join events, manage teams, or check your activity.
-              </p>
-              <div className="flex justify-center gap-4">
-                <Button
-                  asChild
-                  className={cn(
-                    'bg-primary-light dark:bg-primary-dark hover:bg-primary-light/80 dark:hover:bg-primary-dark/80',
-                    'text-foreground-dark dark:text-foreground-light'
-                  )}
-                >
-                  <Link to="/events">Join an Event</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className={cn(
-                    'border-border-light dark:border-border-dark hover:bg-muted-light dark:hover:bg-muted-dark',
-                    'text-foreground-light dark:text-foreground-dark'
-                  )}
-                >
-                  <Link to="/teams/create">Create a Team</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            <Bell size={18} />
+            <span>Notifications</span>
+            {user?.notifications?.filter((n) => !n.read).length > 0 && (
+              <span className="w-5 h-5 rounded-full bg-destructive-light dark:bg-destructive-dark text-white text-xs flex items-center justify-center">
+                {user.notifications.filter((n) => !n.read).length}
+              </span>
+            )}
+          </Link>
+          <Link
+            to="/events/create"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
+          >
+            <Plus size={18} />
+            <span>Create Event</span>
+          </Link>
+        </div>
+      </div>
 
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Events Section */}
-            <div className="lg:col-span-2">
-              <Card
-                className={cn(
-                  'border',
-                  'bg-card-light/90 border-border-light dark:bg-card-dark/90 dark:border-border-dark'
-                )}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-foreground-light dark:text-foreground-dark">Total Events</h3>
+            <Calendar className="w-8 h-8 text-primary-light dark:text-primary-dark" />
+          </div>
+          <p className="text-3xl font-bold text-foreground-light dark:text-foreground-dark">{stats.totalEvents}</p>
+          <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark mt-1">
+            Events you've participated in or created
+          </p>
+        </div>
+        <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-foreground-light dark:text-foreground-dark">Upcoming</h3>
+            <Users className="w-8 h-8 text-primary-light dark:text-primary-dark" />
+          </div>
+          <p className="text-3xl font-bold text-foreground-light dark:text-foreground-dark">{stats.upcomingEvents}</p>
+          <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark mt-1">
+            Events scheduled in the future
+          </p>
+        </div>
+        <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-foreground-light dark:text-foreground-dark">Completed</h3>
+            <Activity className="w-8 h-8 text-primary-light dark:text-primary-dark" />
+          </div>
+          <p className="text-3xl font-bold text-foreground-light dark:text-foreground-dark">{stats.completedEvents}</p>
+          <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark mt-1">
+            Events you've participated in
+          </p>
+        </div>
+        <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-foreground-light dark:text-foreground-dark">Achievements</h3>
+            <Award className="w-8 h-8 text-primary-light dark:text-primary-dark" />
+          </div>
+          <p className="text-3xl font-bold text-foreground-light dark:text-foreground-dark">{stats.achievements}</p>
+          <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark mt-1">
+            Achievements earned
+          </p>
+        </div>
+      </div>
+
+      {/* Upcoming Events */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">Upcoming Events</h2>
+          <Link to="/events" className="text-primary-light dark:text-primary-dark hover:underline flex items-center">
+            View all <ChevronRight size={16} className="ml-1" />
+          </Link>
+        </div>
+
+        {userEvents.participating.length === 0 && userEvents.created.length === 0 ? (
+          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6 text-center">
+            <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-4">
+              You don't have any upcoming events
+            </p>
+            <Link
+              to="/events"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
+            >
+              <Calendar size={18} />
+              <span>Browse Events</span>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...userEvents.participating, ...userEvents.created].slice(0, 6).map((event) => (
+              <Link
+                to={`/events/${event._id}`}
+                key={event._id}
+                className="group bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
               >
-                <CardHeader>
-                  <CardTitle
-                    className={cn(
-                      'text-2xl',
-                      'text-foreground-light dark:text-foreground-dark'
-                    )}
-                  >
-                    Upcoming Events
-                  </CardTitle>
-                  <div className="flex gap-2">
-                    {['all', 'Basketball', 'Volleyball'].map((sport) => (
-                      <Button
-                        key={sport}
-                        variant={sportFilter === sport ? 'default' : 'outline'}
-                        onClick={() => setSportFilter(sport)}
-                        className={cn(
-                          sportFilter === sport
-                            ? 'bg-primary-light dark:bg-primary-dark text-foreground-dark dark:text-foreground-light'
-                            : 'border-border-light dark:border-border-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark'
-                        )}
-                      >
-                        <Filter className="h-4 w-4 mr-2" />
-                        {sport.charAt(0).toUpperCase() + sport.slice(1)}
-                      </Button>
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <p
-                      className={cn(
-                        'text-center',
-                        'text-muted-foreground-light dark:text-muted-foreground-dark'
-                      )}
-                    >
-                      Loading events...
-                    </p>
-                  ) : filteredEvents.length === 0 ? (
-                    <p
-                      className={cn(
-                        'text-center',
-                        'text-muted-foreground-light dark:text-muted-foreground-dark'
-                      )}
-                    >
-                      No events found.
-                    </p>
+                <div className="relative h-40 overflow-hidden">
+                  {event.images && event.images.length > 0 ? (
+                    <img
+                      src={event.images[0].url || "/placeholder.svg"}
+                      alt={event.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {filteredEvents.map((event) => (
-                        <motion.div
-                          key={event.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          <Card
-                            className={cn(
-                              'overflow-hidden',
-                              'bg-card-light dark:bg-card-dark'
-                            )}
-                          >
-                            <img
-                              src={event.image}
-                              alt={event.title}
-                              className="w-full h-40 object-cover"
-                              loading="lazy"
-                            />
-                            <CardContent className="p-4">
-                              <h3
-                                className={cn(
-                                  'text-lg font-semibold',
-                                  'text-foreground-light dark:text-foreground-dark'
-                                )}
-                              >
-                                {event.title}
-                              </h3>
-                              <p
-                                className={cn(
-                                  'text-sm',
-                                  'text-muted-foreground-light dark:text-muted-foreground-dark'
-                                )}
-                              >
-                                {event.date} | {event.location}
-                              </p>
-                              <Button
-                                className={cn(
-                                  'mt-4 w-full',
-                                  event.joined
-                                    ? 'bg-success-light dark:bg-success-dark hover:bg-success-light/80 dark:hover:bg-success-dark/80'
-                                    : 'bg-primary-light dark:bg-primary-dark hover:bg-primary-light/80 dark:hover:bg-primary-dark/80',
-                                  'text-foreground-dark dark:text-foreground-light'
-                                )}
-                                onClick={() => handleJoinEvent(event.id)}
-                                disabled={event.joined}
-                              >
-                                {event.joined ? 'Joined' : 'Join Event'}
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
+                    <div className="w-full h-full bg-muted-light dark:bg-muted-dark flex items-center justify-center">
+                      <span className="text-muted-foreground-light dark:text-muted-foreground-dark">No image</span>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Sidebar: Teams & Activity */}
-            <div className="space-y-8">
-              {/* Teams */}
-              <Card
-                className={cn(
-                  'border',
-                  'bg-card-light/90 border-border-light dark:bg-card-dark/90 dark:border-border-dark'
-                )}
-              >
-                <CardHeader>
-                  <CardTitle
-                    className={cn(
-                      'text-2xl',
-                      'text-foreground-light dark:text-foreground-dark'
-                    )}
-                  >
-                    Your Teams
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <p
-                      className={cn(
-                        'text-center',
-                        'text-muted-foreground-light dark:text-muted-foreground-dark'
-                      )}
-                    >
-                      Loading teams...
-                    </p>
-                  ) : teams.length === 0 ? (
-                    <p
-                      className={cn(
-                        'text-center',
-                        'text-muted-foreground-light dark:text-muted-foreground-dark'
-                      )}
-                    >
-                      No teams yet.
-                    </p>
-                  ) : (
-                    <ul className="space-y-4">
-                      {teams.map((team) => (
-                        <li key={team.id}>
-                          <Link
-                            to={`/teams/${team.id}`}
-                            className={cn(
-                              'flex items-center justify-between p-2 rounded-md',
-                              'hover:bg-muted-light dark:hover:bg-muted-dark'
-                            )}
-                          >
-                            <div>
-                              <p
-                                className={cn(
-                                  'font-semibold',
-                                  'text-foreground-light dark:text-foreground-dark'
-                                )}
-                              >
-                                {team.name}
-                              </p>
-                              <p
-                                className={cn(
-                                  'text-sm',
-                                  'text-muted-foreground-light dark:text-muted-foreground-dark'
-                                )}
-                              >
-                                {team.sport} | {team.members} members
-                              </p>
-                            </div>
-                            <ChevronRight className="h-5 w-5" />
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+                  {event.createdBy === user.id && (
+                    <div className="absolute top-2 left-2">
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary-light/90 dark:bg-primary-dark/90 text-white">
+                        Your Event
+                      </span>
+                    </div>
                   )}
-                </CardContent>
-              </Card>
-
-              {/* Activity Feed */}
-              <Card
-                className={cn(
-                  'border',
-                  'bg-card-light/90 border-border-light dark:bg-card-dark/90 dark:border-border-dark'
-                )}
-              >
-                <CardHeader>
-                  <CardTitle
-                    className={cn(
-                      'text-2xl',
-                      'text-foreground-light dark:text-foreground-dark'
-                    )}
-                  >
-                    Recent Activity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <p
-                      className={cn(
-                        'text-center',
-                        'text-muted-foreground-light dark:text-muted-foreground-dark'
-                      )}
-                    >
-                      Loading activity...
-                    </p>
-                  ) : activity.length === 0 ? (
-                    <p
-                      className={cn(
-                        'text-center',
-                        'text-muted-foreground-light dark:text-muted-foreground-dark'
-                      )}
-                    >
-                      No recent activity.
-                    </p>
-                  ) : (
-                    <ul className="space-y-4">
-                      {activity.map((item) => (
-                        <li
-                          key={item.id}
-                          className={cn(
-                            'flex items-center gap-2',
-                            'text-foreground-light dark:text-foreground-dark'
-                          )}
-                        >
-                          <Bell className="h-5 w-5 text-accent-light dark:text-accent-dark" />
-                          <div>
-                            <p>{item.message}</p>
-                            <p
-                              className={cn(
-                                'text-sm',
-                                'text-muted-foreground-light dark:text-muted-foreground-dark'
-                              )}
-                            >
-                              {item.date}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark mb-2 truncate">
+                    {event.name}
+                  </h3>
+                  <div className="flex items-center text-sm text-muted-foreground-light dark:text-muted-foreground-dark mb-2">
+                    <Calendar size={14} className="mr-1" />
+                    <span>{format(new Date(event.date), "MMM dd, yyyy")}</span>
+                    <span className="mx-2">•</span>
+                    <Clock size={14} className="mr-1" />
+                    <span>{event.time}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                    <MapPin size={14} className="mr-1" />
+                    <span className="truncate">{event.location.city}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-        </motion.div>
-      </main>
-    </div>
-  );
-};
+        )}
+      </div>
 
-export default Dashboard;
+      {/* Past Events */}
+      {userEvents.past.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">Past Events</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {userEvents.past.slice(0, 3).map((event) => (
+              <Link
+                to={`/events/${event._id}`}
+                key={event._id}
+                className="group bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              >
+                <div className="relative h-40 overflow-hidden">
+                  {event.images && event.images.length > 0 ? (
+                    <img
+                      src={event.images[0].url || "/placeholder.svg"}
+                      alt={event.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-80"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-muted-light dark:bg-muted-dark flex items-center justify-center">
+                      <span className="text-muted-foreground-light dark:text-muted-foreground-dark">No image</span>
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2">
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-muted-light/90 dark:bg-muted-dark/90 text-foreground-light dark:text-foreground-dark">
+                      Completed
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark mb-2 truncate">
+                    {event.name}
+                  </h3>
+                  <div className="flex items-center text-sm text-muted-foreground-light dark:text-muted-foreground-dark mb-2">
+                    <Calendar size={14} className="mr-1" />
+                    <span>{format(new Date(event.date), "MMM dd, yyyy")}</span>
+                  </div>
+                  {event.ratings && event.ratings.length > 0 && (
+                    <div className="flex items-center mt-2 text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                      <Star size={14} className="mr-1 text-accent-light dark:text-accent-dark" />
+                      <span>
+                        {(event.ratings.reduce((acc, curr) => acc + curr.rating, 0) / event.ratings.length).toFixed(1)}
+                      </span>
+                      <span className="ml-1">({event.ratings.length})</span>
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default Dashboard

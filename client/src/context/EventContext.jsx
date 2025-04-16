@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useSocket } from './SocketContext';
-import * as api from '@/utils/api';
+import api from '@/utils/api';
 
 const EventContext = createContext();
 
@@ -84,10 +84,19 @@ export const EventProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await api.get('/events', { params: filters });
-      console.log(response.data.data);
-      setEvents(response.data.data);
+  
+      console.log('✅ API Success:', response.data);
+  
+      if (response.data.success && response.data.data) {
+        setEvents(response.data.data);
+      } else {
+        console.warn('⚠️ Invalid response:', response.data);
+        setEvents([]);
+      }
+  
       setError(null);
     } catch (err) {
+      console.error('❌ API Error:', err);
       setError(err.response?.data?.message || 'Error fetching events');
       toast({
         variant: 'destructive',
@@ -98,7 +107,9 @@ export const EventProvider = ({ children }) => {
       setLoading(false);
     }
   }, [toast]);
+  
 
+  
   const createEvent = async (eventData, images) => {
     try {
       setLoading(true);
@@ -324,7 +335,7 @@ export const EventProvider = ({ children }) => {
   const getUserEvents = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/events/user');
+      const response = await api.get('/events/user/events');
       return response.data.data;
     } catch (err) {
       toast({
@@ -332,7 +343,6 @@ export const EventProvider = ({ children }) => {
         title: 'Error',
         description: err.response?.data?.message || 'Failed to fetch user events',
       });
-      throw err;
     } finally {
       setLoading(false);
     }

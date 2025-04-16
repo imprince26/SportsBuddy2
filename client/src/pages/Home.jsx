@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeProvider';
-import CallToAction from '@/components/home/CallToAction';
-// import Header from '@/components/layout/Header';
-// import Footer from '@/components/layout/Footer';
 import {
   Card,
   CardContent,
@@ -18,19 +14,15 @@ import {
   Users,
   Calendar,
   ChevronRight,
-  Filter,
   Star,
-  ArrowRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import EventsSection from '@/components/home/EventsSection';
+import CallToAction from '@/components/home/CallToAction';
 
 
 const Home = () => {
   const { user } = useAuth();
-  const { theme } = useTheme();
-  const navigate = useNavigate();
-  const [sportFilter, setSportFilter] = useState('all');
 
   useEffect(() => {
     if (user) {
@@ -38,32 +30,7 @@ const Home = () => {
     }
   }, [user]);
 
-  const events = [
-    {
-      id: 1,
-      title: 'City Basketball Tournament',
-      sport: 'Basketball',
-      date: '2025-05-10',
-      location: 'Downtown Arena',
-      image: 'https://images.unsplash.com/photo-1515524738708-327f6b0037a7',
-    },
-    {
-      id: 2,
-      title: 'Beach Volleyball Open',
-      sport: 'Volleyball',
-      date: '2025-06-15',
-      location: 'Coastal Beach',
-      image: 'https://images.unsplash.com/photo-1595437178050-7c1577ad1570',
-    },
-    {
-      id: 3,
-      title: 'Marathon Run',
-      sport: 'Running',
-      date: '2025-07-20',
-      location: 'City Park',
-      image: 'https://images.unsplash.com/photo-1517433367423-1d9659072050',
-    },
-  ];
+  
 
   const testimonials = [
     {
@@ -83,10 +50,6 @@ const Home = () => {
     },
   ];
 
-  const filteredEvents =
-    sportFilter === 'all'
-      ? events
-      : events.filter((event) => event.sport === sportFilter);
 
   return (
     <div

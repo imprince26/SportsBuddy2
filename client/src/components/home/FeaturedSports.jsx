@@ -1,71 +1,102 @@
-import { motion } from "framer-motion";
-
-const featuredSports = [
-  {
-    name: "Cricket",
-    icon: "🏏",
-    description: "Find Cricket Events and local Matches ",
-    color: "bg-blue-500/20",
-  },
-  {
-    name: "Basketball",
-    icon: "🏀",
-    description: "Find pickup games and communities",
-    color: "bg-orange-500/20",
-  },
-  {
-    name: "Running",
-    icon: "🏃",
-    description: "Join running groups and track progress",
-    color: "bg-green-500/20",
-  },
-  {
-    name: " Football",
-    icon: "⚽",
-    description: "Connect with local football enthusiasts",
-    color: "bg-red-500/20",
-  },
-];
+import React from 'react'
+import { motion } from 'framer-motion'
+import { Trophy, Users, Calendar } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+import { cn } from '@/lib/utils'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const FeaturedSports = () => {
+  const { user } = useAuth()
   return (
-    <motion.section
-      className="container mx-auto px-4 py-16"
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true }}
-    >
-      <h2 className="text-3xl font-bold text-center text-[#E0F2F1] mb-12">
-        Featured Sports
-      </h2>
-
-      <div className="grid md:grid-cols-4 gap-6">
-        {featuredSports.map((sport) => (
+    <section
+    className={cn(
+      'py-16',
+      'bg-muted-light dark:bg-muted-dark'
+    )}
+  >
+    <div className="container mx-auto px-6">
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className={cn(
+          'text-3xl md:text-4xl font-bold text-center mb-12',
+          'text-foreground-light dark:text-foreground-dark'
+        )}
+      >
+        Why SportsBuddy?
+      </motion.h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[
+          {
+            icon: Trophy,
+            title: 'Compete & Win',
+            desc: user
+              ? 'Join tournaments and showcase your skills.'
+              : 'Participate in exciting competitions and earn rewards.',
+          },
+          {
+            icon: Users,
+            title: 'Build Teams',
+            desc: user
+              ? 'Connect with teammates for your next game.'
+              : 'Find players to form unbeatable teams.',
+          },
+          {
+            icon: Calendar,
+            title: 'Plan Events',
+            desc: user
+              ? 'Organize or join local sports events easily.'
+              : 'Discover and schedule sports events in your area.',
+          },
+        ].map((feature, index) => (
           <motion.div
-            key={sport.name}
-            className={`${sport.color} rounded-xl p-6 text-center 
-            hover:scale-105 transition-all duration-300 
-            transform shadow-lg`}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            whileHover={{
-              scale: 1.05,
-              rotate: [0, 2, -2, 0],
-              transition: { duration: 0.3 },
-            }}
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.2 }}
             viewport={{ once: true }}
           >
-            <div className="text-6xl mb-4 animate-bounce">{sport.icon}</div>
-            <h3 className="text-xl font-semibold text-[#4CAF50] mb-2">
-              {sport.name}
-            </h3>
-            <p className="text-[#81C784]">{sport.description}</p>
+            <Card
+              className={cn(
+                'border',
+                'bg-card-light/90 border-border-light dark:bg-card-dark/90 dark:border-border-dark hover:shadow-xl transition-shadow'
+              )}
+            >
+              <CardHeader>
+                <feature.icon
+                  className={cn(
+                    'h-12 w-12 mx-auto mb-4',
+                    'text-accent-light dark:text-accent-dark'
+                  )}
+                />
+                <CardTitle
+                  className={cn(
+                    'text-xl text-center',
+                    'text-foreground-light dark:text-foreground-dark'
+                  )}
+                >
+                  {feature.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p
+                  className={cn(
+                    'text-center',
+                    'text-muted-foreground-light dark:text-muted-foreground-dark'
+                  )}
+                >
+                  {feature.desc}
+                </p>
+              </CardContent>
+            </Card>
           </motion.div>
         ))}
       </div>
-    </motion.section>
-  );
-};
+    </div>
+  </section>
+  )
+}
 
-export default FeaturedSports;
+export default FeaturedSports

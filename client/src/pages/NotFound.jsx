@@ -1,129 +1,69 @@
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { AlertTriangleIcon, HomeIcon, RefreshCwIcon } from "lucide-react";
+"use client"
+
+import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
+import { Home, Search, Calendar, ArrowLeft } from 'lucide-react'
 
 const NotFound = () => {
-  const navigate = useNavigate();
-
-  const BackgroundElements = () => (
-    <>
-      {[...Array(10)].map((_, index) => (
-        <motion.div
-          key={index}
-          className="absolute bg-[#4CAF50]/10 rounded-full"
-          style={{
-            width: `${Math.random() * 100 + 50}px`,
-            height: `${Math.random() * 100 + 50}px`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 360],
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{
-            duration: Math.random() * 5 + 3,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-        />
-      ))}
-    </>
-  );
-
-  const illustrationVariants = {
-    initial: {
-      opacity: 0,
-      scale: 0.8,
-      rotate: -10,
-    },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      rotate: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 10,
-      },
-    },
-    hover: {
-      scale: 1.05,
-      rotate: 5,
-      transition: { duration: 0.3 },
-    },
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A1A1A] via-[#0F2C2C] to-[#0A1A1A] text-[#E0F2F1] relative overflow-hidden">
-      {/* Background Animated Elements */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <BackgroundElements />
-      </div>
-
-
-      {/* Main Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="container mx-auto px-4 pt-24 pb-16 relative z-10 min-h-[calc(100vh-200px)] flex items-center justify-center"
-      >
-        <div className="text-center max-w-2xl">
-          <motion.div
-            variants={illustrationVariants}
-            initial="initial"
-            animate="animate"
-            whileHover="hover"
-            className="flex justify-center mb-8"
-          >
-            <div className="relative">
-              <AlertTriangleIcon
-                className="text-[#4CAF50] mx-auto"
-                size={150}
-                strokeWidth={1.5}
-              />
-              <div className="absolute inset-0 bg-[#4CAF50]/20 rounded-full animate-ping"></div>
+    <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark p-4">
+      <div className="max-w-md w-full text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="relative w-32 h-32 mx-auto mb-6">
+            <motion.div
+              className="absolute inset-0 border-4 border-primary-light dark:border-primary-dark rounded-full"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            />
+            <motion.div
+              className="absolute inset-0 border-4 border-t-transparent border-primary-light dark:border-primary-dark rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center text-6xl">
+              404
             </div>
-          </motion.div>
+          </div>
 
-          {/* Error Message */}
-          <h1 className="text-6xl font-bold text-[#4CAF50] mb-6 tracking-tight">
-            404
+          <h1 className="text-3xl font-bold text-foreground-light dark:text-foreground-dark mb-4">
+            Page Not Found
           </h1>
-          <h2 className="text-3xl font-semibold text-[#81C784] mb-4">
-            Oops! Page Not Found
-          </h2>
-          <p className="text-xl text-[#B2DFDB] mb-8 px-4">
-            The page you are looking for seems to have wandered off into the
-            sporting wilderness. Let's get you back on track!
+          <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-8">
+            Oops! The page you're looking for doesn't exist or has been moved.
           </p>
 
-          {/* Action Buttons */}
-          <div className="flex justify-center space-x-4">
-            <Button
-              onClick={() => navigate("/")}
-              className="bg-[#4CAF50] hover:bg-[#388E3C] group"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link
+              to="/"
+              className="flex items-center justify-center gap-2 p-3 bg-primary-light dark:bg-primary-dark text-white rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
             >
-              <HomeIcon className="mr-2 group-hover:animate-bounce" />
-              Return Home
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.reload()}
-              className="border-[#4CAF50] bg-transparent text-[#4CAF50]  hover:bg-[#4CAF50]/10 hover:text-[#4CAF50] group"
+              <Home size={18} />
+              <span>Go Home</span>
+            </Link>
+            <Link
+              to="/events"
+              className="flex items-center justify-center gap-2 p-3 bg-card-light dark:bg-card-dark text-foreground-light dark:text-foreground-dark rounded-md border border-border-light dark:border-border-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
             >
-              <RefreshCwIcon className="mr-2 group-hover:animate-spin" />
-              Reload Page
-            </Button>
+              <Calendar size={18} />
+              <span>Browse Events</span>
+            </Link>
+            <button
+              onClick={() => window.history.back()}
+              className="flex items-center justify-center gap-2 p-3 bg-card-light dark:bg-card-dark text-foreground-light dark:text-foreground-dark rounded-md border border-border-light dark:border-border-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
+            >
+              <ArrowLeft size={18} />
+              <span>Go Back</span>
+            </button>
           </div>
-        </div>
-      </motion.div>
-
+        </motion.div>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default NotFound;
+export default NotFound

@@ -35,11 +35,11 @@ const Events = () => {
   // Apply filters to events
   const filterEvents = useCallback(() => {
     if (loading || !events.length) return
-    
+
     setIsSearching(true)
-    
+
     let filtered = [...events]
-    
+
     // Apply search term filter
     if (searchTerm) {
       filtered = filtered.filter(
@@ -49,22 +49,22 @@ const Events = () => {
           event.location.city.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
-    
+
     // Apply category filter
     if (filters.category) {
       filtered = filtered.filter((event) => event.category === filters.category)
     }
-    
+
     // Apply difficulty filter
     if (filters.difficulty) {
       filtered = filtered.filter((event) => event.difficulty === filters.difficulty)
     }
-    
+
     // Apply status filter
     if (filters.status) {
       filtered = filtered.filter((event) => event.status === filters.status)
     }
-    
+
     // Apply date range filter
     if (filters.dateRange !== "all") {
       const now = new Date()
@@ -75,10 +75,10 @@ const Events = () => {
       nextWeek.setDate(nextWeek.getDate() + 7)
       const nextMonth = new Date(today)
       nextMonth.setMonth(nextMonth.getMonth() + 1)
-      
+
       filtered = filtered.filter((event) => {
         const eventDate = new Date(event.date)
-        
+
         switch (filters.dateRange) {
           case "today":
             return eventDate >= today && eventDate < tomorrow
@@ -91,7 +91,7 @@ const Events = () => {
         }
       })
     }
-    
+
     // Apply sorting
     if (filters.sortBy) {
       switch (filters.sortBy) {
@@ -106,11 +106,11 @@ const Events = () => {
           break
         case "rating":
           filtered.sort((a, b) => {
-            const aRating = a.ratings?.length 
-              ? a.ratings.reduce((acc, curr) => acc + curr.rating, 0) / a.ratings.length 
+            const aRating = a.ratings?.length
+              ? a.ratings.reduce((acc, curr) => acc + curr.rating, 0) / a.ratings.length
               : 0
-            const bRating = b.ratings?.length 
-              ? b.ratings.reduce((acc, curr) => acc + curr.rating, 0) / b.ratings.length 
+            const bRating = b.ratings?.length
+              ? b.ratings.reduce((acc, curr) => acc + curr.rating, 0) / b.ratings.length
               : 0
             return bRating - aRating
           })
@@ -119,7 +119,7 @@ const Events = () => {
           break
       }
     }
-    
+
     setFilteredEvents(filtered)
     setIsSearching(false)
   }, [events, searchTerm, filters, loading])
@@ -192,7 +192,7 @@ const Events = () => {
               <SlidersHorizontal size={18} />
               Filter Options
             </h3>
-            <button 
+            <button
               onClick={resetFilters}
               className="text-sm text-primary-light dark:text-primary-dark hover:underline flex items-center gap-1"
             >

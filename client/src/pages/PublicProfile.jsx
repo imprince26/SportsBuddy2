@@ -183,31 +183,28 @@ const PublicProfile = () => {
           <div className="flex overflow-x-auto">
             <button
               onClick={() => setActiveTab("achievements")}
-              className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "achievements"
+              className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "achievements"
                   ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
                   : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-              }`}
+                }`}
             >
               Achievements
             </button>
             <button
               onClick={() => setActiveTab("sports")}
-              className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "sports"
+              className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "sports"
                   ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
                   : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-              }`}
+                }`}
             >
               Sports Preferences
             </button>
             <button
               onClick={() => setActiveTab("events")}
-              className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "events"
+              className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "events"
                   ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
                   : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-              }`}
+                }`}
             >
               Recent Events
             </button>

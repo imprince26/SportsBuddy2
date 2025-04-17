@@ -30,7 +30,7 @@ const EventDetails = () => {
       try {
         const eventData = await getEventById(id)
         setEvent(eventData)
-        
+
         // Check if event is in favorites (would be implemented with local storage or user data)
         const favorites = JSON.parse(localStorage.getItem("favorites") || "[]")
         setIsFavorite(favorites.includes(id))
@@ -121,7 +121,7 @@ const EventDetails = () => {
 
   const toggleFavorite = () => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]")
-    
+
     if (isFavorite) {
       const updatedFavorites = favorites.filter(eventId => eventId !== id)
       localStorage.setItem("favorites", JSON.stringify(updatedFavorites))
@@ -129,14 +129,14 @@ const EventDetails = () => {
       favorites.push(id)
       localStorage.setItem("favorites", JSON.stringify(favorites))
     }
-    
+
     setIsFavorite(!isFavorite)
   }
 
   const handleShare = async (platform) => {
     const eventUrl = window.location.href
     const eventTitle = event?.name || "Sports Event"
-    
+
     switch (platform) {
       case "copy":
         try {
@@ -158,7 +158,7 @@ const EventDetails = () => {
       default:
         break
     }
-    
+
     setShowShareOptions(false)
   }
 
@@ -174,7 +174,7 @@ const EventDetails = () => {
 
   const handleImageNavigation = (direction) => {
     if (!event?.images?.length) return
-    
+
     if (direction === "next") {
       setActiveImageIndex((prev) => (prev === event.images.length - 1 ? 0 : prev + 1))
     } else {
@@ -221,17 +221,17 @@ const EventDetails = () => {
                 <span className="text-muted-foreground-light dark:text-muted-foreground-dark">No image</span>
               </div>
             )}
-            
+
             {event.images && event.images.length > 1 && (
               <>
-                <button 
+                <button
                   onClick={() => handleImageNavigation("prev")}
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
                   aria-label="Previous image"
                 >
                   <ArrowLeft size={20} />
                 </button>
-                <button 
+                <button
                   onClick={() => handleImageNavigation("next")}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
                   aria-label="Next image"
@@ -257,7 +257,7 @@ const EventDetails = () => {
 
           <div className="absolute top-4 right-4 flex space-x-2">
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowShareOptions(!showShareOptions)}
                 className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
               >
@@ -296,13 +296,12 @@ const EventDetails = () => {
                 </div>
               )}
             </div>
-            <button 
+            <button
               onClick={toggleFavorite}
-              className={`p-2 backdrop-blur-sm rounded-full text-white transition-colors ${
-                isFavorite 
-                  ? "bg-red-500/80 hover:bg-red-500/90" 
+              className={`p-2 backdrop-blur-sm rounded-full text-white transition-colors ${isFavorite
+                  ? "bg-red-500/80 hover:bg-red-500/90"
                   : "bg-white/20 hover:bg-white/30"
-              }`}
+                }`}
             >
               <Heart size={20} className={isFavorite ? "fill-current" : ""} />
             </button>
@@ -350,10 +349,9 @@ const EventDetails = () => {
                   disabled={loadingAction || event.participants.length >= event.maxParticipants}
                   className={`
                     flex items-center gap-2 px-4 py-2 rounded-md 
-                    ${
-                      event.participants.length >= event.maxParticipants
-                        ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                        : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
+                    ${event.participants.length >= event.maxParticipants
+                      ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
+                      : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
                     }
                     transition-colors
                   `}
@@ -422,54 +420,49 @@ const EventDetails = () => {
             <div className="flex overflow-x-auto">
               <button
                 onClick={() => setActiveTab("details")}
-                className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === "details"
+                className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "details"
                     ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
                     : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-                }`}
+                  }`}
               >
                 Details
               </button>
               <button
                 onClick={() => setActiveTab("participants")}
-                className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === "participants"
+                className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "participants"
                     ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
                     : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-                }`}
+                  }`}
               >
                 Participants ({event.participants.length})
               </button>
               {event.teams && event.teams.length > 0 && (
                 <button
                   onClick={() => setActiveTab("teams")}
-                  className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${
-                    activeTab === "teams"
+                  className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "teams"
                       ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
                       : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-                  }`}
+                    }`}
                 >
                   Teams ({event.teams.length})
                 </button>
               )}
               <button
                 onClick={() => setActiveTab("reviews")}
-                className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === "reviews"
+                className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "reviews"
                     ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
                     : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-                }`}
+                  }`}
               >
                 Reviews ({event.ratings ? event.ratings.length : 0})
               </button>
               {isAuthenticated && isParticipant() && (
                 <button
                   onClick={() => setActiveTab("chat")}
-                  className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${
-                    activeTab === "chat"
+                  className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "chat"
                       ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
                       : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-                  }`}
+                    }`}
                 >
                   Chat
                 </button>
@@ -619,7 +612,7 @@ const EventDetails = () => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Map Section */}
                 <div>
                   <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-3">
@@ -640,13 +633,13 @@ const EventDetails = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Organizer Section */}
                 <div>
                   <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-3">
                     Organizer
                   </h2>
-                  <Link 
+                  <Link
                     to={`/profile/${event.createdBy._id}`}
                     className="flex items-center p-4 bg-background-light dark:bg-background-dark rounded-lg hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
                   >
@@ -809,11 +802,10 @@ const EventDetails = () => {
                               >
                                 <Star
                                   size={24}
-                                  className={`${
-                                    star <= rating
+                                  className={`${star <= rating
                                       ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
                                       : "text-muted-foreground-light dark:text-muted-foreground-dark"
-                                  }`}
+                                    }`}
                                 />
                               </button>
                             ))}
@@ -832,11 +824,10 @@ const EventDetails = () => {
                       <button
                         type="submit"
                         disabled={rating === 0}
-                        className={`px-4 py-2 rounded-md ${
-                          rating === 0
+                        className={`px-4 py-2 rounded-md ${rating === 0
                             ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                             : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                        }`}
+                          }`}
                       >
                         Submit Review
                       </button>
@@ -875,11 +866,10 @@ const EventDetails = () => {
                               <Star
                                 key={star}
                                 size={16}
-                                className={`${
-                                  star <= rating.rating
+                                className={`${star <= rating.rating
                                     ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
                                     : "text-muted-foreground-light dark:text-muted-foreground-dark"
-                                }`}
+                                  }`}
                               />
                             ))}
                           </div>
@@ -910,11 +900,10 @@ const EventDetails = () => {
                           className={`flex ${message.user._id === user?.id ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
-                              message.user._id === user?.id
+                            className={`max-w-[80%] rounded-lg p-3 ${message.user._id === user?.id
                                 ? "bg-primary-light dark:bg-primary-dark text-white"
                                 : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center mb-1">
                               <span className="text-xs font-medium">{message.user.name || "User"}</span>
@@ -946,11 +935,10 @@ const EventDetails = () => {
                   <button
                     type="submit"
                     disabled={!message.trim()}
-                    className={`p-3 rounded-md ${
-                      !message.trim()
+                    className={`p-3 rounded-md ${!message.trim()
                         ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                         : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                    }`}
+                      }`}
                   >
                     <Send size={20} />
                   </button>
@@ -997,7 +985,7 @@ const EventDetails = () => {
 
       {/* Image Modal */}
       {showImageModal && event.images && event.images.length > 0 && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
           onClick={() => setShowImageModal(false)}
         >
@@ -1007,10 +995,10 @@ const EventDetails = () => {
               alt={event.name}
               className="max-w-full max-h-full object-contain"
             />
-            
+
             {event.images.length > 1 && (
               <>
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleImageNavigation("prev");
@@ -1020,7 +1008,7 @@ const EventDetails = () => {
                 >
                   <ArrowLeft size={24} />
                 </button>
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleImageNavigation("next");
@@ -1032,15 +1020,15 @@ const EventDetails = () => {
                 </button>
               </>
             )}
-            
-            <button 
+
+            <button
               onClick={() => setShowImageModal(false)}
               className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
               aria-label="Close modal"
             >
               <X size={24} />
             </button>
-            
+
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
               {event.images.map((_, index) => (
                 <button

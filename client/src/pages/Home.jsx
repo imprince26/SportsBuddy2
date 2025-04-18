@@ -8,7 +8,7 @@ import { format } from "date-fns"
 import { Calendar, MapPin, Users, ArrowRight, Search, Trophy, Star } from "lucide-react"
 
 const Home = () => {
-  const { events, getEvents : fetchEvents, loading } = useEvents()
+  const { events, getEvents: fetchEvents, loading } = useEvents()
   const [upcomingEvents, setUpcomingEvents] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -252,11 +252,10 @@ const Home = () => {
               <Link
                 key={category.id}
                 to={category.id === "all" ? "/events" : `/events?category=${category.id}`}
-                className={`flex flex-col items-center p-6 rounded-lg transition-all duration-200 ${
-                  selectedCategory === category.id
+                className={`flex flex-col items-center p-6 rounded-lg transition-all duration-200 ${selectedCategory === category.id
                     ? "bg-primary-light/10 dark:bg-primary-dark/10 border-2 border-primary-light dark:border-primary-dark"
                     : "bg-card-light dark:bg-card-dark hover:bg-primary-light/5 dark:hover:bg-primary-dark/5 border-2 border-transparent"
-                }`}
+                  }`}
                 onClick={() => setSelectedCategory(category.id)}
               >
                 <span className="text-4xl mb-3">{category.icon}</span>
@@ -444,11 +443,10 @@ const Home = () => {
                     <Star
                       key={i}
                       size={18}
-                      className={`${
-                        i < testimonial.rating
+                      className={`${i < testimonial.rating
                           ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
                           : "text-muted-foreground-light dark:text-muted-foreground-dark"
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>

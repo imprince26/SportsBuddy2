@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from './AuthContext';
 import { useSocket } from './SocketContext';
+import api from '@/utils/api';
 
 const EventContext = createContext();
 
@@ -141,7 +142,7 @@ export const EventProvider = ({ children }) => {
       queryParams.append('page', newPage);
       queryParams.append('limit', pagination.limit);
       
-      const response = await axios.get(`${API_URL}/events?${queryParams.toString()}`);
+      const response = await api.get(`/events?${queryParams.toString()}`);
       
       if (response.data.success) {
         setEvents(response.data.data);
@@ -164,7 +165,7 @@ export const EventProvider = ({ children }) => {
     setLoading(true);
     
     try {
-      const response = await axios.get(`${API_URL}/events/user`);
+      const response = await api.get('/events/user');
       
       if (response.data.success) {
         setUserEvents(response.data.data);
@@ -183,7 +184,7 @@ export const EventProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await axios.get(`${API_URL}/events/${eventId}`);
+      const response = await api.get(`/events/${eventId}`);
       
       if (response.data) {
         setCurrentEvent(response.data);
@@ -227,7 +228,7 @@ export const EventProvider = ({ children }) => {
         }
       });
       
-      const response = await axios.post(`${API_URL}/events`, formData, {
+      const response = await api.post('/events', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -277,7 +278,7 @@ export const EventProvider = ({ children }) => {
         }
       });
       
-      const response = await axios.put(`${API_URL}/events/${eventId}`, formData, {
+      const response = await api.put(`/events/${eventId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -318,7 +319,7 @@ export const EventProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await axios.delete(`${API_URL}/events/${eventId}`);
+      const response = await api.delete(`/events/${eventId}`);
       
       if (response.data.success) {
         // Remove event from events list
@@ -352,7 +353,7 @@ export const EventProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_URL}/events/${eventId}/join`);
+      const response = await api.post(`/events/${eventId}/join`);
       
       if (response.data) {
         // Update event in events list
@@ -390,7 +391,7 @@ export const EventProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_URL}/events/${eventId}/leave`);
+      const response = await api.post(`/events/${eventId}/leave`);
       
       if (response.data) {
         // Update event in events list
@@ -427,7 +428,7 @@ export const EventProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_URL}/events/${eventId}/teams`, teamData);
+      const response = await api.post(`/events/${eventId}/teams`, teamData);
       
       if (response.data) {
         // Update current event
@@ -454,7 +455,7 @@ export const EventProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await axios.post(`${API_URL}/events/${eventId}/ratings`, ratingData);
+      const response = await api.post(`/events/${eventId}/ratings`, ratingData);
       
       if (response.data) {
         // Update current event
@@ -478,7 +479,7 @@ export const EventProvider = ({ children }) => {
   // Send chat message
   const sendMessage = async (eventId, message) => {
     try {
-      const response = await axios.post(`${API_URL}/events/${eventId}/messages`, { message });
+      const response = await api.post(`/events/${eventId}/messages`, { message });
       
       if (response.data) {
         return { success: true, message: response.data };
@@ -495,7 +496,7 @@ export const EventProvider = ({ children }) => {
     setLoading(true);
     
     try {
-      const response = await axios.get(`${API_URL}/events/search?q=${searchQuery}`);
+      const response = await api.get(`/events/search?q=${searchQuery}`);
       
       if (response.data.success) {
         return response.data.data;
@@ -513,7 +514,7 @@ export const EventProvider = ({ children }) => {
     setLoading(true);
     
     try {
-      const response = await axios.get(`${API_URL}/events/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
+      const response = await api.get(`/events/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
       
       if (response.data.success) {
         return response.data.data;
@@ -533,7 +534,7 @@ export const EventProvider = ({ children }) => {
         leaveEventRoom(currentEvent._id);
       }
     };
-  }, [currentEvent]);
+  }, [currentEvent, leaveEventRoom]);
 
   const value = {
     events,

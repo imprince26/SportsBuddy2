@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import api from '@/utils/api';
 
 const AuthContext = createContext();
 
@@ -18,19 +18,6 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-  // Configure axios defaults
-  axios.defaults.withCredentials = true;
-
-  // Set auth token for all requests if available
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  }, [token]);
 
   // Check if user is logged in on initial load
   useEffect(() => {
@@ -41,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await axios.get(`${API_URL}/auth/me`);
+        const response = await api.get(`/auth/me`);
         if (response.data.success) {
           setUser(response.data.data);
         } else {
@@ -65,7 +52,7 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
 
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
+      const response = await api.post(`/auth/register`, userData);
 
       if (response.data.success) {
         setToken(response.data.token);
@@ -90,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
 
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, credentials);
+      const response = await api.post(`/auth/login`, credentials);
 
       if (response.data.success) {
         setToken(response.data.token);
@@ -112,7 +99,7 @@ export const AuthProvider = ({ children }) => {
   // Logout user
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/auth/logout`);
+      await api.post(`/auth/logout`);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -128,7 +115,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      const response = await axios.put(`${API_URL}/auth/profile`, profileData);
+      const response = await api.put(`/auth/profile`, profileData);
 
       if (response.data.success) {
         setUser(response.data.data);
@@ -149,7 +136,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      const response = await axios.put(`${API_URL}/auth/password`, passwordData);
+      const response = await api.put(`/auth/password`, passwordData);
 
       if (response.data.success) {
         toast.success('Password updated successfully');
@@ -167,7 +154,7 @@ export const AuthProvider = ({ children }) => {
   // Get user notifications
   const getNotifications = async () => {
     try {
-      const response = await axios.get(`${API_URL}/auth/notifications`);
+      const response = await api.get(`/auth/notifications`);
 
       if (response.data.success) {
         return response.data.data;
@@ -181,7 +168,7 @@ export const AuthProvider = ({ children }) => {
   // Mark notification as read
   const markNotificationRead = async (notificationId) => {
     try {
-      const response = await axios.put(`${API_URL}/auth/notifications/${notificationId}`);
+      const response = await api.put(`/auth/notifications/${notificationId}`);
 
       if (response.data.success) {
         return response.data.data;
@@ -194,7 +181,7 @@ export const AuthProvider = ({ children }) => {
   // Follow a user
   const followUser = async (userId) => {
     try {
-      const response = await axios.post(`${API_URL}/users/${userId}/follow`);
+      const response = await api.post(`/users/${userId}/follow`);
 
       if (response.data.success) {
         // Update local user state with new following list
@@ -215,7 +202,7 @@ export const AuthProvider = ({ children }) => {
   // Unfollow a user
   const unfollowUser = async (userId) => {
     try {
-      const response = await axios.delete(`${API_URL}/users/${userId}/follow`);
+      const response = await api.delete(`/users/${userId}/follow`);
 
       if (response.data.success) {
         // Update local user state by removing from following list
@@ -236,7 +223,7 @@ export const AuthProvider = ({ children }) => {
   // Get user profile by ID
   const getUserProfile = async (userId) => {
     try {
-      const response = await axios.get(`${API_URL}/users/${userId}`);
+      const response = await api.get(`/users/${userId}`);
 
       if (response.data.success) {
         return response.data.data;
@@ -250,7 +237,7 @@ export const AuthProvider = ({ children }) => {
   // Get user's followers
   const getUserFollowers = async (userId) => {
     try {
-      const response = await axios.get(`${API_URL}/users/${userId}/followers`);
+      const response = await api.get(`/users/${userId}/followers`);
 
       if (response.data.success) {
         return response.data.data;
@@ -264,7 +251,7 @@ export const AuthProvider = ({ children }) => {
   // Get user's following
   const getUserFollowing = async (userId) => {
     try {
-      const response = await axios.get(`${API_URL}/users/${userId}/following`);
+      const response = await api.get(`/users/${userId}/following`);
 
       if (response.data.success) {
         return response.data.data;
@@ -278,7 +265,7 @@ export const AuthProvider = ({ children }) => {
   // Update user preferences
   const updatePreferences = async (preferences) => {
     try {
-      const response = await axios.put(`${API_URL}/auth/preferences`, preferences);
+      const response = await api.put(`/auth/preferences`, preferences);
 
       if (response.data.success) {
         setUser(prev => ({
@@ -301,7 +288,7 @@ export const AuthProvider = ({ children }) => {
   // Add achievement
   const addAchievement = async (achievement) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/achievements`, achievement);
+      const response = await api.post(`/auth/achievements`, achievement);
 
       if (response.data.success) {
         setUser(prev => ({
@@ -321,7 +308,7 @@ export const AuthProvider = ({ children }) => {
   // Search users
   const searchUsers = async (query) => {
     try {
-      const response = await axios.get(`${API_URL}/users/search?q=${query}`);
+      const response = await api.get(`/users/search?q=${query}`);
 
       if (response.data.success) {
         return response.data.data;

@@ -17,12 +17,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
-  
+
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   // Configure axios defaults
   axios.defaults.withCredentials = true;
-  
+
   // Set auth token for all requests if available
   useEffect(() => {
     if (token) {
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-      
+
       try {
         const response = await axios.get(`${API_URL}/auth/me`);
         if (response.data.success) {
@@ -63,10 +63,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     setLoading(true);
     setAuthError(null);
-    
+
     try {
       const response = await axios.post(`${API_URL}/auth/register`, userData);
-      
+
       if (response.data.success) {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
@@ -88,10 +88,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     setLoading(true);
     setAuthError(null);
-    
+
     try {
       const response = await axios.post(`${API_URL}/auth/login`, credentials);
-      
+
       if (response.data.success) {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
@@ -126,10 +126,10 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateProfile = async (profileData) => {
     setLoading(true);
-    
+
     try {
       const response = await axios.put(`${API_URL}/auth/profile`, profileData);
-      
+
       if (response.data.success) {
         setUser(response.data.data);
         toast.success('Profile updated successfully');
@@ -147,10 +147,10 @@ export const AuthProvider = ({ children }) => {
   // Update user password
   const updatePassword = async (passwordData) => {
     setLoading(true);
-    
+
     try {
       const response = await axios.put(`${API_URL}/auth/password`, passwordData);
-      
+
       if (response.data.success) {
         toast.success('Password updated successfully');
         return { success: true };
@@ -168,7 +168,7 @@ export const AuthProvider = ({ children }) => {
   const getNotifications = async () => {
     try {
       const response = await axios.get(`${API_URL}/auth/notifications`);
-      
+
       if (response.data.success) {
         return response.data.data;
       }
@@ -182,7 +182,7 @@ export const AuthProvider = ({ children }) => {
   const markNotificationRead = async (notificationId) => {
     try {
       const response = await axios.put(`${API_URL}/auth/notifications/${notificationId}`);
-      
+
       if (response.data.success) {
         return response.data.data;
       }
@@ -195,7 +195,7 @@ export const AuthProvider = ({ children }) => {
   const followUser = async (userId) => {
     try {
       const response = await axios.post(`${API_URL}/users/${userId}/follow`);
-      
+
       if (response.data.success) {
         // Update local user state with new following list
         setUser(prev => ({
@@ -216,7 +216,7 @@ export const AuthProvider = ({ children }) => {
   const unfollowUser = async (userId) => {
     try {
       const response = await axios.delete(`${API_URL}/users/${userId}/follow`);
-      
+
       if (response.data.success) {
         // Update local user state by removing from following list
         setUser(prev => ({
@@ -237,7 +237,7 @@ export const AuthProvider = ({ children }) => {
   const getUserProfile = async (userId) => {
     try {
       const response = await axios.get(`${API_URL}/users/${userId}`);
-      
+
       if (response.data.success) {
         return response.data.data;
       }
@@ -251,7 +251,7 @@ export const AuthProvider = ({ children }) => {
   const getUserFollowers = async (userId) => {
     try {
       const response = await axios.get(`${API_URL}/users/${userId}/followers`);
-      
+
       if (response.data.success) {
         return response.data.data;
       }
@@ -265,7 +265,7 @@ export const AuthProvider = ({ children }) => {
   const getUserFollowing = async (userId) => {
     try {
       const response = await axios.get(`${API_URL}/users/${userId}/following`);
-      
+
       if (response.data.success) {
         return response.data.data;
       }
@@ -279,7 +279,7 @@ export const AuthProvider = ({ children }) => {
   const updatePreferences = async (preferences) => {
     try {
       const response = await axios.put(`${API_URL}/auth/preferences`, preferences);
-      
+
       if (response.data.success) {
         setUser(prev => ({
           ...prev,
@@ -302,7 +302,7 @@ export const AuthProvider = ({ children }) => {
   const addAchievement = async (achievement) => {
     try {
       const response = await axios.post(`${API_URL}/auth/achievements`, achievement);
-      
+
       if (response.data.success) {
         setUser(prev => ({
           ...prev,
@@ -322,7 +322,7 @@ export const AuthProvider = ({ children }) => {
   const searchUsers = async (query) => {
     try {
       const response = await axios.get(`${API_URL}/users/search?q=${query}`);
-      
+
       if (response.data.success) {
         return response.data.data;
       }

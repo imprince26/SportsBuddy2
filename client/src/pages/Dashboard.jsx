@@ -61,7 +61,7 @@ const Dashboard = () => {
           completedEvents: past.length,
           achievements: user.achievements?.length || 0,
         })
-        
+
         // Generate activity data (this would come from the API in a real app)
         generateActivityData(events)
       } catch (error) {
@@ -75,18 +75,18 @@ const Dashboard = () => {
       fetchUserEvents()
     }
   }, [user, getUserEvents])
-  
+
   // Generate mock activity data for the chart
   const generateActivityData = (events) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     const currentMonth = new Date().getMonth()
-    
+
     // Get last 6 months
-    const lastSixMonths = Array.from({length: 6}, (_, i) => {
+    const lastSixMonths = Array.from({ length: 6 }, (_, i) => {
       const monthIndex = (currentMonth - i + 12) % 12
       return months[monthIndex]
     }).reverse()
-    
+
     // Count events per month
     const eventCounts = lastSixMonths.map(month => {
       const monthIndex = months.indexOf(month)
@@ -95,7 +95,7 @@ const Dashboard = () => {
         return eventDate.getMonth() === monthIndex
       }).length
     })
-    
+
     setActivityData(lastSixMonths.map((month, index) => ({
       month,
       count: eventCounts[index]
@@ -161,8 +161,8 @@ const Dashboard = () => {
             Events you've participated in or created
           </p>
           <div className="mt-4 pt-4 border-t border-border-light dark:border-border-dark">
-            <Link 
-              to="/events" 
+            <Link
+              to="/events"
               className="text-sm text-primary-light dark:text-primary-dark hover:underline flex items-center"
             >
               View all events
@@ -182,8 +182,8 @@ const Dashboard = () => {
             Events scheduled in the future
           </p>
           <div className="mt-4 pt-4 border-t border-border-light dark:border-border-dark">
-            <Link 
-              to="/events?status=Upcoming" 
+            <Link
+              to="/events?status=Upcoming"
               className="text-sm text-accent-light dark:text-accent-dark hover:underline flex items-center"
             >
               View upcoming events
@@ -203,8 +203,8 @@ const Dashboard = () => {
             Events you've participated in
           </p>
           <div className="mt-4 pt-4 border-t border-border-light dark:border-border-dark">
-            <Link 
-              to="/events?status=Completed" 
+            <Link
+              to="/events?status=Completed"
               className="text-sm text-success-light dark:text-success-dark hover:underline flex items-center"
             >
               View completed events
@@ -224,8 +224,8 @@ const Dashboard = () => {
             Achievements earned
           </p>
           <div className="mt-4 pt-4 border-t border-border-light dark:border-border-dark">
-            <Link 
-              to="/profile" 
+            <Link
+              to="/profile"
               className="text-sm text-destructive-light dark:text-destructive-dark hover:underline flex items-center"
             >
               View achievements
@@ -244,7 +244,7 @@ const Dashboard = () => {
               <div className="w-3 h-3 rounded-full bg-primary-light dark:bg-primary-dark mr-2"></div>
               <span className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Events</span>
             </div>
-            <select 
+            <select
               className="text-sm border-none bg-transparent text-muted-foreground-light dark:text-muted-foreground-dark focus:outline-none focus:ring-0"
               defaultValue="6months"
             >
@@ -254,12 +254,12 @@ const Dashboard = () => {
             </select>
           </div>
         </div>
-        
+
         <div className="h-64 flex items-end justify-between">
           {activityData.map((data, index) => (
             <div key={index} className="flex flex-col items-center w-full">
               <div className="w-full flex justify-center mb-2">
-                <div 
+                <div
                   className="w-12 bg-primary-light/80 dark:bg-primary-dark/80 rounded-t-md hover:bg-primary-light dark:hover:bg-primary-dark transition-colors"
                   style={{ height: `${data.count ? Math.max(data.count * 30, 20) : 10}px` }}
                 ></div>
@@ -348,7 +348,7 @@ const Dashboard = () => {
         {/* Recent Activity */}
         <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
           <h2 className="text-xl font-bold text-foreground-light dark:text-foreground-dark mb-4">Recent Activity</h2>
-          
+
           {user.recentActivity && user.recentActivity.length > 0 ? (
             <div className="space-y-4">
               {user.recentActivity?.slice(0, 5).map((activity, index) => (
@@ -375,7 +375,7 @@ const Dashboard = () => {
             </div>
           )}
         </div>
-        
+
         {/* Achievements */}
         <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
@@ -384,7 +384,7 @@ const Dashboard = () => {
               View all <ChevronRight size={16} className="ml-1" />
             </Link>
           </div>
-          
+
           {user.achievements && user.achievements.length > 0 ? (
             <div className="space-y-4">
               {user.achievements?.slice(0, 3).map((achievement, index) => (
@@ -415,7 +415,7 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      
+
       {/* Sports Preferences */}
       <div className="mt-8 bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
@@ -424,7 +424,7 @@ const Dashboard = () => {
             Manage <ChevronRight size={16} className="ml-1" />
           </Link>
         </div>
-        
+
         {user.sportsPreferences && user.sportsPreferences.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {user.sportsPreferences.map((sport, index) => (

@@ -27,6 +27,6 @@ router.post('/:id/leave', isAuthenticated, leaveEvent);
 router.post('/:id/teams', isAuthenticated, addTeam);
 router.post('/:id/ratings', isAuthenticated, addRating);
 router.post('/:id/chat', isAuthenticated, sendMessage);
-router.get('/user/events', isAuthenticated, getUserEvents);
+router.get('/user', isAuthenticated, getUserEvents);
 
 export default router;

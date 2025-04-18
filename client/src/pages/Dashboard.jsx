@@ -74,7 +74,7 @@ const Dashboard = () => {
     if (user) {
       fetchUserEvents()
     }
-  }, [user, getUserEvents])
+  }, [user])
 
   // Generate mock activity data for the chart
   const generateActivityData = (events) => {

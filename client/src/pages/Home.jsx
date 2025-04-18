@@ -15,7 +15,7 @@ const Home = () => {
 
   useEffect(() => {
     fetchEvents()
-  }, [fetchEvents])
+  }, [])
 
   useEffect(() => {
     if (events.length > 0) {

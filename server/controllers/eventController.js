@@ -1,6 +1,7 @@
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
 import cloudinary from "../config/cloudinary.js"; // Import Cloudinary
+import mongoose from "mongoose";
 
 // Create Event
 export const createEvent = async (req, res) => {
@@ -135,7 +136,7 @@ export const deleteEvent = async (req, res) => {
       io.to(`user:${participant.user}`).emit("eventDeleted", event._id);
     });
 
-    await event.remove();
+    await Event.findByIdAndDelete(req.params.id);
 
     // Remove event from users' lists
     await User.updateMany(
@@ -542,9 +543,11 @@ export const sendMessage = async (req, res) => {
 
 // Get User Events
 export const getUserEvents = async (req, res) => {
+
   try {
+    
     const events = await Event.find({
-      "participants.user": req.user._id,
+      "createdBy": req.user._id,
     })
       .populate("createdBy", "name avatar")
       .populate("participants.user", "name avatar")
@@ -557,7 +560,7 @@ export const getUserEvents = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Error fetching user events",
-      error: error.message,
+      error: error,
     });
   }
 };

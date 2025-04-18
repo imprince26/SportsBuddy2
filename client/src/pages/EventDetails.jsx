@@ -40,7 +40,7 @@ const EventDetails = () => {
     }
 
     fetchEventDetails()
-  }, [id, getEventById])
+  }, [id])
 
   useEffect(() => {
     // Scroll to bottom of chat when new messages arrive

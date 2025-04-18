@@ -61,11 +61,15 @@ const Layout = () => {
     }
   }
 
+  // if (!user || user.role !== "user") {
+  //   return <div><Outlet /></div>
+  // }
+
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark">
       {/* Header */}
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm" : "bg-white dark:bg-gray-900"
+        className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? "bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md shadow-sm" : "bg-background-light dark:bg-background-dark"
           }`}
       >
         <div className="container mx-auto px-4">

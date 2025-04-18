@@ -25,7 +25,7 @@ const Events = () => {
   // Fetch events on component mount
   useEffect(() => {
     fetchEvents()
-  }, [fetchEvents])
+  }, [])
 
   // Apply search filter
   const handleSearch = (e) => {

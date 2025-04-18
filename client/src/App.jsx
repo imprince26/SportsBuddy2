@@ -19,7 +19,7 @@ import ManageUsers from './pages/admin/ManageUsers';
 import ManageEvents from './pages/admin/ManageEvents';
 import ManageNotifications from './pages/admin/ManageNotifications';
 import NotFound from './pages/NotFound';
-
+import AdminLayout from './components/layout/AdminLayout';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -106,9 +106,11 @@ function App() {
         }
       />
 
+      <Route path='/' element={<AdminLayout />}>
+
       {/* Admin Routes */}
       <Route
-        path="/admin/users"
+        path="admin/users"
         element={
           <ProtectedRoute adminOnly>
             <ManageUsers />
@@ -116,7 +118,7 @@ function App() {
         }
       />
       <Route
-        path="/admin/events"
+        path="admin/events"
         element={
           <ProtectedRoute adminOnly>
             <ManageEvents />
@@ -124,13 +126,15 @@ function App() {
         }
       />
       <Route
-        path="/admin/notifications"
+        path="admin/notifications"
         element={
           <ProtectedRoute adminOnly>
             <ManageNotifications />
           </ProtectedRoute>
         }
       />
+            </Route>
+
 
       {/* Fallback Route */}
       <Route path="*" element={<NotFound />} />

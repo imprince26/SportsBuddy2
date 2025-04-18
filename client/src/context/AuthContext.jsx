@@ -1,199 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { showToast } from '@/components/CustomToast';
-import api from '@/utils/api';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const AuthContext = createContext();
-
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState([]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const response = await api.get('/auth/me');
-      setUser(response.data.data);
-      await fetchNotifications();
-    } catch (error) {
-      setUser(null);
-      // localStorage.removeItem('token');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (userData) => {
-    const toastId = showToast.loading('Registering...');
-    try {
-      setLoading(true);
-      const response = await api.post('/auth/register', userData);
-      setUser(response.data.user);
-      // localStorage.setItem('token', response.data.token);
-      showToast.success('Registration successful', { id: toastId });
-      navigate('/dashboard');
-    } catch (error) {
-      showToast.error(error.response?.data?.message || 'Registration failed', {
-        id: toastId,
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (credentials) => {
-    const toastId = showToast.loading('Logging in...');
-    try {
-      setLoading(true);
-      const response = await api.post('/auth/login', credentials);
-      setUser(response.data.user);
-      // localStorage.setItem('token', response.data.token);
-      showToast.success('Login successful', { id: toastId });
-      navigate('/dashboard');
-    } catch (error) {
-      showToast.error(error.response?.data?.message || 'Login failed', {
-        id: toastId,
-      });
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    const toastId = showToast.loading('Logging out...');
-    try {
-      await api.post('/auth/logout');
-      setUser(null);
-      setNotifications([]);
-      // localStorage.removeItem('token');
-      showToast.success('Logged out successfully', { id: toastId });
-      navigate('/login');
-    } catch (error) {
-      showToast.error('Logout failed', { id: toastId });
-    }
-  };
-
-  const updateProfile = async (profileData, avatarFile) => {
-    const toastId = showToast.loading('Updating profile...');
-    try {
-      setLoading(true);
-      let avatarUrl = profileData.avatar;
-      if (avatarFile) {
-        const formData = new FormData();
-        formData.append('avatar', avatarFile);
-        const uploadRes = await api.post('/upload/avatar', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        avatarUrl = uploadRes.data.fileUrl.url;
-      }
-      const response = await api.put('/auth/profile', {
-        ...profileData,
-        avatar: avatarUrl,
-      });
-      setUser(response.data.data);
-      showToast.success('Profile updated successfully', { id: toastId });
-    } catch (error) {
-      showToast.error(error.response?.data?.message || 'Failed to update profile', {
-        id: toastId,
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updatePassword = async (passwordData) => {
-    const toastId = showToast.loading('Updating password...');
-    try {
-      setLoading(true);
-      const response = await api.put('/auth/password', passwordData);
-      showToast.success('Password updated successfully', { id: toastId });
-      return response.data;
-    } catch (error) {
-      showToast.error(error.response?.data?.message || 'Failed to update password', {
-        id: toastId,
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchNotifications = async () => {
-    try {
-      const response = await api.get('/auth/notifications');
-      setNotifications(response.data.data);
-    } catch (error) {
-      showToast.error('Failed to fetch notifications');
-    }
-  };
-
-  const markNotificationAsRead = async (notificationId) => {
-    const toastId = showToast.loading('Marking notification as read...');
-    try {
-      const response = await api.put(`/auth/notifications/${notificationId}`);
-      setNotifications(response.data.data);
-      showToast.success('Notification marked as read', { id: toastId });
-    } catch (error) {
-      showToast.error('Failed to mark notification as read', { id: toastId });
-    }
-  };
-
-  const addAchievement = async (achievementData) => {
-    const toastId = showToast.loading('Adding achievement...');
-    try {
-      setLoading(true);
-      const response = await api.post('/auth/achievements', achievementData);
-      setUser((prev) => ({
-        ...prev,
-        achievements: response.data.data,
-      }));
-      showToast.success('Achievement added successfully', { id: toastId });
-    } catch (error) {
-      showToast.error(error.response?.data?.message || 'Failed to add achievement', {
-        id: toastId,
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getUserProfile = async (userId) => {
-    try {
-      const response = await api.get(`/auth/user/${userId}`);
-      return response.data.data;
-    } catch (error) {
-      showToast.error('Failed to fetch user profile');
-      throw error;
-    }
-  };
-
-  const value = {
-    user,
-    isAuthenticated: !!user,
-    loading,
-    notifications,
-    register,
-    login,
-    logout,
-    updateProfile,
-    updatePassword,
-    fetchNotifications,
-    markNotificationAsRead,
-    addAchievement,
-    getUserProfile
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -202,3 +11,356 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Configure axios defaults
+  axios.defaults.withCredentials = true;
+  
+  // Set auth token for all requests if available
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [token]);
+
+  // Check if user is logged in on initial load
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const response = await axios.get(`${API_URL}/auth/me`);
+        if (response.data.success) {
+          setUser(response.data.data);
+        } else {
+          // Token is invalid or expired
+          logout();
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        logout();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  // Register new user
+  const register = async (userData) => {
+    setLoading(true);
+    setAuthError(null);
+    
+    try {
+      const response = await axios.post(`${API_URL}/auth/register`, userData);
+      
+      if (response.data.success) {
+        setToken(response.data.token);
+        localStorage.setItem('token', response.data.token);
+        setUser(response.data.user);
+        toast.success('Registration successful!');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Registration failed';
+      setAuthError(message);
+      toast.error(message);
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Login user
+  const login = async (credentials) => {
+    setLoading(true);
+    setAuthError(null);
+    
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, credentials);
+      
+      if (response.data.success) {
+        setToken(response.data.token);
+        localStorage.setItem('token', response.data.token);
+        setUser(response.data.user);
+        toast.success('Login successful!');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Login failed';
+      setAuthError(message);
+      toast.error(message);
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Logout user
+  const logout = async () => {
+    try {
+      await axios.post(`${API_URL}/auth/logout`);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      toast.success('Logged out successfully');
+    }
+  };
+
+  // Update user profile
+  const updateProfile = async (profileData) => {
+    setLoading(true);
+    
+    try {
+      const response = await axios.put(`${API_URL}/auth/profile`, profileData);
+      
+      if (response.data.success) {
+        setUser(response.data.data);
+        toast.success('Profile updated successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Profile update failed';
+      toast.error(message);
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update user password
+  const updatePassword = async (passwordData) => {
+    setLoading(true);
+    
+    try {
+      const response = await axios.put(`${API_URL}/auth/password`, passwordData);
+      
+      if (response.data.success) {
+        toast.success('Password updated successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Password update failed';
+      toast.error(message);
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get user notifications
+  const getNotifications = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/auth/notifications`);
+      
+      if (response.data.success) {
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return [];
+    }
+  };
+
+  // Mark notification as read
+  const markNotificationRead = async (notificationId) => {
+    try {
+      const response = await axios.put(`${API_URL}/auth/notifications/${notificationId}`);
+      
+      if (response.data.success) {
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  // Follow a user
+  const followUser = async (userId) => {
+    try {
+      const response = await axios.post(`${API_URL}/users/${userId}/follow`);
+      
+      if (response.data.success) {
+        // Update local user state with new following list
+        setUser(prev => ({
+          ...prev,
+          following: [...prev.following, userId]
+        }));
+        toast.success('User followed successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to follow user';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Unfollow a user
+  const unfollowUser = async (userId) => {
+    try {
+      const response = await axios.delete(`${API_URL}/users/${userId}/follow`);
+      
+      if (response.data.success) {
+        // Update local user state by removing from following list
+        setUser(prev => ({
+          ...prev,
+          following: prev.following.filter(id => id !== userId)
+        }));
+        toast.success('User unfollowed successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to unfollow user';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Get user profile by ID
+  const getUserProfile = async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/users/${userId}`);
+      
+      if (response.data.success) {
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  };
+
+  // Get user's followers
+  const getUserFollowers = async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/users/${userId}/followers`);
+      
+      if (response.data.success) {
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+      return [];
+    }
+  };
+
+  // Get user's following
+  const getUserFollowing = async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/users/${userId}/following`);
+      
+      if (response.data.success) {
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error('Error fetching following:', error);
+      return [];
+    }
+  };
+
+  // Update user preferences
+  const updatePreferences = async (preferences) => {
+    try {
+      const response = await axios.put(`${API_URL}/auth/preferences`, preferences);
+      
+      if (response.data.success) {
+        setUser(prev => ({
+          ...prev,
+          preferences: {
+            ...prev.preferences,
+            ...preferences
+          }
+        }));
+        toast.success('Preferences updated successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update preferences';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Add achievement
+  const addAchievement = async (achievement) => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/achievements`, achievement);
+      
+      if (response.data.success) {
+        setUser(prev => ({
+          ...prev,
+          achievements: response.data.data
+        }));
+        toast.success('Achievement added successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to add achievement';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Search users
+  const searchUsers = async (query) => {
+    try {
+      const response = await axios.get(`${API_URL}/users/search?q=${query}`);
+      
+      if (response.data.success) {
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+      return [];
+    }
+  };
+
+  const value = {
+    user,
+    loading,
+    authError,
+    isAuthenticated: !!user,
+    register,
+    login,
+    logout,
+    updateProfile,
+    updatePassword,
+    getNotifications,
+    markNotificationRead,
+    followUser,
+    unfollowUser,
+    getUserProfile,
+    getUserFollowers,
+    getUserFollowing,
+    updatePreferences,
+    addAchievement,
+    searchUsers
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// export const useAuth = () => {
+//   const context = useContext(AuthContext);
+//   if (!context) {
+//     throw new Error('useAuth must be used within an AuthProvider');
+//   }
+//   return context;
+// }

@@ -8,7 +8,7 @@ import { format } from "date-fns"
 import { CalendarDays, MapPin, Users, Filter, Search, Star, Clock, ChevronDown, Plus, Loader2, SlidersHorizontal, X, Calendar } from 'lucide-react'
 
 const Events = () => {
-  const { events, loading, fetchEvents } = useEvents()
+  const { events, loading, getEvents: fetchEvents } = useEvents()
   const { isAuthenticated } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState({

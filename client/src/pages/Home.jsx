@@ -8,7 +8,7 @@ import { format } from "date-fns"
 import { Calendar, MapPin, Users, ArrowRight, Search, Trophy, Star } from "lucide-react"
 
 const Home = () => {
-  const { events, fetchEvents, loading } = useEvents()
+  const { events, getEvents : fetchEvents, loading } = useEvents()
   const [upcomingEvents, setUpcomingEvents] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")

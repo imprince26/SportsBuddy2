@@ -65,9 +65,8 @@ const Layout = () => {
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark">
       {/* Header */}
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-          isScrolled ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm" : "bg-white dark:bg-gray-900"
-        }`}
+        className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm" : "bg-white dark:bg-gray-900"
+          }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
@@ -97,32 +96,29 @@ const Layout = () => {
             <nav className="hidden md:flex items-center space-x-6">
               <Link
                 to="/"
-                className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${
-                  location.pathname === "/"
+                className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname === "/"
                     ? "text-primary-light dark:text-primary-dark"
                     : "text-foreground-light dark:text-foreground-dark"
-                }`}
+                  }`}
               >
                 Home
               </Link>
               <Link
                 to="/events"
-                className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${
-                  location.pathname.includes("/events") && !location.pathname.includes("/create")
+                className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname.includes("/events") && !location.pathname.includes("/create")
                     ? "text-primary-light dark:text-primary-dark"
                     : "text-foreground-light dark:text-foreground-dark"
-                }`}
+                  }`}
               >
                 Events
               </Link>
               {isAuthenticated && (
                 <Link
                   to="/dashboard"
-                  className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${
-                    location.pathname === "/dashboard"
+                  className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname === "/dashboard"
                       ? "text-primary-light dark:text-primary-dark"
                       : "text-foreground-light dark:text-foreground-dark"
-                  }`}
+                    }`}
                 >
                   Dashboard
                 </Link>
@@ -186,9 +182,8 @@ const Layout = () => {
                       </span>
                       <ChevronDown
                         size={16}
-                        className={`text-foreground-light dark:text-foreground-dark transition-transform duration-200 ${
-                          isProfileMenuOpen ? "rotate-180" : ""
-                        }`}
+                        className={`text-foreground-light dark:text-foreground-dark transition-transform duration-200 ${isProfileMenuOpen ? "rotate-180" : ""
+                          }`}
                       />
                     </button>
 
@@ -370,7 +365,7 @@ const Layout = () => {
       </main>
 
       {/* Footer */}
-    <Footer/>
+      <Footer />
     </div>
   )
 }

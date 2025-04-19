@@ -108,67 +108,67 @@ function App() {
           </ProtectedRoute>
         }
       />
-        <Route
-                    path="events/:id/teams"
-                    element={
-                      <ProtectedRoute>
-                        <TeamManagement />
-                      </ProtectedRoute>
-                    }
-                  />
+      <Route
+        path="events/:id/teams"
+        element={
+          <ProtectedRoute>
+            <TeamManagement />
+          </ProtectedRoute>
+        }
+      />
 
-<Route
-                    path="users/:id/followers"
-                    element={
-                      <ProtectedRoute>
-                        <FollowersFollowing type="followers" />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="users/:id/following"
-                    element={
-                      <ProtectedRoute>
-                        <FollowersFollowing type="following" />
-                      </ProtectedRoute>
-                    }
-                  />
-                         <Route
-                    path="settings"
-                    element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    }
-                  />
+      <Route
+        path="users/:id/followers"
+        element={
+          <ProtectedRoute>
+            <FollowersFollowing type="followers" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="users/:id/following"
+        element={
+          <ProtectedRoute>
+            <FollowersFollowing type="following" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
 
       <Route path='/' element={<AdminLayout />}>
 
-      {/* Admin Routes */}
-      <Route
-        path="admin/users"
-        element={
-          <ProtectedRoute adminOnly>
-            <ManageUsers />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="admin/events"
-        element={
-          <ProtectedRoute adminOnly>
-            <ManageEvents />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="admin/notifications"
-        element={
-          <ProtectedRoute adminOnly>
-            <ManageNotifications />
-          </ProtectedRoute>
-        }
-      />
+        {/* Admin Routes */}
+        <Route
+          path="admin/users"
+          element={
+            <ProtectedRoute adminOnly>
+              <ManageUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/events"
+          element={
+            <ProtectedRoute adminOnly>
+              <ManageEvents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/notifications"
+          element={
+            <ProtectedRoute adminOnly>
+              <ManageNotifications />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* Fallback Route */}

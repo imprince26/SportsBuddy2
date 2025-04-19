@@ -545,7 +545,7 @@ export const sendMessage = async (req, res) => {
 export const getUserEvents = async (req, res) => {
 
   try {
-    
+
     const events = await Event.find({
       "createdBy": req.user._id,
     })

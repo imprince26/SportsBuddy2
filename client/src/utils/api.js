@@ -1,38 +1,40 @@
-import axios from "axios";
+import axios from "axios"
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   withCredentials: true,
-});
+  headers: {
+    "Content-Type": "application/json",
+  },
+})
 
-// // Request interceptor
-// api.interceptors.request.use(
-//   (config) => {
-//     // Handle FormData requests (for file uploads)
-//     if (config.data instanceof FormData) {
-//       config.headers = {
-//         ...config.headers,
-//         'Content-Type': 'multipart/form-data',
-//       };
-//     }
-//     return config;
-//   },
-//   (error) => {
-//     return Promise.reject(error);
-//   }
-// );
+// Add a request interceptor to set the auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token")
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
 
-// // Response interceptor
-// api.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     if (error.response?.status === 401) {
-//       // Handle unauthorized access
-//       window.location.href = "/login";
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+// Add a response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  (error) => {
+    // Handle session expiration
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token")
+      window.location.href = "/login"
+    }
+    return Promise.reject(error)
+  },
+)
 
-
-export default api;
+export default api

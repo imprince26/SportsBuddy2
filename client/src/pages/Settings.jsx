@@ -1,310 +1,445 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-hot-toast';
-import { Bell, Mail, MapPin, Lock, User, Save } from 'lucide-react';
+"use client"
+
+import { useState, useEffect } from "react"
+import { useAuth } from "../context/AuthContext"
+import { toast } from "react-hot-toast"
+import { FaUser, FaLock, FaBell } from "react-icons/fa"
 
 const Settings = () => {
-  const { user, updatePreferences, updatePassword } = useAuth();
-  const [preferences, setPreferences] = useState({
+  const { user, updateProfile, updatePassword, updatePreferences, loading } = useAuth()
+
+  const [activeTab, setActiveTab] = useState("profile")
+  const [profileData, setProfileData] = useState({
+    name: "",
+    username: "",
+    bio: "",
+    location: {
+      city: "",
+      state: "",
+      country: "",
+    },
+    socialLinks: {
+      facebook: "",
+      twitter: "",
+      instagram: "",
+    },
+  })
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+
+  const [preferencesData, setPreferencesData] = useState({
     emailNotifications: true,
     pushNotifications: true,
-    radius: 10
-  });
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  
-  // Load user preferences
+    radius: 10,
+  })
+
   useEffect(() => {
-    if (user && user.preferences) {
-      setPreferences({
-        emailNotifications: user.preferences.emailNotifications,
-        pushNotifications: user.preferences.pushNotifications,
-        radius: user.preferences.radius
-      });
+    if (user) {
+      setProfileData({
+        name: user.name || "",
+        username: user.username || "",
+        bio: user.bio || "",
+        location: {
+          city: user.location?.city || "",
+          state: user.location?.state || "",
+          country: user.location?.country || "",
+        },
+        socialLinks: {
+          facebook: user.socialLinks?.facebook || "",
+          twitter: user.socialLinks?.twitter || "",
+          instagram: user.socialLinks?.instagram || "",
+        },
+      })
+
+      setPreferencesData({
+        emailNotifications: user.preferences?.emailNotifications ?? true,
+        pushNotifications: user.preferences?.pushNotifications ?? true,
+        radius: user.preferences?.radius || 10,
+      })
     }
-  }, [user]);
-  
-  const handlePreferenceChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setPreferences(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-  
+  }, [user])
+
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target
+
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".")
+      setProfileData({
+        ...profileData,
+        [parent]: {
+          ...profileData[parent],
+          [child]: value,
+        },
+      })
+    } else {
+      setProfileData({
+        ...profileData,
+        [name]: value,
+      })
+    }
+  }
+
   const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData(prev => ({ ...prev, [name]: value }));
-    
-    // Clear error when user types
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    const { name, value } = e.target
+    setPasswordData({
+      ...passwordData,
+      [name]: value,
+    })
+  }
+
+  const handlePreferencesChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setPreferencesData({
+      ...preferencesData,
+      [name]: type === "checkbox" ? checked : value,
+    })
+  }
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault()
+    const result = await updateProfile(profileData)
+    if (result.success) {
+      toast.success("Profile updated successfully")
     }
-  };
-  
-  const validatePasswordForm = () => {
-    const newErrors = {};
-    
-    if (!passwordData.currentPassword) {
-      newErrors.currentPassword = 'Current password is required';
-    }
-    
-    if (!passwordData.newPassword) {
-      newErrors.newPassword = 'New password is required';
-    } else if (passwordData.newPassword.length < 6) {
-      newErrors.newPassword = 'Password must be at least 6 characters';
-    }
-    
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-  
-  const handlePreferencesSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const result = await updatePreferences(preferences);
-      
-      if (result.success) {
-        toast.success('Preferences updated successfully');
-      }
-    } catch (error) {
-      console.error('Error updating preferences:', error);
-      toast.error('Failed to update preferences');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+  }
+
   const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validatePasswordForm()) return;
-    
-    setPasswordLoading(true);
-    
-    try {
-      const result = await updatePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      });
-      
-      if (result.success) {
-        toast.success('Password updated successfully');
-        setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        });
-      }
-    } catch (error) {
-      console.error('Error updating password:', error);
-    } finally {
-      setPasswordLoading(false);
+    e.preventDefault()
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Passwords do not match")
+      return
     }
-  };
-  
+
+    const result = await updatePassword({
+      currentPassword: passwordData.currentPassword,
+      newPassword: passwordData.newPassword,
+    })
+
+    if (result.success) {
+      toast.success("Password updated successfully")
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      })
+    }
+  }
+
+  const handlePreferencesSubmit = async (e) => {
+    e.preventDefault()
+    const result = await updatePreferences(preferencesData)
+    if (result.success) {
+      toast.success("Preferences updated successfully")
+    }
+  }
+
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-      
-      <div className="grid gap-8 md:grid-cols-2">
-        {/* Notification Preferences */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <h2 className="mb-4 flex items-center text-xl font-semibold text-gray-900 dark:text-white">
-            <Bell className="mr-2 h-5 w-5" />
-            Notification Preferences
-          </h2>
-          
-          <form onSubmit={handlePreferencesSubmit}>
-            <div className="mb-4">
-              <div className="mb-2 flex items-center justify-between">
-                <label htmlFor="emailNotifications" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email Notifications
-                </label>
-                <div className="relative inline-block w-10 select-none align-middle">
-                  <input
-                    type="checkbox"
-                    name="emailNotifications"
-                    id="emailNotifications"
-                    checked={preferences.emailNotifications}
-                    onChange={handlePreferenceChange}
-                    className="sr-only"
-                  />
-                  <div className={`block h-6 w-10 rounded-full ${preferences.emailNotifications ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-                  <div className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${preferences.emailNotifications ? 'translate-x-4' : ''}`}></div>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Receive email notifications about event updates and messages
-              </p>
-            </div>
-            
-            <div className="mb-4">
-              <div className="mb-2 flex items-center justify-between">
-                <label htmlFor="pushNotifications" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Push Notifications
-                </label>
-                <div className="relative inline-block w-10 select-none align-middle">
-                  <input
-                    type="checkbox"
-                    name="pushNotifications"
-                    id="pushNotifications"
-                    checked={preferences.pushNotifications}
-                    onChange={handlePreferenceChange}
-                    className="sr-only"
-                  />
-                  <div className={`block h-6 w-10 rounded-full ${preferences.pushNotifications ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-                  <div className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${preferences.pushNotifications ? 'translate-x-4' : ''}`}></div>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Receive browser notifications for real-time updates
-              </p>
-            </div>
-            
-            <div className="mb-6">
-              <label htmlFor="radius" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Event Search Radius (km)
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="range"
-                  name="radius"
-                  id="radius"
-                  min="1"
-                  max="50"
-                  value={preferences.radius}
-                  onChange={handlePreferenceChange}
-                  className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-                />
-                <span className="ml-2 w-10 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {preferences.radius}
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Set the default radius for finding nearby events
-              </p>
-            </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center rounded-md bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-70 dark:bg-blue-500 dark:hover:bg-blue-600"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {loading ? 'Saving...' : 'Save Preferences'}
-            </button>
-          </form>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
+
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="flex border-b">
+          <button
+            className={`px-6 py-4 text-sm font-medium ${activeTab === "profile" ? "text-primary-600 border-b-2 border-primary-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setActiveTab("profile")}
+          >
+            <FaUser className="inline mr-2" />
+            Profile
+          </button>
+          <button
+            className={`px-6 py-4 text-sm font-medium ${activeTab === "password" ? "text-primary-600 border-b-2 border-primary-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setActiveTab("password")}
+          >
+            <FaLock className="inline mr-2" />
+            Password
+          </button>
+          <button
+            className={`px-6 py-4 text-sm font-medium ${activeTab === "preferences" ? "text-primary-600 border-b-2 border-primary-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setActiveTab("preferences")}
+          >
+            <FaBell className="inline mr-2" />
+            Preferences
+          </button>
         </div>
-        
-        {/* Change Password */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <h2 className="mb-4 flex items-center text-xl font-semibold text-gray-900 dark:text-white">
-            <Lock className="mr-2 h-5 w-5" />
-            Change Password
-          </h2>
-          
-          <form onSubmit={handlePasswordSubmit}>
-            <div className="mb-4">
-              <label htmlFor="currentPassword" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Current Password
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="h-5 w-5 text-gray-400" />
+
+        <div className="p-6">
+          {activeTab === "profile" && (
+            <form onSubmit={handleProfileSubmit}>
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={profileData.name}
+                    onChange={handleProfileChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  />
                 </div>
-                <input
-                  type="password"
-                  name="currentPassword"
-                  id="currentPassword"
-                  value={passwordData.currentPassword}
-                  onChange={handlePasswordChange}
-                  className={`block w-full rounded-md border ${
-                    errors.currentPassword ? 'border-red-300' : 'border-gray-300'
-                  } bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 sm:text-sm`}
-                  placeholder="Enter your current password"
-                />
-              </div>
-              {errors.currentPassword && (
-                <p className="mt-1 text-xs text-red-500">{errors.currentPassword}</p>
-              )}
-            </div>
-            
-            <div className="mb-4">
-              <label htmlFor="newPassword" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                New Password
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="h-5 w-5 text-gray-400" />
+
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={profileData.username}
+                    onChange={handleProfileChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  />
                 </div>
-                <input
-                  type="password"
-                  name="newPassword"
-                  id="newPassword"
-                  value={passwordData.newPassword}
-                  onChange={handlePasswordChange}
-                  className={`block w-full rounded-md border ${
-                    errors.newPassword ? 'border-red-300' : 'border-gray-300'
-                  } bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 sm:text-sm`}
-                  placeholder="Enter your new password"
-                />
-              </div>
-              {errors.newPassword && (
-                <p className="mt-1 text-xs text-red-500">{errors.newPassword}</p>
-              )}
-            </div>
-            
-            <div className="mb-6">
-              <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Confirm New Password
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="h-5 w-5 text-gray-400" />
+
+                <div>
+                  <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+                    Bio
+                  </label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    rows={3}
+                    value={profileData.bio}
+                    onChange={handleProfileChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  />
                 </div>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  id="confirmPassword"
-                  value={passwordData.confirmPassword}
-                  onChange={handlePasswordChange}
-                  className={`block w-full rounded-md border ${
-                    errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                  } bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 sm:text-sm`}
-                  placeholder="Confirm your new password"
-                />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="location.city" className="block text-sm font-medium text-gray-700">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      id="location.city"
+                      name="location.city"
+                      value={profileData.location.city}
+                      onChange={handleProfileChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="location.state" className="block text-sm font-medium text-gray-700">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      id="location.state"
+                      name="location.state"
+                      value={profileData.location.state}
+                      onChange={handleProfileChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="location.country" className="block text-sm font-medium text-gray-700">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      id="location.country"
+                      name="location.country"
+                      value={profileData.location.country}
+                      onChange={handleProfileChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="socialLinks.facebook" className="block text-sm font-medium text-gray-700">
+                      Facebook
+                    </label>
+                    <input
+                      type="text"
+                      id="socialLinks.facebook"
+                      name="socialLinks.facebook"
+                      value={profileData.socialLinks.facebook}
+                      onChange={handleProfileChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="socialLinks.twitter" className="block text-sm font-medium text-gray-700">
+                      Twitter
+                    </label>
+                    <input
+                      type="text"
+                      id="socialLinks.twitter"
+                      name="socialLinks.twitter"
+                      value={profileData.socialLinks.twitter}
+                      onChange={handleProfileChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="socialLinks.instagram" className="block text-sm font-medium text-gray-700">
+                      Instagram
+                    </label>
+                    <input
+                      type="text"
+                      id="socialLinks.instagram"
+                      name="socialLinks.instagram"
+                      value={profileData.socialLinks.instagram}
+                      onChange={handleProfileChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                  >
+                    {loading ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
               </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>
-              )}
-            </div>
-            
-            <button
-              type="submit"
-              disabled={passwordLoading}
-              className="flex w-full items-center justify-center rounded-md bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-70 dark:bg-blue-500 dark:hover:bg-blue-600"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {passwordLoading ? 'Updating...' : 'Update Password'}
-            </button>
-          </form>
+            </form>
+          )}
+
+          {activeTab === "password" && (
+            <form onSubmit={handlePasswordSubmit}>
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    required
+                    minLength={6}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                  >
+                    {loading ? "Updating..." : "Update Password"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+
+          {activeTab === "preferences" && (
+            <form onSubmit={handlePreferencesSubmit}>
+              <div className="space-y-6">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="emailNotifications"
+                    name="emailNotifications"
+                    checked={preferencesData.emailNotifications}
+                    onChange={handlePreferencesChange}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="emailNotifications" className="ml-2 block text-sm text-gray-700">
+                    Email Notifications
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="pushNotifications"
+                    name="pushNotifications"
+                    checked={preferencesData.pushNotifications}
+                    onChange={handlePreferencesChange}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="pushNotifications" className="ml-2 block text-sm text-gray-700">
+                    Push Notifications
+                  </label>
+                </div>
+
+                <div>
+                  <label htmlFor="radius" className="block text-sm font-medium text-gray-700">
+                    Event Search Radius (km)
+                  </label>
+                  <input
+                    type="range"
+                    id="radius"
+                    name="radius"
+                    min="1"
+                    max="50"
+                    value={preferencesData.radius}
+                    onChange={handlePreferencesChange}
+                    className="mt-1 block w-full"
+                  />
+                  <div className="text-sm text-gray-500 mt-1">{preferencesData.radius} kilometers</div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                  >
+                    {loading ? "Saving..." : "Save Preferences"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Settings;
+export default Settings

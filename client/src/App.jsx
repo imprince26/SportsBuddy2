@@ -20,6 +20,9 @@ import ManageEvents from './pages/admin/ManageEvents';
 import ManageNotifications from './pages/admin/ManageNotifications';
 import NotFound from './pages/NotFound';
 import AdminLayout from './components/layout/AdminLayout';
+import Settings from './pages/Settings';
+import FollowersFollowing from './pages/FollowerFollowing';
+import TeamManagement from './pages/TeamManagement';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -105,6 +108,39 @@ function App() {
           </ProtectedRoute>
         }
       />
+        <Route
+                    path="events/:id/teams"
+                    element={
+                      <ProtectedRoute>
+                        <TeamManagement />
+                      </ProtectedRoute>
+                    }
+                  />
+
+<Route
+                    path="users/:id/followers"
+                    element={
+                      <ProtectedRoute>
+                        <FollowersFollowing type="followers" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="users/:id/following"
+                    element={
+                      <ProtectedRoute>
+                        <FollowersFollowing type="following" />
+                      </ProtectedRoute>
+                    }
+                  />
+                         <Route
+                    path="settings"
+                    element={
+                      <ProtectedRoute>
+                        <Settings />
+                      </ProtectedRoute>
+                    }
+                  />
 
       <Route path='/' element={<AdminLayout />}>
 

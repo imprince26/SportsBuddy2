@@ -299,8 +299,8 @@ const EventDetails = () => {
             <button
               onClick={toggleFavorite}
               className={`p-2 backdrop-blur-sm rounded-full text-white transition-colors ${isFavorite
-                  ? "bg-red-500/80 hover:bg-red-500/90"
-                  : "bg-white/20 hover:bg-white/30"
+                ? "bg-red-500/80 hover:bg-red-500/90"
+                : "bg-white/20 hover:bg-white/30"
                 }`}
             >
               <Heart size={20} className={isFavorite ? "fill-current" : ""} />
@@ -421,8 +421,8 @@ const EventDetails = () => {
               <button
                 onClick={() => setActiveTab("details")}
                 className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "details"
-                    ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
-                    : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                  ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
+                  : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
                   }`}
               >
                 Details
@@ -430,8 +430,8 @@ const EventDetails = () => {
               <button
                 onClick={() => setActiveTab("participants")}
                 className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "participants"
-                    ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
-                    : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                  ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
+                  : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
                   }`}
               >
                 Participants ({event.participants.length})
@@ -440,8 +440,8 @@ const EventDetails = () => {
                 <button
                   onClick={() => setActiveTab("teams")}
                   className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "teams"
-                      ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
-                      : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                    ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
+                    : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
                     }`}
                 >
                   Teams ({event.teams.length})
@@ -450,8 +450,8 @@ const EventDetails = () => {
               <button
                 onClick={() => setActiveTab("reviews")}
                 className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "reviews"
-                    ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
-                    : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                  ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
+                  : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
                   }`}
               >
                 Reviews ({event.ratings ? event.ratings.length : 0})
@@ -460,8 +460,8 @@ const EventDetails = () => {
                 <button
                   onClick={() => setActiveTab("chat")}
                   className={`px-4 py-2 font-medium text-sm whitespace-nowrap ${activeTab === "chat"
-                      ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
-                      : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                    ? "text-primary-light dark:text-primary-dark border-b-2 border-primary-light dark:border-primary-dark"
+                    : "text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
                     }`}
                 >
                   Chat
@@ -803,8 +803,8 @@ const EventDetails = () => {
                                 <Star
                                   size={24}
                                   className={`${star <= rating
-                                      ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
-                                      : "text-muted-foreground-light dark:text-muted-foreground-dark"
+                                    ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
+                                    : "text-muted-foreground-light dark:text-muted-foreground-dark"
                                     }`}
                                 />
                               </button>
@@ -825,8 +825,8 @@ const EventDetails = () => {
                         type="submit"
                         disabled={rating === 0}
                         className={`px-4 py-2 rounded-md ${rating === 0
-                            ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                            : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
+                          ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
+                          : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
                           }`}
                       >
                         Submit Review
@@ -867,8 +867,8 @@ const EventDetails = () => {
                                 key={star}
                                 size={16}
                                 className={`${star <= rating.rating
-                                    ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
-                                    : "text-muted-foreground-light dark:text-muted-foreground-dark"
+                                  ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
+                                  : "text-muted-foreground-light dark:text-muted-foreground-dark"
                                   }`}
                               />
                             ))}
@@ -901,8 +901,8 @@ const EventDetails = () => {
                         >
                           <div
                             className={`max-w-[80%] rounded-lg p-3 ${message.user._id === user?.id
-                                ? "bg-primary-light dark:bg-primary-dark text-white"
-                                : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
+                              ? "bg-primary-light dark:bg-primary-dark text-white"
+                              : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
                               }`}
                           >
                             <div className="flex items-center mb-1">
@@ -936,8 +936,8 @@ const EventDetails = () => {
                     type="submit"
                     disabled={!message.trim()}
                     className={`p-3 rounded-md ${!message.trim()
-                        ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                        : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
+                      ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
+                      : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
                       }`}
                   >
                     <Send size={20} />

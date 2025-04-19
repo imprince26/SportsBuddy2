@@ -493,11 +493,10 @@ const Profile = () => {
               <button
                 onClick={handleAddSport}
                 disabled={!newSport.sport}
-                className={`px-3 py-1 rounded-md ${
-                  !newSport.sport
+                className={`px-3 py-1 rounded-md ${!newSport.sport
                     ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                     : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                }`}
+                  }`}
               >
                 Add
               </button>
@@ -605,11 +604,10 @@ const Profile = () => {
               <button
                 onClick={handleAddAchievement}
                 disabled={!newAchievement.title}
-                className={`px-3 py-1 rounded-md ${
-                  !newAchievement.title
+                className={`px-3 py-1 rounded-md ${!newAchievement.title
                     ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                     : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                }`}
+                  }`}
               >
                 Add
               </button>

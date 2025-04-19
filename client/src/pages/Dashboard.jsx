@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { useAuth } from "../context/AuthContext"
-import { useEvents } from "../context/EventContext"
+import { useAuth } from "@/context/AuthContext"
+import { useEvents } from "@/context/EventContext"
 import { format } from "date-fns"
 import { Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell, Loader2, BarChart3, TrendingUp, CalendarIcon, CheckCircle, User, Dumbbell, UserPlus } from 'lucide-react'
 

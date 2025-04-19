@@ -8,8 +8,9 @@ import { createServer } from "http";
 import authRoute from "./routes/authRoute.js";
 import eventRoute from "./routes/eventRoute.js";
 import uploadRoute from "./routes/uploadRoute.js";
+import userRoute from "./routes/userRoute.js";
 import connectDB from "./config/db.js";
-import configureSocket from "./config/socket.js";
+import setupSocket from "./config/socket.js";
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ const app = express();
 const httpServer = createServer(app);
 
 // Configure Socket.io
-const io = configureSocket(httpServer);
+const io = setupSocket(httpServer);
 app.set("io", io); // Make io available in routes
 
 // Middleware
@@ -39,6 +40,7 @@ app.use(cors(corsOptions));
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
+app.use("/api/users", userRoute);
 app.use("/api/upload", uploadRoute);
 
 // Error handling middleware

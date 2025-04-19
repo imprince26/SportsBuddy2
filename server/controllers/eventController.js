@@ -564,3 +564,82 @@ export const getUserEvents = async (req, res) => {
     });
   }
 };
+
+// Add these functions to your existing eventController.js
+
+// Search events
+export const searchEvents = async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Search query is required" 
+      });
+    }
+
+    const events = await Event.find({
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { description: { $regex: q, $options: "i" } },
+        { category: { $regex: q, $options: "i" } },
+        { "location.city": { $regex: q, $options: "i" } }
+      ]
+    })
+    .populate("createdBy", "name username avatar")
+    .populate("participants.user", "name username avatar")
+    .limit(20);
+
+    res.json({
+      success: true,
+      data: events
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error searching events",
+      error: error.message
+    });
+  }
+};
+
+// Get nearby events
+export const getNearbyEvents = async (req, res) => {
+  try {
+    const { lat, lng, radius = 10 } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Latitude and longitude are required" 
+      });
+    }
+
+    const events = await Event.find({
+      "location.coordinates": {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(lng), parseFloat(lat)]
+          },
+          $maxDistance: parseFloat(radius) * 1000 // Convert to meters
+        }
+      }
+    })
+    .populate("createdBy", "name username avatar")
+    .populate("participants.user", "name username avatar")
+    .limit(20);
+
+    res.json({
+      success: true,
+      data: events
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching nearby events",
+      error: error.message
+    });
+  }
+};

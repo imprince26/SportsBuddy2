@@ -13,20 +13,28 @@ import {
   addRating,
   sendMessage,
   getUserEvents,
+  searchEvents,
+  getNearbyEvents
 } from '../controllers/eventController.js';
 
 const router = express.Router();
 
-router.post('/', isAuthenticated, cloudinaryUpload.array('eventImages', 5), createEvent);
+// Public routes
 router.get('/', getAllEvents);
 router.get('/:id', getEventById);
-router.put('/:id', isAuthenticated, cloudinaryUpload.array('eventImages', 5), updateEvent);
-router.delete('/:id', isAuthenticated, deleteEvent);
-router.post('/:id/join', isAuthenticated, joinEvent);
-router.post('/:id/leave', isAuthenticated, leaveEvent);
-router.post('/:id/teams', isAuthenticated, addTeam);
-router.post('/:id/ratings', isAuthenticated, addRating);
-router.post('/:id/chat', isAuthenticated, sendMessage);
-router.get('/user', isAuthenticated, getUserEvents);
+router.get('/search', searchEvents);
+router.get('/nearby', getNearbyEvents);
+
+// Protected routes
+router.use(isAuthenticated);
+router.post('/', cloudinaryUpload.array('eventImages', 5), createEvent);
+router.put('/:id', cloudinaryUpload.array('eventImages', 5), updateEvent);
+router.delete('/:id', deleteEvent);
+router.post('/:id/join', joinEvent);
+router.post('/:id/leave', leaveEvent);
+router.post('/:id/teams', addTeam);
+router.post('/:id/ratings', addRating);
+router.post('/:id/messages', sendMessage);
+router.get('/user', getUserEvents);
 
 export default router;

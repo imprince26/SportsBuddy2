@@ -133,7 +133,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-            </Route>
+      </Route>
 
 
       {/* Fallback Route */}

@@ -197,7 +197,7 @@ const EditEvent = () => {
         },
         newImages
       )
-      navigate(`/events/${updatedEvent._id}`)
+      navigate(`/events/${id}`)
     } catch (error) {
       console.error("Error updating event:", error)
     }

@@ -172,7 +172,7 @@ export const EventProvider = ({ children }) => {
         return response.data.data;
       }
     } catch (error) {
-      console.error('Error fetching user events:', error);
+      console.error('Error fetching user events:', error.message);
     } finally {
       setLoading(false);
     }
@@ -278,11 +278,7 @@ export const EventProvider = ({ children }) => {
         }
       });
       
-      const response = await api.put(`/events/${eventId}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await api.put(`/events/${eventId}`, formData);
       
       if (response.data) {
         // Update event in events list

@@ -81,7 +81,7 @@ const Profile = () => {
     if (user) {
       fetchUserEvents()
     }
-  }, [user, getUserEvents])
+  }, [user])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -644,7 +644,7 @@ const Profile = () => {
       </div>
 
       {/* Recent Events */}
-      {userEvents.length > 0 && (
+      {/* {userEvents.length > 0 && (
         <div className="mt-8 bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
           <h2 className="text-xl font-bold text-foreground-light dark:text-foreground-dark mb-4">Recent Events</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -663,7 +663,7 @@ const Profile = () => {
             ))}
           </div>
         </div>
-      )}
+      )} */}
     </div>
   )
 }

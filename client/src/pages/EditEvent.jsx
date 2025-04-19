@@ -283,11 +283,10 @@ const EditEvent = () => {
                   name="name"
                   value={eventData.name}
                   onChange={handleInputChange}
-                  className={`w-full p-2 rounded-md border ${
-                    errors.name
+                  className={`w-full p-2 rounded-md border ${errors.name
                       ? "border-destructive-light dark:border-destructive-dark"
                       : "border-input-light dark:border-input-dark"
-                  } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                   placeholder="Enter event name"
                 />
                 {errors.name && (
@@ -302,11 +301,10 @@ const EditEvent = () => {
                   name="category"
                   value={eventData.category}
                   onChange={handleInputChange}
-                  className={`w-full p-2 rounded-md border ${
-                    errors.category
+                  className={`w-full p-2 rounded-md border ${errors.category
                       ? "border-destructive-light dark:border-destructive-dark"
                       : "border-input-light dark:border-input-dark"
-                  } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                 >
                   <option value="">Select a category</option>
                   <option value="Football">Football</option>
@@ -333,11 +331,10 @@ const EditEvent = () => {
                 value={eventData.description}
                 onChange={handleInputChange}
                 rows={4}
-                className={`w-full p-2 rounded-md border ${
-                  errors.description
+                className={`w-full p-2 rounded-md border ${errors.description
                     ? "border-destructive-light dark:border-destructive-dark"
                     : "border-input-light dark:border-input-dark"
-                } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                  } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                 placeholder="Describe your event"
               />
               {errors.description && (
@@ -366,11 +363,10 @@ const EditEvent = () => {
                     name="date"
                     value={eventData.date}
                     onChange={handleInputChange}
-                    className={`w-full pl-10 p-2 rounded-md border ${
-                      errors.date
+                    className={`w-full pl-10 p-2 rounded-md border ${errors.date
                         ? "border-destructive-light dark:border-destructive-dark"
                         : "border-input-light dark:border-input-dark"
-                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                      } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                   />
                 </div>
                 {errors.date && (
@@ -391,11 +387,10 @@ const EditEvent = () => {
                     name="time"
                     value={eventData.time}
                     onChange={handleInputChange}
-                    className={`w-full pl-10 p-2 rounded-md border ${
-                      errors.time
+                    className={`w-full pl-10 p-2 rounded-md border ${errors.time
                         ? "border-destructive-light dark:border-destructive-dark"
                         : "border-input-light dark:border-input-dark"
-                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                      } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                   />
                 </div>
                 {errors.time && (
@@ -423,11 +418,10 @@ const EditEvent = () => {
                     name="location.address"
                     value={eventData.location.address}
                     onChange={handleInputChange}
-                    className={`w-full pl-10 p-2 rounded-md border ${
-                      errors.address
+                    className={`w-full pl-10 p-2 rounded-md border ${errors.address
                         ? "border-destructive-light dark:border-destructive-dark"
                         : "border-input-light dark:border-input-dark"
-                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                      } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                     placeholder="Enter address"
                   />
                 </div>
@@ -445,11 +439,10 @@ const EditEvent = () => {
                     name="location.city"
                     value={eventData.location.city}
                     onChange={handleInputChange}
-                    className={`w-full p-2 rounded-md border ${
-                      errors.city
+                    className={`w-full p-2 rounded-md border ${errors.city
                         ? "border-destructive-light dark:border-destructive-dark"
                         : "border-input-light dark:border-input-dark"
-                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                      } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                     placeholder="Enter city"
                   />
                   {errors.city && (
@@ -550,7 +543,7 @@ const EditEvent = () => {
           {/* Images */}
           <div>
             <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">Event Images</h2>
-            
+
             {/* Existing Images */}
             {existingImages.length > 0 && (
               <div className="mb-4">
@@ -651,11 +644,10 @@ const EditEvent = () => {
                 type="button"
                 onClick={addRule}
                 disabled={!newRule.trim()}
-                className={`px-4 py-2 rounded-md ${
-                  !newRule.trim()
+                className={`px-4 py-2 rounded-md ${!newRule.trim()
                     ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                     : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                }`}
+                  }`}
               >
                 Add
               </button>
@@ -713,11 +705,10 @@ const EditEvent = () => {
                 type="button"
                 onClick={addEquipment}
                 disabled={!newEquipment.item.trim()}
-                className={`px-4 py-2 rounded-md ${
-                  !newEquipment.item.trim()
+                className={`px-4 py-2 rounded-md ${!newEquipment.item.trim()
                     ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                     : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                }`}
+                  }`}
               >
                 Add
               </button>

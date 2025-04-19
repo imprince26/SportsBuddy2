@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
-import { validationResult } from "express-validator";
+import { cookie, validationResult } from "express-validator";
 import cloudinary from "../config/cloudinary.js"; // Import Cloudinary
 
 
@@ -209,7 +209,6 @@ export const getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     res.json({
       success: true,
       data: user.getProfile(),

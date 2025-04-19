@@ -1,4 +1,3 @@
-"use client"
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
@@ -40,7 +39,7 @@ const EventChat = () => {
     }
 
     fetchEventDetails()
-  }, [eventId, getEventById])
+  }, [eventId])
 
   useEffect(() => {
     if (event) {
@@ -52,7 +51,7 @@ const EventChat = () => {
         leaveEventRoom(eventId)
       }
     }
-  }, [event, eventId, joinEventRoom, leaveEventRoom])
+  }, [event, joinEventRoom, leaveEventRoom])
 
   useEffect(() => {
     if (socket) {

@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
-import mongoose from "mongoose";
 
 export const isAuthenticated = async (req, res, next) => {
   try {

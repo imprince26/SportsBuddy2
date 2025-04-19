@@ -11,51 +11,40 @@ export default function setupSocket(server) {
     },
   })
 
-  // Authentication middleware
+  // Socket authentication middleware
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token
+      const userId = socket.handshake.auth.userId
+     if (!userId) return next(new Error("Authentication error"))
 
-      if (!token) {
-        return next(new Error("Authentication error"))
-      }
+      const user = await User.findById(userId).select("-password")
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
-      const user = await User.findById(decoded.id).select("-password")
-
-      if (!user) {
-        return next(new Error("User not found"))
-      }
+      if (!user) return next(new Error("User not found"))
 
       socket.user = user
       next()
-    } catch (error) {
+    } catch (err) {
       next(new Error("Authentication error"))
     }
   })
 
   io.on("connection", (socket) => {
-    console.log(`User connected: ${socket.user._id}`)
+    console.log(`✅ Socket connected: ${socket.user.name} (${socket.user._id})`)
 
-    // Join user's personal room
     socket.join(`user:${socket.user._id}`)
 
-    // Handle user joining an event room
     socket.on("join_event", (eventId) => {
       socket.join(`event:${eventId}`)
-      console.log(`${socket.user.name} joined event room: ${eventId}`)
+      console.log(`${socket.user.name} joined event:${eventId}`)
     })
 
-    // Handle user leaving an event room
     socket.on("leave_event", (eventId) => {
       socket.leave(`event:${eventId}`)
-      console.log(`${socket.user.name} left event room: ${eventId}`)
+      console.log(`${socket.user.name} left event:${eventId}`)
     })
 
-    // Handle event messages
     socket.on("event_message", (messageData) => {
-      // Broadcast to all users in the event room
-      io.to(`event:${messageData.eventId}`).emit("newMessage", {
+      const message = {
         ...messageData,
         user: {
           id: socket.user._id,
@@ -63,12 +52,13 @@ export default function setupSocket(server) {
           avatar: socket.user.avatar,
         },
         timestamp: new Date(),
-      })
+      }
+
+      io.to(`event:${messageData.eventId}`).emit("newMessage", message)
     })
 
-    // Handle disconnection
     socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.user._id}`)
+      console.log(`❌ Socket disconnected: ${socket.user.name}`)
     })
   })
 

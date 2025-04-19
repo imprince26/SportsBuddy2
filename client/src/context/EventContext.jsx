@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from './AuthContext';
 import { useSocket } from './SocketContext';
 import api from '@/utils/api';
+import { use } from 'react';
 
 const EventContext = createContext();
 
@@ -159,17 +160,15 @@ export const EventProvider = ({ children }) => {
   };
 
   // Get user's events (created and participated)
-  const getUserEvents = async () => {
+  const getUserEvents = async (userId) => {
     if (!user) return;
-    
     setLoading(true);
     
     try {
-      const response = await api.get('/events/user');
-      
-      if (response.data.success) {
-        setUserEvents(response.data.data);
-        return response.data.data;
+      const response = await api.get(`/events/user/${userId}`);
+      if (response) {
+        setUserEvents(response.data);
+        return response.data;
       }
     } catch (error) {
       console.error('Error fetching user events:', error.message);

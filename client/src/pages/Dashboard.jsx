@@ -28,8 +28,7 @@ const Dashboard = () => {
     const fetchUserEvents = async () => {
       try {
         setLoadingData(true)
-        const events = await getUserEvents()
-
+        const events = await getUserEvents(user.id)
         // Separate events into categories
         const now = new Date()
         const participating = []
@@ -62,7 +61,6 @@ const Dashboard = () => {
           achievements: user.achievements?.length || 0,
         })
 
-        // Generate activity data (this would come from the API in a real app)
         generateActivityData(events)
       } catch (error) {
         console.error("Error fetching user events:", error)

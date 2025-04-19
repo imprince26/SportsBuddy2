@@ -35,6 +35,6 @@ router.post('/:id/leave', leaveEvent);
 router.post('/:id/teams', addTeam);
 router.post('/:id/ratings', addRating);
 router.post('/:id/messages', sendMessage);
-router.get('/user', getUserEvents);
+router.get('/user/:userId', getUserEvents);
 
 export default router;

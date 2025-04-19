@@ -545,9 +545,9 @@ export const sendMessage = async (req, res) => {
 export const getUserEvents = async (req, res) => {
 
   try {
-
+    const userId = req.params.userId;
     const events = await Event.find({
-      "createdBy": req.user._id,
+      "createdBy": userId,
     })
       .populate("createdBy", "name avatar")
       .populate("participants.user", "name avatar")
@@ -565,7 +565,6 @@ export const getUserEvents = async (req, res) => {
   }
 };
 
-// Add these functions to your existing eventController.js
 
 // Search events
 export const searchEvents = async (req, res) => {

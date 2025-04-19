@@ -44,7 +44,7 @@ const AdminLayout = ({ children }) => {
     },
     {
       name: "Settings",
-      path: "/admin/settings",
+      path: "/settings",
       icon: <Settings size={20} />,
     },
   ]

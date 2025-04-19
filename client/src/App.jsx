@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Notifications from './pages/Notifications';
+import Search from './pages/Search';
 import EventChat from './pages/EventChat';
 import ManageUsers from './pages/admin/ManageUsers';
 import ManageEvents from './pages/admin/ManageEvents';
@@ -55,6 +56,7 @@ function App() {
         <Route path="events" element={<Events />} />
         <Route path="events/:id" element={<EventDetails />} />
         <Route path="profile/:userId" element={<PublicProfile />} />
+        <Route path="search" element={<Search />} />
         {/* <Route path="/teams/:id" element={<TeamPage />} /> */}
 
 
@@ -67,7 +69,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Route>
+    
       <Route
         path="/events/create"
         element={
@@ -141,6 +143,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+        </Route>
 
       <Route path='/' element={<AdminLayout />}>
 

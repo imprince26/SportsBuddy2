@@ -1,149 +1,174 @@
-"use client"
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { UserPlus, UserMinus, User, ArrowLeft } from 'lucide-react';
+import Loader from '../components/Loader';
 
-import { useState, useEffect } from "react"
-import { useParams, useNavigate, Link } from "react-router-dom"
-import { useAuth } from "../context/AuthContext"
-import { FaArrowLeft, FaUserPlus, FaUserMinus } from "react-icons/fa"
-import Loader from "../components/Loader"
-
-const FollowersFollowing = ({ type = "followers" }) => {
-  const { userId } = useParams()
-  const { user, getUserProfile, getUserFollowers, getUserFollowing, followUser, unfollowUser } = useAuth()
-  const navigate = useNavigate()
-
-  const [profile, setProfile] = useState(null)
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-
+const FollowersFollowing = ({ type = 'followers' }) => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, getUserProfile, getUserFollowers, getUserFollowing, followUser, unfollowUser } = useAuth();
+  
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
-
+      setLoading(true);
       try {
-        const profileData = await getUserProfile(userId)
-        setProfile(profileData)
-
-        let userData = []
-        if (type === "followers") {
-          userData = await getUserFollowers(userId)
-        } else {
-          userData = await getUserFollowing(userId)
+        // Get user profile
+        const profile = await getUserProfile(id);
+        if (!profile) {
+          setError('User not found');
+          return;
         }
-
-        setUsers(userData)
+        setUserProfile(profile);
+        
+        // Get followers or following based on type
+        let userData = [];
+        if (type === 'followers') {
+          userData = await getUserFollowers(id);
+        } else {
+          userData = await getUserFollowing(id);
+        }
+        
+        setUsers(userData);
       } catch (error) {
-        console.error("Error fetching data:", error)
+        console.error(`Error fetching ${type}:`, error);
+        setError(`Failed to load ${type}`);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
+    };
+    
+    fetchData();
+  }, [id, type, getUserProfile, getUserFollowers, getUserFollowing]);
+  
+  const handleFollow = async (userId) => {
+    try {
+      await followUser(userId);
+      // Update UI to show user is now followed
+      setUsers(prev => 
+        prev.map(u => 
+          u._id === userId ? { ...u, isFollowedByCurrentUser: true } : u
+        )
+      );
+    } catch (error) {
+      console.error('Error following user:', error);
     }
-
-    fetchData()
-  }, [userId, type, getUserProfile, getUserFollowers, getUserFollowing])
-
-  const handleFollow = async (targetUserId) => {
-    await followUser(targetUserId)
-    // Update local state to reflect the change
-    setUsers(users.map((u) => (u._id === targetUserId ? { ...u, isFollowing: true } : u)))
-  }
-
-  const handleUnfollow = async (targetUserId) => {
-    await unfollowUser(targetUserId)
-    // Update local state to reflect the change
-    setUsers(users.map((u) => (u._id === targetUserId ? { ...u, isFollowing: false } : u)))
-  }
-
-  if (loading) {
-    return <Loader />
-  }
-
-  if (!profile) {
+  };
+  
+  const handleUnfollow = async (userId) => {
+    try {
+      await unfollowUser(userId);
+      // Update UI to show user is no longer followed
+      setUsers(prev => 
+        prev.map(u => 
+          u._id === userId ? { ...u, isFollowedByCurrentUser: false } : u
+        )
+      );
+    } catch (error) {
+      console.error('Error unfollowing user:', error);
+    }
+  };
+  
+  if (loading) return <Loader />;
+  
+  if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-lg text-gray-600">User not found</p>
+      <div className="flex h-64 flex-col items-center justify-center">
+        <p className="text-lg text-red-500">{error}</p>
         <button
           onClick={() => navigate(-1)}
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+          className="mt-4 flex items-center rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700"
         >
-          <FaArrowLeft className="mr-2" /> Go Back
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Go Back
         </button>
       </div>
-    )
+    );
   }
-
+  
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center mb-6">
-        <button onClick={() => navigate(-1)} className="mr-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200">
-          <FaArrowLeft className="text-gray-600" />
+    <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="mb-6 flex items-center">
+        <button
+          onClick={() => navigate(-1)}
+          className="mr-4 rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+        >
+          <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-2xl font-bold">
-          {profile.name}'s {type === "followers" ? "Followers" : "Following"}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {userProfile?.name}'s {type === 'followers' ? 'Followers' : 'Following'}
         </h1>
       </div>
-
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="flex border-b">
-          <Link
-            to={`/users/${userId}/followers`}
-            className={`px-6 py-4 text-sm font-medium ${type === "followers" ? "text-primary-600 border-b-2 border-primary-600" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Followers ({profile.followers?.length || 0})
-          </Link>
-          <Link
-            to={`/users/${userId}/following`}
-            className={`px-6 py-4 text-sm font-medium ${type === "following" ? "text-primary-600 border-b-2 border-primary-600" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Following ({profile.following?.length || 0})
-          </Link>
+      
+      {users.length === 0 ? (
+        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <User className="mx-auto h-12 w-12 text-gray-400" />
+          <h2 className="mt-4 text-xl font-medium text-gray-900 dark:text-white">
+            No {type} yet
+          </h2>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">
+            {type === 'followers' 
+              ? `${userProfile?.name} doesn't have any followers yet.` 
+              : `${userProfile?.name} isn't following anyone yet.`}
+          </p>
         </div>
-
-        {users.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">No {type} yet</div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {users.map((u) => (
-              <li key={u._id} className="p-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <Link to={`/users/${u._id}`} className="flex items-center">
-                    <img
-                      src={u.avatar || "/placeholder.svg?height=40&width=40"}
-                      alt={u.name}
-                      className="w-10 h-10 rounded-full object-cover"
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {users.map((userData) => (
+            <div 
+              key={userData._id} 
+              className="flex items-center rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            >
+              <Link to={`/users/${userData._id}`} className="flex flex-1 items-center">
+                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                  {userData.avatar ? (
+                    <img 
+                      src={userData.avatar || "/placeholder.svg"} 
+                      alt={userData.name} 
+                      className="h-full w-full object-cover"
                     />
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">{u.name}</p>
-                      <p className="text-sm text-gray-500">@{u.username}</p>
-                    </div>
-                  </Link>
-
-                  {user && user.id !== u._id && (
-                    <div>
-                      {u.isFollowing ? (
-                        <button
-                          onClick={() => handleUnfollow(u._id)}
-                          className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                          <FaUserMinus className="mr-1" /> Unfollow
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleFollow(u._id)}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-full text-white bg-primary-600 hover:bg-primary-700"
-                        >
-                          <FaUserPlus className="mr-1" /> Follow
-                        </button>
-                      )}
-                    </div>
+                  ) : (
+                    <User className="h-full w-full p-2 text-gray-500" />
                   )}
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                <div className="ml-4">
+                  <h3 className="font-medium text-gray-900 dark:text-white">{userData.name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">@{userData.username}</p>
+                </div>
+              </Link>
+              
+              {user && user.id !== userData._id && (
+                <div>
+                  {userData.isFollowedByCurrentUser ? (
+                    <button
+                      onClick={() => handleUnfollow(userData._id)}
+                      className="flex items-center rounded-md bg-gray-100 py-1 px-3 text-sm text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      <UserMinus className="mr-1 h-4 w-4" />
+                      Unfollow
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleFollow(userData._id)}
+                      className="flex items-center rounded-md bg-blue-600 py-1 px-3 text-sm text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                    >
+                      <UserPlus className="mr-1 h-4 w-4" />
+                      Follow
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default FollowersFollowing
+export default FollowersFollowing;

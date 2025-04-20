@@ -13,7 +13,7 @@ const Search = () => {
   const navigate = useNavigate()
   const { searchEvents, searchUsers } = useEvents()
   const { user } = useAuth()
-  
+
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "")
   const [searchType, setSearchType] = useState(searchParams.get("type") || "events")
   const [showFilters, setShowFilters] = useState(false)
@@ -24,7 +24,7 @@ const Search = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "date:desc")
   const [showSortOptions, setShowSortOptions] = useState(false)
-  
+
   const [filters, setFilters] = useState({
     category: searchParams.get("category") || "",
     difficulty: searchParams.get("difficulty") || "",
@@ -33,10 +33,10 @@ const Search = () => {
     location: searchParams.get("location") || "",
     radius: searchParams.get("radius") || "10",
   })
-  
+
   const searchInputRef = useRef(null)
   const sortRef = useRef(null)
-  
+
   // Handle outside clicks for sort dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -44,25 +44,25 @@ const Search = () => {
         setShowSortOptions(false)
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside)
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
-  
+
   // Focus search input on mount
   useEffect(() => {
     if (searchInputRef.current) {
       searchInputRef.current.focus()
     }
   }, [])
-  
+
   // Perform search when params change
   useEffect(() => {
     const performSearch = async () => {
       if (!searchTerm && !filters.category && !filters.location) return
-      
+
       setLoading(true)
       try {
         if (searchType === "events") {
@@ -77,7 +77,7 @@ const Search = () => {
             sortBy,
             page: currentPage,
           })
-          
+
           setResults({ ...results, events: response.data })
           setTotalResults(response.pagination.total)
           setTotalPages(response.pagination.pages)
@@ -87,7 +87,7 @@ const Search = () => {
             sortBy,
             page: currentPage,
           })
-          
+
           setResults({ ...results, users: response.data })
           setTotalResults(response.pagination.total)
           setTotalPages(response.pagination.pages)
@@ -98,19 +98,19 @@ const Search = () => {
         setLoading(false)
       }
     }
-    
+
     performSearch()
   }, [searchParams])
-  
+
   const handleSearch = (e) => {
     e.preventDefault()
-    
+
     // Update URL params
     const params = new URLSearchParams()
     params.set("q", searchTerm)
     params.set("type", searchType)
     params.set("page", "1") // Reset to first page on new search
-    
+
     if (filters.category) params.set("category", filters.category)
     if (filters.difficulty) params.set("difficulty", filters.difficulty)
     if (filters.startDate) params.set("startDate", filters.startDate)
@@ -118,16 +118,16 @@ const Search = () => {
     if (filters.location) params.set("location", filters.location)
     if (filters.radius) params.set("radius", filters.radius)
     if (sortBy) params.set("sort", sortBy)
-    
+
     setSearchParams(params)
     setCurrentPage(1)
   }
-  
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target
     setFilters(prev => ({ ...prev, [name]: value }))
   }
-  
+
   const clearFilters = () => {
     setFilters({
       category: "",
@@ -138,23 +138,23 @@ const Search = () => {
       radius: "10",
     })
   }
-  
+
   const handlePageChange = (page) => {
     setCurrentPage(page)
     const params = new URLSearchParams(searchParams)
     params.set("page", page.toString())
     setSearchParams(params)
   }
-  
+
   const handleSortChange = (value) => {
     setSortBy(value)
     setShowSortOptions(false)
-    
+
     const params = new URLSearchParams(searchParams)
     params.set("sort", value)
     setSearchParams(params)
   }
-  
+
   const getSortLabel = () => {
     switch (sortBy) {
       case "date:desc":
@@ -171,12 +171,12 @@ const Search = () => {
         return "Sort By"
     }
   }
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-foreground-light dark:text-foreground-dark mb-6">Search</h1>
-        
+
         {/* Search Form */}
         <form onSubmit={handleSearch} className="mb-6">
           <div className="flex flex-col md:flex-row gap-3">
@@ -203,33 +203,31 @@ const Search = () => {
                 </button>
               )}
             </div>
-            
+
             <div className="flex gap-2">
               <div className="flex rounded-md overflow-hidden border border-input-light dark:border-input-dark">
                 <button
                   type="button"
                   onClick={() => setSearchType("events")}
-                  className={`px-4 py-2 ${
-                    searchType === "events"
+                  className={`px-4 py-2 ${searchType === "events"
                       ? "bg-primary-light dark:bg-primary-dark text-white"
                       : "bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                  }`}
+                    }`}
                 >
                   Events
                 </button>
                 <button
                   type="button"
                   onClick={() => setSearchType("users")}
-                  className={`px-4 py-2 ${
-                    searchType === "users"
+                  className={`px-4 py-2 ${searchType === "users"
                       ? "bg-primary-light dark:bg-primary-dark text-white"
                       : "bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                  }`}
+                    }`}
                 >
                   Users
                 </button>
               </div>
-              
+
               <button
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
@@ -239,7 +237,7 @@ const Search = () => {
                 <span className="hidden sm:inline">Filters</span>
                 <ChevronDown size={16} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} />
               </button>
-              
+
               <button
                 type="submit"
                 className="px-4 py-2 bg-primary-light dark:bg-primary-dark text-white rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
@@ -248,7 +246,7 @@ const Search = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Filters */}
           <AnimatePresence>
             {showFilters && (
@@ -270,7 +268,7 @@ const Search = () => {
                       Clear All
                     </button>
                   </div>
-                  
+
                   {searchType === "events" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -295,7 +293,7 @@ const Search = () => {
                           <option value="Other">Other</option>
                         </select>
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
                           Difficulty
@@ -312,7 +310,7 @@ const Search = () => {
                           <option value="Advanced">Advanced</option>
                         </select>
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
                           Start Date
@@ -325,7 +323,7 @@ const Search = () => {
                           className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
                           End Date
@@ -338,7 +336,7 @@ const Search = () => {
                           className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
                           Location
@@ -352,7 +350,7 @@ const Search = () => {
                           className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
                           Radius (km)
@@ -379,7 +377,7 @@ const Search = () => {
             )}
           </AnimatePresence>
         </form>
-        
+
         {/* Results Header */}
         {(searchTerm || filters.category || filters.location) && (
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -391,7 +389,7 @@ const Search = () => {
                 {searchType === "events" ? "Events" : "Users"} matching your search
               </p>
             </div>
-            
+
             <div className="mt-2 sm:mt-0 relative" ref={sortRef}>
               <button
                 type="button"
@@ -402,7 +400,7 @@ const Search = () => {
                 <span>{getSortLabel()}</span>
                 <ChevronDown size={16} className={`transition-transform ${showSortOptions ? "rotate-180" : ""}`} />
               </button>
-              
+
               {showSortOptions && (
                 <div className="absolute right-0 mt-1 w-48 bg-card-light dark:bg-card-dark rounded-md shadow-lg z-10 border border-border-light dark:border-border-dark">
                   <div className="py-1">
@@ -452,7 +450,7 @@ const Search = () => {
             </div>
           </div>
         )}
-        
+
         {/* Loading State */}
         {loading && (
           <div className="flex justify-center items-center py-12">
@@ -462,7 +460,7 @@ const Search = () => {
             </div>
           </div>
         )}
-        
+
         {/* Empty State */}
         {!loading && totalResults === 0 && (searchTerm || filters.category || filters.location) && (
           <div className="text-center py-12 bg-card-light dark:bg-card-dark rounded-lg">
@@ -475,7 +473,7 @@ const Search = () => {
             </p>
           </div>
         )}
-        
+
         {/* Results - Events */}
         {!loading && searchType === "events" && results.events.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -564,7 +562,7 @@ const Search = () => {
             ))}
           </div>
         )}
-        
+
         {/* Results - Users */}
         {!loading && searchType === "users" && results.users.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -590,14 +588,14 @@ const Search = () => {
                   </div>
                   <h3 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-1">{user.name}</h3>
                   <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-3">@{user.username}</p>
-                  
+
                   {user.location?.city && (
                     <div className="flex items-center justify-center text-sm text-muted-foreground-light dark:text-muted-foreground-dark mb-2">
                       <MapPin size={14} className="mr-1" />
                       <span>{user.location.city}</span>
                     </div>
                   )}
-                  
+
                   {user.sportsPreferences && user.sportsPreferences.length > 0 && (
                     <div className="flex flex-wrap justify-center gap-2 mt-3">
                       {user.sportsPreferences.slice(0, 3).map((sport, index) => (
@@ -615,7 +613,7 @@ const Search = () => {
                       )}
                     </div>
                   )}
-                  
+
                   <div className="flex justify-center gap-6 mt-4 pt-4 border-t border-border-light dark:border-border-dark w-full">
                     <div className="flex flex-col items-center">
                       <span className="font-semibold text-foreground-light dark:text-foreground-dark">{user.followers?.length || 0}</span>
@@ -640,7 +638,7 @@ const Search = () => {
             ))}
           </div>
         )}
-        
+
         {/* Pagination */}
         {!loading && totalPages > 1 && (
           <div className="flex justify-center mt-8">
@@ -648,15 +646,14 @@ const Search = () => {
               <button
                 onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === 1
+                className={`px-3 py-1 rounded-md ${currentPage === 1
                     ? "text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                     : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                }`}
+                  }`}
               >
                 Previous
               </button>
-              
+
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 // Show pages around current page
                 let pageNum
@@ -669,30 +666,28 @@ const Search = () => {
                 } else {
                   pageNum = currentPage - 2 + i
                 }
-                
+
                 return (
                   <button
                     key={pageNum}
                     onClick={() => handlePageChange(pageNum)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-md ${
-                      currentPage === pageNum
+                    className={`w-8 h-8 flex items-center justify-center rounded-md ${currentPage === pageNum
                         ? "bg-primary-light dark:bg-primary-dark text-white"
                         : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                    }`}
+                      }`}
                   >
                     {pageNum}
                   </button>
                 )
               })}
-              
+
               <button
                 onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === totalPages
+                className={`px-3 py-1 rounded-md ${currentPage === totalPages
                     ? "text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                     : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                }`}
+                  }`}
               >
                 Next
               </button>

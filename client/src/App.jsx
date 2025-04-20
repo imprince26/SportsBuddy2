@@ -69,81 +69,81 @@ function App() {
             </ProtectedRoute>
           }
         />
-    
-      <Route
-        path="/events/create"
-        element={
-          <ProtectedRoute>
-            <CreateEvent />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/events/edit/:id"
-        element={
-          <ProtectedRoute>
-            <EditEvent />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/notifications"
-        element={
-          <ProtectedRoute>
-            <Notifications />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/chat/:eventId"
-        element={
-          <ProtectedRoute>
-            <EventChat />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="events/:id/teams"
-        element={
-          <ProtectedRoute>
-            <TeamManagement />
-          </ProtectedRoute>
-        }
-      />
 
-      <Route
-        path="users/:id/followers"
-        element={
-          <ProtectedRoute>
-            <FollowersFollowing type="followers" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="users/:id/following"
-        element={
-          <ProtectedRoute>
-            <FollowersFollowing type="following" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="settings"
-        element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
-        </Route>
+        <Route
+          path="/events/create"
+          element={
+            <ProtectedRoute>
+              <CreateEvent />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditEvent />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat/:eventId"
+          element={
+            <ProtectedRoute>
+              <EventChat />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="events/:id/teams"
+          element={
+            <ProtectedRoute>
+              <TeamManagement />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="users/:id/followers"
+          element={
+            <ProtectedRoute>
+              <FollowersFollowing type="followers" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="users/:id/following"
+          element={
+            <ProtectedRoute>
+              <FollowersFollowing type="following" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
 
       <Route path='/' element={<AdminLayout />}>
 

@@ -518,7 +518,6 @@ export const EventProvider = ({ children }) => {
     }
   };
 
-  // Clean up when unmounting
   useEffect(() => {
     return () => {
       if (currentEvent) {

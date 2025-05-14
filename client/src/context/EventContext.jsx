@@ -261,6 +261,7 @@ export const EventProvider = ({ children }) => {
     try {
       // Handle FormData for file uploads
       const formData = new FormData();
+      console.log(eventData)
       
       // Append all event data to FormData
       Object.entries(eventData).forEach(([key, value]) => {

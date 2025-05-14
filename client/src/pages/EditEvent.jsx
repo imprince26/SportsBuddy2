@@ -284,8 +284,8 @@ const EditEvent = () => {
                   value={eventData.name}
                   onChange={handleInputChange}
                   className={`w-full p-2 rounded-md border ${errors.name
-                      ? "border-destructive-light dark:border-destructive-dark"
-                      : "border-input-light dark:border-input-dark"
+                    ? "border-destructive-light dark:border-destructive-dark"
+                    : "border-input-light dark:border-input-dark"
                     } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                   placeholder="Enter event name"
                 />
@@ -302,8 +302,8 @@ const EditEvent = () => {
                   value={eventData.category}
                   onChange={handleInputChange}
                   className={`w-full p-2 rounded-md border ${errors.category
-                      ? "border-destructive-light dark:border-destructive-dark"
-                      : "border-input-light dark:border-input-dark"
+                    ? "border-destructive-light dark:border-destructive-dark"
+                    : "border-input-light dark:border-input-dark"
                     } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                 >
                   <option value="">Select a category</option>
@@ -332,8 +332,8 @@ const EditEvent = () => {
                 onChange={handleInputChange}
                 rows={4}
                 className={`w-full p-2 rounded-md border ${errors.description
-                    ? "border-destructive-light dark:border-destructive-dark"
-                    : "border-input-light dark:border-input-dark"
+                  ? "border-destructive-light dark:border-destructive-dark"
+                  : "border-input-light dark:border-input-dark"
                   } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                 placeholder="Describe your event"
               />
@@ -364,8 +364,8 @@ const EditEvent = () => {
                     value={eventData.date}
                     onChange={handleInputChange}
                     className={`w-full pl-10 p-2 rounded-md border ${errors.date
-                        ? "border-destructive-light dark:border-destructive-dark"
-                        : "border-input-light dark:border-input-dark"
+                      ? "border-destructive-light dark:border-destructive-dark"
+                      : "border-input-light dark:border-input-dark"
                       } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                   />
                 </div>
@@ -388,8 +388,8 @@ const EditEvent = () => {
                     value={eventData.time}
                     onChange={handleInputChange}
                     className={`w-full pl-10 p-2 rounded-md border ${errors.time
-                        ? "border-destructive-light dark:border-destructive-dark"
-                        : "border-input-light dark:border-input-dark"
+                      ? "border-destructive-light dark:border-destructive-dark"
+                      : "border-input-light dark:border-input-dark"
                       } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                   />
                 </div>
@@ -419,8 +419,8 @@ const EditEvent = () => {
                     value={eventData.location.address}
                     onChange={handleInputChange}
                     className={`w-full pl-10 p-2 rounded-md border ${errors.address
-                        ? "border-destructive-light dark:border-destructive-dark"
-                        : "border-input-light dark:border-input-dark"
+                      ? "border-destructive-light dark:border-destructive-dark"
+                      : "border-input-light dark:border-input-dark"
                       } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                     placeholder="Enter address"
                   />
@@ -440,8 +440,8 @@ const EditEvent = () => {
                     value={eventData.location.city}
                     onChange={handleInputChange}
                     className={`w-full p-2 rounded-md border ${errors.city
-                        ? "border-destructive-light dark:border-destructive-dark"
-                        : "border-input-light dark:border-input-dark"
+                      ? "border-destructive-light dark:border-destructive-dark"
+                      : "border-input-light dark:border-input-dark"
                       } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
                     placeholder="Enter city"
                   />
@@ -645,8 +645,8 @@ const EditEvent = () => {
                 onClick={addRule}
                 disabled={!newRule.trim()}
                 className={`px-4 py-2 rounded-md ${!newRule.trim()
-                    ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                    : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
+                  ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
+                  : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
                   }`}
               >
                 Add
@@ -706,8 +706,8 @@ const EditEvent = () => {
                 onClick={addEquipment}
                 disabled={!newEquipment.item.trim()}
                 className={`px-4 py-2 rounded-md ${!newEquipment.item.trim()
-                    ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                    : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
+                  ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
+                  : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
                   }`}
               >
                 Add

@@ -146,6 +146,8 @@ const CreateEvent = () => {
     if (!validateForm()) return
 
     try {
+      console.log("Event data:", eventData)
+      console.log("Images:", images)
       const createdEvent = await createEvent(eventData, images)
       navigate(`/events/${createdEvent._id}`)
     } catch (error) {

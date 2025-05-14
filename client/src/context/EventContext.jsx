@@ -482,7 +482,6 @@ export const EventProvider = ({ children }) => {
     }
   };
 
-  // Search events
   const searchEvents = async (searchQuery) => {
     setLoading(true);
 

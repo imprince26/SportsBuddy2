@@ -38,10 +38,10 @@ export const EventProvider = ({ children }) => {
     total: 0,
     pages: 0
   });
-  
+
   const { user } = useAuth();
   const { socket, joinEventRoom, leaveEventRoom } = useSocket();
-  
+
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   // Listen for socket events
@@ -56,25 +56,25 @@ export const EventProvider = ({ children }) => {
 
     // Handle event updates
     socket.on('eventUpdated', (updatedEvent) => {
-      setEvents(prev => 
+      setEvents(prev =>
         prev.map(event => event._id === updatedEvent._id ? updatedEvent : event)
       );
-      
+
       if (currentEvent && currentEvent._id === updatedEvent._id) {
         setCurrentEvent(updatedEvent);
       }
-      
+
       toast.success(`Event updated: ${updatedEvent.name}`);
     });
 
     // Handle event deletion
     socket.on('eventDeleted', (eventId) => {
       setEvents(prev => prev.filter(event => event._id !== eventId));
-      
+
       if (currentEvent && currentEvent._id === eventId) {
         setCurrentEvent(null);
       }
-      
+
       toast.success('Event has been deleted');
     });
 
@@ -125,26 +125,26 @@ export const EventProvider = ({ children }) => {
   const getEvents = async (newFilters = null, newPage = 1) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // Update filters if new ones are provided
       const currentFilters = newFilters || filters;
       if (newFilters) {
         setFilters(newFilters);
       }
-      
+
       // Build query string
       const queryParams = new URLSearchParams();
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (value) queryParams.append(key, value);
       });
-      
+
       // Add pagination
       queryParams.append('page', newPage);
       queryParams.append('limit', pagination.limit);
-      
+
       const response = await api.get(`/events?${queryParams.toString()}`);
-      
+
       if (response.data.success) {
         setEvents(response.data.data);
         setPagination(response.data.pagination);
@@ -163,7 +163,7 @@ export const EventProvider = ({ children }) => {
   const getUserEvents = async (userId) => {
     if (!user) return;
     setLoading(true);
-    
+
     try {
       const response = await api.get(`/events/user/${userId}`);
       if (response) {
@@ -181,16 +181,16 @@ export const EventProvider = ({ children }) => {
   const getEventById = async (eventId) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await api.get(`/events/${eventId}`);
-      
+
       if (response.data) {
         setCurrentEvent(response.data);
-        
+
         // Join event room for real-time updates
         joinEventRoom(eventId);
-        
+
         return response.data;
       }
     } catch (error) {
@@ -207,11 +207,11 @@ export const EventProvider = ({ children }) => {
   const createEvent = async (eventData) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // Handle FormData for file uploads
       const formData = new FormData();
-      
+
       // Append all event data to FormData
       Object.entries(eventData).forEach(([key, value]) => {
         if (key === 'images') {
@@ -226,20 +226,20 @@ export const EventProvider = ({ children }) => {
           formData.append(key, value);
         }
       });
-      
+
       const response = await api.post('/events', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       if (response.data) {
         // Add new event to events list
         setEvents(prev => [response.data, ...prev]);
-        
+
         // Add to user events
         setUserEvents(prev => [response.data, ...prev]);
-        
+
         toast.success('Event created successfully');
         return { success: true, event: response.data };
       }
@@ -257,42 +257,40 @@ export const EventProvider = ({ children }) => {
   const updateEvent = async (eventId, eventData) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const formData = new FormData();
-      
+
       Object.entries(eventData).forEach(([key, value]) => {
         if (key === 'images' && Array.isArray(value)) {
-          // Handle multiple image files
           for (let i = 0; i < value.length; i++) {
             formData.append('images', value[i]);
           }
         } else if (key === 'location' && typeof value === 'object') {
-          // Convert location object to string
           formData.append(key, JSON.stringify(value));
         } else {
           formData.append(key, value);
         }
       });
-      
+
       const response = await api.put(`/events/${eventId}`, formData);
-      
+
       if (response.data) {
         // Update event in events list
-        setEvents(prev => 
+        setEvents(prev =>
           prev.map(event => event._id === eventId ? response.data : event)
         );
-        
+
         // Update in user events
-        setUserEvents(prev => 
+        setUserEvents(prev =>
           prev.map(event => event._id === eventId ? response.data : event)
         );
-        
+
         // Update current event if it's the one being edited
         if (currentEvent && currentEvent._id === eventId) {
           setCurrentEvent(response.data);
         }
-        
+
         toast.success('Event updated successfully');
         return { success: true, event: response.data };
       }
@@ -310,23 +308,23 @@ export const EventProvider = ({ children }) => {
   const deleteEvent = async (eventId) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await api.delete(`/events/${eventId}`);
-      
+
       if (response.data.success) {
         // Remove event from events list
         setEvents(prev => prev.filter(event => event._id !== eventId));
-        
+
         // Remove from user events
         setUserEvents(prev => prev.filter(event => event._id !== eventId));
-        
+
         // Clear current event if it's the one being deleted
         if (currentEvent && currentEvent._id === eventId) {
           setCurrentEvent(null);
           leaveEventRoom(eventId);
         }
-        
+
         toast.success('Event deleted successfully');
         return { success: true };
       }
@@ -344,27 +342,27 @@ export const EventProvider = ({ children }) => {
   const joinEvent = async (eventId) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await api.post(`/events/${eventId}/join`);
-      
+
       if (response.data) {
         // Update event in events list
-        setEvents(prev => 
+        setEvents(prev =>
           prev.map(event => event._id === eventId ? response.data : event)
         );
-        
+
         // Add to user events if not already there
         setUserEvents(prev => {
           const exists = prev.some(event => event._id === eventId);
           return exists ? prev.map(event => event._id === eventId ? response.data : event) : [...prev, response.data];
         });
-        
+
         // Update current event if it's the one being joined
         if (currentEvent && currentEvent._id === eventId) {
           setCurrentEvent(response.data);
         }
-        
+
         toast.success('Successfully joined event');
         return { success: true, event: response.data };
       }
@@ -382,26 +380,26 @@ export const EventProvider = ({ children }) => {
   const leaveEvent = async (eventId) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await api.post(`/events/${eventId}/leave`);
-      
+
       if (response.data) {
         // Update event in events list
-        setEvents(prev => 
+        setEvents(prev =>
           prev.map(event => event._id === eventId ? response.data : event)
         );
-        
+
         // Update in user events
-        setUserEvents(prev => 
+        setUserEvents(prev =>
           prev.map(event => event._id === eventId ? response.data : event)
         );
-        
+
         // Update current event if it's the one being left
         if (currentEvent && currentEvent._id === eventId) {
           setCurrentEvent(response.data);
         }
-        
+
         toast.success('Successfully left event');
         return { success: true, event: response.data };
       }
@@ -419,16 +417,16 @@ export const EventProvider = ({ children }) => {
   const addTeam = async (eventId, teamData) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await api.post(`/events/${eventId}/teams`, teamData);
-      
+
       if (response.data) {
         // Update current event
         if (currentEvent && currentEvent._id === eventId) {
           setCurrentEvent(response.data);
         }
-        
+
         toast.success('Team created successfully');
         return { success: true, event: response.data };
       }
@@ -446,16 +444,16 @@ export const EventProvider = ({ children }) => {
   const addRating = async (eventId, ratingData) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await api.post(`/events/${eventId}/ratings`, ratingData);
-      
+
       if (response.data) {
         // Update current event
         if (currentEvent && currentEvent._id === eventId) {
           setCurrentEvent(response.data);
         }
-        
+
         toast.success('Rating submitted successfully');
         return { success: true, event: response.data };
       }
@@ -473,7 +471,7 @@ export const EventProvider = ({ children }) => {
   const sendMessage = async (eventId, message) => {
     try {
       const response = await api.post(`/events/${eventId}/messages`, { message });
-      
+
       if (response.data) {
         return { success: true, message: response.data };
       }
@@ -487,10 +485,10 @@ export const EventProvider = ({ children }) => {
   // Search events
   const searchEvents = async (searchQuery) => {
     setLoading(true);
-    
+
     try {
       const response = await api.get(`/events/search?q=${searchQuery}`);
-      
+
       if (response.data.success) {
         return response.data.data;
       }
@@ -505,10 +503,10 @@ export const EventProvider = ({ children }) => {
   // Get nearby events
   const getNearbyEvents = async (lat, lng, radius = 10) => {
     setLoading(true);
-    
+
     try {
       const response = await api.get(`/events/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
-      
+
       if (response.data.success) {
         return response.data.data;
       }

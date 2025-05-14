@@ -500,7 +500,6 @@ export const EventProvider = ({ children }) => {
     }
   };
 
-  // Get nearby events
   const getNearbyEvents = async (lat, lng, radius = 10) => {
     setLoading(true);
 

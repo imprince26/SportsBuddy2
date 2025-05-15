@@ -52,7 +52,7 @@ export const handleUploadError = (err, req, res, next) => {
       });
     }
   }
-  
+
   if (err.message.includes("Invalid file type")) {
     return res.status(400).json({
       success: false,

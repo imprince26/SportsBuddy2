@@ -32,11 +32,10 @@ export const upload = multer({
   fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB file size limit
-    files: 5, // Maximum 5 files per upload
+    files: 5, 
   },
 });
 
-// Error handling middleware
 export const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {

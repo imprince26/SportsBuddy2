@@ -14,7 +14,8 @@ const generateToken = (user) => {
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "Strict",
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : undefined,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -49,14 +50,7 @@ export const register = async (req, res) => {
 
     const token = generateToken(newUser);
 
-    if (process.env.NODE_ENV === "production") {
-      res.cookie("SportsBuddyToken", token, {
-        ...cookieOptions,
-        domain: process.env.COOKIE_DOMAIN,
-      });
-    } else {
-      res.cookie("SportsBuddyToken", token, cookieOptions);
-    }
+   res.cookie("SportsBuddyToken", token, cookieOptions);
 
     res.status(201).json({
       success: true,
@@ -101,14 +95,7 @@ export const login = async (req, res) => {
 
     const token = generateToken(user);
 
-    if (process.env.NODE_ENV === "production") {
-      res.cookie("SportsBuddyToken", token, {
-        ...cookieOptions,
-        domain: process.env.COOKIE_DOMAIN,
-      });
-    } else {
-      res.cookie("SportsBuddyToken", token, cookieOptions);
-    }
+  res.cookie("SportsBuddyToken", token, cookieOptions);
 
     res.status(200).json({
       success: true,
@@ -137,14 +124,7 @@ export const logout = (req, res) => {
       sameSite: "None",
     };
 
-    if (process.env.NODE_ENV === "production") {
-      res.clearCookie("SportsBuddyToken", {
-        ...cookieOptions,
-        domain: process.env.COOKIE_DOMAIN,
-      });
-    } else {
-      res.clearCookie("SportsBuddyToken", cookieOptionsLogout);
-    }
+    res.clearCookie("SportsBuddyToken");
 
     res.status(200).json({
       success: true,

@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
-import { cookie, validationResult } from "express-validator";
-import cloudinary from "../config/cloudinary.js"; // Import Cloudinary
+import {validationResult } from "express-validator";
+import cloudinary from "../config/cloudinary.js";
 
 
 const generateToken = (user) => {

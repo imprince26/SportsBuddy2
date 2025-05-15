@@ -50,7 +50,7 @@ export const register = async (req, res) => {
 
     const token = generateToken(newUser);
 
-   res.cookie("SportsBuddyToken", token, cookieOptions);
+    res.cookie("SportsBuddyToken", token, cookieOptions);
 
     res.status(201).json({
       success: true,
@@ -95,7 +95,7 @@ export const login = async (req, res) => {
 
     const token = generateToken(user);
 
-  res.cookie("SportsBuddyToken", token, cookieOptions);
+    res.cookie("SportsBuddyToken", token, cookieOptions);
 
     res.status(200).json({
       success: true,

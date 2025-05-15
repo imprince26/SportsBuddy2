@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
-import {validationResult } from "express-validator";
+import { validationResult } from "express-validator";
 import cloudinary from "../config/cloudinary.js";
 
 

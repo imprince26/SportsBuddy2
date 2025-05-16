@@ -1,6 +1,6 @@
 import express from 'express';
-import { cloudinaryUpload } from '../middleware/cloudinaryUpload.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
+import { upload } from '../config/cloudinary.js';
 import {
   createEvent,
   getAllEvents,
@@ -27,8 +27,8 @@ router.get('/nearby', getNearbyEvents);
 
 // Protected routes
 router.use(isAuthenticated);
-router.post('/', cloudinaryUpload.array('eventImages', 5), createEvent);
-router.put('/:id', cloudinaryUpload.array('eventImages', 5), updateEvent);
+router.post('/', upload.array('eventImages', 5), createEvent);
+router.put('/:id', upload.array('eventImages', 5), updateEvent);
 router.delete('/:id', deleteEvent);
 router.post('/:id/join', joinEvent);
 router.post('/:id/leave', leaveEvent);

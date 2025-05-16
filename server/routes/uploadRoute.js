@@ -1,6 +1,6 @@
 import express from 'express';
-import { cloudinaryUpload } from '../middleware/cloudinaryUpload.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
+import { upload } from '../config/cloudinary.js';
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 router.post(
   '/event',
   isAuthenticated,
-  cloudinaryUpload.array('eventImages', 5),
+  upload.array('eventImages', 5),
   async (req, res) => {
     try {
       if (!req.files || req.files.length === 0) {
@@ -41,7 +41,7 @@ router.post(
 router.post(
   '/avatar',
   isAuthenticated,
-  cloudinaryUpload.single('avatar'),
+  upload.single('avatar'),
   async (req, res) => {
     try {
       if (!req.file) {

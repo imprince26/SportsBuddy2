@@ -38,10 +38,7 @@ const upload = multer({
       cb(new Error('Invalid file type. Only JPEG, JPG, PNG, and WebP are allowed.'), false);
     }
   },
-}).fields([
-  { name: 'eventImage', maxCount: 1 },
-  { name: 'avatar', maxCount: 1 },
-]);
+})
 
 const deleteImage = async (publicId) => {
   try {

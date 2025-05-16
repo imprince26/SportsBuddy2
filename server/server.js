@@ -11,7 +11,7 @@ import uploadRoute from "./routes/uploadRoute.js";
 import userRoute from "./routes/userRoute.js";
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
-import { uploadImage } from "./config/cloudinary.js";
+import { uploadImage,upload } from "./config/cloudinary.js";
 import { handleImageUpload } from "./middleware/uploadMiddleware.js";
 
 dotenv.config();
@@ -45,25 +45,32 @@ app.use("/api/events", eventRoute);
 app.use("/api/users", userRoute);
 app.use("/api/upload", uploadRoute);
 
-app.post("/api/upload",handleImageUpload.single("file"), async (req, res) => {
+app.post("/api/upload",upload.array("file"),async (req, res) => {
   try {
-    const result = await uploadImage(req.file, "SportsBuddy-2");
-    if (!result) {
+    const files = req.files;
+    if (!files || files.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "File upload failed",
+        message: "No files uploaded",
       });
     }
+
+    const imageUrls = await Promise.all(
+      files.map(async (file) => {
+        const result = await uploadImage(file);
+        return result.secure_url;
+      })
+    );
+
     res.status(200).json({
       success: true,
-      message: "File uploaded successfully",
-      data: result,
+      urls: imageUrls,
     });
   } catch (error) {
+    console.error("Error uploading images:", error);
     res.status(500).json({
       success: false,
-      message: "File upload failed",
-      error: error.message,
+      message: "Error uploading images",
     });
   }
 });

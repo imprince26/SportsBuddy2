@@ -51,7 +51,7 @@ const deleteImage = async (publicId) => {
   }
 };
 
-const uploadImage = async(file,folder="SportsBuddy-2") => {
+const uploadImage = async (file, folder = "SportsBuddy-2") => {
   console.log('Uploading image to Cloudinary...');
   try {
     // Handle both buffer and path-based uploads
@@ -114,4 +114,4 @@ const uploadImage = async(file,folder="SportsBuddy-2") => {
 //   next(err);
 // }
 
-export { upload, deleteImage, uploadImage,cloudinary };
+export { upload, deleteImage, uploadImage, cloudinary };

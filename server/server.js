@@ -74,21 +74,6 @@ app.post("/api/upload", upload.array("file"), async (req, res) => {
   }
 });
 
-// // Error handling middleware
-// app.use((err, req, res, next) => {
-//   console.error(err.stack);
-//   // Handle multer-specific errors
-//   if (err instanceof multer.MulterError) {
-//     return res.status(400).json({
-//       success: false,
-//       message: `Upload error: ${err.message}`,
-//     });
-//   }
-//   res.status(500).json({
-//     success: false,
-//     message: err.message || "Something went wrong!",
-//   });
-// });
 
 // Health check route
 app.get("/health", (req, res) => {

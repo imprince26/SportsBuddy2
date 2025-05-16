@@ -12,7 +12,6 @@ import userRoute from "./routes/userRoute.js";
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
 import { uploadImage,upload } from "./config/cloudinary.js";
-import { handleImageUpload } from "./middleware/uploadMiddleware.js";
 
 dotenv.config();
 

@@ -11,6 +11,8 @@ import uploadRoute from "./routes/uploadRoute.js";
 import userRoute from "./routes/userRoute.js";
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
+import { uploadImage } from "./config/cloudinary.js";
+import { handleImageUpload } from "./middleware/uploadMiddleware.js";
 
 dotenv.config();
 
@@ -43,21 +45,44 @@ app.use("/api/events", eventRoute);
 app.use("/api/users", userRoute);
 app.use("/api/upload", uploadRoute);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  // Handle multer-specific errors
-  if (err instanceof multer.MulterError) {
-    return res.status(400).json({
+app.post("/api/upload",handleImageUpload.single("file"), async (req, res) => {
+  try {
+    const result = await uploadImage(req.file, "SportsBuddy-2");
+    if (!result) {
+      return res.status(400).json({
+        success: false,
+        message: "File upload failed",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "File uploaded successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      message: `Upload error: ${err.message}`,
+      message: "File upload failed",
+      error: error.message,
     });
   }
-  res.status(500).json({
-    success: false,
-    message: err.message || "Something went wrong!",
-  });
 });
+
+// // Error handling middleware
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   // Handle multer-specific errors
+//   if (err instanceof multer.MulterError) {
+//     return res.status(400).json({
+//       success: false,
+//       message: `Upload error: ${err.message}`,
+//     });
+//   }
+//   res.status(500).json({
+//     success: false,
+//     message: err.message || "Something went wrong!",
+//   });
+// });
 
 // Health check route
 app.get("/health", (req, res) => {

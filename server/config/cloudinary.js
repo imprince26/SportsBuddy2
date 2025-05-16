@@ -24,4 +24,94 @@ const storage = new CloudinaryStorage({
   },
 });
 
-export default cloudinary;
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB file size limit
+    files: 5, // Maximum number of files
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, JPG, PNG, and WebP are allowed.'), false);
+    }
+  },
+}).fields([
+  { name: 'eventImage', maxCount: 1 },
+  { name: 'avatar', maxCount: 1 },
+]);
+
+const deleteImage = async (publicId) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error('Error deleting image:', error);
+  }
+};
+
+const uploadImage = async(file,folder="SportsBuddy-2") => {
+  console.log('Uploading image to Cloudinary...');
+  try {
+    // Handle both buffer and path-based uploads
+    const uploadOptions = {
+      folder: folder,
+      width: 500,
+      height: 500,
+      quality: 'auto',
+      crop: "scale"
+    };
+
+    // If file is from Multer (has buffer)
+    if (file.buffer) {
+      const b64 = Buffer.from(file.buffer).toString('base64');
+      const dataURI = `data:${file.mimetype};base64,${b64}`;
+      const result = await cloudinary.uploader.upload(dataURI, uploadOptions);
+      return result;
+    }
+    // If file has path (from other upload methods)
+    else if (file.path) {
+      const result = await cloudinary.uploader.upload(file.path, uploadOptions);
+      return result;
+    }
+    // If file is a temp file path string
+    else if (typeof file === 'string') {
+      const result = await cloudinary.uploader.upload(file, uploadOptions);
+      return result;
+    } else {
+      throw new Error('Invalid file format for upload');
+    }
+  } catch (error) {
+    console.error('Error uploading to Cloudinary:', error.message);
+    throw error;
+  }
+}
+
+// const handleUploadError = (err, req, res, next) => {
+//   if (err instanceof multer.MulterError) {
+//     if (err.code === 'LIMIT_FILE_SIZE') {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'File size too large. Maximum size is 5MB.',
+//       });
+//     }
+//     if (err.code === 'LIMIT_FILE_COUNT') {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Too many files. Maximum is 5 files.',
+//       });
+//     }
+//   }
+
+//   if (err.message.includes('Invalid file type')) {
+//     return res.status(400).json({
+//       success: false,
+//       message: err.message,
+//     });
+//   }
+
+//   next(err);
+// }
+
+export { upload, deleteImage, uploadImage,cloudinary };

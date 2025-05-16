@@ -1,6 +1,6 @@
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
-import cloudinary from "../config/cloudinary.js"; // Import Cloudinary
+import {cloudinary} from "../config/cloudinary.js"; // Import Cloudinary
 import mongoose from "mongoose";
 
 // Create Event

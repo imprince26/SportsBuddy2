@@ -1,63 +1,34 @@
-import multer from "multer";
+import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import {v2 as cloudinary} from 'cloudinary';
 
-
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Determine upload directory based on file type
-    const uploadType = req.params.type || "event";
-    const uploadDir = path.join(__dirname, "..", "uploads", uploadType === "event" ? "events" : "avatars");
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename with timestamp
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'SportsBuddy-2',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
+    public_id: (req, file) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      return `${file.fieldname}-${uniqueSuffix}`;
+    },
   },
 });
+// Use memory storage instead of CloudinaryStorage
+// const storage = multer.memoryStorage();
 
-// File filter to allow only images
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Invalid file type. Only JPEG, JPG, PNG, and WebP are allowed."), false);
-  }
-};
-
-// Create multer instance with configuration
-export const upload = multer({
-  storage,
-  fileFilter,
+export const handleImageUpload = multer({
+  storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB file size limit
-    files: 5, 
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
+  fileFilter: (req, file, cb) => {
+    // Check if file is an image
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('Only image files are allowed!'), false);
+      return;
+    }
+    // Accept file
+    cb(null, true);
+  }
 });
-
-export const handleUploadError = (err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({
-        success: false,
-        message: "File size too large. Maximum size is 5MB.",
-      });
-    }
-    if (err.code === "LIMIT_FILE_COUNT") {
-      return res.status(400).json({
-        success: false,
-        message: "Too many files. Maximum is 5 files.",
-      });
-    }
-  }
-
-  if (err.message.includes("Invalid file type")) {
-    return res.status(400).json({
-      success: false,
-      message: err.message,
-    });
-  }
-
-  next(err);
-};

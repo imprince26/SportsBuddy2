@@ -11,7 +11,7 @@ import uploadRoute from "./routes/uploadRoute.js";
 import userRoute from "./routes/userRoute.js";
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
-import { uploadImage,upload } from "./config/cloudinary.js";
+import { uploadImage, upload } from "./config/cloudinary.js";
 
 dotenv.config();
 
@@ -44,7 +44,7 @@ app.use("/api/events", eventRoute);
 app.use("/api/users", userRoute);
 app.use("/api/upload", uploadRoute);
 
-app.post("/api/upload",upload.array("file"),async (req, res) => {
+app.post("/api/upload", upload.array("file"), async (req, res) => {
   try {
     const files = req.files;
     if (!files || files.length === 0) {

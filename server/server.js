@@ -74,7 +74,6 @@ app.post("/api/upload", upload.array("file"), async (req, res) => {
   }
 });
 
-
 // Health check route
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK" });

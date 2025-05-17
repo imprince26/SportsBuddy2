@@ -49,9 +49,8 @@ const deleteImage = async (publicId) => {
 };
 
 const uploadImage = async (file, folder = "SportsBuddy-2") => {
-  console.log('Uploading image to Cloudinary...');
   try {
-    // Handle both buffer and path-based uploads
+
     const uploadOptions = {
       folder: folder,
       width: 500,

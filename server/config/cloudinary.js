@@ -84,6 +84,4 @@ const uploadImage = async (file, folder = "SportsBuddy-2") => {
   }
 }
 
-
-
 export { upload, deleteImage, uploadImage, cloudinary };

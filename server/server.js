@@ -2,7 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import multer from "multer";
 import morgan from "morgan";
 import { createServer } from "http";
 import authRoute from "./routes/authRoute.js";

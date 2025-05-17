@@ -1,6 +1,6 @@
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
-import {cloudinary} from "../config/cloudinary.js"; // Import Cloudinary
+import { cloudinary } from "../config/cloudinary.js"; // Import Cloudinary
 import mongoose from "mongoose";
 
 // Create Event
@@ -570,11 +570,11 @@ export const getUserEvents = async (req, res) => {
 export const searchEvents = async (req, res) => {
   try {
     const { q } = req.query;
-    
+
     if (!q) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Search query is required" 
+        message: "Search query is required"
       });
     }
 
@@ -586,9 +586,9 @@ export const searchEvents = async (req, res) => {
         { "location.city": { $regex: q, $options: "i" } }
       ]
     })
-    .populate("createdBy", "name username avatar")
-    .populate("participants.user", "name username avatar")
-    .limit(20);
+      .populate("createdBy", "name username avatar")
+      .populate("participants.user", "name username avatar")
+      .limit(20);
 
     res.json({
       success: true,
@@ -607,11 +607,11 @@ export const searchEvents = async (req, res) => {
 export const getNearbyEvents = async (req, res) => {
   try {
     const { lat, lng, radius = 10 } = req.query;
-    
+
     if (!lat || !lng) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Latitude and longitude are required" 
+        message: "Latitude and longitude are required"
       });
     }
 
@@ -626,9 +626,9 @@ export const getNearbyEvents = async (req, res) => {
         }
       }
     })
-    .populate("createdBy", "name username avatar")
-    .populate("participants.user", "name username avatar")
-    .limit(20);
+      .populate("createdBy", "name username avatar")
+      .populate("participants.user", "name username avatar")
+      .limit(20);
 
     res.json({
       success: true,

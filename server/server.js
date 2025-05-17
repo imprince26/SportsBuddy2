@@ -21,7 +21,7 @@ const httpServer = createServer(app);
 
 // Configure Socket.io
 const io = setupSocket(httpServer);
-app.set("io", io); // Make io available in routes
+app.set("io", io);
 
 // Middleware
 app.use(express.json());

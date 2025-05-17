@@ -9,9 +9,9 @@ export const getUserProfile = async (req, res) => {
       .populate("createdEvents");
 
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found"
       });
     }
 
@@ -32,17 +32,17 @@ export const getUserProfile = async (req, res) => {
 export const followUser = async (req, res) => {
   try {
     if (req.user._id.toString() === req.params.userId) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "You cannot follow yourself" 
+        message: "You cannot follow yourself"
       });
     }
 
     const userToFollow = await User.findById(req.params.userId);
     if (!userToFollow) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found"
       });
     }
 
@@ -50,9 +50,9 @@ export const followUser = async (req, res) => {
 
     // Check if already following
     if (currentUser.following.includes(userToFollow._id)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Already following this user" 
+        message: "Already following this user"
       });
     }
 
@@ -87,17 +87,17 @@ export const followUser = async (req, res) => {
 export const unfollowUser = async (req, res) => {
   try {
     if (req.user._id.toString() === req.params.userId) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "You cannot unfollow yourself" 
+        message: "You cannot unfollow yourself"
       });
     }
 
     const userToUnfollow = await User.findById(req.params.userId);
     if (!userToUnfollow) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found"
       });
     }
 
@@ -105,9 +105,9 @@ export const unfollowUser = async (req, res) => {
 
     // Check if following
     if (!currentUser.following.includes(userToUnfollow._id)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Not following this user" 
+        message: "Not following this user"
       });
     }
 
@@ -143,9 +143,9 @@ export const getUserFollowers = async (req, res) => {
       .populate("followers", "name username avatar");
 
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found"
       });
     }
 
@@ -169,9 +169,9 @@ export const getUserFollowing = async (req, res) => {
       .populate("following", "name username avatar");
 
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found"
       });
     }
 
@@ -192,11 +192,11 @@ export const getUserFollowing = async (req, res) => {
 export const searchUsers = async (req, res) => {
   try {
     const { q } = req.query;
-    
+
     if (!q) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Search query is required" 
+        message: "Search query is required"
       });
     }
 
@@ -206,8 +206,8 @@ export const searchUsers = async (req, res) => {
         { username: { $regex: q, $options: "i" } }
       ]
     })
-    .select("name username avatar bio")
-    .limit(20);
+      .select("name username avatar bio")
+      .limit(20);
 
     res.json({
       success: true,
@@ -226,11 +226,11 @@ export const searchUsers = async (req, res) => {
 export const updatePreferences = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    
+
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found"
       });
     }
 
@@ -239,11 +239,11 @@ export const updatePreferences = async (req, res) => {
     if (emailNotifications !== undefined) {
       user.preferences.emailNotifications = emailNotifications;
     }
-    
+
     if (pushNotifications !== undefined) {
       user.preferences.pushNotifications = pushNotifications;
     }
-    
+
     if (radius !== undefined) {
       user.preferences.radius = radius;
     }

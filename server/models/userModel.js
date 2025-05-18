@@ -61,10 +61,16 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    avatar: {
-      type: String,
-      default: "",
-    },
+    avatar:[
+      {
+        url: {
+          type: String,
+        },
+        public_id: {
+          type: String,
+        },
+      },
+    ],
     sportsPreferences: [
       {
         sport: {

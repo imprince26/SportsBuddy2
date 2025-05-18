@@ -2,8 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
-import { cloudinary } from "../config/cloudinary.js";
-
+import { uploadImage,deleteImage } from "../config/cloudinary.js";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -212,13 +211,12 @@ export const updateProfile = async (req, res) => {
     }
 
     // Handle avatar upload
-    if (req.file) {
-      // Delete old avatar from Cloudinary if it exists
-      if (user.avatar && user.avatar.includes('cloudinary')) {
-        const publicId = user.avatar.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`avatars/${publicId}`);
+    if (req.file ) {
+      const { secure_url, public_id } = await uploadImage(req.file.path);
+      if (user.avatar.public_id) {
+        await deleteImage(user.avatar.public_id);
       }
-      user.avatar = req.file.path; // Cloudinary URL
+      user.avatar = { url: secure_url, public_id };
     }
 
     // Update allowed fields
@@ -229,6 +227,7 @@ export const updateProfile = async (req, res) => {
       "socialLinks",
       "bio",
       "username",
+      "avatar",
     ];
 
     allowedUpdates.forEach((field) => {

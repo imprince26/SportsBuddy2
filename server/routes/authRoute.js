@@ -13,6 +13,7 @@ import {
   addAchievement,
   getUserProfile
 } from "../controllers/authController.js";
+import { upload } from "../config/cloudinary.js";
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ router.get("/user/:userId", getUserProfile);
 router.use(isAuthenticated);
 router.get("/me", getCurrentUser);
 router.get("/profile", getProfile);
-router.put("/profile", updateProfile);
+router.put("/profile",upload.single("avatar"), updateProfile);
 router.put("/password", updatePassword);
 router.get("/notifications", getNotifications);
 router.put("/notifications/:notificationId", markNotificationRead);

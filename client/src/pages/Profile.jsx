@@ -65,6 +65,9 @@ const Profile = () => {
         socialLinks: user.socialLinks || { facebook: "", twitter: "", instagram: "" },
         sportsPreferences: user.sportsPreferences || [],
       })
+      if (user.avatar?.url) {
+        setAvatarPreview(user.avatar.url)
+      }
     }
   }, [user])
 
@@ -81,7 +84,7 @@ const Profile = () => {
     if (user) {
       fetchUserEvents()
     }
-  }, [user])
+  }, [user, getUserEvents])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -106,6 +109,19 @@ const Profile = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0]
     if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif']
+      if (!validTypes.includes(file.type)) {
+        alert('Please upload an image file (JPEG, PNG, or GIF)')
+        return
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size should be less than 5MB')
+        return
+      }
+
       setAvatarFile(file)
       setAvatarPreview(URL.createObjectURL(file))
     }
@@ -114,9 +130,30 @@ const Profile = () => {
   const handleSaveProfile = async () => {
     setLoading(true)
     try {
-      await updateProfile(profileData, avatarFile)
+      const formData = new FormData()
+      
+      // Add avatar file if exists
+      if (avatarFile) {
+        formData.append("avatar", avatarFile)
+      }
+
+      // Add other profile data
+      Object.keys(profileData).forEach(key => {
+        if (typeof profileData[key] === 'object') {
+          formData.append(key, JSON.stringify(profileData[key]))
+        } else {
+          formData.append(key, profileData[key])
+        }
+      })
+
+      await updateProfile(formData)
       setEditing(false)
       setAvatarFile(null)
+      
+      // Cleanup preview URL
+      if (avatarPreview && avatarPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(avatarPreview)
+      }
     } catch (error) {
       console.error("Error updating profile:", error)
     } finally {
@@ -161,6 +198,15 @@ const Profile = () => {
       console.error("Error adding achievement:", error)
     }
   }
+
+  // Cleanup avatar preview URL on component unmount
+  useEffect(() => {
+    return () => {
+      if (avatarPreview && avatarPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(avatarPreview)
+      }
+    }
+  }, [avatarPreview])
 
   if (!user) {
     return (

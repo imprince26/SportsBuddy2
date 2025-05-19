@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateProfile = async (profileData) => {
     setLoading(true);
-
+    console.log('Updating profile with data:', profileData);
     try {
       const response = await api.put(`/auth/profile`, profileData);
 

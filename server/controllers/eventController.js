@@ -603,7 +603,6 @@ export const searchEvents = async (req, res) => {
   }
 };
 
-// Get nearby events
 export const getNearbyEvents = async (req, res) => {
   try {
     const { lat, lng, radius = 10 } = req.query;

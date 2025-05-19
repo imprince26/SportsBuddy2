@@ -440,7 +440,6 @@ export const addTeam = async (req, res) => {
   }
 };
 
-// Add Rating
 export const addRating = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);

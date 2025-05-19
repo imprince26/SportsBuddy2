@@ -565,7 +565,6 @@ export const getUserEvents = async (req, res) => {
   }
 };
 
-
 // Search events
 export const searchEvents = async (req, res) => {
   try {

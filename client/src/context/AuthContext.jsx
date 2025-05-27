@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     console.log('Updating profile with data:', profileData);
     try {
-      const response = await api.put(`/auth/profile`, profileData,{
+      const response = await api.put(`/auth/profile`, profileData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

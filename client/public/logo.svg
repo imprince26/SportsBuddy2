@@ -1,0 +1,128 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 120 120"
+  fill="none"
+  stroke="currentColor"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+>
+  <!-- Main Circle -->
+  <circle 
+    cx="60" 
+    cy="60" 
+    r="55" 
+    class="logo-circle"
+    stroke-width="2"
+  />
+
+  <!-- Calendar Icon Base -->
+  <rect 
+    x="35" 
+    y="30" 
+    width="50" 
+    height="50" 
+    rx="4"
+    class="logo-elements"
+    stroke-width="2.5"
+  />
+
+  <!-- Calendar Top -->
+  <path 
+    d="M35 40 H85"
+    class="logo-elements"
+    stroke-width="2.5"
+  />
+
+  <!-- Calendar Pins -->
+  <path 
+    d="M45 25 V35 M75 25 V35"
+    class="logo-elements"
+    stroke-width="2.5"
+  />
+
+  <!-- Sports Icons -->
+  <g class="logo-accents" stroke-width="2">
+    <!-- Basketball -->
+    <circle cx="48" cy="55" r="6" />
+    <path d="M42 55 H54 M48 49 V61" />
+    
+    <!-- Football -->
+    <circle cx="72" cy="55" r="6" />
+    <path d="M66 55 Q72,49 78,55 Q72,61 66,55" />
+  </g>
+
+  <!-- People Symbols -->
+  <g class="logo-elements" stroke-width="2.5">
+    <circle cx="48" cy="70" r="4" />
+    <circle cx="72" cy="70" r="4" />
+    <path d="M48 74 V80" />
+    <path d="M72 74 V80" />
+    <path d="M44 80 H52" />
+    <path d="M68 80 H76" />
+  </g>
+
+  <!-- Dynamic Arc -->
+  <path
+    d="M30,90 Q60,100 90,90"
+    class="logo-accents"
+    stroke-width="2"
+    opacity="0.8"
+  />
+
+  <!-- StyleSheet -->
+  <style>
+    :root {
+      --primary-light: #3b82f6;
+      --primary-dark: #60a5fa;
+      --accent-light: #f59e0b;
+      --accent-dark: #fbbf24;
+    }
+    
+    .logo-circle {
+      stroke: currentColor;
+      fill: none;
+    }
+    
+    .logo-elements {
+      stroke: currentColor;
+      fill: none;
+    }
+    
+    .logo-accents {
+      stroke: currentColor;
+      fill: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .logo-circle {
+        stroke: var(--primary-dark);
+      }
+      .logo-elements {
+        stroke: var(--primary-dark);
+      }
+      .logo-accents {
+        stroke: var(--accent-dark);
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      .logo-circle {
+        stroke: var(--primary-light);
+      }
+      .logo-elements {
+        stroke: var(--primary-light);
+      }
+      .logo-accents {
+        stroke: var(--accent-light);
+      }
+    }
+
+    /* Optional: Add hover animation */
+    @media (hover: hover) {
+      svg:hover .logo-accents {
+        opacity: 1;
+        transition: opacity 0.3s ease;
+      }
+    }
+  </style>
+</svg>

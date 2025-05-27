@@ -101,8 +101,8 @@ const Layout = () => {
               <Link
                 to="/"
                 className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname === "/"
-                    ? "text-primary-light dark:text-primary-dark"
-                    : "text-foreground-light dark:text-foreground-dark"
+                  ? "text-primary-light dark:text-primary-dark"
+                  : "text-foreground-light dark:text-foreground-dark"
                   }`}
               >
                 Home
@@ -110,8 +110,8 @@ const Layout = () => {
               <Link
                 to="/events"
                 className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname.includes("/events") && !location.pathname.includes("/create")
-                    ? "text-primary-light dark:text-primary-dark"
-                    : "text-foreground-light dark:text-foreground-dark"
+                  ? "text-primary-light dark:text-primary-dark"
+                  : "text-foreground-light dark:text-foreground-dark"
                   }`}
               >
                 Events
@@ -120,8 +120,8 @@ const Layout = () => {
                 <Link
                   to="/dashboard"
                   className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname === "/dashboard"
-                      ? "text-primary-light dark:text-primary-dark"
-                      : "text-foreground-light dark:text-foreground-dark"
+                    ? "text-primary-light dark:text-primary-dark"
+                    : "text-foreground-light dark:text-foreground-dark"
                     }`}
                 >
                   Dashboard

@@ -171,6 +171,8 @@ export const getCurrentUser = async (req, res) => {
         sportsPreferences: user.sportsPreferences,
         location: user.location,
         socialLinks: user.socialLinks,
+        notifications: user.notifications,
+        achievements: user.achievements,
       },
     });
   } catch (error) {

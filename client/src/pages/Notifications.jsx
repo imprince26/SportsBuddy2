@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import { Link } from "react-router-dom"
@@ -7,28 +5,18 @@ import { format } from "date-fns"
 import { Bell, Calendar, MessageSquare, Users, Info, Check, CheckCheck, ChevronLeft } from "lucide-react"
 
 const Notifications = () => {
-  const { user, notifications, fetchNotifications, markNotificationAsRead } = useAuth()
+  const { user, markNotificationRead } = useAuth()
+  const [notifications, setNotifications] = useState(user?.notifications || [])
   const [filter, setFilter] = useState("all")
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    const loadNotifications = async () => {
-      setLoading(true)
-      try {
-        await fetchNotifications()
-      } catch (error) {
-        console.error("Error fetching notifications:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
 
-    loadNotifications()
-  }, [fetchNotifications])
+ 
 
   const handleMarkAsRead = async (notificationId) => {
     try {
-      await markNotificationAsRead(notificationId)
+      await markNotificationRead(notificationId)
+      window.location.reload() 
     } catch (error) {
       console.error("Error marking notification as read:", error)
     }
@@ -40,8 +28,9 @@ const Notifications = () => {
       // await markAllNotificationsAsRead();
       // For now, let's mark each unread notification as read
       for (const notification of notifications.filter((n) => !n.read)) {
-        await markNotificationAsRead(notification._id)
+        await markNotificationRead(notification._id)
       }
+      window.location.reload() 
     } catch (error) {
       console.error("Error marking all notifications as read:", error)
     }

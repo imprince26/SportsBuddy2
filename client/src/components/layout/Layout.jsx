@@ -61,9 +61,6 @@ const Layout = () => {
     }
   }
 
-  // if (!user || user.role !== "user") {
-  //   return <div><Outlet /></div>
-  // }
 
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark">
@@ -319,9 +316,9 @@ const Layout = () => {
                   >
                     <Bell size={20} className="mr-3" />
                     Notifications
-                    {user?.notifications?.filter((n) => !n.read)?.length > 0 && (
+                    {user?.notifications?.filter((n) => n.read == false)?.length > 0 && (
                       <span className="ml-2 w-5 h-5 bg-destructive-light dark:bg-destructive-dark rounded-full flex items-center justify-center text-xs text-white">
-                        {user.notifications.filter((n) => !n.read).length}
+                        {user.notifications.filter((n) => n.read == false).length}
                       </span>
                     )}
                   </Link>

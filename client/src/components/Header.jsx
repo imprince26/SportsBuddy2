@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeProvider';
@@ -20,13 +20,15 @@ import {
   Trophy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
+import api from '@/utils/api';
+import { set } from 'date-fns';
 
 const Header = () => {
-  const { user, logout } = useAuth();
+  const { logout,user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const [userData, setUserData] = useState({});
 
   const navLinks = [
     { to: '/', label: 'Home', icon: Home },
@@ -39,6 +41,23 @@ const Header = () => {
     await logout();
     setIsMobileMenuOpen(false);
   };
+
+  useEffect(() => {
+   if (user) {
+     setUserData({
+       id: user._id,
+       name: user.name,
+       username: user.username,
+       email: user.email,
+       role: user.role,
+       avatar: user.avatar,
+       sportsPreferences: user.sportsPreferences,
+       location: user.location,
+     });
+   }
+
+  }, [ user ]);
+  console.log('userData', userData);
 
   return (
     <motion.nav
@@ -107,8 +126,8 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
                     <Avatar className="cursor-pointer ring-2 ring-primary">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="text-foreground-light dark:text-foreground-dark bg-muted">{user.name?.[0] || 'U'}</AvatarFallback>
+                      <AvatarImage src={userData.avatar[0]?.url} alt={user.name} />
+                      <AvatarFallback className="text-foreground-light dark:text-foreground-dark bg-muted">{userData.name?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
                   </motion.div>
                 </DropdownMenuTrigger>

@@ -167,6 +167,10 @@ export const getCurrentUser = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        avatar: user.avatar,
+        sportsPreferences: user.sportsPreferences,
+        location: user.location,
+        socialLinks: user.socialLinks,
       },
     });
   } catch (error) {

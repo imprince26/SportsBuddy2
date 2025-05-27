@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
-
   // Check if user is logged in on initial load
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -115,7 +114,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     console.log('Updating profile with data:', profileData);
     try {
-      const response = await api.put(`/auth/profile`, profileData);
+      const response = await api.put(`/auth/profile`, profileData,{
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       if (response.data.success) {
         setUser(response.data.data);

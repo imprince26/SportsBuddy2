@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import { useEvents } from "../context/EventContext"
@@ -17,6 +15,10 @@ import {
   Twitter,
   Instagram,
   Dumbbell,
+  Trophy,
+  Activity,
+  Users,
+  Star,
 } from "lucide-react"
 
 const Profile = () => {
@@ -74,7 +76,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserEvents = async () => {
       try {
-        const events = await getUserEvents()
+        const events = await getUserEvents(user?.id)
         setUserEvents(events)
       } catch (error) {
         console.error("Error fetching user events:", error)
@@ -110,9 +112,9 @@ const Profile = () => {
     const file = e.target.files[0]
     if (file) {
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif']
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
       if (!validTypes.includes(file.type)) {
-        alert('Please upload an image file (JPEG, PNG, or GIF)')
+        alert('Please upload an image file (JPEG, PNG, GIF, or WebP)')
         return
       }
       
@@ -137,7 +139,7 @@ const Profile = () => {
         formData.append("avatar", avatarFile)
       }
 
-      // Add other profile data
+      // Add other profile data as JSON string
       Object.keys(profileData).forEach(key => {
         if (typeof profileData[key] === 'object') {
           formData.append(key, JSON.stringify(profileData[key]))
@@ -145,17 +147,28 @@ const Profile = () => {
           formData.append(key, profileData[key])
         }
       })
+      console.log(avatarFile)
+      console.log(formData.get('avatar'))
 
-      await updateProfile(formData)
-      setEditing(false)
-      setAvatarFile(null)
-      
-      // Cleanup preview URL
-      if (avatarPreview && avatarPreview.startsWith('blob:')) {
-        URL.revokeObjectURL(avatarPreview)
+      const response = updateProfile(formData)
+      console.log(response)
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile")
       }
+      
+      // Update local user state
+      
+        setEditing(false)
+        setAvatarFile(null)
+        
+        // Cleanup preview URL
+        if (avatarPreview && avatarPreview.startsWith('blob:')) {
+          URL.revokeObjectURL(avatarPreview)
+        }
     } catch (error) {
       console.error("Error updating profile:", error)
+      alert("Failed to update profile. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -208,272 +221,324 @@ const Profile = () => {
     }
   }, [avatarPreview])
 
-  if (!user) {
+   if (!user) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="min-h-screen flex justify-center items-center bg-background-light dark:bg-background-dark">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-light dark:border-primary-dark"></div>
       </div>
     )
   }
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden">
-        {/* Profile Header */}
-        <div className="relative h-48 bg-gradient-to-r from-primary-light/90 to-accent-light/90 dark:from-primary-dark/90 dark:to-accent-dark/90">
-          {editing ? (
-            <div className="absolute top-4 right-4 flex space-x-2">
-              <button
-                onClick={() => {
-                  setEditing(false)
-                  setAvatarFile(null)
-                  setAvatarPreview("")
-                  if (user) {
-                    setProfileData({
-                      name: user.name || "",
-                      username: user.username || "",
-                      bio: user.bio || "",
-                      location: user.location || { city: "", state: "", country: "" },
-                      socialLinks: user.socialLinks || { facebook: "", twitter: "", instagram: "" },
-                      sportsPreferences: user.sportsPreferences || [],
-                    })
-                  }
-                }}
-                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-                disabled={loading}
-              >
-                <X size={20} />
-              </button>
-              <button
-                onClick={handleSaveProfile}
-                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-white"></div>
-                ) : (
-                  <Save size={20} />
-                )}
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setEditing(true)}
-              className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-            >
-              <Edit size={20} />
-            </button>
-          )}
-        </div>
-
-        <div className="relative px-6 pb-6">
-          <div className="absolute -top-16 left-6 w-32 h-32 rounded-full border-4 border-card-light dark:border-card-dark overflow-hidden bg-muted-light dark:bg-muted-dark">
+     <div className="min-h-screen bg-gradient-to-br from-background-light to-muted-light dark:from-background-dark dark:to-muted-dark py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Profile Header Card */}
+        <div className="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl overflow-hidden">
+          {/* Cover Image Area */}
+          <div className="h-48 bg-gradient-to-r from-primary-light/90 to-accent-light/90 dark:from-primary-dark/90 dark:to-accent-dark/90 relative">
             {editing ? (
-              <div className="relative w-full h-full">
-                <img
-                  src={avatarPreview || user.avatar || "/placeholder.svg?height=128&width=128"}
-                  alt={user.name}
-                  className="w-full h-full object-cover"
-                />
-                <label className="absolute inset-0 flex items-center justify-center bg-black/50 cursor-pointer">
-                  <Camera size={24} className="text-white" />
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                </label>
+              <div className="absolute top-4 right-4 flex space-x-2">
+                <button
+                  onClick={() => {
+                    setEditing(false)
+                    setAvatarFile(null)
+                    setAvatarPreview("")
+                    if (user) {
+                      setProfileData({
+                        name: user.name || "",
+                        username: user.username || "",
+                        bio: user.bio || "",
+                        location: user.location || { city: "", state: "", country: "" },
+                        socialLinks: user.socialLinks || { facebook: "", twitter: "", instagram: "" },
+                        sportsPreferences: user.sportsPreferences || [],
+                      })
+                    }
+                  }}
+                  className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                  disabled={loading}
+                >
+                  <X size={20} />
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-white"></div>
+                  ) : (
+                    <Save size={20} />
+                  )}
+                </button>
               </div>
             ) : (
-              <img
-                src={user.avatar || "/placeholder.svg?height=128&width=128"}
-                alt={user.name}
-                className="w-full h-full object-cover"
-              />
+              <button
+                onClick={() => setEditing(true)}
+                className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+              >
+                <Edit size={20} />
+              </button>
             )}
           </div>
 
-          <div className="pt-20">
+          {/* Profile Info */}
+          <div className="relative px-6 pb-6">
+            {/* Avatar */}
+            <div className="absolute -top-16 left-6">
+              <div className="relative w-32 h-32">
+                <div className="w-full h-full rounded-full border-4 border-card-light dark:border-card-dark overflow-hidden bg-muted-light dark:bg-muted-dark">
+                  {editing ? (
+                    <div className="relative w-full h-full group">
+                      <img
+                        src={avatarPreview || user.avatar[0]?.url || "/placeholder.svg"}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <Camera size={24} className="text-white" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleAvatarChange}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <img
+                      src={user.avatar[0]?.url || "/placeholder.svg"}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* User Stats */}
+            <div className="ml-44 flex items-center space-x-6 pt-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
+                  {user.stats?.eventsCreated || 0}
+                </div>
+                <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                  Events Created
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
+                  {user.stats?.eventsParticipated || 0}
+                </div>
+                <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                  Events Joined
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
+                  {user.achievements?.length || 0}
+                </div>
+                <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                  Achievements
+                </div>
+              </div>
+            </div>
+
+            {/* User Info */}
+            <div className="mt-6">
+              {editing ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={profileData.name}
+                      onChange={handleInputChange}
+                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={profileData.username}
+                      onChange={handleInputChange}
+                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
+                      Bio
+                    </label>
+                    <textarea
+                      name="bio"
+                      value={profileData.bio}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent resize-none"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
+                    {user.name}
+                  </h1>
+                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
+                    @{user.username}
+                  </p>
+                  {user.bio && (
+                    <p className="mt-4 text-foreground-light dark:text-foreground-dark">
+                      {user.bio}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Location & Social Links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-card-light dark:bg-card-dark rounded-xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+              Location
+            </h2>
             {editing ? (
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                    Name
+                    City
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={profileData.name}
+                    name="location.city"
+                    value={profileData.location.city}
                     onChange={handleInputChange}
                     className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                    Username
+                    State
                   </label>
                   <input
                     type="text"
-                    name="username"
-                    value={profileData.username}
+                    name="location.state"
+                    value={profileData.location.state}
                     onChange={handleInputChange}
                     className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                    Bio
+                    Country
                   </label>
-                  <textarea
-                    name="bio"
-                    value={profileData.bio}
+                  <input
+                    type="text"
+                    name="location.country"
+                    value={profileData.location.country}
                     onChange={handleInputChange}
-                    rows={3}
                     className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
                   />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      name="location.city"
-                      value={profileData.location.city}
-                      onChange={handleInputChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                      State
-                    </label>
-                    <input
-                      type="text"
-                      name="location.state"
-                      value={profileData.location.state}
-                      onChange={handleInputChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                      Country
-                    </label>
-                    <input
-                      type="text"
-                      name="location.country"
-                      value={profileData.location.country}
-                      onChange={handleInputChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                      Facebook
-                    </label>
-                    <input
-                      type="text"
-                      name="socialLinks.facebook"
-                      value={profileData.socialLinks.facebook}
-                      onChange={handleInputChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                      Twitter
-                    </label>
-                    <input
-                      type="text"
-                      name="socialLinks.twitter"
-                      value={profileData.socialLinks.twitter}
-                      onChange={handleInputChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                      Instagram
-                    </label>
-                    <input
-                      type="text"
-                      name="socialLinks.instagram"
-                      value={profileData.socialLinks.instagram}
-                      onChange={handleInputChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    />
-                  </div>
                 </div>
               </div>
             ) : (
-              <div>
-                <h1 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">{user.name}</h1>
-                <p className="text-muted-foreground-light dark:text-muted-foreground-dark">@{user.username}</p>
+              <div className="flex items-center text-muted-foreground-light dark:text-muted-foreground-dark">
+                <MapPin className="w-5 h-5 mr-2" />
+                <span>
+                  {user.location?.city}
+                  {user.location?.state && `, ${user.location.state}`}
+                  {user.location?.country && `, ${user.location.country}`}
+                </span>
+              </div>
+            )}
+          </div>
 
-                <div className="mt-4 flex flex-wrap gap-4">
-                  <div className="flex items-center text-muted-foreground-light dark:text-muted-foreground-dark">
-                    <Mail size={16} className="mr-1" />
-                    <span>{user.email}</span>
-                  </div>
-                  {user.location?.city && (
-                    <div className="flex items-center text-muted-foreground-light dark:text-muted-foreground-dark">
-                      <MapPin size={16} className="mr-1" />
-                      <span>
-                        {user.location.city}
-                        {user.location.state && `, ${user.location.state}`}
-                        {user.location.country && `, ${user.location.country}`}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-center text-muted-foreground-light dark:text-muted-foreground-dark">
-                    <Calendar size={16} className="mr-1" />
-                    {/* <span>Joined {format(new Date(user.createdAt), "MMMM yyyy")}</span> */}
-                  </div>
+          <div className="bg-card-light dark:bg-card-dark rounded-xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+              Social Links
+            </h2>
+            {editing ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
+                    Facebook
+                  </label>
+                  <input
+                    type="text"
+                    name="socialLinks.facebook"
+                    value={profileData.socialLinks.facebook}
+                    onChange={handleInputChange}
+                    className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                  />
                 </div>
-
-                {user.bio && (
-                  <div className="mt-4">
-                    <p className="text-foreground-light dark:text-foreground-dark">{user.bio}</p>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
+                    Twitter
+                  </label>
+                  <input
+                    type="text"
+                    name="socialLinks.twitter"
+                    value={profileData.socialLinks.twitter}
+                    onChange={handleInputChange}
+                    className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
+                    Instagram
+                  </label>
+                  <input
+                    type="text"
+                    name="socialLinks.instagram"
+                    value={profileData.socialLinks.instagram}
+                    onChange={handleInputChange}
+                    className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                {user.socialLinks?.facebook && (
+                  <a
+                    href={user.socialLinks.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
+                  >
+                    <Facebook size={20} />
+                  </a>
                 )}
-
-                <div className="mt-4 flex gap-3">
-                  {user.socialLinks?.facebook && (
-                    <a
-                      href={user.socialLinks.facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
-                    >
-                      <Facebook size={18} />
-                    </a>
-                  )}
-                  {user.socialLinks?.twitter && (
-                    <a
-                      href={user.socialLinks.twitter}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
-                    >
-                      <Twitter size={18} />
-                    </a>
-                  )}
-                  {user.socialLinks?.instagram && (
-                    <a
-                      href={user.socialLinks.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
-                    >
-                      <Instagram size={18} />
-                    </a>
-                  )}
-                </div>
+                {user.socialLinks?.twitter && (
+                  <a
+                    href={user.socialLinks.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
+                  >
+                    <Twitter size={20} />
+                  </a>
+                )}
+                {user.socialLinks?.instagram && (
+                  <a
+                    href={user.socialLinks.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
+                  >
+                    <Instagram size={20} />
+                  </a>
+                )}
               </div>
             )}
           </div>
         </div>
-      </div>
+              
 
       {/* Sports Preferences */}
       <div className="mt-8 bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
@@ -709,6 +774,8 @@ const Profile = () => {
         </div>
       )} */}
     </div>
+    </div>
+
   )
 }
 

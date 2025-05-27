@@ -42,7 +42,6 @@ export const EventProvider = ({ children }) => {
   const { user } = useAuth();
   const { socket, joinEventRoom, leaveEventRoom } = useSocket();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   // Listen for socket events
   useEffect(() => {

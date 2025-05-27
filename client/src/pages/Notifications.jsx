@@ -11,12 +11,12 @@ const Notifications = () => {
   const [loading, setLoading] = useState(false)
 
 
- 
+
 
   const handleMarkAsRead = async (notificationId) => {
     try {
       await markNotificationRead(notificationId)
-      window.location.reload() 
+      window.location.reload()
     } catch (error) {
       console.error("Error marking notification as read:", error)
     }
@@ -30,7 +30,7 @@ const Notifications = () => {
       for (const notification of notifications.filter((n) => !n.read)) {
         await markNotificationRead(notification._id)
       }
-      window.location.reload() 
+      window.location.reload()
     } catch (error) {
       console.error("Error marking all notifications as read:", error)
     }
@@ -85,51 +85,46 @@ const Notifications = () => {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilter("all")}
-              className={`px-3 py-1 rounded-md text-sm ${
-                filter === "all"
+              className={`px-3 py-1 rounded-md text-sm ${filter === "all"
                   ? "bg-primary-light dark:bg-primary-dark text-white"
                   : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-              }`}
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setFilter("unread")}
-              className={`px-3 py-1 rounded-md text-sm ${
-                filter === "unread"
+              className={`px-3 py-1 rounded-md text-sm ${filter === "unread"
                   ? "bg-primary-light dark:bg-primary-dark text-white"
                   : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-              }`}
+                }`}
             >
               Unread
             </button>
             <button
               onClick={() => setFilter("event")}
-              className={`px-3 py-1 rounded-md text-sm ${
-                filter === "event"
+              className={`px-3 py-1 rounded-md text-sm ${filter === "event"
                   ? "bg-primary-light dark:bg-primary-dark text-white"
                   : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-              }`}
+                }`}
             >
               Events
             </button>
             <button
               onClick={() => setFilter("chat")}
-              className={`px-3 py-1 rounded-md text-sm ${
-                filter === "chat"
+              className={`px-3 py-1 rounded-md text-sm ${filter === "chat"
                   ? "bg-primary-light dark:bg-primary-dark text-white"
                   : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-              }`}
+                }`}
             >
               Chat
             </button>
             <button
               onClick={() => setFilter("team")}
-              className={`px-3 py-1 rounded-md text-sm ${
-                filter === "team"
+              className={`px-3 py-1 rounded-md text-sm ${filter === "team"
                   ? "bg-primary-light dark:bg-primary-dark text-white"
                   : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-              }`}
+                }`}
             >
               Teams
             </button>
@@ -153,11 +148,10 @@ const Notifications = () => {
             {filteredNotifications.map((notification) => (
               <div
                 key={notification._id}
-                className={`p-4 rounded-lg ${
-                  notification.read
+                className={`p-4 rounded-lg ${notification.read
                     ? "bg-background-light dark:bg-background-dark"
                     : "bg-primary-light/5 dark:bg-primary-dark/5 border-l-4 border-primary-light dark:border-primary-dark"
-                }`}
+                  }`}
               >
                 <div className="flex items-start">
                   <div className="mr-3 mt-1">{getNotificationIcon(notification.type)}</div>

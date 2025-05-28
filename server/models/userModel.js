@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import validator from "validator";
 import bcrypt from "bcryptjs";
 
 const notificationSchema = new mongoose.Schema({
@@ -61,8 +60,7 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    avatar:[
-      {
+    avatar:{
         url: {
           type: String,
         },
@@ -70,7 +68,7 @@ const userSchema = new mongoose.Schema(
           type: String,
         },
       },
-    ],
+   
     sportsPreferences: [
       {
         sport: {

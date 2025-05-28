@@ -14,7 +14,6 @@ const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-  domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : undefined,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -228,6 +227,7 @@ export const updateProfile = async (req, res) => {
     // Update allowed fields
     const allowedUpdates = [
       "name",
+      "username",
       "sportsPreferences",
       "location",
       "socialLinks",

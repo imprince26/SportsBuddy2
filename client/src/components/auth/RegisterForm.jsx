@@ -40,7 +40,7 @@ const registerSchema = z.object({
     .string()
     .min(6, 'Password must be at least 6 characters')
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&])[A-Za-z\d@#$!%*?&]{6,}$/,
       'Password must include uppercase, lowercase, number, and special character'
     ),
 });

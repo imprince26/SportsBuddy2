@@ -3,6 +3,8 @@ import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import { uploadImage,deleteImage } from "../config/cloudinary.js";
+import fs from "fs/promises";
+import validator from "validator";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -206,49 +208,120 @@ export const getProfile = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  try {
-    const updates = req.body;
-    delete updates.password; // Prevent password update through this route
+   try {
+    // Extract data from FormData
+    const updates = {};
+    for (const [key, value] of Object.entries(req.body)) {
+      try {
+        // Parse JSON-stringified fields
+        updates[key] = value && typeof value === "string" && (value.startsWith("{") || value.startsWith("[")) 
+          ? JSON.parse(value) 
+          : value;
+      } catch (error) {
+        updates[key] = value; // Fallback to original value if not JSON
+      }
+    }
 
+    // Prevent password update through this route
+    delete updates.password;
+
+    // Validate allowed fields
+    const allowedUpdates = [
+      "name",
+      "username",
+      "email",
+      "bio",
+      "location",
+      "socialLinks",
+      "sportsPreferences",
+    ];
+
+    const updateFields = Object.keys(updates).filter((key) => allowedUpdates.includes(key));
+    if (updateFields.length === 0 && !req.file) {
+      return res.status(400).json({ message: "No valid fields provided for update" });
+    }
+
+    // Find the user
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Handle avatar upload
-    if (req.file ) {
-      const { secure_url, public_id } = await uploadImage(req.file.path);
-      if (user.avatar.public_id) {
-        await deleteImage(user.avatar.public_id);
+    // Validate fields
+    if (updates.username) {
+      if (updates.username.length < 3 || updates.username.length > 30) {
+        return res.status(400).json({ message: "Username must be between 3 and 30 characters" });
       }
-      user.avatar = { url: secure_url, public_id };
+      const existingUser = await User.findOne({ username: updates.username, _id: { $ne: user._id } });
+      if (existingUser) {
+        return res.status(400).json({ message: "Username is already taken" });
+      }
     }
 
-    // Update allowed fields
-    const allowedUpdates = [
-      "name",
-      "username",
-      "sportsPreferences",
-      "location",
-      "socialLinks",
-      "bio",
-      "username",
-      "avatar",
-    ];
+    if (updates.email && !validator.isEmail(updates.email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
 
-    allowedUpdates.forEach((field) => {
-      if (updates[field] !== undefined) {
-        user[field] = updates[field];
+    if (updates.bio && updates.bio.length > 500) {
+      return res.status(400).json({ message: "Bio cannot exceed 500 characters" });
+    }
+
+    if (updates.sportsPreferences) {
+      if (!Array.isArray(updates.sportsPreferences)) {
+        return res.status(400).json({ message: "Sports preferences must be an array" });
       }
+      const validSports = ["Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket", "Other"];
+      const validLevels = ["Beginner", "Intermediate", "Advanced"];
+      for (const sport of updates.sportsPreferences) {
+        if (!validSports.includes(sport.sport) || !validLevels.includes(sport.skillLevel)) {
+          return res.status(400).json({ message: "Invalid sport or skill level" });
+        }
+      }
+    }
+
+    // Handle avatar upload
+    let tempAvatar = null;
+    if (req.file) {
+      try {
+        const { secure_url, public_id } = await uploadImage(req.file.path);
+        tempAvatar = { url: secure_url, public_id };
+        // Delete temporary file
+        await fs.unlink(req.file.path).catch((err) => console.error("Failed to delete temp file:", err));
+      } catch (error) {
+        // Clean up temp file on upload failure
+        if (req.file.path) await fs.unlink(req.file.path).catch((err) => console.error("Failed to delete temp file:", err));
+        return res.status(500).json({ message: "Error uploading avatar", error: error.message });
+      }
+    }
+
+    // Apply updates
+    updateFields.forEach((field) => {
+      user[field] = updates[field];
     });
 
+    // Update avatar only if upload was successful
+    if (tempAvatar) {
+      const oldPublicId = user.avatar?.public_id;
+      user.avatar = tempAvatar;
+      // Delete old avatar after setting new one
+      if (oldPublicId) {
+        await deleteImage(oldPublicId).catch((err) => console.error("Failed to delete old avatar:", err));
+      }
+    }
+
+    // Save user
     await user.save();
 
     res.json({
       success: true,
-      data: user.getProfile(),
+      data: user.getProfile(), // Assuming getProfile() returns a sanitized user object
     });
   } catch (error) {
+    // Clean up temp file on general error
+    if (req.file?.path) {
+      await fs.unlink(req.file.path).catch((err) => console.error("Failed to delete temp file:", err));
+    }
+    console.error("Update profile error:", error);
     res.status(500).json({
       message: "Error updating profile",
       error: error.message,

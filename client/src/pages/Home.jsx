@@ -172,11 +172,11 @@ const Home = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <img
+                {/* <img
                   src="/placeholder.svg?height=400&width=600"
                   alt="Sports activities"
                   className="rounded-lg shadow-2xl"
-                />
+                /> */}
                 <div className="absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 flex items-center">
                   <div className="bg-primary-light dark:bg-primary-dark rounded-full w-12 h-12 flex items-center justify-center mr-3">
                     <Users className="text-white" size={24} />

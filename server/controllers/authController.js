@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
-import { uploadImage,deleteImage } from "../config/cloudinary.js";
+import { uploadImage, deleteImage } from "../config/cloudinary.js";
 import fs from "fs/promises";
 import validator from "validator";
 
@@ -208,14 +208,14 @@ export const getProfile = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-   try {
+  try {
     // Extract data from FormData
     const updates = {};
     for (const [key, value] of Object.entries(req.body)) {
       try {
         // Parse JSON-stringified fields
-        updates[key] = value && typeof value === "string" && (value.startsWith("{") || value.startsWith("[")) 
-          ? JSON.parse(value) 
+        updates[key] = value && typeof value === "string" && (value.startsWith("{") || value.startsWith("["))
+          ? JSON.parse(value)
           : value;
       } catch (error) {
         updates[key] = value; // Fallback to original value if not JSON

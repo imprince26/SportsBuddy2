@@ -60,15 +60,15 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    avatar:{
-        url: {
-          type: String,
-        },
-        public_id: {
-          type: String,
-        },
+    avatar: {
+      url: {
+        type: String,
       },
-   
+      public_id: {
+        type: String,
+      },
+    },
+
     sportsPreferences: [
       {
         sport: {

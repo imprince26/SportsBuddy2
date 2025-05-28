@@ -678,7 +678,7 @@ const EventDetails = () => {
                       className="bg-background-light dark:bg-background-dark rounded-lg p-4 flex items-center"
                     >
                       <div className="w-12 h-12 rounded-full bg-muted-light dark:bg-muted-dark flex items-center justify-center mr-3">
-                        {participant.user.avatar ? (
+                        {participant.user.avatar?.url ? (
                           <img
                             src={participant.user.avatar.url || "/placeholder.svg"}
                             alt={participant.user.name}

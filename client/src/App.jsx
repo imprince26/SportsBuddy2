@@ -145,7 +145,7 @@ function App() {
         />
       </Route>
 
-      <Route path='/' element={<AdminLayout />}>
+      {/* <Route path='/' element={<AdminLayout />}> */}
 
         {/* Admin Routes */}
         <Route
@@ -172,7 +172,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Route>
+      {/* </Route> */}
 
       {/* Fallback Route */}
       <Route path="*" element={<NotFound />} />

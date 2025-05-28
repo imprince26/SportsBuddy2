@@ -89,9 +89,9 @@ const AdminLayout = ({ children }) => {
                 <div className="flex items-center px-4">
                   <div className="flex-shrink-0">
                     <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-muted-light dark:bg-muted-dark">
-                      {user?.avatar ? (
+                      {user?.avatar?.url ? (
                         <img
-                          src={user.avatar || "/placeholder.svg"}
+                          src={user.avatar.url || "/placeholder.svg"}
                           alt={user.name}
                           className="h-full w-full object-cover"
                         />

@@ -644,9 +644,9 @@ const EventDetails = () => {
                     className="flex items-center p-4 bg-background-light dark:bg-background-dark rounded-lg hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
                   >
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-muted-light dark:bg-muted-dark flex items-center justify-center mr-4">
-                      {event.createdBy.avatar ? (
+                      {event.createdBy.avatar?.url ? (
                         <img
-                          src={event.createdBy.avatar || "/placeholder.svg?height=48&width=48"}
+                          src={event.createdBy.avatar.url || "/placeholder.svg"}
                           alt={event.createdBy.name}
                           className="w-full h-full object-cover"
                         />
@@ -680,7 +680,7 @@ const EventDetails = () => {
                       <div className="w-12 h-12 rounded-full bg-muted-light dark:bg-muted-dark flex items-center justify-center mr-3">
                         {participant.user.avatar ? (
                           <img
-                            src={participant.user.avatar || "/placeholder.svg?height=48&width=48"}
+                            src={participant.user.avatar.url || "/placeholder.svg"}
                             alt={participant.user.name}
                             className="w-full h-full rounded-full object-cover"
                           />
@@ -741,7 +741,7 @@ const EventDetails = () => {
                               <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
                                 {member.avatar ? (
                                   <img
-                                    src={member.avatar || "/placeholder.svg?height=32&width=32"}
+                                    src={member.avatar?.url || "/placeholder.svg"}
                                     alt={member.name}
                                     className="w-full h-full object-cover"
                                   />

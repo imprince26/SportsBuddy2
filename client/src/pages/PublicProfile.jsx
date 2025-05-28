@@ -61,7 +61,7 @@ const PublicProfile = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
         <Link
           to="/events"
@@ -74,7 +74,7 @@ const PublicProfile = () => {
 
       <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden">
         {/* Profile Header */}
-        <div className="relative h-48 bg-gradient-to-r from-primary-light/90 to-accent-light/90 dark:from-primary-dark/90 dark:to-accent-dark/90">
+        <div className="relative h-32 md:h-48 bg-gradient-to-r from-primary-light/90 to-accent-light/90 dark:from-primary-dark/90 dark:to-accent-dark/90">
           <div className="absolute inset-0 overflow-hidden">
             <svg
               className="absolute left-0 top-0 h-full w-full"
@@ -92,10 +92,10 @@ const PublicProfile = () => {
         </div>
 
         <div className="relative px-6 pb-6">
-          <div className="absolute -top-16 left-6 w-32 h-32 rounded-full border-4 border-card-light dark:border-card-dark overflow-hidden bg-muted-light dark:bg-muted-dark">
-            {profile.avatar ? (
+          <div className="absolute -top-16 left-6 md:w-32 md:h-32 w-28 h-28 rounded-full border-4 border-card-light dark:border-card-dark overflow-hidden bg-muted-light dark:bg-muted-dark">
+            {profile.avatar?.url ? (
               <img
-                src={profile.avatar || "/placeholder.svg?height=128&width=128"}
+                src={profile.avatar.url || "/placeholder.svg"}
                 alt={profile.name}
                 className="w-full h-full object-cover"
               />

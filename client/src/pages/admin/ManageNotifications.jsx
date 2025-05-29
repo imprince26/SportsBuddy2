@@ -39,7 +39,7 @@ const ManageNotifications = () => {
       //     search: searchTerm || undefined,
       //   }
       // });
-      
+
       // Mock data for demonstration
       setTimeout(() => {
         const mockNotifications = Array.from({ length: 20 }, (_, i) => ({
@@ -52,7 +52,7 @@ const ManageNotifications = () => {
           sentAt: new Date(Date.now() - Math.random() * 10000000000),
           status: i % 5 === 0 ? "scheduled" : "sent",
         }))
-        
+
         setNotifications(mockNotifications)
         setTotalPages(5)
         setLoading(false)
@@ -82,11 +82,11 @@ const ManageNotifications = () => {
   const handleNotificationAction = (action, notificationId) => {
     // This would be an API call in a real application
     console.log(`${action} notification with ID: ${notificationId}`)
-    
+
     if (action === "delete") {
       setNotifications(notifications.filter(n => n._id !== notificationId))
     }
-    
+
     setActionNotification(null)
   }
 
@@ -94,7 +94,7 @@ const ManageNotifications = () => {
     e.preventDefault()
     // This would be an API call in a real application
     console.log("Sending notification:", newNotification)
-    
+
     // Add the new notification to the list for demonstration
     const newNotificationObj = {
       _id: `notification_${Date.now()}`,
@@ -106,7 +106,7 @@ const ManageNotifications = () => {
       sentAt: new Date(),
       status: "sent",
     }
-    
+
     setNotifications([newNotificationObj, ...notifications])
     setShowSendModal(false)
     setNewNotification({
@@ -253,15 +253,14 @@ const ManageNotifications = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              notification.type === "system"
+                            className={`px-2 py-1 text-xs rounded-full ${notification.type === "system"
                                 ? "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
                                 : notification.type === "event"
-                                ? "bg-primary-light/20 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark"
-                                : notification.type === "chat"
-                                ? "bg-accent-light/20 dark:bg-accent-dark/20 text-accent-light dark:text-accent-dark"
-                                : "bg-success-light/20 dark:bg-success-dark/20 text-success-light dark:text-success-dark"
-                            }`}
+                                  ? "bg-primary-light/20 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark"
+                                  : notification.type === "chat"
+                                    ? "bg-accent-light/20 dark:bg-accent-dark/20 text-accent-light dark:text-accent-dark"
+                                    : "bg-success-light/20 dark:bg-success-dark/20 text-success-light dark:text-success-dark"
+                              }`}
                           >
                             {notification.type}
                           </span>
@@ -274,11 +273,10 @@ const ManageNotifications = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              notification.status === "sent"
+                            className={`px-2 py-1 text-xs rounded-full ${notification.status === "sent"
                                 ? "bg-success-light/20 dark:bg-success-dark/20 text-success-light dark:text-success-dark"
                                 : "bg-accent-light/20 dark:bg-accent-dark/20 text-accent-light dark:text-accent-dark"
-                            }`}
+                              }`}
                           >
                             {notification.status}
                           </span>
@@ -329,11 +327,10 @@ const ManageNotifications = () => {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`p-2 rounded-md ${
-                    currentPage === 1
+                  className={`p-2 rounded-md ${currentPage === 1
                       ? "text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                       : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                  }`}
+                    }`}
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -341,11 +338,10 @@ const ManageNotifications = () => {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`w-8 h-8 rounded-md ${
-                      currentPage === page
+                    className={`w-8 h-8 rounded-md ${currentPage === page
                         ? "bg-primary-light dark:bg-primary-dark text-white"
                         : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
@@ -353,11 +349,10 @@ const ManageNotifications = () => {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`p-2 rounded-md ${
-                    currentPage === totalPages
+                  className={`p-2 rounded-md ${currentPage === totalPages
                       ? "text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                       : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                  }`}
+                    }`}
                 >
                   <ChevronRight size={16} />
                 </button>

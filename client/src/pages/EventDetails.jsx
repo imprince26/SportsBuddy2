@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useEvents } from "../context/EventContext"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from '@/hooks/useAuth';
 import { format } from "date-fns"
 import { Calendar, MapPin, Users, Clock, Star, ChevronLeft, MessageSquare, Share2, Heart, Edit, Trash2, AlertTriangle, UserPlus, UserMinus, Award, Dumbbell, Tag, Clipboard, Send, ChevronRight, Loader2, Info, User, ArrowLeft, ArrowRight, ExternalLink, X } from 'lucide-react'
 

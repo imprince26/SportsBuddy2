@@ -2,8 +2,8 @@
 import { useState, useEffect, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
 import { useEvents } from "@/context/EventContext"
-import { useAuth } from "@/context/AuthContext"
-import { useSocket } from "@/context/SocketContext"
+import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from "@/hooks/useSocket"
 import { format } from "date-fns"
 import { ChevronLeft, Send, User, ImageIcon, Smile, Paperclip, Loader2, AlertTriangle, Users, Info } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"

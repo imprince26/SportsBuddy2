@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from '@/hooks/useAuth';
 import { Link } from "react-router-dom"
 import { format } from "date-fns"
 import { Bell, Calendar, MessageSquare, Users, Info, Check, CheckCheck, ChevronLeft } from "lucide-react"

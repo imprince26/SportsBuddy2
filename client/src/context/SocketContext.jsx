@@ -1,14 +1,14 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { io } from 'socket.io-client'
-import { useAuth } from './AuthContext'
+import { useAuth } from '@/hooks/useAuth'
 
 const SocketContext = createContext()
 
-export const useSocket = () => {
-  const context = useContext(SocketContext)
-  if (!context) throw new Error("useSocket must be used within a SocketProvider")
-  return context
-}
+// export const useSocket = () => {
+//   const context = useContext(SocketContext)
+//   if (!context) throw new Error("useSocket must be used within a SocketProvider")
+//   return context
+// }
 
 export const SocketProvider = ({ children }) => {
   const { user } = useAuth()
@@ -122,3 +122,5 @@ export const SocketProvider = ({ children }) => {
     </SocketContext.Provider>
   )
 }
+
+export { SocketContext }

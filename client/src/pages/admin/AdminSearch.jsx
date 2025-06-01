@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from '@/hooks/useAuth';
 import { SearchIcon, Filter, User, Calendar, Users, Shield, ChevronDown, X, Loader2, MoreHorizontal, CheckCircle2, AlertTriangle, UserCheck, UserX, Edit, Trash2, Eye, ArrowUpDown, CalendarDays } from 'lucide-react'
 import { format } from "date-fns"
 import AdminLayout from "@/components/layout/AdminLayout"

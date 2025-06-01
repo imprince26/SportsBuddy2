@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Link, useSearchParams, useNavigate } from "react-router-dom"
 import { useEvents } from "@/context/EventContext"
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from '@/hooks/useAuth';
 import { format } from "date-fns"
 import { SearchIcon, Filter, MapPin, Calendar, Users, Star, ChevronDown, X, Loader2, User, CalendarDays, Dumbbell, Clock, Sliders, ArrowUpDown, CheckCircle2 } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"

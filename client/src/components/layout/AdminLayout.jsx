@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from '@/hooks/useAuth';
 import { Users, Calendar, Bell, Settings, LogOut, Menu, X, ChevronLeft, Shield, Home, BarChart } from "lucide-react"
 
 const AdminLayout = ({ children }) => {

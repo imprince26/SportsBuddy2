@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from "@/hooks/useAuth"
 import { Menu, X, Home, Calendar, User, Bell, LogOut, ChevronDown, Search, Moon, Sun, Shield } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Footer from "../Footer"

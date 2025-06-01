@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { UserPlus, UserMinus, User, ArrowLeft } from 'lucide-react';
 import Loader from '../components/Loader';
 

@@ -1,10 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { useAuth } from './AuthContext';
-import { useSocket } from './SocketContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from '@/hooks/useSocket';
 import api from '@/utils/api';
-import { use } from 'react';
 
 const EventContext = createContext();
 

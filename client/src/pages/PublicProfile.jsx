@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from '@/hooks/useAuth';
 import { format } from "date-fns"
 import { Mail, MapPin, Calendar, Award, Facebook, Twitter, Instagram, Dumbbell, ChevronLeft, Loader2, AlertTriangle, User } from 'lucide-react'
 

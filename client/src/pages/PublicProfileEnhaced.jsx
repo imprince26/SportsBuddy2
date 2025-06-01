@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
-import { useSocket } from "@/context/SocketContext"
+import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from "@/hooks/useSocket";
 import { format } from "date-fns"
 import { Mail, MapPin, Calendar, Award, Facebook, Twitter, Instagram, Dumbbell, ChevronLeft, Loader2, AlertTriangle, User, UserPlus, UserMinus, Users, Share2, MessageSquare, CalendarDays, Star, X } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"

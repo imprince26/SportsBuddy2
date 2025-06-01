@@ -80,18 +80,20 @@ const LoginForm = () => {
   };
 
   const onSubmit = async (data) => {
-    const toastId = showToast.loading('Logging in...');
     setIsLoading(true);
     try {
-      await login({
+    const res =  await login({
         email: data.email,
         password: data.password,
       });
-      showToast.success('Logged in successfully!', { id: toastId });
+      console.log('Login response:', res);
+
+      if (res.success) {
+        showToast.success('Login successful');
+        navigate('/dashboard');
+      }
     } catch (error) {
-      showToast.error(error.response?.data?.message || 'Login failed', {
-        id: toastId,
-      });
+      showToast.error(error.message || 'Login failed');
       console.error(error);
     } finally {
       setIsLoading(false);

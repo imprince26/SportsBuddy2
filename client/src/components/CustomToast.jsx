@@ -30,14 +30,14 @@ const CustomToast = () => {
 
   return (
     <Toaster
-      position="top-right"
+      position="bottom-right"
       toastOptions={{
-        duration: 2000,
+        duration: 3000,
         className: cn(
-          'backdrop-blur-lg rounded-lg shadow-lg flex items-center space-x-2 p-4 max-w-xs',
+          'backdrop-blur-lg rounded-lg shadow-lg flex items-center space-x-2 p-4 max-w-md w-full',
           theme === 'dark'
-            ? 'bg-card-dark/90 border-border-dark'
-            : 'bg-card-light/90 border-border-light'
+            ? 'bg-card-dark border-border-dark'
+            : 'bg-card-light border-border-light'
         ),
         style: {
           padding: '0',

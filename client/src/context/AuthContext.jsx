@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
+import { showToast } from '@/components/CustomToast';
 
 const AuthContext = createContext();
 
@@ -57,13 +58,11 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
-        toast.success('Registration successful!');
         return { success: true };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
       setAuthError(message);
-      toast.error(message);
       return { success: false, message };
     } finally {
       setLoading(false);
@@ -82,14 +81,11 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
-        toast.success('Login successful!');
         return { success: true };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
-      setAuthError(message);
-      toast.error(message);
-      return { success: false, message };
+      setAuthError(error.response?.data?.message || 'Login failed');
+      return { success: false, message: error.response?.data?.message || 'Login failed' };
     } finally {
       setLoading(false);
     }

@@ -24,6 +24,7 @@ import AdminLayout from './components/layout/AdminLayout';
 import Settings from './pages/Settings';
 import FollowersFollowing from './pages/FollowerFollowing';
 import TeamManagement from './pages/TeamManagement';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -148,6 +149,17 @@ function App() {
       {/* <Route path='/' element={<AdminLayout />}> */}
 
       {/* Admin Routes */}
+          <Route 
+          path='/admin/dashboard'
+          element={
+            <ProtectedRoute adminOnly>
+              <AdminLayout>
+                <AdminDashboard />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+          />
+
       <Route
         path="admin/users"
         element={

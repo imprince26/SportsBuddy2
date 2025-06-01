@@ -36,13 +36,13 @@ export const SocketProvider = ({ children }) => {
     })
 
     socketInstance.on("connect", () => {
-      console.log("✅ Connected to socket server")
+      // console.log("✅ Connected to socket server")
       setConnected(true)
       socketInstance.emit("join_user", user.id)
     })
 
     socketInstance.on("newMessage", (message) => {
-      console.log("📩 New Message:", message)
+      // console.log("📩 New Message:", message)
       setEventMessages(prev => {
         const eventId = message.eventId
         const prevMsgs = prev[eventId] || []
@@ -54,7 +54,7 @@ export const SocketProvider = ({ children }) => {
     })
 
     socketInstance.on("disconnect", () => {
-      console.log("❌ Disconnected from socket")
+      // console.log("❌ Disconnected from socket")
       setConnected(false)
     })
 

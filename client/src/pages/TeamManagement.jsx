@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { useEvents } from "@/context/EventContext"
+import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from "@/hooks/useSocket"
 import { Users, UserPlus, UserMinus, Crown, ChevronLeft, Loader2, AlertTriangle, User, MessageSquare, Settings, Shield, Check, X, Plus, Search } from 'lucide-react'

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
-import { useEvents } from "../context/EventContext"
+import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from '@/hooks/useAuth';
 import { format } from "date-fns"
 import { CalendarDays, MapPin, Users, Filter, Search, Star, Clock, ChevronDown, Plus, Loader2, SlidersHorizontal, X, Calendar } from 'lucide-react'

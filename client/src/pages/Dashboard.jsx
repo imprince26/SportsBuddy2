@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useAuth } from '@/hooks/useAuth';
-import { useEvents } from "@/context/EventContext"
+import { useEvents } from "@/hooks/useEvents";
 import { format } from "date-fns"
 import { Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell, Loader2, BarChart3, TrendingUp, CalendarIcon, CheckCircle, User, Dumbbell, UserPlus } from 'lucide-react'
 

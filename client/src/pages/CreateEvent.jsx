@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useEvents } from "../context/EventContext"
+import { useEvents } from "@/hooks/useEvents";
 import { Calendar, Clock, MapPin, Users, ImageIcon, X, Plus, ChevronLeft } from "lucide-react"
 import { Link } from "react-router-dom"
 

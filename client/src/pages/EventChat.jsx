@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
-import { useEvents } from "@/context/EventContext"
+import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from "@/hooks/useSocket"
 import { format } from "date-fns"

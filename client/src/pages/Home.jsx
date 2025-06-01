@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { useEvents } from "@/context/EventContext"
+import { useEvents } from "@/hooks/useEvents";
 import { motion } from "framer-motion"
 import { format } from "date-fns"
 import { Calendar, MapPin, Users, ArrowRight, Search, Trophy, Star } from "lucide-react"

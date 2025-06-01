@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { useEvents } from "@/context/EventContext"
+import { useEvents } from "@/hooks/useEvents";
 import { Search, Filter, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, Eye, Edit, Trash2, CheckCircle, XCircle, Calendar, Loader2, AlertTriangle } from 'lucide-react'
 import { format } from "date-fns"
 import AdminLayout from "@/components/layout/AdminLayout"

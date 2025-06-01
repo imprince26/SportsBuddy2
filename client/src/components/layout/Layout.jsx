@@ -61,7 +61,6 @@ const Layout = () => {
     }
   }
 
-
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark">
       {/* Header */}
@@ -168,9 +167,9 @@ const Layout = () => {
                       className="flex items-center space-x-2 focus:outline-none"
                     >
                       <div className="w-8 h-8 rounded-full overflow-hidden bg-muted-light dark:bg-muted-dark flex items-center justify-center">
-                        {user?.avatar ? (
+                        {user?.avatar? (
                           <img
-                            src={user.avatar[0]?.url || "/placeholder.svg"}
+                            src={user.avatar.url || "/placeholder.svg"}
                             alt={user.name}
                             className="w-full h-full object-cover"
                           />

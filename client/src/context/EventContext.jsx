@@ -6,13 +6,6 @@ import api from '@/utils/api';
 
 const EventContext = createContext();
 
-export const useEvent = () => {
-  const context = useContext(EventContext);
-  if (!context) {
-    throw new Error('useEvent must be used within an EventProvider');
-  }
-  return context;
-};
 
 export const EventProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
@@ -549,10 +542,4 @@ export const EventProvider = ({ children }) => {
   return <EventContext.Provider value={value}>{children}</EventContext.Provider>;
 };
 
-export const useEvents = () => {
-  const context = useContext(EventContext);
-  if (!context) {
-    throw new Error('useEvents must be used within an EventProvider');
-  }
-  return context;
-}
+export { EventContext};

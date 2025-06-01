@@ -85,7 +85,6 @@ const LoginForm = () => {
         email: data.email,
         password: data.password,
       });
-      console.log('Login response:', res);
 
       if (res.success) {
         showToast.success('Login successful');

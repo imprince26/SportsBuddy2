@@ -9,8 +9,10 @@ body {
 
 /* Default Selection */
 ::selection {
-  background-color: hsl(221, 73%, 47%, 0.3); /* Primary color with opacity */
-  color: hsl(0, 0%, 100%); /* White text */
+  background-color: hsl(221, 73%, 47%, 0.3);
+  /* Primary color with opacity */
+  color: hsl(0, 0%, 100%);
+  /* White text */
 }
 
 ::-moz-selection {
@@ -27,8 +29,10 @@ textarea::selection {
 
 /* Dark Mode Selection */
 .dark ::selection {
-  background-color: hsl(214, 94%, 69%, 0.3); /* Dark mode primary */
-  color: hsl(214, 20%, 92%); /* Dark mode text */
+  background-color: hsl(214, 94%, 69%, 0.3);
+  /* Dark mode primary */
+  color: hsl(214, 20%, 92%);
+  /* Dark mode text */
 }
 
 .dark ::-moz-selection {
@@ -44,72 +48,126 @@ textarea::selection {
 
 /* Special Elements Selection */
 .accent-selection ::selection {
-  background-color: hsl(33, 95%, 39%, 0.3); /* Accent color */
+  background-color: hsl(33, 95%, 39%, 0.3);
+  /* Accent color */
   color: hsl(0, 0%, 100%);
 }
 
 .success-selection ::selection {
-  background-color: hsl(137, 67%, 33%, 0.3); /* Success color */
+  background-color: hsl(137, 67%, 33%, 0.3);
+  /* Success color */
   color: hsl(0, 0%, 100%);
 }
 
 @layer base {
   :root {
-    --primary: 221 73% 47%; /* #1e40af */
-    --primary-foreground: 0 0% 100%; /* #ffffff */
-    --secondary: 137 67% 33%; /* #15803d */
-    --secondary-foreground: 0 0% 100%; /* #ffffff */
-    --accent: 33 95% 39%; /* #d97706 */
-    --accent-foreground: 217 71% 15%; /* #111827 */
-    --background: 214 46% 98%; /* #f9fafb */
-    --foreground: 217 71% 15%; /* #111827 */
-    --card: 0 0% 100%; /* #ffffff */
-    --card-foreground: 217 71% 15%; /* #111827 */
-    --popover: 0 0% 100%; /* #ffffff */
-    --popover-foreground: 217 71% 15%; /* #111827 */  
-    --muted: 214 20% 92%; /* #e5e7eb */
-    --muted-foreground: 215 14% 47%; /* #6b7280 */
-    --border: 214 20% 84%; /* #d1d5db */
-    --input: 214 20% 84%; /* #d1d5db */
-    --ring: 221 73% 47%; /* #1e40af */
-    --destructive: 0 83% 41%; /* #b91c1c */
-    --destructive-foreground: 0 0% 100%; /* #ffffff */
-    --success: 137 67% 33%; /* #15803d */
-    --warning: 33 95% 39%; /* #d97706 */
-    --chart-1: 221 73% 47%; /* #1e40af */
-    --chart-2: 137 67% 33%; /* #15803d */
-    --chart-3: 33 95% 39%; /* #d97706 */
-    --chart-4: 215 14% 47%; /* #6b7280 */
-    --chart-5: 0 83% 41%; /* #b91c1c */
+    --primary: 221 73% 47%;
+    /* #1e40af */
+    --primary-foreground: 0 0% 100%;
+    /* #ffffff */
+    --secondary: 137 67% 33%;
+    /* #15803d */
+    --secondary-foreground: 0 0% 100%;
+    /* #ffffff */
+    --accent: 33 95% 39%;
+    /* #d97706 */
+    --accent-foreground: 217 71% 15%;
+    /* #111827 */
+    --background: 214 46% 98%;
+    /* #f9fafb */
+    --foreground: 217 71% 15%;
+    /* #111827 */
+    --card: 0 0% 100%;
+    /* #ffffff */
+    --card-foreground: 217 71% 15%;
+    /* #111827 */
+    --popover: 0 0% 100%;
+    /* #ffffff */
+    --popover-foreground: 217 71% 15%;
+    /* #111827 */
+    --muted: 214 20% 92%;
+    /* #e5e7eb */
+    --muted-foreground: 215 14% 47%;
+    /* #6b7280 */
+    --border: 214 20% 84%;
+    /* #d1d5db */
+    --input: 214 20% 84%;
+    /* #d1d5db */
+    --ring: 221 73% 47%;
+    /* #1e40af */
+    --destructive: 0 83% 41%;
+    /* #b91c1c */
+    --destructive-foreground: 0 0% 100%;
+    /* #ffffff */
+    --success: 137 67% 33%;
+    /* #15803d */
+    --warning: 33 95% 39%;
+    /* #d97706 */
+    --chart-1: 221 73% 47%;
+    /* #1e40af */
+    --chart-2: 137 67% 33%;
+    /* #15803d */
+    --chart-3: 33 95% 39%;
+    /* #d97706 */
+    --chart-4: 215 14% 47%;
+    /* #6b7280 */
+    --chart-5: 0 83% 41%;
+    /* #b91c1c */
   }
 
   .dark {
-    --primary: 214 94% 69%; /* #3b82f6 */
-    --primary-foreground: 217 71% 15%; /* #111827 */
-    --secondary: 134 76% 53%; /* #22c55e */
-    --secondary-foreground: 217 71% 15%; /* #111827 */
-    --accent: 36 94% 47%; /* #f59e0b */
-    --accent-foreground: 217 71% 15%; /* #111827 */
-    --background: 217 71% 15%; /* #111827 */
-    --foreground: 214 20% 92%; /* #e5e7eb */
-    --card: 217 46% 22%; /* #1f2937 */
-    --card-foreground: 214 20% 92%; /* #e5e7eb */
-    --popover: 217 46% 22%; /* #1f2937 */
-    --popover-foreground: 214 20% 92%; /* #e5e7eb */
-    --muted: 217 30% 28%; /* #374151 */
-    --muted-foreground: 214 12% 65%; /* #9ca3af */
-    --border: 217 22% 36%; /* #4b5563 */
-    --input: 217 22% 36%; /* #4b5563 */
-    --ring: 214 94% 69%; /* #3b82f6 */
-    --destructive: 0 83% 62%; /* #ef4444 */
-    --destructive-foreground: 0 0% 100%; /* #ffffff */
-    --success: 134 76% 53%; /* #22c55e */
-    --warning: 36 94% 47%; /* #f59e0b */
-    --chart-1: 214 94% 69%; /* #3b82f6 */
-    --chart-2: 134 76% 53%; /* #22c55e */
-    --chart-3: 36 94% 47%; /* #f59e0b */
-    --chart-4: 214 12% 65%; /* #9ca3af */
-    --chart-5: 0 83% 62%; /* #ef4444 */
+    --primary: 214 94% 69%;
+    /* #3b82f6 */
+    --primary-foreground: 217 71% 15%;
+    /* #111827 */
+    --secondary: 134 76% 53%;
+    /* #22c55e */
+    --secondary-foreground: 217 71% 15%;
+    /* #111827 */
+    --accent: 36 94% 47%;
+    /* #f59e0b */
+    --accent-foreground: 217 71% 15%;
+    /* #111827 */
+    --background: 217 71% 15%;
+    /* #111827 */
+    --foreground: 214 20% 92%;
+    /* #e5e7eb */
+    --card: 217 46% 22%;
+    /* #1f2937 */
+    --card-foreground: 214 20% 92%;
+    /* #e5e7eb */
+    --popover: 217 46% 22%;
+    /* #1f2937 */
+    --popover-foreground: 214 20% 92%;
+    /* #e5e7eb */
+    --muted: 217 30% 28%;
+    /* #374151 */
+    --muted-foreground: 214 12% 65%;
+    /* #9ca3af */
+    --border: 217 22% 36%;
+    /* #4b5563 */
+    --input: 217 22% 36%;
+    /* #4b5563 */
+    --ring: 214 94% 69%;
+    /* #3b82f6 */
+    --destructive: 0 83% 62%;
+    /* #ef4444 */
+    --destructive-foreground: 0 0% 100%;
+    /* #ffffff */
+    --success: 134 76% 53%;
+    /* #22c55e */
+    --warning: 36 94% 47%;
+    /* #f59e0b */
+    --chart-1: 214 94% 69%;
+    /* #3b82f6 */
+    --chart-2: 134 76% 53%;
+    /* #22c55e */
+    --chart-3: 36 94% 47%;
+    /* #f59e0b */
+    --chart-4: 214 12% 65%;
+    /* #9ca3af */
+    --chart-5: 0 83% 62%;
+    /* #ef4444 */
   }
 }
 

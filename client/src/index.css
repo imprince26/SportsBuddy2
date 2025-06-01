@@ -5,22 +5,52 @@
 /* Green Selection Styles */
 body {
   transition: background-color 0.3s ease, color 0.3s ease;
+}
 
-  ::selection {
-    background-color: #2E7D32;
-    color: #E8F5E9;
-  }
+/* Default Selection */
+::selection {
+  background-color: hsl(221, 73%, 47%, 0.3); /* Primary color with opacity */
+  color: hsl(0, 0%, 100%); /* White text */
+}
 
-  ::-moz-selection {
-    background-color: #2E7D32;
-    color: #E8F5E9;
-  }
+::-moz-selection {
+  background-color: hsl(221, 73%, 47%, 0.3);
+  color: hsl(0, 0%, 100%);
+}
 
-  input::selection,
-  textarea::selection {
-    background-color: #2E7D32;
-    color: #E8F5E9;
-  }
+/* Form Elements Selection */
+input::selection,
+textarea::selection {
+  background-color: hsl(221, 73%, 47%, 0.3);
+  color: hsl(0, 0%, 100%);
+}
+
+/* Dark Mode Selection */
+.dark ::selection {
+  background-color: hsl(214, 94%, 69%, 0.3); /* Dark mode primary */
+  color: hsl(214, 20%, 92%); /* Dark mode text */
+}
+
+.dark ::-moz-selection {
+  background-color: hsl(214, 94%, 69%, 0.3);
+  color: hsl(214, 20%, 92%);
+}
+
+.dark input::selection,
+.dark textarea::selection {
+  background-color: hsl(214, 94%, 69%, 0.3);
+  color: hsl(214, 20%, 92%);
+}
+
+/* Special Elements Selection */
+.accent-selection ::selection {
+  background-color: hsl(33, 95%, 39%, 0.3); /* Accent color */
+  color: hsl(0, 0%, 100%);
+}
+
+.success-selection ::selection {
+  background-color: hsl(137, 67%, 33%, 0.3); /* Success color */
+  color: hsl(0, 0%, 100%);
 }
 
 @layer base {
@@ -36,7 +66,7 @@ body {
     --card: 0 0% 100%; /* #ffffff */
     --card-foreground: 217 71% 15%; /* #111827 */
     --popover: 0 0% 100%; /* #ffffff */
-    --popover-foreground: 217 71% 15%; /* #111827 */
+    --popover-foreground: 217 71% 15%; /* #111827 */  
     --muted: 214 20% 92%; /* #e5e7eb */
     --muted-foreground: 215 14% 47%; /* #6b7280 */
     --border: 214 20% 84%; /* #d1d5db */

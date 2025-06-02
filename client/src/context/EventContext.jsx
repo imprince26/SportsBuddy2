@@ -247,8 +247,9 @@ export const EventProvider = ({ children }) => {
   const updateEvent = async (eventId, eventData) => {
     setLoading(true);
     setError(null);
-
+    console.log('Updating event with ID:', eventId, 'Data:', eventData);
     try {
+
       const formData = new FormData();
 
       Object.entries(eventData).forEach(([key, value]) => {

@@ -1,11 +1,20 @@
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
-import { cloudinary } from "../config/cloudinary.js"; // Import Cloudinary
-import mongoose from "mongoose";
+import { cloudinary,uploadImage, deleteImage } from "../config/cloudinary.js"; // Import Cloudinary
+import { validateEvent } from "../utils/validation.js";
 
-// Create Event
+// Create Event Controller
 export const createEvent = async (req, res) => {
   try {
+    // Validate event data
+    // const validationResult = validateEvent(req.body);
+    // if (!validationResult.success) {
+    //   return res.status(400).json({
+    //     message: "Validation failed",
+    //     errors: validationResult.errors
+    //   });
+    // }
+
     const {
       name,
       description,
@@ -14,15 +23,52 @@ export const createEvent = async (req, res) => {
       location,
       maxParticipants,
       category,
+      difficulty,
+      eventType,
+      registrationFee,
+      rules,
+      equipment
     } = req.body;
 
-    const images =
-      req.files?.map((file) => ({
-        url: file.path,
-        public_id: file.filename,
-        caption: "", // Add caption if provided in req.body
-      })) || [];
+    // Handle image uploads
+    let uploadedImages = [];
+    if (req.files && req.files.length > 0) {
+      try {
+        // Upload each image to Cloudinary
+        const uploadPromises = req.files.map(async (file) => {
+          const result = await cloudinary.uploader.upload(file.path, {
+            folder: "SportsBuddy/events",
+            resource_type: "auto",
+            allowed_formats: ["jpg", "png", "jpeg", "gif", "webp"],
+            transformation: [
+              { width: 800, height: 600, crop: "limit" },
+              { quality: "auto" },
+              { fetch_format: "auto" }
+            ]
+          });
 
+          return {
+            url: result.secure_url,
+            public_id: result.public_id,
+            width: result.width,
+            height: result.height,
+            format: result.format
+          };
+        });
+
+        uploadedImages = await Promise.all(uploadPromises);
+      } catch (uploadError) {
+        // If upload fails, cleanup any uploaded images
+        for (const image of uploadedImages) {
+          if (image.public_id) {
+            await cloudinary.uploader.destroy(image.public_id);
+          }
+        }
+        throw new Error("Image upload failed: " + uploadError.message);
+      }
+    }
+
+    // Create new event
     const event = new Event({
       name,
       description,
@@ -31,27 +77,52 @@ export const createEvent = async (req, res) => {
       location: typeof location === "string" ? JSON.parse(location) : location,
       maxParticipants,
       category,
-      images,
+      difficulty,
+      eventType,
+      registrationFee: Number(registrationFee) || 0,
+      rules: Array.isArray(rules) ? rules : [],
+      equipment: Array.isArray(equipment) ? equipment : [],
+      images: uploadedImages,
       createdBy: req.user._id,
-      participants: [{ user: req.user._id, role: "organizer" }],
+      participants: [{ user: req.user._id, role: "organizer", joinedAt: new Date() }]
     });
 
     const savedEvent = await event.save();
+
+    // Populate event data
     const populatedEvent = await Event.findById(savedEvent._id)
       .populate("createdBy", "name avatar")
       .populate("participants.user", "name avatar");
 
-    // Notify followers or nearby users about the new event
+    // Add event to user's created events
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { 
+        createdEvents: savedEvent._id,
+        participatedEvents: savedEvent._id
+      }
+    });
+
+    // Notify followers
     const io = req.app.get("io");
     io.emit("newEvent", populatedEvent);
 
     res.status(201).json(populatedEvent);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    // Handle any cleanup if needed
+    if (error.uploadedImages) {
+      for (const image of error.uploadedImages) {
+        await cloudinary.uploader.destroy(image.public_id);
+      }
+    }
+    
+    res.status(400).json({ 
+      message: "Failed to create event",
+      error: error.message 
+    });
   }
 };
 
-// Update Event
+// Update Event Controller
 export const updateEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -60,36 +131,75 @@ export const updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Check if user is authorized to update
+    // Check authorization
     if (
       event.createdBy.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
-      return res.status(403).json({ message: "Not authorized" });
+      return res.status(403).json({ message: "Not authorized to update this event" });
     }
 
-    const updates = { ...req.body };
-    if (typeof updates.location === "string") {
-      updates.location = JSON.parse(updates.location);
-    }
+    // Handle image updates
+    let updatedImages = [...event.images]; // Start with existing images
 
-    if (req.files?.length > 0) {
-      // Optionally delete old images from Cloudinary
-      if (event.images.length > 0) {
-        for (const image of event.images) {
-          await cloudinary.uploader.destroy(image.public_id);
+    // Handle image deletions if specified
+    if (req.body.deletedImages && Array.isArray(req.body.deletedImages)) {
+      for (const imageId of req.body.deletedImages) {
+        const imageToDelete = event.images.find(img => img.public_id === imageId);
+        if (imageToDelete) {
+          await cloudinary.uploader.destroy(imageToDelete.public_id);
+          updatedImages = updatedImages.filter(img => img.public_id !== imageId);
         }
       }
-      updates.images = req.files.map((file) => ({
-        url: file.path,
-        public_id: file.filename,
-        caption: "", // Add caption if provided
-      }));
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, updates, {
-      new: true,
-    })
+    // Handle new image uploads
+    if (req.files && req.files.length > 0) {
+      const newUploadPromises = req.files.map(async (file) => {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: "SportsBuddy/events",
+          resource_type: "auto",
+          allowed_formats: ["jpg", "png", "jpeg", "gif", "webp"],
+          transformation: [
+            { width: 800, height: 600, crop: "limit" },
+            { quality: "auto" },
+            { fetch_format: "auto" }
+          ]
+        });
+
+        return {
+          url: result.secure_url,
+          public_id: result.public_id,
+          width: result.width,
+          height: result.height,
+          format: result.format
+        };
+      });
+
+      const newImages = await Promise.all(newUploadPromises);
+      updatedImages = [...updatedImages, ...newImages];
+    }
+
+    // Prepare update data
+    const updates = {
+      ...req.body,
+      images: updatedImages,
+      location: typeof req.body.location === "string" 
+        ? JSON.parse(req.body.location) 
+        : req.body.location,
+      updatedAt: new Date()
+    };
+
+    // Remove fields that shouldn't be updated
+    delete updates.createdBy;
+    delete updates.deletedImages;
+
+    // Update event
+    const updatedEvent = await Event.findByIdAndUpdate(
+      req.params.id,
+      { $set: updates },
+      { new: true }
+    )
       .populate("createdBy", "name avatar")
       .populate("participants.user", "name avatar")
       .populate("teams.captain", "name avatar")
@@ -103,7 +213,10 @@ export const updateEvent = async (req, res) => {
 
     res.json(updatedEvent);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ 
+      message: "Failed to update event",
+      error: error.message 
+    });
   }
 };
 

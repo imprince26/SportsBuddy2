@@ -27,8 +27,8 @@ router.get('/nearby', getNearbyEvents);
 
 // Protected routes
 router.use(isAuthenticated);
-router.post('/', upload.array('eventImages', 5), createEvent);
-router.put('/:id', upload.array('eventImages', 5), updateEvent);
+router.post('/', upload.array('images', 5), createEvent);
+router.put('/:id', upload.array('images', 5), updateEvent);
 router.delete('/:id', deleteEvent);
 router.post('/:id/join', joinEvent);
 router.post('/:id/leave', leaveEvent);

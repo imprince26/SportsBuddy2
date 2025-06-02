@@ -48,15 +48,18 @@ const deleteImage = async (publicId) => {
   }
 };
 
-const uploadImage = async (file, folder = "SportsBuddy-2") => {
+const uploadImage = async (file, options = {}) => {
   try {
 
-    const uploadOptions = {
-      folder: folder,
-      width: 500,
-      height: 500,
-      quality: 'auto',
-      crop: "scale"
+   const uploadOptions = {
+      folder: 'SportsBuddy-2',
+      ...options,
+      transformation: [
+        { width: 800, height: 600, crop: 'limit' },
+        { quality: 'auto' },
+        { fetch_format: 'auto' },
+        ...(options.transformation || [])
+      ]
     };
 
     // If file is from Multer (has buffer)

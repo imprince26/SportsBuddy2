@@ -7,6 +7,7 @@ import { useSocket } from "@/hooks/useSocket"
 import { format } from "date-fns"
 import { ChevronLeft, Send, User, ImageIcon, Smile, Paperclip, Loader2, AlertTriangle, Users, Info } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const EventChat = () => {
   const { eventId } = useParams()
@@ -312,7 +313,7 @@ const EventChat = () => {
                         <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
                           {participant.user.avatar ? (
                             <img
-                              src={participant.user.avatar || "/placeholder.svg"}
+                              src={participant.user.avatar.url || "/placeholder.svg"}
                               alt={participant.user.name}
                               className="w-full h-full object-cover"
                             />
@@ -356,7 +357,8 @@ const EventChat = () => {
                 <div className="p-4 border-b border-border-light dark:border-border-dark">
                   <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">Event Info</h3>
                 </div>
-                <div className="p-4 overflow-y-auto max-h-[calc(100vh-16rem-8rem)]">
+                <ScrollArea className="h-[calc(100vh-16rem-8rem)]">
+                <div className="p-4  max-h-[calc(100vh-16rem-8rem)]">
                   <div className="space-y-4">
                     <div>
                       <h4 className="text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
@@ -398,7 +400,7 @@ const EventChat = () => {
                         <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
                           {event.createdBy.avatar ? (
                             <img
-                              src={event.createdBy.avatar || "/placeholder.svg"}
+                              src={event.createdBy.avatar.url || "/placeholder.svg"}
                               alt={event.createdBy.name}
                               className="w-full h-full object-cover"
                             />
@@ -421,6 +423,7 @@ const EventChat = () => {
                     </div>
                   </div>
                 </div>
+                </ScrollArea>
               </motion.div>
             )}
           </AnimatePresence>

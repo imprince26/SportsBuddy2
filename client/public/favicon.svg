@@ -1,1 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#04e75b" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+<!-- filepath: d:\UnifiedMentor\SportsBuddy\client\public\favicon.svg -->
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Background Circle with Gradient -->
+  <circle
+    cx="256"
+    cy="256"
+    r="248"
+    fill="url(#gradient)"
+    stroke="white"
+    stroke-width="16"
+  />
+
+  <!-- Sports Elements Group -->
+  <g filter="url(#shadow)">
+    <!-- Basketball Lines -->
+    <path
+      d="M128 256h256M256 128v256"
+      stroke="white"
+      stroke-width="24"
+      stroke-linecap="round"
+    />
+    <path
+      d="M150 150c58.5 58.5 153.5 58.5 212 0M150 362c58.5-58.5 153.5-58.5 212 0"
+      stroke="white"
+      stroke-width="24"
+      stroke-linecap="round"
+    />
+
+    <!-- People Silhouettes -->
+    <path
+      d="M206 256c0-27.6 22.4-50 50-50s50 22.4 50 50-22.4 50-50 50-50-22.4-50-50z"
+      fill="white"
+    />
+    <path
+      d="M176 246c0-20.4 16.6-37 37-37s37 16.6 37 37-16.6 37-37 37-37-16.6-37-37z"
+      fill="#3B82F6"
+    />
+    <path
+      d="M262 246c0-20.4 16.6-37 37-37s37 16.6 37 37-16.6 37-37 37-37-16.6-37-37z"
+      fill="#3B82F6"
+    />
+  </g>
+
+  <!-- Definitions -->
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient
+      id="gradient"
+      x1="0"
+      y1="0"
+      x2="512"
+      y2="512"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1E40AF" />
+    </linearGradient>
+
+    <!-- Shadow Effect -->
+    <filter
+      id="shadow"
+      x="-8"
+      y="-8"
+      width="528"
+      height="528"
+      filterUnits="userSpaceOnUse"
+      color-interpolation-filters="sRGB"
+    >
+      <feFlood flood-opacity="0" result="BackgroundImageFix" />
+      <feColorMatrix
+        in="SourceAlpha"
+        type="matrix"
+        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+      />
+      <feOffset dy="4" />
+      <feGaussianBlur stdDeviation="4" />
+      <feColorMatrix
+        type="matrix"
+        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+      />
+      <feBlend
+        mode="normal"
+        in2="BackgroundImageFix"
+        result="effect1_dropShadow"
+      />
+      <feBlend
+        mode="normal"
+        in="SourceGraphic"
+        in2="effect1_dropShadow"
+        result="shape"
+      />
+    </filter>
+  </defs>
+</svg>

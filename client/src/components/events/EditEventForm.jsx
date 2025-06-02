@@ -1,6 +1,19 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useNavigate, useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "react-hot-toast";
+import { useEvents } from "@/hooks/useEvents";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Calendar,
+  AlertCircle,
+  ImagePlus,
+  X,
+  ChevronLeft,
+  Trash2
+} from "lucide-react";
 import {
   Form,
   FormControl,
@@ -16,31 +29,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "react-hot-toast";
-import { useNavigate, useParams } from "react-router-dom";
-import { useEvents } from "@/context/EventContext";
-import { useAuth } from "@/context/AuthContext";
-import { CalendarIcon, AlertCircleIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+// Event validation schema (assuming it's imported from your validation utils)
 import { eventSchema } from "@/utils/validation";
-import ImageUpload from "@/components/ui/image-upload";
 
 const EditEventForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getEventById, updateEvent } = useEvents();
+  const { getEventById, updateEvent, deleteEvent } = useEvents();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(eventSchema),
     defaultValues: {
       name: "",
-      category: "Other",
+      category: "",
       description: "",
       date: "",
       time: "",
@@ -51,443 +74,553 @@ const EditEventForm = () => {
       },
       maxParticipants: 10,
       difficulty: "Beginner",
+      eventType: "casual",
       registrationFee: 0,
+      rules: [],
+      equipment: []
     },
   });
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const fetchEventDetails = async () => {
       try {
-        const fetchedEvent = await getEventById(id);
-        if (!fetchedEvent) {
+        const eventData = await getEventById(id);
+        if (!eventData) {
+          toast.error("Event not found");
           navigate("/events");
           return;
         }
 
+        // Check authorization
         setIsAuthorized(
-          fetchedEvent.createdBy._id === user.id || user.role === "admin"
+          eventData.createdBy._id === user.id || user.role === "admin"
         );
 
-        // Initialize uploaded images with existing ones
-        setUploadedImages(fetchedEvent.images || []);
+        // Set existing images
+        setExistingImages(eventData.images || []);
 
+        // Reset form with event data
         form.reset({
-          name: fetchedEvent.name,
-          category: fetchedEvent.category,
-          description: fetchedEvent.description,
-          date: new Date(fetchedEvent.date).toISOString().split("T")[0],
-          time: fetchedEvent.time,
+          name: eventData.name,
+          category: eventData.category,
+          description: eventData.description,
+          date: new Date(eventData.date).toISOString().split("T")[0],
+          time: eventData.time,
           location: {
-            address: fetchedEvent.location.address,
-            city: fetchedEvent.location.city,
-            state: fetchedEvent.location.state || "",
+            address: eventData.location.address,
+            city: eventData.location.city,
+            state: eventData.location.state || "",
           },
-          maxParticipants: fetchedEvent.maxParticipants,
-          difficulty: fetchedEvent.difficulty,
-          registrationFee: fetchedEvent.registrationFee || 0,
+          maxParticipants: eventData.maxParticipants,
+          difficulty: eventData.difficulty,
+          eventType: eventData.eventType,
+          registrationFee: eventData.registrationFee || 0,
+          rules: eventData.rules || [],
+          equipment: eventData.equipment || []
         });
-      } catch {
-        toast.error("Failed to fetch event details", {
-          icon: <AlertCircleIcon className="text-red-500" />,
-          style: {
-            background: "#2C3E50",
-            color: "#ECF0F1",
-          },
-        });
+      } catch (error) {
+        toast.error("Error fetching event details");
         navigate("/events");
       }
     };
-    fetchEvent();
-  }, [id, getEventById, navigate, user, form]);
+
+    fetchEventDetails();
+  }, [id, getEventById, navigate, user.id, user.role, form]);
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Validate files
+    const validFiles = files.filter(file => {
+      const isValidType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+
+      if (!isValidType) {
+        toast.error(`${file.name} is not a supported image type`);
+        return false;
+      }
+      if (!isValidSize) {
+        toast.error(`${file.name} is too large (max 5MB)`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length + existingImages.length + newImages.length > 5) {
+      toast.error("Maximum 5 images allowed");
+      return;
+    }
+
+    setNewImages(prev => [...prev, ...validFiles]);
+
+    // Create preview URLs
+    const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+    setImagePreviews(prev => [...prev, ...newPreviews]);
+  };
+
+  const removeExistingImage = (index) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index) => {
+    URL.revokeObjectURL(imagePreviews[index]);
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setNewImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
     try {
-      const validatedData = eventSchema.parse({
-        ...data,
-        images: uploadedImages,
+      setIsLoading(true);
+
+      // Create FormData
+      const formData = new FormData();
+
+      // Append form data
+      Object.keys(data).forEach(key => {
+        if (key === 'location' || key === 'rules' || key === 'equipment') {
+          formData.append(key, JSON.stringify(data[key]));
+        } else {
+          formData.append(key, data[key]);
+        }
       });
-      await updateEvent(id, validatedData);
-      
-      toast.success("Event updated successfully!", {
-        icon: "🎉",
-        style: {
-          background: "#0F2C2C",
-          color: "#E0F2F1",
-          border: "1px solid #4CAF50",
-        },
+
+      // Append existing images
+      formData.append('existingImages', JSON.stringify(existingImages));
+
+      // Append new images
+      newImages.forEach(image => {
+        formData.append('images', image);
       });
+
+      await updateEvent(id, formData);
+
+      toast.success("Event updated successfully!");
       navigate(`/events/${id}`);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((err) => err.message);
-        toast.error(errorMessages[0], {
-          icon: <AlertCircleIcon className="text-red-500" />,
-          style: {
-            background: "#2C3E50",
-            color: "#ECF0F1",
-          },
-        });
-      } else {
-        const errorMessage =
-          error.response?.data?.message || "Failed to update event";
-        toast.error(errorMessage, {
-          icon: <AlertCircleIcon className="text-red-500" />,
-          style: {
-            background: "#2C3E50",
-            color: "#ECF0F1",
-          },
-        });
-      }
+      toast.error(error.message || "Failed to update event");
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    try {
+      setIsLoading(true);
+      await deleteEvent(id);
+      toast.success("Event deleted successfully");
+      navigate("/events");
+    } catch (error) {
+      toast.error(error.message || "Failed to delete event");
       setIsLoading(false);
     }
   };
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A1A1A] via-[#0F2C2C] to-[#0A1A1A]">
-        <div className="text-center text-[#E0F2F1]">
-          <AlertCircleIcon className="mx-auto h-16 w-16 text-[#FF5252] mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-          <p className="text-[#81C784] mb-4">
-            You are not authorized to edit this event.
-          </p>
-          <Button
-            onClick={() => navigate("/events")}
-            className="bg-[#4CAF50] text-white hover:bg-[#388E3C]"
-          >
-            Back to Events
-          </Button>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-[400px]">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+              <h2 className="mt-4 text-2xl font-semibold">Access Denied</h2>
+              <p className="mt-2 text-muted-foreground">
+                You are not authorized to edit this event.
+              </p>
+              <Button
+                className="mt-4"
+                onClick={() => navigate("/events")}
+              >
+                Back to Events
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A1A1A] via-[#0F2C2C] to-[#0A1A1A] p-4">
-      <div className="w-full max-w-2xl bg-[#0F2C2C]/70 rounded-xl shadow-2xl p-8">
-        <div className="text-center mb-8">
-          <CalendarIcon
-            className="mx-auto h-16 w-16 text-[#4CAF50] mb-4 animate-pulse"
-            strokeWidth={1.5}
-          />
-          <h2 className="text-4xl font-bold text-[#E0F2F1]">Edit Event</h2>
-          <p className="text-[#81C784] mt-2">Update your event details</p>
-        </div>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Form fields - same as CreateEventForm */}
-            {/* ... Event Name ... */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#B0BEC5]">Event Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter event name"
-                      className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                      focus:ring-2 focus:ring-[#4CAF50]/50"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-[#FF5252]" />
-                </FormItem>
-              )}
-            />
-
-            {/* ... Category and Difficulty ... */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">Category</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger
-                          className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 
-                          text-[#E0F2F1] focus:ring-2 focus:ring-[#4CAF50]/50"
-                        >
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-[#1D4E4E] border-[#2E7D32]/30 text-[#E0F2F1]">
-                        {[
-                          "Cricket",
-                          "Football",
-                          "Basketball",
-                          "Tennis",
-                          "Running",
-                          "Cycling",
-                          "Swimming",
-                          "Volleyball",
-                          "Other",
-                        ].map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-[#FF5252]" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="difficulty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">Difficulty</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger
-                          className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 
-                          text-[#E0F2F1] focus:ring-2 focus:ring-[#4CAF50]/50"
-                        >
-                          <SelectValue placeholder="Select difficulty" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-[#1D4E4E] border-[#2E7D32]/30 text-[#E0F2F1]">
-                        {["Beginner", "Intermediate", "Advanced"].map(
-                          (level) => (
-                            <SelectItem key={level} value={level}>
-                              {level}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-[#FF5252]" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* ... Description ... */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#B0BEC5]">Description</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter event description"
-                      className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                      focus:ring-2 focus:ring-[#4CAF50]/50"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-[#FF5252]" />
-                </FormItem>
-              )}
-            />
-
-            {/* ... Date and Time ... */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">Event Date</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
-                        className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-[#FF5252]" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">Event Time</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        {...field}
-                        className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-[#FF5252]" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* ... Location Fields ... */}
-            <FormField
-              control={form.control}
-              name="location.address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#B0BEC5]">Address</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter event address"
-                      className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                      focus:ring-2 focus:ring-[#4CAF50]/50"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-[#FF5252]" />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="location.city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">City</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Enter city"
-                        className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-[#FF5252]" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="location.state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">
-                      State (optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Enter state"
-                        className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-[#FF5252]" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* ... Max Participants and Registration Fee ... */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="maxParticipants"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">
-                      Max Participants
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        placeholder="Enter max participants"
-                        className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-[#FF5252]" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="registrationFee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#B0BEC5]">
-                      Registration Fee (optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        placeholder="Enter registration fee"
-                        className="bg-[#1D4E4E]/30 border-[#2E7D32]/30 text-[#E0F2F1] 
-                        focus:ring-2 focus:ring-[#4CAF50]/50"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-[#FF5252]" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Image Upload Section */}
-            <div className="space-y-2">
-              <label className="text-[#B0BEC5] block">Event Images</label>
-              <ImageUpload
-                maxFiles={5}
-                maxSize={5}
-                existingImages={uploadedImages}
-                onChange={() => {}} // We handle this through onUploadComplete
-                onUploadComplete={(urls) => {
-                  setUploadedImages(prev => [...prev, ...urls]);
-                }}
-                onRemove={(index) => {
-                  setUploadedImages(prev => prev.filter((_, i) => i !== index));
-                }}
-                className="mt-1"
-              />
-              <p className="text-xs text-[#81C784]">
-                Upload up to 5 images (max 5MB each)
-              </p>
-            </div>
-
-            {/* ... Submit Button ... */}
-            <div className="flex space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate(`/events/${id}`)}
-                className="flex-1 border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50]/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="flex-1 bg-[#4CAF50] text-[#E0F2F1] hover:bg-[#388E3C]"
-              >
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+    <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(`/events/${id}`)}
+          className="flex items-center"
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Back to Event
+        </Button>
+        
+        <Button
+          variant="destructive"
+          onClick={() => setShowDeleteDialog(true)}
+          className="flex items-center"
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete Event
+        </Button>
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="text-center">
+            <Calendar className="mx-auto h-12 w-12 text-primary" />
+            <h1 className="mt-4 text-2xl font-semibold">Edit Event</h1>
+            <p className="text-sm text-muted-foreground">
+              Update your event details below
+            </p>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Basic Information</h2>
+                
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Event Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter event name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Category Select */}
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {[
+                              "Basketball",
+                              "Football",
+                              "Cricket",
+                              "Tennis",
+                              "Running",
+                              "Cycling",
+                              "Swimming",
+                              "Volleyball",
+                              "Other"
+                            ].map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Difficulty Select */}
+                  <FormField
+                    control={form.control}
+                    name="difficulty"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Difficulty</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select difficulty" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {["Beginner", "Intermediate", "Advanced"].map((level) => (
+                              <SelectItem key={level} value={level}>
+                                {level}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe your event..."
+                          className="min-h-[120px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Date and Time */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Date and Time</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Location</h2>
+                <FormField
+                  control={form.control}
+                  name="location.address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter event address" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="location.city"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>City</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter city" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="location.state"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>State (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter state" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Event Details */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Event Details</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="maxParticipants"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Maximum Participants</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min={2}
+                            max={1000}
+                            {...field}
+                            onChange={e => field.onChange(parseInt(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="registrationFee"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Registration Fee ($)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            {...field}
+                            onChange={e => field.onChange(parseFloat(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Images */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Event Images</h2>
+                
+                {/* Existing Images */}
+                {existingImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-4">
+                    {existingImages.map((image, index) => (
+                      <div key={image.public_id} className="relative group">
+                        <img
+                          src={image.url}
+                          alt={`Event ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(index)}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* New Images Upload */}
+                <div className="border-2 border-dashed rounded-lg p-4">
+                  <input
+                    type="file"
+                    id="images"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="images"
+                    className="flex flex-col items-center cursor-pointer"
+                  >
+                    <ImagePlus className="h-8 w-8 text-muted-foreground" />
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Click to upload new images
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Maximum 5 images (JPEG, PNG, or WebP)
+                    </p>
+                  </label>
+                </div>
+
+                {/* New Image Previews */}
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-3 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(index)}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate(`/events/${id}`)}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event
+              and remove all data associated with it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEvent}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

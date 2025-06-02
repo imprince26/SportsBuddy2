@@ -17,7 +17,7 @@ import {
   X,
   Plus
 } from "lucide-react";
-import { 
+import {
   Button,
   Input,
   Form,
@@ -132,7 +132,7 @@ const CreateEventForm = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Validate files
     const validFiles = files.filter(file => {
       const isValidType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
@@ -196,7 +196,7 @@ const CreateEventForm = () => {
               {/* Basic Information */}
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Basic Information</h2>
-                
+
                 <FormField
                   control={form.control}
                   name="name"
@@ -387,8 +387,8 @@ const CreateEventForm = () => {
                       <FormItem>
                         <FormLabel>Maximum Participants</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
+                          <Input
+                            type="number"
                             min={2}
                             max={1000}
                             {...field}
@@ -407,7 +407,7 @@ const CreateEventForm = () => {
                       <FormItem>
                         <FormLabel>Registration Fee ($)</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             type="number"
                             min={0}
                             step={0.01}

@@ -129,7 +129,7 @@ const EditEventForm = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Validate files
     const validFiles = files.filter(file => {
       const isValidType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
@@ -250,7 +250,7 @@ const EditEventForm = () => {
           <ChevronLeft className="mr-2 h-4 w-4" />
           Back to Event
         </Button>
-        
+
         <Button
           variant="destructive"
           onClick={() => setShowDeleteDialog(true)}
@@ -278,7 +278,7 @@ const EditEventForm = () => {
               {/* Basic Information */}
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold">Basic Information</h2>
-                
+
                 <FormField
                   control={form.control}
                   name="name"
@@ -364,7 +364,7 @@ const EditEventForm = () => {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Describe your event..."
                           className="min-h-[120px]"
                           {...field}
@@ -469,8 +469,8 @@ const EditEventForm = () => {
                       <FormItem>
                         <FormLabel>Maximum Participants</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
+                          <Input
+                            type="number"
                             min={2}
                             max={1000}
                             {...field}
@@ -489,7 +489,7 @@ const EditEventForm = () => {
                       <FormItem>
                         <FormLabel>Registration Fee ($)</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             type="number"
                             min={0}
                             step={0.01}
@@ -507,7 +507,7 @@ const EditEventForm = () => {
               {/* Images */}
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold">Event Images</h2>
-                
+
                 {/* Existing Images */}
                 {existingImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-4">

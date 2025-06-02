@@ -1,6 +1,6 @@
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
-import { cloudinary,uploadImage, deleteImage } from "../config/cloudinary.js"; // Import Cloudinary
+import { cloudinary, uploadImage, deleteImage } from "../config/cloudinary.js"; // Import Cloudinary
 import { validateEvent } from "../utils/validation.js";
 
 // Create Event Controller
@@ -96,7 +96,7 @@ export const createEvent = async (req, res) => {
 
     // Add event to user's created events
     await User.findByIdAndUpdate(req.user._id, {
-      $push: { 
+      $push: {
         createdEvents: savedEvent._id,
         participatedEvents: savedEvent._id
       }
@@ -114,10 +114,10 @@ export const createEvent = async (req, res) => {
         await cloudinary.uploader.destroy(image.public_id);
       }
     }
-    
-    res.status(400).json({ 
+
+    res.status(400).json({
       message: "Failed to create event",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -184,8 +184,8 @@ export const updateEvent = async (req, res) => {
     const updates = {
       ...req.body,
       images: updatedImages,
-      location: typeof req.body.location === "string" 
-        ? JSON.parse(req.body.location) 
+      location: typeof req.body.location === "string"
+        ? JSON.parse(req.body.location)
         : req.body.location,
       updatedAt: new Date()
     };
@@ -213,9 +213,9 @@ export const updateEvent = async (req, res) => {
 
     res.json(updatedEvent);
   } catch (error) {
-    res.status(400).json({ 
+    res.status(400).json({
       message: "Failed to update event",
-      error: error.message 
+      error: error.message
     });
   }
 };

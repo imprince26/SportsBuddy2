@@ -164,27 +164,10 @@ const CreateEventForm = () => {
     try {
       setIsLoading(true);
 
-      // Create FormData instance for multipart/form-data
-      // const eventFormData = new FormData();
-
-      // // Append all form data
-      // Object.entries(formData).forEach(([key, value]) => {
-      //   if (key === "location" || key === "rules" || key === "equipment") {
-      //     eventFormData.append(key, JSON.stringify(value));
-      //   } else {
-      //     eventFormData.append(key, value);
-      //   }
-      // });
-
-      // // Append each image file
-      // images.forEach((image) => {
-      //   eventFormData.append("images", image);
-      // });
       const data = {
         ...formData,
         images: images
       }
-console.log("Submitting event data:", data);
       const result = await createEvent(data);
 
       if (result.success) {

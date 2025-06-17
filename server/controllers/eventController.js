@@ -6,6 +6,8 @@ import { validateEvent } from "../utils/validation.js";
 // Create Event Controller
 export const createEvent = async (req, res) => {
   try {
+    console.log(req)
+    console.log(req.files)
     // Validate event data
     // const validationResult = validateEvent(req.body);
     // if (!validationResult.success) {
@@ -124,6 +126,8 @@ export const createEvent = async (req, res) => {
 
 // Update Event Controller
 export const updateEvent = async (req, res) => {
+  console.log(req)
+  console.log(req.files)
   try {
     const event = await Event.findById(req.params.id);
 

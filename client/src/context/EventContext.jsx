@@ -194,89 +194,89 @@ export const EventProvider = ({ children }) => {
   };
 
   // Create new event
-const createEvent = async (eventData) => {
-  setLoading(true);
-  setError(null);
-  console.log('Creating event with data:', eventData);
-  try {
-    // Create FormData instance
-    const formData = new FormData();
+  const createEvent = async (eventData) => {
+    setLoading(true);
+    setError(null);
+    console.log('Creating event with data:', eventData);
+    try {
+      // Create FormData instance
+      const formData = new FormData();
 
-    // Append all event data to FormData
-    Object.entries(eventData).forEach(([key, value]) => {
-      if (key === 'images') {
-        // Handle multiple image files
-        Array.from(value).forEach((file) => {
-          formData.append('images', file);
-        });
-      } else if (key === 'location' || key === 'rules' || key === 'equipment') {
-        // Convert objects/arrays to JSON strings
-        formData.append(key, JSON.stringify(value));
-      } else {
-        formData.append(key, value);
+      // Append all event data to FormData
+      Object.entries(eventData).forEach(([key, value]) => {
+        if (key === 'images') {
+          // Handle multiple image files
+          Array.from(value).forEach((file) => {
+            formData.append('images', file);
+          });
+        } else if (key === 'location' || key === 'rules' || key === 'equipment') {
+          // Convert objects/arrays to JSON strings
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await api.post('/events', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data) {
+        setEvents(prev => [response.data, ...prev]);
+        setUserEvents(prev => [response.data, ...prev]);
+        toast.success('Event created successfully');
+        return { success: true, event: response.data };
       }
-    });
-
-    const response = await api.post('/events', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-
-    if (response.data) {
-      setEvents(prev => [response.data, ...prev]);
-      setUserEvents(prev => [response.data, ...prev]);
-      toast.success('Event created successfully');
-      return { success: true, event: response.data };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to create event';
+      setError(message);
+      toast.error(message);
+      return { success: false, message };
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    const message = error.response?.data?.message || 'Failed to create event';
-    setError(message);
-    toast.error(message);
-    return { success: false, message };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Update event
-const updateEvent = async (eventId, eventData) => {
-  setLoading(true);
-  setError(null);
+  const updateEvent = async (eventId, eventData) => {
+    setLoading(true);
+    setError(null);
 
-  try {
-    const response = await api.put(`/events/${eventId}`, eventData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
+    try {
+      const response = await api.put(`/events/${eventId}`, eventData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data) {
+        // Update events list
+        setEvents(prev =>
+          prev.map(event => event._id === eventId ? response.data : event)
+        );
+
+        // Update user events list
+        setUserEvents(prev =>
+          prev.map(event => event._id === eventId ? response.data : event)
+        );
+
+        // Update current event if it's the one being edited
+        if (currentEvent && currentEvent._id === eventId) {
+          setCurrentEvent(response.data);
+        }
+
+        return { success: true, event: response.data };
       }
-    });
-
-    if (response.data) {
-      // Update events list
-      setEvents(prev =>
-        prev.map(event => event._id === eventId ? response.data : event)
-      );
-
-      // Update user events list
-      setUserEvents(prev =>
-        prev.map(event => event._id === eventId ? response.data : event)
-      );
-
-      // Update current event if it's the one being edited
-      if (currentEvent && currentEvent._id === eventId) {
-        setCurrentEvent(response.data);
-      }
-
-      return { success: true, event: response.data };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update event';
+      setError(message);
+      throw new Error(message);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    const message = error.response?.data?.message || 'Failed to update event';
-    setError(message);
-    throw new Error(message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Delete event
   const deleteEvent = async (eventId) => {
@@ -526,4 +526,4 @@ const updateEvent = async (eventId, eventData) => {
   return <EventContext.Provider value={value}>{children}</EventContext.Provider>;
 };
 
-export { EventContext};
+export { EventContext };

@@ -17,25 +17,38 @@ import {
   X,
   Plus
 } from "lucide-react";
-import {
-  Button,
-  Input,
-  Form,
+// import {
+//   Button,
+//   Input,
+//   Form,
+//   FormControl,
+//   FormField,
+//   FormItem,
+//   FormLabel,
+//   FormMessage,
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+//   Textarea,
+//   Card,
+//   CardHeader,
+//   CardContent
+// } from "@/components/ui";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { 
+    Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Textarea,
-  Card,
-  CardHeader,
-  CardContent
-} from "@/components/ui";
+ } from "../ui/form";
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Textarea } from "../ui/textarea";
+import { Card, CardHeader, CardContent } from "../ui/card";
 
 // Event validation schema
 const eventSchema = z.object({
@@ -93,73 +106,57 @@ const CreateEventForm = () => {
     }
   });
 
-  const onSubmit = async (data) => {
-    setIsLoading(true);
-    try {
-      // Create FormData for multipart/form-data submission
-      const formData = new FormData();
+const handleImageChange = (e) => {
+  const files = Array.from(e.target.files);
+  
+  // Validate number of images
+  if (files.length + images.length > 5) {
+    toast.error('Maximum 5 images allowed');
+    return;
+  }
 
-      // Append form data
-      Object.keys(data).forEach(key => {
-        if (key === 'location') {
-          formData.append(key, JSON.stringify(data[key]));
-        } else if (Array.isArray(data[key])) {
-          formData.append(key, JSON.stringify(data[key]));
-        } else {
-          formData.append(key, data[key]);
-        }
-      });
+  // Validate file types and sizes
+  const validFiles = files.filter(file => {
+    const isValidType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+    const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
 
-      // Append images
-      images.forEach(image => {
-        formData.append('images', image);
-      });
-
-      const result = await createEvent(formData);
-
-      if (result.success) {
-        toast.success("Event created successfully!");
-        navigate(`/events/${result.event._id}`);
-      } else {
-        throw new Error(result.message || "Failed to create event");
-      }
-    } catch (error) {
-      toast.error(error.message || "Something went wrong");
-    } finally {
-      setIsLoading(false);
+    if (!isValidType) {
+      toast.error(`${file.name} is not a supported image type`);
+      return false;
     }
-  };
-
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-
-    // Validate files
-    const validFiles = files.filter(file => {
-      const isValidType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
-      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
-
-      if (!isValidType) {
-        toast.error(`${file.name} is not a supported image type`);
-        return false;
-      }
-      if (!isValidSize) {
-        toast.error(`${file.name} is too large (max 5MB)`);
-        return false;
-      }
-      return true;
-    });
-
-    if (validFiles.length + images.length > 5) {
-      toast.error("Maximum 5 images allowed");
-      return;
+    if (!isValidSize) {
+      toast.error(`${file.name} is too large (max 5MB)`);
+      return false;
     }
+    return true;
+  });
 
-    setImages(prev => [...prev, ...validFiles]);
+  setImages(prev => [...prev, ...validFiles]);
 
-    // Create preview URLs
-    const newPreviews = validFiles.map(file => URL.createObjectURL(file));
-    setImagePreview(prev => [...prev, ...newPreviews]);
-  };
+  // Create preview URLs
+  const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+  setImagePreview(prev => [...prev, ...newPreviews]);
+};
+
+const onSubmit = async (data) => {
+  setIsLoading(true);
+  console.log(images);
+  try {
+    const eventDataWithFiles = {
+      ...data,
+      images: images // Add images to event data
+    };
+
+    const result = await createEvent(eventDataWithFiles);
+    if (result.success) {
+      navigate(`/events/${result.event._id}`);
+    }
+  } catch (error) {
+    console.error("Error creating event:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const removeImage = (index) => {
     setImages(prev => prev.filter((_, i) => i !== index));

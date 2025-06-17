@@ -1,159 +1,202 @@
-"use client"
-
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "react-hot-toast";
 import { useEvents } from "@/hooks/useEvents";
-import { Calendar, Clock, MapPin, Users, ImageIcon, X, Plus, ChevronLeft } from "lucide-react"
-import { Link } from "react-router-dom"
+import {
+  Calendar,
+  ImagePlus,
+  X,
+  ChevronLeft,
+  Clock,
+  MapPin,
+  Users,
+} from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-const CreateEvent = () => {
-  const navigate = useNavigate()
-  const { createEvent, loading } = useEvents()
-  const [eventData, setEventData] = useState({
-    name: "",
-    category: "",
-    description: "",
-    date: "",
-    time: "",
-    location: {
-      address: "",
-      city: "",
-      state: "",
+// Event validation schema
+const eventSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters").max(100),
+  category: z.string().min(1, "Please select a category"),
+  description: z.string().min(20, "Description must be at least 20 characters").max(1000),
+  date: z.string().refine(date => new Date(date) > new Date(), {
+    message: "Event date must be in the future",
+  }),
+  time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format"),
+  location: z.object({
+    address: z.string().min(5, "Address is required"),
+    city: z.string().min(2, "City is required"),
+    state: z.string().optional(),
+  }),
+  maxParticipants: z.number().min(2, "Minimum 2 participants").max(1000, "Maximum 1000 participants"),
+  difficulty: z.enum(["Beginner", "Intermediate", "Advanced"]),
+  eventType: z.enum(["casual", "tournament", "training"]),
+  registrationFee: z.number().min(0, "Registration fee cannot be negative"),
+  rules: z.array(z.string()).optional(),
+  equipment: z.array(
+    z.object({
+      item: z.string(),
+      required: z.boolean(),
+    })
+  ).optional(),
+});
+
+const CreateEventForm = () => {
+  const navigate = useNavigate();
+  const { createEvent } = useEvents();
+  const [isLoading, setIsLoading] = useState(false);
+  const [images, setImages] = useState([]);
+  const [imagePreview, setImagePreview] = useState([]);
+  const [newRule, setNewRule] = useState("");
+  const [newEquipment, setNewEquipment] = useState({ item: "", required: false });
+
+  const form = useForm({
+    resolver: zodResolver(eventSchema),
+    defaultValues: {
+      name: "",
+      category: "",
+      description: "",
+      date: "",
+      time: "",
+      location: {
+        address: "",
+        city: "",
+        state: "",
+      },
+      maxParticipants: 10,
+      difficulty: "Beginner",
+      eventType: "casual",
+      registrationFee: 0,
+      rules: [],
+      equipment: [],
     },
-    maxParticipants: 10,
-    difficulty: "Beginner",
-    eventType: "casual",
-    registrationFee: 0,
-    rules: [],
-    equipment: [],
-  })
-  const [images, setImages] = useState([])
-  const [imagePreview, setImagePreview] = useState([])
-  const [newRule, setNewRule] = useState("")
-  const [newEquipment, setNewEquipment] = useState({
-    item: "",
-    required: false,
-  })
-  const [errors, setErrors] = useState({})
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
-
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".")
-      setEventData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value,
-        },
-      }))
-    } else if (type === "checkbox") {
-      setEventData((prev) => ({
-        ...prev,
-        [name]: checked,
-      }))
-    } else if (name === "registrationFee") {
-      setEventData((prev) => ({
-        ...prev,
-        [name]: Number.parseFloat(value) || 0,
-      }))
-    } else if (name === "maxParticipants") {
-      setEventData((prev) => ({
-        ...prev,
-        [name]: Number.parseInt(value) || 10,
-      }))
-    } else {
-      setEventData((prev) => ({
-        ...prev,
-        [name]: value,
-      }))
-    }
-  }
+  });
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files)
-    setImages((prev) => [...prev, ...files])
+    const files = Array.from(e.target.files);
+
+    // Validate total number of images
+    if (files.length + images.length > 5) {
+      toast.error("Maximum 5 images allowed");
+      return;
+    }
+
+    // Validate file types and sizes
+    const validFiles = files.filter((file) => {
+      const isValidType = ["image/jpeg", "image/png", "image/webp"].includes(file.type);
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+
+      if (!isValidType) {
+        toast.error(`${file.name} is not a supported image type`);
+        return false;
+      }
+      if (!isValidSize) {
+        toast.error(`${file.name} is too large (max 5MB)`);
+        return false;
+      }
+      return true;
+    });
+
+    setImages((prev) => [...prev, ...validFiles]);
 
     // Create preview URLs
-    const newPreviews = files.map((file) => URL.createObjectURL(file))
-    setImagePreview((prev) => [...prev, ...newPreviews])
-  }
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+    setImagePreview((prev) => [...prev, ...newPreviews]);
+  };
 
   const removeImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index))
+    // Revoke object URL to prevent memory leaks
+    URL.revokeObjectURL(imagePreview[index]);
 
-    // Revoke the object URL to avoid memory leaks
-    URL.revokeObjectURL(imagePreview[index])
-    setImagePreview((prev) => prev.filter((_, i) => i !== index))
-  }
+    // Remove image from both arrays
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreview((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const addRule = () => {
-    if (!newRule.trim()) return
-
-    setEventData((prev) => ({
-      ...prev,
-      rules: [...prev.rules, newRule],
-    }))
-    setNewRule("")
-  }
+    if (newRule.trim()) {
+      form.setValue("rules", [...form.getValues("rules"), newRule.trim()]);
+      setNewRule("");
+    }
+  };
 
   const removeRule = (index) => {
-    setEventData((prev) => ({
-      ...prev,
-      rules: prev.rules.filter((_, i) => i !== index),
-    }))
-  }
+    const updatedRules = form.getValues("rules").filter((_, i) => i !== index);
+    form.setValue("rules", updatedRules);
+  };
 
   const addEquipment = () => {
-    if (!newEquipment.item.trim()) return
-
-    setEventData((prev) => ({
-      ...prev,
-      equipment: [...prev.equipment, newEquipment],
-    }))
-    setNewEquipment({
-      item: "",
-      required: false,
-    })
-  }
+    if (newEquipment.item.trim()) {
+      form.setValue("equipment", [
+        ...form.getValues("equipment"),
+        { item: newEquipment.item.trim(), required: newEquipment.required },
+      ]);
+      setNewEquipment({ item: "", required: false });
+    }
+  };
 
   const removeEquipment = (index) => {
-    setEventData((prev) => ({
-      ...prev,
-      equipment: prev.equipment.filter((_, i) => i !== index),
-    }))
-  }
+    const updatedEquipment = form.getValues("equipment").filter((_, i) => i !== index);
+    form.setValue("equipment", updatedEquipment);
+  };
 
-  const validateForm = () => {
-    const newErrors = {}
-
-    if (!eventData.name) newErrors.name = "Event name is required"
-    if (!eventData.category) newErrors.category = "Category is required"
-    if (!eventData.description) newErrors.description = "Description is required"
-    if (!eventData.date) newErrors.date = "Date is required"
-    if (!eventData.time) newErrors.time = "Time is required"
-    if (!eventData.location.address) newErrors.address = "Address is required"
-    if (!eventData.location.city) newErrors.city = "City is required"
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    if (!validateForm()) return
-
+  const onSubmit = async (formData) => {
     try {
-      console.log("Event data:", eventData)
-      console.log("Images:", images)
-      const createdEvent = await createEvent(eventData, images)
-      navigate(`/events/${createdEvent._id}`)
+      setIsLoading(true);
+
+      // Create FormData instance for multipart/form-data
+      // const eventFormData = new FormData();
+
+      // // Append all form data
+      // Object.entries(formData).forEach(([key, value]) => {
+      //   if (key === "location" || key === "rules" || key === "equipment") {
+      //     eventFormData.append(key, JSON.stringify(value));
+      //   } else {
+      //     eventFormData.append(key, value);
+      //   }
+      // });
+
+      // // Append each image file
+      // images.forEach((image) => {
+      //   eventFormData.append("images", image);
+      // });
+      const data = {
+        ...formData,
+        images: images
+      }
+console.log("Submitting event data:", data);
+      const result = await createEvent(data);
+
+      if (result.success) {
+        toast.success("Event created successfully");
+        navigate(`/events/${result.event._id}`);
+      }
     } catch (error) {
-      console.error("Error creating event:", error)
+      toast.error(error.message || "Failed to create event");
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -167,483 +210,516 @@ const CreateEvent = () => {
         </Link>
       </div>
 
-      <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark mb-6">Create New Event</h1>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
-              Basic Information
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card className="bg-card-light dark:bg-card-dark rounded-lg shadow-md">
+        <CardHeader>
+          <h1 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
+            Create New Event
+          </h1>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Basic Information */}
               <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Event Name*
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={eventData.name}
-                  onChange={handleInputChange}
-                  className={`w-full p-2 rounded-md border ${
-                    errors.name
-                      ? "border-destructive-light dark:border-destructive-dark"
-                      : "border-input-light dark:border-input-dark"
-                  } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
-                  placeholder="Enter event name"
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-destructive-light dark:text-destructive-dark">{errors.name}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Category*
-                </label>
-                <select
-                  name="category"
-                  value={eventData.category}
-                  onChange={handleInputChange}
-                  className={`w-full p-2 rounded-md border ${
-                    errors.category
-                      ? "border-destructive-light dark:border-destructive-dark"
-                      : "border-input-light dark:border-input-dark"
-                  } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
-                >
-                  <option value="">Select a category</option>
-                  <option value="Football">Football</option>
-                  <option value="Basketball">Basketball</option>
-                  <option value="Tennis">Tennis</option>
-                  <option value="Running">Running</option>
-                  <option value="Cycling">Cycling</option>
-                  <option value="Swimming">Swimming</option>
-                  <option value="Volleyball">Volleyball</option>
-                  <option value="Cricket">Cricket</option>
-                  <option value="Other">Other</option>
-                </select>
-                {errors.category && (
-                  <p className="mt-1 text-sm text-destructive-light dark:text-destructive-dark">{errors.category}</p>
-                )}
-              </div>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                Description*
-              </label>
-              <textarea
-                name="description"
-                value={eventData.description}
-                onChange={handleInputChange}
-                rows={4}
-                className={`w-full p-2 rounded-md border ${
-                  errors.description
-                    ? "border-destructive-light dark:border-destructive-dark"
-                    : "border-input-light dark:border-input-dark"
-                } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
-                placeholder="Describe your event"
-              />
-              {errors.description && (
-                <p className="mt-1 text-sm text-destructive-light dark:text-destructive-dark">{errors.description}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Date and Time */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
-              Date and Time
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Date*
-                </label>
-                <div className="relative">
-                  <Calendar
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
-                    size={16}
+                <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+                  Basic Information
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Name*</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter event name"
+                            {...field}
+                            className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <input
-                    type="date"
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category*</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark">
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Football">Football</SelectItem>
+                            <SelectItem value="Basketball">Basketball</SelectItem>
+                            <SelectItem value="Tennis">Tennis</SelectItem>
+                            <SelectItem value="Running">Running</SelectItem>
+                            <SelectItem value="Cycling">Cycling</SelectItem>
+                            <SelectItem value="Swimming">Swimming</SelectItem>
+                            <SelectItem value="Volleyball">Volleyball</SelectItem>
+                            <SelectItem value="Cricket">Cricket</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="mt-4">
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description*</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Describe your event"
+                            rows={4}
+                            {...field}
+                            className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Date and Time */}
+              <div>
+                <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+                  Date and Time
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
                     name="date"
-                    value={eventData.date}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 p-2 rounded-md border ${
-                      errors.date
-                        ? "border-destructive-light dark:border-destructive-dark"
-                        : "border-input-light dark:border-input-dark"
-                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date*</FormLabel>
+                        <div className="relative">
+                          <Calendar
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
+                            size={16}
+                          />
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                              className="pl-10 bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                {errors.date && (
-                  <p className="mt-1 text-sm text-destructive-light dark:text-destructive-dark">{errors.date}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Time*
-                </label>
-                <div className="relative">
-                  <Clock
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
-                    size={16}
-                  />
-                  <input
-                    type="time"
+                  <FormField
+                    control={form.control}
                     name="time"
-                    value={eventData.time}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 p-2 rounded-md border ${
-                      errors.time
-                        ? "border-destructive-light dark:border-destructive-dark"
-                        : "border-input-light dark:border-input-dark"
-                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Time*</FormLabel>
+                        <div className="relative">
+                          <Clock
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
+                            size={16}
+                          />
+                          <FormControl>
+                            <Input
+                              type="time"
+                              {...field}
+                              className="pl-10 bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
-                {errors.time && (
-                  <p className="mt-1 text-sm text-destructive-light dark:text-destructive-dark">{errors.time}</p>
-                )}
               </div>
-            </div>
-          </div>
 
-          {/* Location */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">Location</h2>
-            <div className="grid grid-cols-1 gap-4">
+              {/* Location */}
               <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Address*
-                </label>
-                <div className="relative">
-                  <MapPin
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
-                    size={16}
-                  />
-                  <input
-                    type="text"
+                <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+                  Location
+                </h2>
+                <div className="grid grid-cols-1 gap-4">
+                  <FormField
+                    control={form.control}
                     name="location.address"
-                    value={eventData.location.address}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 p-2 rounded-md border ${
-                      errors.address
-                        ? "border-destructive-light dark:border-destructive-dark"
-                        : "border-input-light dark:border-input-dark"
-                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
-                    placeholder="Enter address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Address*</FormLabel>
+                        <div className="relative">
+                          <MapPin
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
+                            size={16}
+                          />
+                          <FormControl>
+                            <Input
+                              placeholder="Enter address"
+                              {...field}
+                              className="pl-10 bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="location.city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>City*</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter city"
+                              {...field}
+                              className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="location.state"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>State</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter state (optional)"
+                              {...field}
+                              className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Details */}
+              <div>
+                <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+                  Event Details
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="maxParticipants"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Maximum Participants</FormLabel>
+                        <div className="relative">
+                          <Users
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
+                            size={16}
+                          />
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={2}
+                              max={1000}
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              className="pl-10 bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="difficulty"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Difficulty Level</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark">
+                              <SelectValue placeholder="Select difficulty" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Beginner">Beginner</SelectItem>
+                            <SelectItem value="Intermediate">Intermediate</SelectItem>
+                            <SelectItem value="Advanced">Advanced</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="eventType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark">
+                              <SelectValue placeholder="Select event type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="casual">Casual</SelectItem>
+                            <SelectItem value="tournament">Tournament</SelectItem>
+                            <SelectItem value="training">Training</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="registrationFee"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Registration Fee ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
-                {errors.address && (
-                  <p className="mt-1 text-sm text-destructive-light dark:text-destructive-dark">{errors.address}</p>
+              </div>
+
+              {/* Images */}
+              <div>
+                <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+                  Event Images
+                </h2>
+                <div className="border-2 border-dashed border-input-light dark:border-input-dark rounded-lg p-6 text-center">
+                  <div className="mb-4">
+                    <ImagePlus className="mx-auto h-12 w-12 text-muted-foreground-light dark:text-muted-foreground-dark" />
+                    <p className="mt-2 text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                      Drag and drop images here, or click to select files
+                    </p>
+                    <p className="text-xs text-muted-foreground-light dark:text-muted-foreground-dark">
+                      PNG, JPG, WEBP up to 5MB
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="inline-flex items-center px-4 py-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors cursor-pointer"
+                  >
+                    <ImagePlus size={16} className="mr-2" />
+                    <span>Add Images</span>
+                  </label>
+                </div>
+
+                {imagePreview.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {imagePreview.map((src, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={src}
+                          alt={`Preview ${index}`}
+                          className="w-full h-32 object-cover rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 p-1 rounded-full bg-destructive-light/90 dark:bg-destructive-dark/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                    City*
-                  </label>
-                  <input
-                    type="text"
-                    name="location.city"
-                    value={eventData.location.city}
-                    onChange={handleInputChange}
-                    className={`w-full p-2 rounded-md border ${
-                      errors.city
-                        ? "border-destructive-light dark:border-destructive-dark"
-                        : "border-input-light dark:border-input-dark"
-                    } bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark`}
-                    placeholder="Enter city"
-                  />
-                  {errors.city && (
-                    <p className="mt-1 text-sm text-destructive-light dark:text-destructive-dark">{errors.city}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    name="location.state"
-                    value={eventData.location.state}
-                    onChange={handleInputChange}
-                    className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    placeholder="Enter state (optional)"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Event Details */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
-              Event Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Rules */}
               <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Maximum Participants
-                </label>
-                <div className="relative">
-                  <Users
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
-                    size={16}
+                <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+                  Rules (Optional)
+                </h2>
+                <div className="flex gap-2 mb-4">
+                  <Input
+                    value={newRule}
+                    onChange={(e) => setNewRule(e.target.value)}
+                    placeholder="Add a rule"
+                    className="flex-1 bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
                   />
-                  <input
-                    type="number"
-                    name="maxParticipants"
-                    value={eventData.maxParticipants}
-                    onChange={handleInputChange}
-                    min={1}
-                    max={1000}
-                    className="w-full pl-10 p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                  />
+                  <Button
+                    type="button"
+                    onClick={addRule}
+                    disabled={!newRule.trim()}
+                    className={`${
+                      !newRule.trim()
+                        ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
+                        : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
+                    }`}
+                  >
+                    Add
+                  </Button>
                 </div>
+                {form.getValues("rules")?.length > 0 ? (
+                  <ul className="space-y-2">
+                    {form.getValues("rules").map((rule, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center justify-between p-2 rounded-md bg-background-light dark:bg-background-dark"
+                      >
+                        <span className="text-foreground-light dark:text-foreground-dark">{rule}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeRule(index)}
+                          className="p-1 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-destructive-light dark:hover:text-destructive-dark transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                    No rules added yet
+                  </p>
+                )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Difficulty Level
-                </label>
-                <select
-                  name="difficulty"
-                  value={eventData.difficulty}
-                  onChange={handleInputChange}
-                  className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                >
-                  <option value="Beginner">Beginner</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Event Type
-                </label>
-                <select
-                  name="eventType"
-                  value={eventData.eventType}
-                  onChange={handleInputChange}
-                  className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                >
-                  <option value="casual">Casual</option>
-                  <option value="tournament">Tournament</option>
-                  <option value="training">Training</option>
-                  <option value="competition">Competition</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                  Registration Fee ($)
-                </label>
-                <input
-                  type="number"
-                  name="registrationFee"
-                  value={eventData.registrationFee}
-                  onChange={handleInputChange}
-                  min={0}
-                  step={0.01}
-                  className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                />
-              </div>
-            </div>
-          </div>
 
-          {/* Images */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">Event Images</h2>
-            <div className="border-2 border-dashed border-input-light dark:border-input-dark rounded-lg p-6 text-center">
-              <div className="mb-4">
-                <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground-light dark:text-muted-foreground-dark" />
-                <p className="mt-2 text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                  Drag and drop images here, or click to select files
-                </p>
-                <p className="text-xs text-muted-foreground-light dark:text-muted-foreground-dark">
-                  PNG, JPG, GIF up to 5MB
-                </p>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageChange}
-                className="hidden"
-                id="image-upload"
-              />
-              <label
-                htmlFor="image-upload"
-                className="inline-flex items-center px-4 py-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors cursor-pointer"
-              >
-                <Plus size={16} className="mr-2" />
-                <span>Add Images</span>
-              </label>
-            </div>
-
-            {imagePreview.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {imagePreview.map((src, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={src || "/placeholder.svg"}
-                      alt={`Preview ${index}`}
-                      className="w-full h-32 object-cover rounded-md"
+              {/* Equipment */}
+              <div>
+                <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+                  Equipment (Optional)
+                </h2>
+                <div className="flex gap-2 mb-4">
+                  <Input
+                    value={newEquipment.item}
+                    onChange={(e) =>
+                      setNewEquipment((prev) => ({ ...prev, item: e.target.value }))
+                    }
+                    placeholder="Add equipment"
+                    className="flex-1 bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
+                  />
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="equipment-required"
+                      checked={newEquipment.required}
+                      onChange={(e) =>
+                        setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))
+                      }
+                      className="mr-2"
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 p-1 rounded-full bg-destructive-light/90 dark:bg-destructive-dark/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    <label
+                      htmlFor="equipment-required"
+                      className="text-sm text-foreground-light dark:text-foreground-dark"
                     >
-                      <X size={16} />
-                    </button>
+                      Required
+                    </label>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Rules */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
-              Rules (Optional)
-            </h2>
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                value={newRule}
-                onChange={(e) => setNewRule(e.target.value)}
-                className="flex-1 p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                placeholder="Add a rule"
-              />
-              <button
-                type="button"
-                onClick={addRule}
-                disabled={!newRule.trim()}
-                className={`px-4 py-2 rounded-md ${
-                  !newRule.trim()
-                    ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                    : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                }`}
-              >
-                Add
-              </button>
-            </div>
-
-            {eventData.rules.length > 0 ? (
-              <ul className="space-y-2">
-                {eventData.rules.map((rule, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center justify-between p-2 rounded-md bg-background-light dark:bg-background-dark"
+                  <Button
+                    type="button"
+                    onClick={addEquipment}
+                    disabled={!newEquipment.item.trim()}
+                    className={`${
+                      !newEquipment.item.trim()
+                        ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
+                        : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
+                    }`}
                   >
-                    <span className="text-foreground-light dark:text-foreground-dark">{rule}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeRule(index)}
-                      className="p-1 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-destructive-light dark:hover:text-destructive-dark transition-colors"
-                    >
-                      <X size={16} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">No rules added yet</p>
-            )}
-          </div>
-
-          {/* Equipment */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
-              Equipment (Optional)
-            </h2>
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                value={newEquipment.item}
-                onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
-                className="flex-1 p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                placeholder="Add equipment"
-              />
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="equipment-required"
-                  checked={newEquipment.required}
-                  onChange={(e) => setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))}
-                  className="mr-2"
-                />
-                <label htmlFor="equipment-required" className="text-sm text-foreground-light dark:text-foreground-dark">
-                  Required
-                </label>
-              </div>
-              <button
-                type="button"
-                onClick={addEquipment}
-                disabled={!newEquipment.item.trim()}
-                className={`px-4 py-2 rounded-md ${
-                  !newEquipment.item.trim()
-                    ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                    : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                }`}
-              >
-                Add
-              </button>
-            </div>
-
-            {eventData.equipment.length > 0 ? (
-              <ul className="space-y-2">
-                {eventData.equipment.map((item, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center justify-between p-2 rounded-md bg-background-light dark:bg-background-dark"
-                  >
-                    <div className="flex items-center">
-                      <span className="text-foreground-light dark:text-foreground-dark">{item.item}</span>
-                      {item.required && (
-                        <span className="ml-2 text-xs bg-destructive-light/20 dark:bg-destructive-dark/20 text-destructive-light dark:text-destructive-dark px-2 py-0.5 rounded">
-                          Required
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeEquipment(index)}
-                      className="p-1 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-destructive-light dark:hover:text-destructive-dark transition-colors"
-                    >
-                      <X size={16} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                No equipment added yet
-              </p>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-3 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
-            >
-              {loading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-white mr-2"></div>
-                  <span>Creating...</span>
+                    Add
+                  </Button>
                 </div>
-              ) : (
-                "Create Event"
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-}
+                {form.getValues("equipment")?.length > 0 ? (
+                  <ul className="space-y-2">
+                    {form.getValues("equipment").map((item, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center justify-between p-2 rounded-md bg-background-light dark:bg-background-dark"
+                      >
+                        <div className="flex items-center">
+                          <span className="text-foreground-light dark:text-foreground-dark">
+                            {item.item}
+                          </span>
+                          {item.required && (
+                            <span className="ml-2 text-xs bg-destructive-light/20 dark:bg-destructive-dark/20 text-destructive-light dark:text-destructive-dark px-2 py-0.5 rounded">
+                              Required
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeEquipment(index)}
+                          className="p-1 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-destructive-light dark:hover:text-destructive-dark transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                    No equipment added yet
+                  </p>
+                )}
+              </div>
 
-export default CreateEvent
+              {/* Submit Button */}
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-6 py-3 bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-white mr-2"></div>
+                      <span>Creating...</span>
+                    </div>
+                  ) : (
+                    "Create Event"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default CreateEventForm;

@@ -194,60 +194,55 @@ export const EventProvider = ({ children }) => {
   };
 
   // Create new event
-  const createEvent = async (eventData) => {
-    setLoading(true);
-    setError(null);
+const createEvent = async (eventData) => {
+  setLoading(true);
+  setError(null);
+  console.log('Creating event with data:', eventData);
+  try {
+    // Create FormData instance
+    const formData = new FormData();
 
-    try {
-      // Handle FormData for file uploads
-      const formData = new FormData();
-
-      // Append all event data to FormData
-      Object.entries(eventData).forEach(([key, value]) => {
-        if (key === 'images') {
-          // Handle multiple image files
-          for (let i = 0; i < value.length; i++) {
-            formData.append('images', value[i]);
-          }
-        } else if (key === 'location' && typeof value === 'object') {
-          // Convert location object to string
-          formData.append(key, JSON.stringify(value));
-        } else {
-          formData.append(key, value);
-        }
-      });
-
-      const response = await api.post('/events', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      if (response.data) {
-        // Add new event to events list
-        setEvents(prev => [response.data, ...prev]);
-
-        // Add to user events
-        setUserEvents(prev => [response.data, ...prev]);
-
-        toast.success('Event created successfully');
-        return { success: true, event: response.data };
+    // Append all event data to FormData
+    Object.entries(eventData).forEach(([key, value]) => {
+      if (key === 'images') {
+        // Handle multiple image files
+        Array.from(value).forEach((file) => {
+          formData.append('images', file);
+        });
+      } else if (key === 'location' || key === 'rules' || key === 'equipment') {
+        // Convert objects/arrays to JSON strings
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value);
       }
-    } catch (error) {
-      const message = error.response?.data?.message || 'Failed to create event';
-      setError(message);
-      toast.error(message);
-      return { success: false, message };
-    } finally {
-      setLoading(false);
+    });
+
+    const response = await api.post('/events', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (response.data) {
+      setEvents(prev => [response.data, ...prev]);
+      setUserEvents(prev => [response.data, ...prev]);
+      toast.success('Event created successfully');
+      return { success: true, event: response.data };
     }
-  };
+  } catch (error) {
+    const message = error.response?.data?.message || 'Failed to create event';
+    setError(message);
+    toast.error(message);
+    return { success: false, message };
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Update event
   const updateEvent = async (eventId, eventData) => {
     setLoading(true);
     setError(null);
-    console.log('Updating event with ID:', eventId, 'Data:', eventData);
     try {
 
       const formData = new FormData();
@@ -264,7 +259,11 @@ export const EventProvider = ({ children }) => {
         }
       });
 
-      const response = await api.put(`/events/${eventId}`, formData);
+      const response = await api.put(`/events/${eventId}`, eventData,{
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
       if (response.data) {
         // Update event in events list
@@ -287,6 +286,8 @@ export const EventProvider = ({ children }) => {
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to update event';
+      console.error('Update event error:', error);
+      console.error('Error response:', error.response);
       setError(message);
       toast.error(message);
       return { success: false, message };

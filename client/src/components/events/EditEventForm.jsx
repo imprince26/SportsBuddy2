@@ -167,32 +167,12 @@ const EditEventForm = () => {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
     setNewImages(prev => prev.filter((_, i) => i !== index));
   };
-
   const onSubmit = async (data) => {
     try {
+      console.log("Submitting data:", data);
       setIsLoading(true);
 
-      // Create FormData
-      const formData = new FormData();
-
-      // Append form data
-      Object.keys(data).forEach(key => {
-        if (key === 'location' || key === 'rules' || key === 'equipment') {
-          formData.append(key, JSON.stringify(data[key]));
-        } else {
-          formData.append(key, data[key]);
-        }
-      });
-
-      // Append existing images
-      formData.append('existingImages', JSON.stringify(existingImages));
-
-      // Append new images
-      newImages.forEach(image => {
-        formData.append('images', image);
-      });
-
-      await updateEvent(id, formData);
+      await updateEvent(id, data);
 
       toast.success("Event updated successfully!");
       navigate(`/events/${id}`);

@@ -568,11 +568,10 @@ const CreateEventForm = () => {
                     type="button"
                     onClick={addRule}
                     disabled={!newRule.trim()}
-                    className={`${
-                      !newRule.trim()
+                    className={`${!newRule.trim()
                         ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                         : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                    }`}
+                      }`}
                   >
                     Add
                   </Button>
@@ -637,11 +636,10 @@ const CreateEventForm = () => {
                     type="button"
                     onClick={addEquipment}
                     disabled={!newEquipment.item.trim()}
-                    className={`${
-                      !newEquipment.item.trim()
+                    className={`${!newEquipment.item.trim()
                         ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                         : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                    }`}
+                      }`}
                   >
                     Add
                   </Button>

@@ -240,61 +240,43 @@ const createEvent = async (eventData) => {
 };
 
   // Update event
-  const updateEvent = async (eventId, eventData) => {
-    setLoading(true);
-    setError(null);
-    try {
+const updateEvent = async (eventId, eventData) => {
+  setLoading(true);
+  setError(null);
 
-      const formData = new FormData();
-
-      Object.entries(eventData).forEach(([key, value]) => {
-        if (key === 'images' && Array.isArray(value)) {
-          for (let i = 0; i < value.length; i++) {
-            formData.append('images', value[i]);
-          }
-        } else if (key === 'location' && typeof value === 'object') {
-          formData.append(key, JSON.stringify(value));
-        } else {
-          formData.append(key, value);
-        }
-      });
-
-      const response = await api.put(`/events/${eventId}`, eventData,{
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      if (response.data) {
-        // Update event in events list
-        setEvents(prev =>
-          prev.map(event => event._id === eventId ? response.data : event)
-        );
-
-        // Update in user events
-        setUserEvents(prev =>
-          prev.map(event => event._id === eventId ? response.data : event)
-        );
-
-        // Update current event if it's the one being edited
-        if (currentEvent && currentEvent._id === eventId) {
-          setCurrentEvent(response.data);
-        }
-
-        toast.success('Event updated successfully');
-        return { success: true, event: response.data };
+  try {
+    const response = await api.put(`/events/${eventId}`, eventData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-    } catch (error) {
-      const message = error.response?.data?.message || 'Failed to update event';
-      console.error('Update event error:', error);
-      console.error('Error response:', error.response);
-      setError(message);
-      toast.error(message);
-      return { success: false, message };
-    } finally {
-      setLoading(false);
+    });
+
+    if (response.data) {
+      // Update events list
+      setEvents(prev =>
+        prev.map(event => event._id === eventId ? response.data : event)
+      );
+
+      // Update user events list
+      setUserEvents(prev =>
+        prev.map(event => event._id === eventId ? response.data : event)
+      );
+
+      // Update current event if it's the one being edited
+      if (currentEvent && currentEvent._id === eventId) {
+        setCurrentEvent(response.data);
+      }
+
+      return { success: true, event: response.data };
     }
-  };
+  } catch (error) {
+    const message = error.response?.data?.message || 'Failed to update event';
+    setError(message);
+    throw new Error(message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Delete event
   const deleteEvent = async (eventId) => {

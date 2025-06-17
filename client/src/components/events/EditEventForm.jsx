@@ -172,7 +172,12 @@ const EditEventForm = () => {
       console.log("Submitting data:", data);
       setIsLoading(true);
 
-      await updateEvent(id, data);
+      const eventData = {
+        ...data,
+        images: newImages,
+      };
+
+      await updateEvent(id, eventData);
 
       toast.success("Event updated successfully!");
       navigate(`/events/${id}`);

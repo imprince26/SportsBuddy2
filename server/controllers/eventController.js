@@ -126,8 +126,6 @@ export const createEvent = async (req, res) => {
 
 // Update Event Controller
 export const updateEvent = async (req, res) => {
-  console.log(req)
-  console.log(req.files)
   try {
     const event = await Event.findById(req.params.id);
 
@@ -136,34 +134,34 @@ export const updateEvent = async (req, res) => {
     }
 
     // Check authorization
-    if (
-      event.createdBy.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    ) {
+    if (event.createdBy.toString() !== req.user._id.toString() && req.user.role !== "admin") {
       return res.status(403).json({ message: "Not authorized to update this event" });
     }
 
     // Handle image updates
-    let updatedImages = [...event.images]; // Start with existing images
+    let updatedImages = [];
 
-    // Handle image deletions if specified
-    if (req.body.deletedImages && Array.isArray(req.body.deletedImages)) {
-      for (const imageId of req.body.deletedImages) {
-        const imageToDelete = event.images.find(img => img.public_id === imageId);
-        if (imageToDelete) {
-          await cloudinary.uploader.destroy(imageToDelete.public_id);
-          updatedImages = updatedImages.filter(img => img.public_id !== imageId);
-        }
+    // Keep existing images that weren't deleted
+    if (req.body.existingImages) {
+      const existingImages = JSON.parse(req.body.existingImages);
+      updatedImages = [...existingImages];
+    }
+
+    // Handle deleted images
+    if (req.body.deletedImages) {
+      const deletedImages = JSON.parse(req.body.deletedImages);
+      for (const publicId of deletedImages) {
+        await cloudinary.uploader.destroy(publicId);
       }
     }
 
     // Handle new image uploads
     if (req.files && req.files.length > 0) {
-      const newUploadPromises = req.files.map(async (file) => {
+      const uploadPromises = req.files.map(async (file) => {
         const result = await cloudinary.uploader.upload(file.path, {
           folder: "SportsBuddy/events",
           resource_type: "auto",
-          allowed_formats: ["jpg", "png", "jpeg", "gif", "webp"],
+          allowed_formats: ["jpg", "png", "jpeg", "webp"],
           transformation: [
             { width: 800, height: 600, crop: "limit" },
             { quality: "auto" },
@@ -180,23 +178,27 @@ export const updateEvent = async (req, res) => {
         };
       });
 
-      const newImages = await Promise.all(newUploadPromises);
+      const newImages = await Promise.all(uploadPromises);
       updatedImages = [...updatedImages, ...newImages];
     }
 
     // Prepare update data
     const updates = {
-      ...req.body,
+      name: req.body.name,
+      category: req.body.category,
+      description: req.body.description,
+      date: req.body.date,
+      time: req.body.time,
+      location: typeof req.body.location === "string" ? JSON.parse(req.body.location) : req.body.location,
+      maxParticipants: parseInt(req.body.maxParticipants),
+      difficulty: req.body.difficulty,
+      eventType: req.body.eventType,
+      registrationFee: parseFloat(req.body.registrationFee) || 0,
+      rules: req.body.rules ? JSON.parse(req.body.rules) : [],
+      equipment: req.body.equipment ? JSON.parse(req.body.equipment) : [],
       images: updatedImages,
-      location: typeof req.body.location === "string"
-        ? JSON.parse(req.body.location)
-        : req.body.location,
       updatedAt: new Date()
     };
-
-    // Remove fields that shouldn't be updated
-    delete updates.createdBy;
-    delete updates.deletedImages;
 
     // Update event
     const updatedEvent = await Event.findByIdAndUpdate(
@@ -205,18 +207,15 @@ export const updateEvent = async (req, res) => {
       { new: true }
     )
       .populate("createdBy", "name avatar")
-      .populate("participants.user", "name avatar")
-      .populate("teams.captain", "name avatar")
-      .populate("teams.members", "name avatar");
+      .populate("participants.user", "name avatar");
 
     // Notify participants about the update
     const io = req.app.get("io");
-    event.participants.forEach((participant) => {
-      io.to(`user:${participant.user}`).emit("eventUpdated", updatedEvent);
-    });
+    io.to(`event:${event._id}`).emit("eventUpdated", updatedEvent);
 
     res.json(updatedEvent);
   } catch (error) {
+    console.error("Update event error:", error);
     res.status(400).json({
       message: "Failed to update event",
       error: error.message

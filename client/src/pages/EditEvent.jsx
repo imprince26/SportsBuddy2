@@ -217,46 +217,46 @@ const EditEvent = () => {
     form.setValue("equipment", updatedEquipment);
   };
 
-const onSubmit = async (formData) => {
-  try {
-    const eventFormData = new FormData();
+  const onSubmit = async (formData) => {
+    try {
+      const eventFormData = new FormData();
 
-    // Append regular form data
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === "location" || key === "rules" || key === "equipment") {
-        eventFormData.append(key, JSON.stringify(value));
-      } else {
-        eventFormData.append(key, value);
-      }
-    });
-
-    // Append existing images that weren't deleted
-    if (existingImages.length > 0) {
-      eventFormData.append('existingImages', JSON.stringify(existingImages));
-    }
-
-    // Append deleted image IDs
-    if (deletedImages.length > 0) {
-      eventFormData.append('deletedImages', JSON.stringify(deletedImages));
-    }
-
-    // Append new images
-    if (newImages.length > 0) {
-      newImages.forEach(image => {
-        eventFormData.append('images', image);
+      // Append regular form data
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === "location" || key === "rules" || key === "equipment") {
+          eventFormData.append(key, JSON.stringify(value));
+        } else {
+          eventFormData.append(key, value);
+        }
       });
-    }
 
-    const result = await updateEvent(id, eventFormData);
-    
-    if (result.success) {
-      toast.success('Event updated successfully');
-      navigate(`/events/${id}`);
+      // Append existing images that weren't deleted
+      if (existingImages.length > 0) {
+        eventFormData.append('existingImages', JSON.stringify(existingImages));
+      }
+
+      // Append deleted image IDs
+      if (deletedImages.length > 0) {
+        eventFormData.append('deletedImages', JSON.stringify(deletedImages));
+      }
+
+      // Append new images
+      if (newImages.length > 0) {
+        newImages.forEach(image => {
+          eventFormData.append('images', image);
+        });
+      }
+
+      const result = await updateEvent(id, eventFormData);
+
+      if (result.success) {
+        toast.success('Event updated successfully');
+        navigate(`/events/${id}`);
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to update event');
     }
-  } catch (error) {
-    toast.error(error.message || 'Failed to update event');
-  }
-};
+  };
 
   const handleDeleteEvent = async () => {
     try {
@@ -731,11 +731,10 @@ const onSubmit = async (formData) => {
                     type="button"
                     onClick={addRule}
                     disabled={!newRule.trim()}
-                    className={`${
-                      !newRule.trim()
+                    className={`${!newRule.trim()
                         ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                         : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                    }`}
+                      }`}
                   >
                     Add
                   </Button>
@@ -800,11 +799,10 @@ const onSubmit = async (formData) => {
                     type="button"
                     onClick={addEquipment}
                     disabled={!newEquipment.item.trim()}
-                    className={`${
-                      !newEquipment.item.trim()
+                    className={`${!newEquipment.item.trim()
                         ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
                         : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                    }`}
+                      }`}
                   >
                     Add
                   </Button>

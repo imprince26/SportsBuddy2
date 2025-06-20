@@ -112,7 +112,7 @@ function App() {
           }
         />
         <Route
-          path="events/:id/teams"
+          path="events/:eventId/teams"
           element={
             <ProtectedRoute>
               <TeamManagement />

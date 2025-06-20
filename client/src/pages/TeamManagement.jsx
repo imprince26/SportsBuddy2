@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useEvents } from "@/hooks/useEvents";
@@ -10,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 
 const TeamManagement = () => {
   const { eventId, teamId } = useParams()
-  const { getEventById, getTeamById, updateTeam, createTeam, deleteTeam, inviteToTeam, removeFromTeam, transferCaptaincy } = useEvents()
+  const { getEventById, getTeamById, updateTeam, addTeam, deleteTeam, inviteToTeam, removeFromTeam, transferCaptaincy } = useEvents()
   const { user } = useAuth()
   const { socket } = useSocket()
   const navigate = useNavigate()
@@ -48,7 +46,7 @@ const TeamManagement = () => {
     }
     
     fetchData()
-  }, [eventId, teamId, getEventById, getTeamById])
+  }, [eventId, teamId])
   
   useEffect(() => {
     if (socket && team) {
@@ -184,7 +182,7 @@ const TeamManagement = () => {
   
   const handleCreateTeam = async () => {
     try {
-      const newTeam = await createTeam(eventId, { name: teamName })
+      const newTeam = await addTeam(eventId, { name: teamName })
       navigate(`/events/${eventId}/teams/${newTeam._id}`)
     } catch (error) {
       console.error("Error creating team:", error)

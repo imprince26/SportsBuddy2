@@ -1,265 +1,376 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { Users, Calendar, MessageSquare, TrendingUp, Activity, Map, Award, AlertTriangle } from 'lucide-react';
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Users,
+  Calendar,
+  MessageSquare,
+  TrendingUp,
+  Activity,
+  Award,
+  AlertTriangle,
+  CheckCircle,
+  ArrowUpRight,
+  ArrowDownRight,
+  MoreHorizontal,
+  Bell,
+} from "lucide-react"
+import { Link } from "react-router-dom"
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalEvents: 0,
-    activeEvents: 0,
-    totalMessages: 0,
-    newUsersToday: 0,
-    newEventsToday: 0,
-    popularCategories: [],
-    recentReports: []
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    totalUsers: 1247,
+    totalEvents: 89,
+    activeEvents: 23,
+    totalMessages: 3456,
+    newUsersToday: 12,
+    newEventsToday: 3,
+    popularCategories: [
+      { name: "Football", count: 34, percentage: 85 },
+      { name: "Basketball", count: 28, percentage: 70 },
+      { name: "Tennis", count: 15, percentage: 38 },
+      { name: "Running", count: 12, percentage: 30 },
+    ],
+    recentReports: [
+      {
+        id: 1,
+        type: "user",
+        reportedBy: { name: "John Doe" },
+        description: "Inappropriate behavior during event",
+        createdAt: new Date(),
+        status: "pending",
+      },
+      {
+        id: 2,
+        type: "event",
+        reportedBy: { name: "Jane Smith" },
+        description: "Event location was incorrect",
+        createdAt: new Date(Date.now() - 86400000),
+        status: "resolved",
+      },
+    ],
+  })
   
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/admin/stats`);
-        
-        if (response.data.success) {
-          setStats(response.data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching admin stats:', error);
-        setError('Failed to load dashboard statistics');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchStats();
-  }, [API_URL]);
-  
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-        <AlertTriangle className="h-16 w-16 text-red-500" />
-        <h2 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">Error Loading Dashboard</h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-6 rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="p-6">
-      <h1 className="mb-8 text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-      
-      {/* Stats Overview */}
-      <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center">
-            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
-              <Users className="h-6 w-6 text-blue-600 dark:text-blue-300" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</h2>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalUsers}</p>
-              <p className="text-xs text-green-600 dark:text-green-400">
-                +{stats.newUsersToday} today
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center">
-            <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
-              <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-300" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Events</h2>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalEvents}</p>
-              <p className="text-xs text-green-600 dark:text-green-400">
-                +{stats.newEventsToday} today
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center">
-            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900">
-              <Activity className="h-6 w-6 text-green-600 dark:text-green-300" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Events</h2>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activeEvents}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {((stats.activeEvents / stats.totalEvents) * 100).toFixed(1)}% of total
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center">
-            <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
-              <MessageSquare className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Messages</h2>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalMessages}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Popular Categories */}
-      <div className="mb-8">
-        <h2 className="mb-4 flex items-center text-xl font-semibold text-gray-900 dark:text-white">
-          <Award className="mr-2 h-5 w-5" />
-          Popular Categories
-        </h2>
-        
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.popularCategories.map((category, index) => (
-              <div key={index} className="flex flex-col">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{category.name}</span>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{category.count}</span>
-                </div>
-                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                  <div 
-                    className="h-full rounded-full bg-blue-600 dark:bg-blue-500" 
-                    style={{ width: `${category.percentage}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      
-      {/* Recent Reports */}
-      <div>
-        <h2 className="mb-4 flex items-center text-xl font-semibold text-gray-900 dark:text-white">
-          <AlertTriangle className="mr-2 h-5 w-5" />
-          Recent Reports
-        </h2>
-        
-        {stats.recentReports.length === 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-              <Award className="h-6 w-6 text-green-600 dark:text-green-300" />
-            </div>
-            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No Reports</h3>
-            <p className="mt-2 text-gray-500 dark:text-gray-400">
-              There are no reported issues at this time.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Reported By
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                {stats.recentReports.map((report) => (
-                  <tr key={report._id}>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                        report.type === 'user' 
-                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' 
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                      }`}>
-                        {report.type}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                      {report.reportedBy.name}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {report.description.length > 50 
-                        ? `${report.description.substring(0, 50)}...` 
-                        : report.description}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(report.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                        report.status === 'resolved' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                          : report.status === 'pending' 
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
-                        {report.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-      
-      {/* Quick Actions */}
-      <div className="mt-8 flex flex-wrap gap-4">
-        <Link
-          to="/admin/users"
-          className="flex items-center rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-        >
-          <Users className="mr-2 h-4 w-4" />
-          Manage Users
-        </Link>
-        <Link
-          to="/admin/events"
-          className="flex items-center rounded-md bg-purple-600 py-2 px-4 text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
-        >
-          <Calendar className="mr-2 h-4 w-4" />
-          Manage Events
-        </Link>
-        <Link
-          to="/admin/search"
-          className="flex items-center rounded-md bg-green-600 py-2 px-4 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-        >
-          <Map className="mr-2 h-4 w-4" />
-          Advanced Search
-        </Link>
-      </div>
-    </div>
-  );
-};
+  const statCards = [
+    {
+      title: "Total Users",
+      value: stats.totalUsers.toLocaleString(),
+      change: `+${stats.newUsersToday}`,
+      changeType: "positive",
+      icon: Users,
+      color: "blue",
+    },
+    {
+      title: "Total Events",
+      value: stats.totalEvents.toString(),
+      change: `+${stats.newEventsToday}`,
+      changeType: "positive",
+      icon: Calendar,
+      color: "purple",
+    },
+    {
+      title: "Active Events",
+      value: stats.activeEvents.toString(),
+      change: `${((stats.activeEvents / stats.totalEvents) * 100).toFixed(1)}%`,
+      changeType: "neutral",
+      icon: Activity,
+      color: "green",
+    },
+    {
+      title: "Messages",
+      value: stats.totalMessages.toLocaleString(),
+      change: "+156",
+      changeType: "positive",
+      icon: MessageSquare,
+      color: "orange",
+    },
+  ]
 
-export default AdminDashboard;
+  const getColorClasses = (color) => {
+    const colors = {
+      blue: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      purple: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      green: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      orange: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+    }
+    return colors[color] || colors.blue
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
+          <p className="text-muted-foreground">Welcome back! Here's what's happening with SportsBuddy today.</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm">
+            <TrendingUp className="w-4 h-4 mr-2" />
+            View Analytics
+          </Button>
+          <Button size="sm">
+            <Activity className="w-4 h-4 mr-2" />
+            System Status
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statCards.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <Card
+              key={index}
+              className="bg-card-light dark:bg-card-dark border-border hover:shadow-lg transition-shadow"
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                    <div className="flex items-center space-x-1">
+                      {stat.changeType === "positive" ? (
+                        <ArrowUpRight className="w-4 h-4 text-green-600" />
+                      ) : stat.changeType === "negative" ? (
+                        <ArrowDownRight className="w-4 h-4 text-red-600" />
+                      ) : null}
+                      <span
+                        className={`text-sm font-medium ${
+                          stat.changeType === "positive"
+                            ? "text-green-600"
+                            : stat.changeType === "negative"
+                              ? "text-red-600"
+                              : "text-muted-foreground"
+                        }`}
+                      >
+                        {stat.change}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {stat.changeType !== "neutral" ? "today" : "of total"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={`p-3 rounded-full ${getColorClasses(stat.color)}`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-card-light dark:bg-card-dark">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Popular Categories */}
+            <Card className="bg-card-light dark:bg-card-dark border-border">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Award className="w-5 h-5 text-yellow-600" />
+                      <span>Popular Categories</span>
+                    </CardTitle>
+                    <CardDescription>Most active sports categories this month</CardDescription>
+                  </div>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {stats.popularCategories.map((category, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">{category.name}</span>
+                      <span className="text-sm text-muted-foreground">{category.count} events</span>
+                    </div>
+                    <Progress value={category.percentage} className="h-2 bg-muted" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card className="bg-card-light dark:bg-card-dark border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="w-5 h-5 text-blue-600" />
+                  <span>Recent Activity</span>
+                </CardTitle>
+                <CardDescription>Latest platform activities and updates</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground">New user registration spike detected</p>
+                      <p className="text-xs text-muted-foreground">2 minutes ago</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground">Football tournament event created</p>
+                      <p className="text-xs text-muted-foreground">15 minutes ago</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground">System maintenance completed</p>
+                      <p className="text-xs text-muted-foreground">1 hour ago</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground">Weekly analytics report generated</p>
+                      <p className="text-xs text-muted-foreground">3 hours ago</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-6">
+          <Card className="bg-card-light dark:bg-card-dark border-border">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                    <span>Recent Reports</span>
+                  </CardTitle>
+                  <CardDescription>User and event reports requiring attention</CardDescription>
+                </div>
+                <Link to="/admin/reports">
+                  <Button variant="outline" size="sm">
+                    View All Reports
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {stats.recentReports.length === 0 ? (
+                <div className="text-center py-8">
+                  <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">No Reports</h3>
+                  <p className="text-muted-foreground">There are no reported issues at this time.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {stats.recentReports.map((report) => (
+                    <div
+                      key={report.id}
+                      className="flex items-center justify-between p-4 border border-border rounded-lg bg-background"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <Badge variant={report.type === "user" ? "destructive" : "secondary"}>{report.type}</Badge>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Reported by {report.reportedBy.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {report.description.length > 50
+                              ? `${report.description.substring(0, 50)}...`
+                              : report.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(report.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge
+                          variant={report.status === "resolved" ? "default" : "secondary"}
+                          className={
+                            report.status === "resolved"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                          }
+                        >
+                          {report.status}
+                        </Badge>
+                        <Button variant="ghost" size="sm">
+                          Review
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Quick Actions */}
+      <Card className="bg-card-light dark:bg-card-dark border-border">
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Common administrative tasks and shortcuts</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link to="/admin/users">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <Users className="w-5 h-5 mr-3" />
+                <div className="text-left">
+                  <div className="font-medium">Manage Users</div>
+                  <div className="text-xs text-muted-foreground">View and edit user accounts</div>
+                </div>
+              </Button>
+            </Link>
+
+            <Link to="/admin/events">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <Calendar className="w-5 h-5 mr-3" />
+                <div className="text-left">
+                  <div className="font-medium">Manage Events</div>
+                  <div className="text-xs text-muted-foreground">Review and approve events</div>
+                </div>
+              </Button>
+            </Link>
+
+            <Link to="/admin/notifications">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <Bell className="w-5 h-5 mr-3" />
+                <div className="text-left">
+                  <div className="font-medium">Send Notifications</div>
+                  <div className="text-xs text-muted-foreground">Broadcast messages to users</div>
+                </div>
+              </Button>
+            </Link>
+
+            <Link to="/admin/search">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <TrendingUp className="w-5 h-5 mr-3" />
+                <div className="text-left">
+                  <div className="font-medium">Advanced Search</div>
+                  <div className="text-xs text-muted-foreground">Find users and events</div>
+                </div>
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default AdminDashboard

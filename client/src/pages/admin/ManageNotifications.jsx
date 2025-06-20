@@ -118,7 +118,7 @@ const ManageNotifications = () => {
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <h1 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark mb-4 md:mb-0">
@@ -455,7 +455,7 @@ const ManageNotifications = () => {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   )
 }
 

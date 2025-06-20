@@ -25,6 +25,8 @@ import Settings from './pages/Settings';
 import FollowersFollowing from './pages/FollowerFollowing';
 import TeamManagement from './pages/TeamManagement';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminSearch from './pages/admin/AdminSearch';
+import AdminMessages from './pages/admin/AdminMessages';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -146,16 +148,14 @@ function App() {
         />
       </Route>
 
-      {/* <Route path='/' element={<AdminLayout />}> */}
+      <Route path='/' element={<AdminLayout />}>
 
       {/* Admin Routes */}
           <Route 
           path='/admin/dashboard'
           element={
             <ProtectedRoute adminOnly>
-              <AdminLayout>
                 <AdminDashboard />
-              </AdminLayout>
             </ProtectedRoute>
           }
           />
@@ -184,7 +184,23 @@ function App() {
           </ProtectedRoute>
         }
       />
-      {/* </Route> */}
+      <Route
+       path='admin/search'
+        element={
+            <ProtectedRoute adminOnly>
+                <AdminSearch />
+            </ProtectedRoute>
+          }
+      />
+      <Route
+        path="admin/messages"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminMessages />
+          </ProtectedRoute>
+        }
+      />
+      </Route>
 
       {/* Fallback Route */}
       <Route path="*" element={<NotFound />} />

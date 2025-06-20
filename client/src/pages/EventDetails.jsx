@@ -41,6 +41,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
+import { motion } from "framer-motion"
 
 const EventDetails = () => {
   const { id } = useParams()
@@ -242,23 +243,149 @@ const EventDetails = () => {
     }
   }
 
-  if (loading || !event) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-32" />
-          <Card>
-            <Skeleton className="h-96 w-full" />
-            <CardContent className="p-6 space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <div className="flex gap-4">
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-10 w-24" />
+        <div>
+          {/* Back Button Skeleton */}
+          <Skeleton className="h-10 w-32 mb-6" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Main Event Card Skeleton */}
+              <Card className="bg-card-light dark:bg-card-dark shadow-lg rounded-lg overflow-hidden">
+                {/* Hero Image Skeleton */}
+                <Skeleton className="h-96 w-full rounded-t-lg" />
+                <CardContent className="p-6 space-y-4">
+                  {/* Badges Skeleton */}
+                  <div className="flex flex-wrap gap-2">
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                  {/* Title Skeleton */}
+                  <Skeleton className="h-8 w-3/4" />
+                  {/* Location Skeleton */}
+                  <Skeleton className="h-4 w-1/2" />
+                  {/* Event Info Grid Skeleton */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                  {/* Action Buttons Skeleton */}
+                  <div className="flex flex-wrap gap-3">
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-24" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Tabs Skeleton */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-4 gap-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                {/* Tab Content Skeleton */}
+                <Card className="bg-card-light dark:bg-card-dark shadow-lg rounded-lg">
+                  <CardHeader>
+                    <Skeleton className="h-6 w-32" />
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </CardContent>
+                </Card>
+                {/* Rules/Equipment Cards Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="bg-card-light dark:bg-card-dark shadow-lg rounded-lg">
+                    <CardHeader>
+                      <Skeleton className="h-6 w-24" />
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-card-light dark:bg-card-dark shadow-lg rounded-lg">
+                    <CardHeader>
+                      <Skeleton className="h-6 w-24" />
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* Sidebar Skeletons */}
+            <div className="space-y-6">
+              {/* Organizer Card Skeleton */}
+              <Card className="bg-card-light dark:bg-card-dark shadow-lg rounded-lg">
+                <CardHeader>
+                  <Skeleton className="h-6 w-24" />
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-16 mt-2" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Stats Card Skeleton */}
+              <Card className="bg-card-light dark:bg-card-dark shadow-lg rounded-lg">
+                <CardHeader>
+                  <Skeleton className="h-6 w-24" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+              </Card>
+              {/* Location Card Skeleton */}
+              <Card className="bg-card-light dark:bg-card-dark shadow-lg rounded-lg">
+                <CardHeader>
+                  <Skeleton className="h-6 w-24" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2 mt-2" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
+      </div>
+    )
+  }
+
+  if (!event) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <Card className="text-center py-16 bg-card-light dark:bg-card-dark shadow-lg rounded-lg">
+          <CardContent>
+            <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
+            <h3 className="text-2xl font-semibold text-foreground mb-2">Event Not Found</h3>
+            <p className="text-muted-foreground max-w-md mx-auto mb-6">
+              The event you're looking for doesn't exist or you don't have permission to view it.
+            </p>
+            <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Link to="/events">Browse Events</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }

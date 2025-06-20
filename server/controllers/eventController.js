@@ -283,22 +283,31 @@ export const deleteEvent = async (req, res) => {
 export const getAllEvents = async (req, res) => {
   try {
     const {
+      search,
       category,
       difficulty,
-      search,
+      status,
+      dateRange,
+      sortBy = "date:desc",
+      radius = 10,
       location,
-      radius,
-      startDate,
-      endDate,
-      sortBy,
       page = 1,
-      limit = 10,
+      limit = 12
     } = req.query;
 
     const query = {};
 
+    // Search filter
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { "location.city": { $regex: search, $options: "i" } }
+      ];
+    }
+
     // Category filter
-    if (category && category !== "ALL") {
+    if (category) {
       query.category = category;
     }
 
@@ -307,70 +316,96 @@ export const getAllEvents = async (req, res) => {
       query.difficulty = difficulty;
     }
 
-    // Search filter
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    // Location filter with radius (in kilometers)
-    if (location && radius) {
-      const [lng, lat] = location.split(",").map(Number);
-      query["location.coordinates"] = {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [lng, lat],
-          },
-          $maxDistance: radius * 1000, // Convert to meters
-        },
-      };
+    // Status filter
+    if (status) {
+      query.status = status;
     }
 
     // Date range filter
-    if (startDate || endDate) {
-      query.date = {};
-      if (startDate) query.date.$gte = new Date(startDate);
-      if (endDate) query.date.$lte = new Date(endDate);
+    if (dateRange) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      switch (dateRange) {
+        case "today":
+          query.date = {
+            $gte: today,
+            $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          };
+          break;
+        case "thisWeek":
+          query.date = {
+            $gte: today,
+            $lt: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+          };
+          break;
+        case "thisMonth":
+          query.date = {
+            $gte: today,
+            $lt: new Date(today.getFullYear(), today.getMonth() + 1, 1)
+          };
+          break;
+      }
+    }
+
+    // Location filter with radius
+    if (location) {
+      const [lng, lat] = location.split(",").map(Number);
+      query.location = {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat]
+          },
+          $maxDistance: parseInt(radius) * 1000 // Convert to meters
+        }
+      };
     }
 
     // Pagination
-    const skip = (page - 1) * limit;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    // Sort options
-    const sortOptions = {};
-    if (sortBy) {
-      const [field, order] = sortBy.split(":");
-      sortOptions[field] = order === "desc" ? -1 : 1;
-    } else {
-      sortOptions.createdAt = -1;
-    }
+    // Sorting
+    let sort = {};
+    const [field, order] = sortBy.split(":");
+    sort[field] = order === "desc" ? -1 : 1;
 
+    // Execute query with pagination
     const events = await Event.find(query)
-      .sort(sortOptions)
+      .sort(sort)
       .skip(skip)
-      .limit(Number(limit))
-      .populate("createdBy", "name username")
-      .populate("participants.user", "name username");
+      .limit(parseInt(limit))
+      .populate("createdBy", "name avatar")
+      .populate("participants.user", "name avatar")
+      .populate({
+        path: "ratings",
+        populate: {
+          path: "user",
+          select: "name avatar"
+        }
+      });
 
+    // Get total count for pagination
     const total = await Event.countDocuments(query);
 
+    // Send response
     res.json({
       success: true,
       data: events,
       pagination: {
         total,
-        pages: Math.ceil(total / limit),
-        page: Number(page),
-        limit: Number(limit),
-      },
+        pages: Math.ceil(total / parseInt(limit)),
+        page: parseInt(page),
+        limit: parseInt(limit)
+      }
     });
+
   } catch (error) {
+    console.error("Error in getAllEvents:", error);
     res.status(500).json({
+      success: false,
       message: "Error fetching events",
-      error: error.message,
+      error: error.message
     });
   }
 };

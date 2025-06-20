@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { Link, useSearchParams, useNavigate } from "react-router-dom"
 import { useEvents } from "@/hooks/useEvents";

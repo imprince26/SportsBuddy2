@@ -69,11 +69,11 @@ textarea::selection {
     /* #15803d */
     --secondary-foreground: 0 0% 100%;
     /* #ffffff */
-    --accent: 33 95% 39%;
+    --accent: 217 48% 77%;
     /* #d97706 */
     --accent-foreground: 217 71% 15%;
     /* #111827 */
-    --background: 214 46% 98%;
+    --background: 214 46% 85%;
     /* #f9fafb */
     --foreground: 217 71% 15%;
     /* #111827 */
@@ -124,11 +124,11 @@ textarea::selection {
     /* #22c55e */
     --secondary-foreground: 217 71% 15%;
     /* #111827 */
-    --accent: 36 94% 47%;
+    --accent: 217 48% 11%;
     /* #f59e0b */
-    --accent-foreground: 217 71% 15%;
+    --accent-foreground: 217 71% 88%;
     /* #111827 */
-    --background: 217 71% 15%;
+    --background: 217 71% 8%;
     /* #111827 */
     --foreground: 214 20% 92%;
     /* #e5e7eb */

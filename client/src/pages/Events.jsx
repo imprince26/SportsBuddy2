@@ -332,7 +332,7 @@ const Events = () => {
                 <div className="relative h-48 overflow-hidden">
                   {event.images && event.images.length > 0 ? (
                     <img
-                      src={event.images[0].url || "/placeholder.svg?height=192&width=384"}
+                      src={event.images[0].url || "/event-placeholder.svg"}
                       alt={event.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

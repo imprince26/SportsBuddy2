@@ -216,9 +216,9 @@ const AdminLayout = ({ children }) => {
               return (
                 <Link key={link.path} to={link.path}>
                   <Button
-                    variant={isActive ? "secondary" : "ghost"}
+                    variant={ "ghost"}
                     size="icon"
-                    className={isActive ? "bg-card-light dark:bg-card-dark" : ""}
+                    className={isActive ? "bg-background-light dark:bg-background-dark" : ""}
                   >
                     <Icon className="w-5 h-5" />
                   </Button>

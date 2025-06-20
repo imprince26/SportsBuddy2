@@ -27,6 +27,8 @@ import TeamManagement from './pages/TeamManagement';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminSearch from './pages/admin/AdminSearch';
 import AdminMessages from './pages/admin/AdminMessages';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminSettings from './pages/admin/AdminSettings';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -197,6 +199,22 @@ function App() {
         element={
           <ProtectedRoute adminOnly>
             <AdminMessages />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="admin/analytics"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminAnalytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="admin/settings"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminSettings />
           </ProtectedRoute>
         }
       />

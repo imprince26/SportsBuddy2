@@ -78,45 +78,11 @@
 - [ESLint](https://eslint.org/) (linting)
 - [Prettier](https://prettier.io/) (code formatting)
 
----
+<!-- ---
 
 ## 📸 Screenshots
 
-> _Add screenshots of your app here for extra impact!_
-
----
-
-## 🏁 Getting Started
-
-### **1. Clone the repository**
-```bash
-git clone https://github.com/yourusername/sportsbuddy.git
-cd sportsbuddy
-```
-
-### **2. Setup the client**
-```bash
-cd client
-npm install
-npm run dev
-```
-
-### **3. Setup the server**
-```bash
-cd ../server
-npm install
-npm run dev
-```
-
-### **4. Configure Environment Variables**
-- Copy `.env.example` to `.env` in both `client` and `server` folders and fill in the required values.
-
----
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome!  
-Feel free to [open an issue](https://github.com/yourusername/sportsbuddy/issues) or submit a pull request.
+> _Add screenshots of your app here for extra impact!_ -->
 
 ---
 
@@ -127,9 +93,8 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 ## 👤 Author
-
-**Prince Patel**  
-[LinkedIn](https://www.linkedin.com/) | [GitHub](https://github.com/yourusername)
+  
+[Prince Patel](https://github.com/imprince26)
 
 ---
 

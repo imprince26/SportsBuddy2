@@ -1,185 +1,136 @@
-# 🏀 SportsBuddy
+# 🏆 SportsBuddy
 
-<div align="center">
-
-![Sports Buddy Logo](client/public/favicon.svg)
-
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Open-red?style=for-the-badge&logo=vercel)](https://sports-buddy-nine.vercel.app/)
-[![GitHub Stars](https://img.shields.io/github/stars/imprince26/SportsBuddy?style=for-the-badge)](https://github.com/imprince26/SportsBuddy/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/imprince26/SportsBuddy?style=for-the-badge)](https://github.com/imprince26/SportsBuddy/issues)
-[![GitHub License](https://img.shields.io/github/license/imprince26/SportsBuddy?style=for-the-badge)](https://github.com/imprince26/SportsBuddy/blob/main/LICENSE)
-
-</div>
-
-## 📌 Overview
-
-SportsBuddy is a modern web platform designed to revolutionize how sports enthusiasts connect, organize, and participate in sports events. Whether you're looking for a tennis partner, organizing a cricket match, or joining a local football tournament, SportsBuddy makes it seamless and engaging.
-
-## ✨ Key Features
-
-### 🔐 User Authentication & Profiles
-- Secure JWT-based authentication system
-- Personalized user profiles with sports preferences
-- Activity history and participation tracking
-- Social connections with other sports enthusiasts
-
-### 🎯 Event Management
-- Create and host sports events with detailed information
-- Join existing events with real-time participant updates
-- Advanced search with filters (sport type, location, date)
-- Interactive event calendar and scheduling
-
-### 📱 User Experience
-- Responsive design for all devices
-- Dark/Light theme support
-- Real-time notifications for event updates
-- Interactive maps for event locations
-
-### 👥 Community Features
-- Team formation and management
-- Skill level matching
-- In-app messaging system
-- Event ratings and reviews
-
-### 🛡️ Admin Controls
-- Comprehensive event moderation
-- User management dashboard
-- Content moderation tools
-- Analytics and reporting
-
-## 🛠️ Tech Stack
-
-### Frontend
-![React](https://img.shields.io/badge/-ReactJS-000?style=for-the-badge&logo=react)
-![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-000?style=for-the-badge&logo=tailwind-css)
-![ShadcnUI](https://img.shields.io/badge/-ShadcnUI-000?style=for-the-badge&logo=shadcnui)
-![Framer Motion](https://img.shields.io/badge/-Framer_Motion-000?style=for-the-badge&logo=framer)
-
-### Backend
-![NodeJS](https://img.shields.io/badge/-NodeJS-000?style=for-the-badge&logo=node.js)
-![Express.js](https://img.shields.io/badge/-ExpressJS-000?style=for-the-badge&logo=express)
-![MongoDB](https://img.shields.io/badge/-MongoDB-000?style=for-the-badge&logo=mongodb)
-
-### Tools & Libraries
-![JWT](https://img.shields.io/badge/-JWT-000?style=for-the-badge&logo=jsonwebtoken)
-![Zod](https://img.shields.io/badge/-Zod-000?style=for-the-badge&logo=zod)
-![React Hook Form](https://img.shields.io/badge/-React_Hook_Form-000?style=for-the-badge&logo=reacthookform)
-![Axios](https://img.shields.io/badge/-Axios-000?style=for-the-badge&logo=axios)
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js (v16 or higher)
-- MongoDB
-- npm or yarn
-
-### Installation
-
-1. Clone the repository
-\`\`\`bash
-git clone https://github.com/imprince26/SportsBuddy.git
-cd SportsBuddy
-\`\`\`
-
-2. Install dependencies
-\`\`\`bash
-# Install server dependencies
-cd server
-npm install
-
-# Install client dependencies
-cd ../client
-npm install
-\`\`\`
-
-3. Environment Setup
-\`\`\`bash
-# Server (.env)
-PORT=5000
-MONGODB_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
-
-# Client (.env)
-VITE_API_URL=http://localhost:5000/api
-\`\`\`
-
-4. Run the application
-\`\`\`bash
-# Run server (from server directory)
-npm run dev
-
-# Run client (from client directory)
-npm run dev
-\`\`\`
-
-## 📱 Screenshots
-
-<div align="center">
-<img src="screenshots/home.png" alt="Home Page" width="400"/>
-<img src="screenshots/events.png" alt="Events Page" width="400"/>
-</div>
-
-## 🌟 Core Features Breakdown
-
-### Event Creation & Management
-- Intuitive event creation interface
-- Rich text description support
-- Image upload for event photos
-- Location mapping integration
-- Participant limit settings
-- Event categories and tags
-
-### Search & Discovery
-- Advanced filtering system
-- Geolocation-based search
-- Skill level matching
-- Availability scheduling
-- Sport type categorization
-
-### User Profiles
-- Skill level indicators
-- Sports preferences
-- Achievement tracking
-- Event history
-- Social connections
-
-### Communication
-- In-app messaging
-- Event notifications
-- Team chat functionality
-- Email notifications
-- Push notifications
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-1. Fork the repository
-2. Create your feature branch (\`git checkout -b feature/AmazingFeature\`)
-3. Commit your changes (\`git commit -m 'Add some AmazingFeature'\`)
-4. Push to the branch (\`git push origin feature/AmazingFeature\`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Team
-
-- Prince Kumar - Full Stack Developer - [GitHub](https://github.com/imprince26)
-
-## 📞 Support
-
-- Email: support@sportsbuddy.com
-- [Report a bug](https://github.com/imprince26/SportsBuddy/issues)
-- [Request a feature](https://github.com/imprince26/SportsBuddy/issues)
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![React](https://img.shields.io/badge/Frontend-React-blue?logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-green?logo=node.js)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen?logo=mongodb)](https://mongodb.com/)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed-Vercel-black?logo=vercel)](https://vercel.com/)
+[![Responsive Design](https://img.shields.io/badge/Responsive-Yes-blueviolet?logo=css3)](#)
 
 ---
 
-<div align="center">
+**SportsBuddy** is a modern web platform that connects sports enthusiasts, enabling users to discover, join, and organize local sports events and teams. With real-time chat, achievements, and a vibrant community, SportsBuddy makes it easy to find your next game or training partner!
 
-Made with ❤️ by [Prince Kumar](https://github.com/imprince26)
+---
 
-⭐️ Star us on GitHub — it helps!
+## 🚀 Features
 
-</div>
+- **Find Local Events:**  
+  Discover sports events happening near you, filtered by your favorite activities and skill level.
+
+- **Create & Host Events:**  
+  Organize your own sports events, manage participants, and build your community.
+
+- **Join Teams:**  
+  Connect with other players, join existing teams, or create your own for regular meetups.
+
+- **Real-time Chat:**  
+  Communicate instantly with event participants through integrated messaging.
+
+- **Track Achievements:**  
+  Record your sports accomplishments and share them with the community.
+
+- **Personalized Profiles:**  
+  Showcase your sports preferences, skill levels, achievements, and social links.
+
+- **Admin Dashboard:**  
+  Manage users, events, analytics, and platform activities with a dedicated admin panel.
+
+- **Notifications:**  
+  Stay updated with event invites, team messages, and platform announcements.
+
+- **Advanced Search:**  
+  Find users, events, and teams using powerful filters and search options.
+
+- **Mobile Friendly:**  
+  Fully responsive design for seamless experience on any device.
+
+- **Secure Authentication:**  
+  Robust user authentication and authorization.
+
+- **Cloud Media Uploads:**  
+  Upload and manage avatars and event images securely.
+
+---
+
+## 🛠️ Tech Stack
+
+### **Frontend**
+- [React.js](https://react.dev/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Framer Motion](https://www.framer.com/motion/) (animations)
+- [Radix UI](https://www.radix-ui.com/) (accessible UI components)
+- [Lucide Icons](https://lucide.dev/)
+
+### **Backend**
+- [Node.js](https://nodejs.org/)
+- [Express.js](https://expressjs.com/)
+- [MongoDB](https://mongodb.com/) & [Mongoose](https://mongoosejs.com/)
+- [Socket.io](https://socket.io/) (real-time chat)
+- [Cloudinary](https://cloudinary.com/) (media uploads)
+- [JWT](https://jwt.io/) (authentication)
+- [Zod](https://zod.dev/) (validation)
+
+### **DevOps & Deployment**
+- [Vercel](https://vercel.com/) (frontend)
+- [Render](https://render.com/) (backend)
+- [ESLint](https://eslint.org/) (linting)
+- [Prettier](https://prettier.io/) (code formatting)
+
+---
+
+## 📸 Screenshots
+
+> _Add screenshots of your app here for extra impact!_
+
+---
+
+## 🏁 Getting Started
+
+### **1. Clone the repository**
+```bash
+git clone https://github.com/yourusername/sportsbuddy.git
+cd sportsbuddy
+```
+
+### **2. Setup the client**
+```bash
+cd client
+npm install
+npm run dev
+```
+
+### **3. Setup the server**
+```bash
+cd ../server
+npm install
+npm run dev
+```
+
+### **4. Configure Environment Variables**
+- Copy `.env.example` to `.env` in both `client` and `server` folders and fill in the required values.
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!  
+Feel free to [open an issue](https://github.com/yourusername/sportsbuddy/issues) or submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 👤 Author
+
+**Prince Patel**  
+[LinkedIn](https://www.linkedin.com/) | [GitHub](https://github.com/yourusername)
+
+---
+
+> _Connect. Play. Achieve. — with SportsBuddy!_

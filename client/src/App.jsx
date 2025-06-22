@@ -29,6 +29,7 @@ import AdminSearch from './pages/admin/AdminSearch';
 import AdminMessages from './pages/admin/AdminMessages';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminSettings from './pages/admin/AdminSettings';
+import NotificationsPage from './pages/admin/NotificationPage';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -182,7 +183,7 @@ function App() {
         path="admin/notifications"
         element={
           <ProtectedRoute adminOnly>
-            <ManageNotifications />
+            <NotificationsPage />
           </ProtectedRoute>
         }
       />

@@ -1,407 +1,389 @@
-"use client"
-
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import { useAuth } from '@/hooks/useAuth';
-import { User, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, Shield, UserX, UserCheck, Edit, Loader2, AlertTriangle } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  Search,
+  MoreHorizontal,
+  Shield,
+  UserX,
+  UserCheck,
+  Edit,
+  Trash2,
+  Eye,
+  Mail,
+  Calendar,
+  MapPin,
+  Activity,
+  UsersIcon,
+} from "lucide-react"
 import { format } from "date-fns"
-import AdminLayout from "@/components/layout/AdminLayout"
+import { Link } from "react-router-dom"
+
 
 const ManageUsers = () => {
-  const { user } = useAuth()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [roleFilter, setRoleFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [selectedRole, setSelectedRole] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [showFilters, setShowFilters] = useState(false)
-  const [actionUser, setActionUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [actionType, setActionType] = useState("")
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
+  // Mock data - replace with actual API calls
   useEffect(() => {
-    fetchUsers()
-  }, [currentPage, selectedRole, selectedStatus])
-
-  const fetchUsers = async () => {
-    try {
+    const fetchUsers = async () => {
       setLoading(true)
-      // This would be an API call in a real application
-      // const response = await api.get('/admin/users', {
-      //   params: {
-      //     page: currentPage,
-      //     role: selectedRole !== 'all' ? selectedRole : undefined,
-      //     status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      //     search: searchTerm || undefined,
-      //   }
-      // });
-      
-      // Mock data for demonstration
+      // Simulate API call
       setTimeout(() => {
-        const mockUsers = Array.from({ length: 20 }, (_, i) => ({
+        const mockUsers = Array.from({ length: 50 }, (_, i) => ({
           _id: `user_${i + 1}`,
           name: `User ${i + 1}`,
           email: `user${i + 1}@example.com`,
           username: `user${i + 1}`,
           role: i % 10 === 0 ? "admin" : "user",
-          status: i % 5 === 0 ? "suspended" : "active",
-          createdAt: new Date(Date.now() - Math.random() * 10000000000),
-          avatar: null,
+          status: i % 7 === 0 ? "suspended" : i % 15 === 0 ? "pending" : "active",
+          createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
+          avatar: i % 3 === 0 ? `/placeholder.svg?height=40&width=40` : undefined,
+          location: {
+            city: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"][i % 5],
+            country: "USA",
+          },
+          eventsCreated: Math.floor(Math.random() * 10),
+          eventsJoined: Math.floor(Math.random() * 25),
+          lastActive: new Date(Date.now() - Math.random() * 1000000000).toISOString(),
         }))
-        
-        setUsers(mockUsers)
-        setTotalPages(5)
+
+        setUsers(mockUsers.slice((currentPage - 1) * 10, currentPage * 10))
+        setTotalPages(Math.ceil(mockUsers.length / 10))
         setLoading(false)
       }, 1000)
-    } catch (error) {
-      console.error("Error fetching users:", error)
-      setError("Failed to load users. Please try again later.")
-      setLoading(false)
     }
-  }
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    setCurrentPage(1)
     fetchUsers()
+  }, [currentPage, roleFilter, statusFilter, searchTerm])
+
+  const handleUserAction = async (action, user) => {
+    setSelectedUser(user)
+    setActionType(action)
+    setShowConfirmDialog(true)
   }
 
-  const handleRoleChange = (e) => {
-    setSelectedRole(e.target.value)
-    setCurrentPage(1)
-  }
+  const confirmAction = async () => {
+    if (!selectedUser || !actionType) return
 
-  const handleStatusChange = (e) => {
-    setSelectedStatus(e.target.value)
-    setCurrentPage(1)
-  }
+    // Simulate API call
+    console.log(`${actionType} user:`, selectedUser._id)
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page)
-  }
-
-  const handleUserAction = (action, userId) => {
-    // This would be an API call in a real application
-    console.log(`${action} user with ID: ${userId}`)
-    
-    // Update local state for demonstration
-    if (action === "suspend" || action === "activate") {
-      setUsers(users.map(u => 
-        u._id === userId 
-          ? { ...u, status: action === "suspend" ? "suspended" : "active" } 
-          : u
-      ))
-    } else if (action === "makeAdmin" || action === "removeAdmin") {
-      setUsers(users.map(u => 
-        u._id === userId 
-          ? { ...u, role: action === "makeAdmin" ? "admin" : "user" } 
-          : u
-      ))
-    }
-    
-    setActionUser(null)
-  }
-
-  if (!user || user.role !== "admin") {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6 text-center">
-          <AlertTriangle className="w-16 h-16 text-destructive-light dark:text-destructive-dark mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark mb-2">Access Denied</h2>
-          <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-6">
-            You don't have permission to access this page.
-          </p>
-          <Link
-            to="/dashboard"
-            className="px-6 py-3 bg-primary-light dark:bg-primary-dark text-white font-semibold rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
-          >
-            Go to Dashboard
-          </Link>
-        </div>
-      </div>
+    // Update local state
+    setUsers(
+      users.map((u) => {
+        if (u._id === selectedUser._id) {
+          switch (actionType) {
+            case "suspend":
+              return { ...u, status: "suspended"  }
+            case "activate":
+              return { ...u, status: "active"  }
+            case "makeAdmin":
+              return { ...u, role: "admin"  }
+            case "removeAdmin":
+              return { ...u, role: "user"  }
+            default:
+              return u
+          }
+        }
+        return u
+      }),
     )
+
+    setShowConfirmDialog(false)
+    setSelectedUser(null)
+    setActionType("")
   }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      case "suspended":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+    }
+  }
+
+  const getRoleColor = (role) => {
+    return role === "admin"
+      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+  }
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesRole = roleFilter === "all" || user.role === roleFilter
+    const matchesStatus = statusFilter === "all" || user.status === statusFilter
+
+    return matchesSearch && matchesRole && matchesStatus
+  })
 
   return (
-    <>
-      <div className="p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <h1 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark mb-4 md:mb-0">
-            Manage Users
-          </h1>
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <form onSubmit={handleSearch} className="relative flex-1 sm:max-w-xs">
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
-                size={18}
-              />
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-              />
-            </form>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 rounded-md bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
-            >
-              <Filter size={18} />
-              <span>Filters</span>
-              <ChevronDown size={16} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} />
-            </button>
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Manage Users</h1>
+          <p className="text-muted-foreground">View and manage all user accounts on the platform</p>
         </div>
-
-        {showFilters && (
-          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-4 mb-6 animate-in fade-in-50 slide-in-from-top-5 duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                  Role
-                </label>
-                <select
-                  value={selectedRole}
-                  onChange={handleRoleChange}
-                  className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                >
-                  <option value="all">All Roles</option>
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                  Status
-                </label>
-                <select
-                  value={selectedStatus}
-                  onChange={handleStatusChange}
-                  className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="active">Active</option>
-                  <option value="suspended">Suspended</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center">
-              <Loader2 className="w-12 h-12 animate-spin text-primary-light dark:text-primary-dark" />
-              <p className="mt-4 text-foreground-light dark:text-foreground-dark">Loading users...</p>
-            </div>
-          </div>
-        ) : error ? (
-          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6 text-center">
-            <AlertTriangle className="w-16 h-16 text-destructive-light dark:text-destructive-dark mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-foreground-light dark:text-foreground-dark mb-2">Error</h2>
-            <p className="text-muted-foreground-light dark:text-muted-foreground-dark">{error}</p>
-          </div>
-        ) : (
-          <>
-            <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-muted-light dark:bg-muted-dark">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                        User
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                        Joined
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border-light dark:divide-border-dark">
-                    {users.map((user) => (
-                      <tr
-                        key={user._id}
-                        className="hover:bg-muted-light/50 dark:hover:bg-muted-dark/50 transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-muted-light dark:bg-muted-dark flex items-center justify-center mr-3">
-                              {user.avatar ? (
-                                <img
-                                  src={user.avatar || "/placeholder.svg"}
-                                  alt={user.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <User size={16} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium text-foreground-light dark:text-foreground-dark">
-                                {user.name}
-                              </div>
-                              <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                                @{user.username}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-foreground-light dark:text-foreground-dark">
-                          {user.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              user.role === "admin"
-                                ? "bg-primary-light/20 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark"
-                                : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-                            }`}
-                          >
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              user.status === "active"
-                                ? "bg-success-light/20 dark:bg-success-dark/20 text-success-light dark:text-success-dark"
-                                : "bg-destructive-light/20 dark:bg-destructive-dark/20 text-destructive-light dark:text-destructive-dark"
-                            }`}
-                          >
-                            {user.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                          {format(new Date(user.createdAt), "MMM dd, yyyy")}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="relative">
-                            <button
-                              onClick={() => setActionUser(actionUser === user._id ? null : user._id)}
-                              className="p-2 rounded-md hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                            >
-                              <MoreHorizontal size={16} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                            </button>
-                            {actionUser === user._id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-card-light dark:bg-card-dark rounded-md shadow-lg z-10 border border-border-light dark:border-border-dark">
-                                <Link
-                                  to={`/profile/${user._id}`}
-                                  className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                                >
-                                  <User size={16} className="mr-2" />
-                                  View Profile
-                                </Link>
-                                <button
-                                  onClick={() => handleUserAction(user.status === "active" ? "suspend" : "activate", user._id)}
-                                  className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark text-left"
-                                >
-                                  {user.status === "active" ? (
-                                    <>
-                                      <UserX size={16} className="mr-2 text-destructive-light dark:text-destructive-dark" />
-                                      Suspend User
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UserCheck size={16} className="mr-2 text-success-light dark:text-success-dark" />
-                                      Activate User
-                                    </>
-                                  )}
-                                </button>
-                                <button
-                                  onClick={() => handleUserAction(user.role === "user" ? "makeAdmin" : "removeAdmin", user._id)}
-                                  className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark text-left"
-                                >
-                                  {user.role === "user" ? (
-                                    <>
-                                      <Shield size={16} className="mr-2 text-primary-light dark:text-primary-dark" />
-                                      Make Admin
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Shield size={16} className="mr-2 text-muted-foreground-light dark:text-muted-foreground-dark" />
-                                      Remove Admin
-                                    </>
-                                  )}
-                                </button>
-                                <button
-                                  className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark text-left"
-                                >
-                                  <Edit size={16} className="mr-2" />
-                                  Edit User
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                Showing <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> to{" "}
-                <span className="font-medium">{Math.min(currentPage * 10, users.length)}</span> of{" "}
-                <span className="font-medium">{users.length}</span> users
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`p-2 rounded-md ${
-                    currentPage === 1
-                      ? "text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                      : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                  }`}
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`w-8 h-8 rounded-md ${
-                      currentPage === page
-                        ? "bg-primary-light dark:bg-primary-dark text-white"
-                        : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`p-2 rounded-md ${
-                    currentPage === totalPages
-                      ? "text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                      : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                  }`}
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm">
+            <Mail className="w-4 h-4 mr-2" />
+            Bulk Email
+          </Button>
+          <Button size="sm">
+            <UsersIcon className="w-4 h-4 mr-2" />
+            Export Users
+          </Button>
+        </div>
       </div>
-    </>
+
+      {/* Filters */}
+      <Card className="bg-card-light dark:bg-card-dark border-border">
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Search users by name, email, or username..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-background"
+                />
+              </div>
+            </div>
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-full sm:w-[180px] bg-background">
+                <SelectValue placeholder="Filter by role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="user">User</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px] bg-background">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Users Table */}
+      <Card className="bg-card-light dark:bg-card-dark border-border">
+        <CardHeader>
+          <CardTitle>Users ({filteredUsers.length})</CardTitle>
+          <CardDescription>Manage user accounts, roles, and permissions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredUsers.map((user) => (
+                <div
+                  key={user._id}
+                  className="flex items-center justify-between p-4 border border-border rounded-lg bg-background hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                      <AvatarFallback className="bg-muted">
+                        {user.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-medium text-foreground truncate">{user.name}</h3>
+                        <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
+                        <Badge className={getStatusColor(user.status)}>{user.status}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                      <div className="flex items-center space-x-4 mt-1 text-xs text-muted-foreground">
+                        <span className="flex items-center">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          Joined {format(new Date(user.createdAt), "MMM dd, yyyy")}
+                        </span>
+                        {user.location && (
+                          <span className="flex items-center">
+                            <MapPin className="w-3 h-3 mr-1" />
+                            {user.location.city}
+                          </span>
+                        )}
+                        <span className="flex items-center">
+                          <Activity className="w-3 h-3 mr-1" />
+                          {user.eventsJoined} events joined
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <div className="text-right text-sm">
+                      <div className="font-medium text-foreground">{user.eventsCreated} created</div>
+                      <div className="text-muted-foreground">
+                        Last active {format(new Date(user.lastActive), "MMM dd")}
+                      </div>
+                    </div>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-card-light dark:bg-card-dark">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to={`/admin/users/${user._id}`} className="flex items-center">
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to={`/admin/users/${user._id}/edit`} className="flex items-center">
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit User
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleUserAction(user.status === "active" ? "suspend" : "activate", user)}
+                          className="flex items-center"
+                        >
+                          {user.status === "active" ? (
+                            <>
+                              <UserX className="w-4 h-4 mr-2 text-red-600" />
+                              <span className="text-red-600">Suspend User</span>
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="w-4 h-4 mr-2 text-green-600" />
+                              <span className="text-green-600">Activate User</span>
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleUserAction(user.role === "user" ? "makeAdmin" : "removeAdmin", user)}
+                          className="flex items-center"
+                        >
+                          <Shield className="w-4 h-4 mr-2" />
+                          {user.role === "user" ? "Make Admin" : "Remove Admin"}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleUserAction("delete", user)}
+                          className="flex items-center text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete User
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * 10 + 1} to {Math.min(currentPage * 10, filteredUsers.length)} of{" "}
+          {filteredUsers.length} users
+        </p>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent className="bg-card-light dark:bg-card-dark">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Action</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {actionType} {selectedUser?.name}? This action may affect their access to the
+              platform.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmAction}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }
 

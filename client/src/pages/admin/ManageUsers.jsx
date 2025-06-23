@@ -105,13 +105,13 @@ const ManageUsers = () => {
         if (u._id === selectedUser._id) {
           switch (actionType) {
             case "suspend":
-              return { ...u, status: "suspended"  }
+              return { ...u, status: "suspended" }
             case "activate":
-              return { ...u, status: "active"  }
+              return { ...u, status: "active" }
             case "makeAdmin":
-              return { ...u, role: "admin"  }
+              return { ...u, role: "admin" }
             case "removeAdmin":
-              return { ...u, role: "user"  }
+              return { ...u, role: "user" }
             default:
               return u
           }

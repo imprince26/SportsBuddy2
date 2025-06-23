@@ -53,7 +53,7 @@ const AdminDashboard = () => {
       },
     ],
   })
-  
+
   const statCards = [
     {
       title: "Total Users",
@@ -140,13 +140,12 @@ const AdminDashboard = () => {
                         <ArrowDownRight className="w-4 h-4 text-red-600" />
                       ) : null}
                       <span
-                        className={`text-sm font-medium ${
-                          stat.changeType === "positive"
+                        className={`text-sm font-medium ${stat.changeType === "positive"
                             ? "text-green-600"
                             : stat.changeType === "negative"
                               ? "text-red-600"
                               : "text-muted-foreground"
-                        }`}
+                          }`}
                       >
                         {stat.change}
                       </span>

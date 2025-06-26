@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -98,6 +98,11 @@ const AdminDashboard = () => {
     }
     return colors[color] || colors.blue
   }
+
+  //Dynamic page title
+  useEffect(() => {
+    document.title = 'Admin Dashboard - SportsBuddy';
+  }, []);
 
   return (
     <div className="space-y-6">

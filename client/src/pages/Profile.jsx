@@ -109,6 +109,11 @@ const Profile = () => {
     },
   });
 
+  // Dynamically set page title
+  useEffect(() => {
+    document.title = `${user ? `${user.name}'s Profile` : "Profile"} - SportsBuddy`;
+  }, []);
+
   useEffect(() => {
     if (user) {
       reset({

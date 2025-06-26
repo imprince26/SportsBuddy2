@@ -8,10 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const navigate = useNavigate()
   const { searchEvents, searchUsers } = useEvents()
-  const { user } = useAuth()
-
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "")
   const [searchType, setSearchType] = useState(searchParams.get("type") || "events")
   const [showFilters, setShowFilters] = useState(false)
@@ -54,6 +51,11 @@ const Search = () => {
     if (searchInputRef.current) {
       searchInputRef.current.focus()
     }
+  }, [])
+
+  // Page title
+  useEffect(() => {
+    document.title = `Search - SportsBuddy`
   }, [])
 
   // Perform search when params change

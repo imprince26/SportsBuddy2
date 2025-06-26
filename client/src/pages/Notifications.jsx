@@ -10,7 +10,10 @@ const Notifications = () => {
   const [filter, setFilter] = useState("all")
   const [loading, setLoading] = useState(false)
 
-
+  // Page Title
+  useEffect(() => {
+    document.title = 'Notifications - SportsBuddy';
+  }, []);
 
 
   const handleMarkAsRead = async (notificationId) => {

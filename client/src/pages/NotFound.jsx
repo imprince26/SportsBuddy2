@@ -1,10 +1,15 @@
-"use client"
-
+import { useEffect } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Home, Search, Calendar, ArrowLeft } from 'lucide-react'
+import { Home, Calendar, ArrowLeft } from 'lucide-react'
 
 const NotFound = () => {
+
+  // Page Title
+  useEffect(() => {
+    document.title = '404 - SportsBuddy';
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark p-4">
       <div className="max-w-md w-full text-center">

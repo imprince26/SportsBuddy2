@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'react-hot-toast';
-import { Bell, Mail, MapPin, Lock, User, Save } from 'lucide-react';
+import { Bell, Lock, Save } from 'lucide-react';
 
 const Settings = () => {
   const { user, updatePreferences, updatePassword } = useAuth();
@@ -29,6 +29,11 @@ const Settings = () => {
       });
     }
   }, [user]);
+
+  // Page Title
+  useEffect(() => {
+    document.title = 'Settings - SportsBuddy';
+  }, []);
   
   const handlePreferenceChange = (e) => {
     const { name, value, type, checked } = e.target;

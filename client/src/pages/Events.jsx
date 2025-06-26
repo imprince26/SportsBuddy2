@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
 import { useEvents } from "@/hooks/useEvents";
@@ -25,6 +23,11 @@ const Events = () => {
   // Fetch events on component mount
   useEffect(() => {
     fetchEvents()
+  }, [])
+
+  //page title
+  useEffect(() => {
+    document.title = "Events - Sports Buddy"
   }, [])
 
   // Apply search filter

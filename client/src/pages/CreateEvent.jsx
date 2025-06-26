@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,6 +91,11 @@ const CreateEventForm = () => {
       equipment: [],
     },
   });
+
+  // Page Title
+  useEffect(() => {
+    document.title = 'Create Event - SportsBuddy';
+  }, []);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);

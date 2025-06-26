@@ -11,8 +11,6 @@ import {
 import { cn } from '@/lib/utils';
 import LoginForm from '@/components/auth/LoginForm';
 
-
-
 const Login = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -23,6 +21,11 @@ const Login = () => {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  // Page Title
+  useEffect(() => {
+    document.title = 'Login - SportsBuddy';
+  }, []);
 
 
   return (

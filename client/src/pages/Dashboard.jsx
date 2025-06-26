@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +21,11 @@ const Dashboard = () => {
   })
   const [activityData, setActivityData] = useState([])
   const [loadingData, setLoadingData] = useState(true)
+
+  // Dynamic title
+  useEffect(() => {
+    document.title = `Dashboard - ${user?.name || "SportsBuddy"}`
+  }, [])
 
   useEffect(() => {
     const fetchUserEvents = async () => {

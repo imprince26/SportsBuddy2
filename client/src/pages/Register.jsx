@@ -23,7 +23,10 @@ const Register = () => {
     }
   }, [user, navigate]);
 
-
+  // Page Title
+  useEffect(() => {
+    document.title = 'Register - SportsBuddy';
+  }, []);
 
   return (
     <div

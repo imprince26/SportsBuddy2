@@ -67,6 +67,7 @@ const EventDetails = () => {
       try {
         const eventData = await getEventById(id)
         setEvent(eventData)
+        document.title = eventData.name || "Event Details"
 
         // Check if event is in favorites
         const favorites = JSON.parse(localStorage.getItem("favorites") || "[]")

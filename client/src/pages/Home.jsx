@@ -17,6 +17,11 @@ const Home = () => {
     fetchEvents()
   }, [])
 
+  // page title
+  useEffect(() => {
+    document.title = "Home - Sports Buddy"
+  }, [])
+
   useEffect(() => {
     if (events.length > 0) {
       const now = new Date()

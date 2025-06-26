@@ -108,6 +108,8 @@ const EditEvent = () => {
     },
   });
 
+ 
+
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
@@ -132,6 +134,7 @@ const EditEvent = () => {
             equipment: eventData.equipment || [],
           });
           setExistingImages(eventData.images || []);
+          document.title = `Edit Event - ${eventData.name || "Untitled Event"}`;
         } else {
           toast.error("Event not found");
         }
@@ -269,6 +272,7 @@ const EditEvent = () => {
       toast.error(error.message || "Failed to delete event");
     }
   };
+
 
   if (pageLoading) {
     return (

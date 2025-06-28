@@ -1,417 +1,756 @@
+"use client"
+
 import { useState, useEffect, useCallback } from "react"
-import { Link } from "react-router-dom"
-import { useEvents } from "@/hooks/useEvents";
-import { useAuth } from '@/hooks/useAuth';
+import { Link, useNavigate, useLocation } from "react-router-dom"
+import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
-import { CalendarDays, MapPin, Users, Filter, Search, Star, Clock, ChevronDown, Plus, Loader2, SlidersHorizontal, X, Calendar } from 'lucide-react'
+import { CalendarDays, MapPin, Users, Filter, Search, Star, Clock, ChevronDown, Plus, Loader2, SlidersHorizontal, X, Calendar, Grid3X3, List, TrendingUp, Award, Target, Zap, ChevronLeft, ChevronRight, RefreshCw, AlertTriangle } from 'lucide-react'
+import { useAuth } from "@/hooks/useAuth"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
+import api from "@/utils/api"
 
 const Events = () => {
-  const { events, loading, getEvents: fetchEvents } = useEvents()
   const { isAuthenticated } = useAuth()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState({
-    category: "",
-    difficulty: "",
-    status: "",
-    dateRange: "all",
-    sortBy: "newest",
-  })
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  // State management
+  const [events, setEvents] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [viewMode, setViewMode] = useState("grid")
   const [showFilters, setShowFilters] = useState(false)
-  const [filteredEvents, setFilteredEvents] = useState([])
-  const [isSearching, setIsSearching] = useState(false)
+  
+  // Filters state
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "all",
+    difficulty: "all",
+    status: "all",
+    dateRange: "all",
+    sortBy: "date:asc"
+  })
+  
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 12,
+    total: 0,
+    pages: 0,
+    hasNext: false,
+    hasPrev: false
+  })
 
-  // Fetch events on component mount
+  // Categories and options
+  const categories = [
+    { value: "all", label: "All Sports", icon: "🏆" },
+    { value: "Football", label: "Football", icon: "⚽" },
+    { value: "Basketball", label: "Basketball", icon: "🏀" },
+    { value: "Tennis", label: "Tennis", icon: "🎾" },
+    { value: "Running", label: "Running", icon: "🏃" },
+    { value: "Cycling", label: "Cycling", icon: "🚴" },
+    { value: "Swimming", label: "Swimming", icon: "🏊" },
+    { value: "Volleyball", label: "Volleyball", icon: "🏐" },
+    { value: "Cricket", label: "Cricket", icon: "🏏" },
+    { value: "Other", label: "Other", icon: "🎯" }
+  ]
+
+  const difficulties = [
+    { value: "all", label: "All Levels" },
+    { value: "Beginner", label: "Beginner" },
+    { value: "Intermediate", label: "Intermediate" },
+    { value: "Advanced", label: "Advanced" }
+  ]
+
+  const dateRanges = [
+    { value: "all", label: "All Dates" },
+    { value: "today", label: "Today" },
+    { value: "tomorrow", label: "Tomorrow" },
+    { value: "thisWeek", label: "This Week" },
+    { value: "thisMonth", label: "This Month" },
+    { value: "upcoming", label: "Upcoming" }
+  ]
+
+  const sortOptions = [
+    { value: "date:asc", label: "Date (Earliest)" },
+    { value: "date:desc", label: "Date (Latest)" },
+    { value: "created:desc", label: "Recently Added" },
+    { value: "participants:desc", label: "Most Popular" },
+    { value: "name:asc", label: "Name (A-Z)" }
+  ]
+
+  // Parse URL parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search)
+    const newFilters = { ...filters }
+    
+    if (urlParams.get("category")) newFilters.category = urlParams.get("category")
+    if (urlParams.get("difficulty")) newFilters.difficulty = urlParams.get("difficulty")
+    if (urlParams.get("search")) newFilters.search = urlParams.get("search")
+    if (urlParams.get("dateRange")) newFilters.dateRange = urlParams.get("dateRange")
+    if (urlParams.get("sortBy")) newFilters.sortBy = urlParams.get("sortBy")
+    
+    setFilters(newFilters)
+    
+    const page = parseInt(urlParams.get("page")) || 1
+    setPagination(prev => ({ ...prev, page }))
+  }, [location.search])
+
+  // Update URL when filters change
+  const updateURL = useCallback((newFilters, newPage = 1) => {
+    const params = new URLSearchParams()
+    
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (value && value !== "all" && value !== "") {
+        params.set(key, value)
+      }
+    })
+    
+    if (newPage > 1) {
+      params.set("page", newPage.toString())
+    }
+    
+    const newURL = params.toString() ? `?${params.toString()}` : ""
+    navigate(`/events${newURL}`, { replace: true })
+  }, [navigate])
+
+  // Fetch events function
+  const fetchEvents = useCallback(async (newFilters = filters, page = pagination.page) => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const params = new URLSearchParams()
+      
+      // Add filters to params
+      Object.entries(newFilters).forEach(([key, value]) => {
+        if (value && value !== "all" && value !== "") {
+          params.set(key, value)
+        }
+      })
+      
+      // Add pagination
+      params.set("page", page.toString())
+      params.set("limit", pagination.limit.toString())
+      
+      // Add timestamp to prevent caching
+      params.set("_t", Date.now().toString())
+      
+      const response = await api.get(`/events?${params.toString()}`)
+      
+      if (response.data.success) {
+        setEvents(response.data.data)
+        setPagination(response.data.pagination)
+      } else {
+        throw new Error(response.data.message || "Failed to fetch events")
+      }
+    } catch (err) {
+      console.error("Error fetching events:", err)
+      setError(err.message || "Failed to fetch events")
+      setEvents([])
+    } finally {
+      setLoading(false)
+    }
+  }, [filters, pagination.page, pagination.limit])
+
+  // Initial fetch
   useEffect(() => {
     fetchEvents()
   }, [])
 
-  //page title
+  // Set page title
   useEffect(() => {
-    document.title = "Events - Sports Buddy"
+    document.title = "Sports Events - SportsBuddy"
   }, [])
 
-  // Apply search filter
+  // Handle filter changes
+  const handleFilterChange = (key, value) => {
+    const newFilters = { ...filters, [key]: value }
+    setFilters(newFilters)
+    setPagination(prev => ({ ...prev, page: 1 }))
+    updateURL(newFilters, 1)
+    fetchEvents(newFilters, 1)
+  }
+
+  // Handle search
   const handleSearch = (e) => {
-    setSearchTerm(e.target.value)
+    const value = e.target.value
+    handleFilterChange("search", value)
   }
 
-  // Apply filters to events
-  const filterEvents = useCallback(() => {
-    if (loading || !events.length) return
-
-    setIsSearching(true)
-
-    let filtered = [...events]
-
-    // Apply search term filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (event) =>
-          event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          event.location.city.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    // Apply category filter
-    if (filters.category) {
-      filtered = filtered.filter((event) => event.category === filters.category)
-    }
-
-    // Apply difficulty filter
-    if (filters.difficulty) {
-      filtered = filtered.filter((event) => event.difficulty === filters.difficulty)
-    }
-
-    // Apply status filter
-    if (filters.status) {
-      filtered = filtered.filter((event) => event.status === filters.status)
-    }
-
-    // Apply date range filter
-    if (filters.dateRange !== "all") {
-      const now = new Date()
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      const tomorrow = new Date(today)
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      const nextWeek = new Date(today)
-      nextWeek.setDate(nextWeek.getDate() + 7)
-      const nextMonth = new Date(today)
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
-
-      filtered = filtered.filter((event) => {
-        const eventDate = new Date(event.date)
-
-        switch (filters.dateRange) {
-          case "today":
-            return eventDate >= today && eventDate < tomorrow
-          case "thisWeek":
-            return eventDate >= today && eventDate < nextWeek
-          case "thisMonth":
-            return eventDate >= today && eventDate < nextMonth
-          default:
-            return true
-        }
-      })
-    }
-
-    // Apply sorting
-    if (filters.sortBy) {
-      switch (filters.sortBy) {
-        case "newest":
-          filtered.sort((a, b) => new Date(b.date) - new Date(a.date))
-          break
-        case "oldest":
-          filtered.sort((a, b) => new Date(a.date) - new Date(b.date))
-          break
-        case "popular":
-          filtered.sort((a, b) => (b.participants?.length || 0) - (a.participants?.length || 0))
-          break
-        case "rating":
-          filtered.sort((a, b) => {
-            const aRating = a.ratings?.length
-              ? a.ratings.reduce((acc, curr) => acc + curr.rating, 0) / a.ratings.length
-              : 0
-            const bRating = b.ratings?.length
-              ? b.ratings.reduce((acc, curr) => acc + curr.rating, 0) / b.ratings.length
-              : 0
-            return bRating - aRating
-          })
-          break
-        default:
-          break
-      }
-    }
-
-    setFilteredEvents(filtered)
-    setIsSearching(false)
-  }, [events, searchTerm, filters, loading])
-
-  // Apply filters when dependencies change
-  useEffect(() => {
-    filterEvents()
-  }, [filterEvents, events, searchTerm, filters])
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target
-    setFilters((prev) => ({ ...prev, [name]: value }))
+  // Handle pagination
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }))
+    updateURL(filters, newPage)
+    fetchEvents(filters, newPage)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  // Reset filters
   const resetFilters = () => {
-    setFilters({
-      category: "",
-      difficulty: "",
-      status: "",
+    const defaultFilters = {
+      search: "",
+      category: "all",
+      difficulty: "all",
+      status: "all",
       dateRange: "all",
-      sortBy: "newest",
-    })
-    setSearchTerm("")
+      sortBy: "date:asc"
+    }
+    setFilters(defaultFilters)
+    setPagination(prev => ({ ...prev, page: 1 }))
+    updateURL(defaultFilters, 1)
+    fetchEvents(defaultFilters, 1)
   }
+
+  // Refresh events
+  const refreshEvents = () => {
+    fetchEvents(filters, pagination.page)
+  }
+
+  // Get status badge color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Upcoming":
+        return "bg-primary-light/20 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark border-primary-light/30 dark:border-primary-dark/30"
+      case "Ongoing":
+        return "bg-success-light/20 dark:bg-success-dark/20 text-success-light dark:text-success-dark border-success-light/30 dark:border-success-dark/30"
+      case "Completed":
+        return "bg-muted-light/20 dark:bg-muted-dark/20 text-muted-foreground-light dark:text-muted-foreground-dark border-muted-light/30 dark:border-muted-dark/30"
+      case "Cancelled":
+        return "bg-destructive-light/20 dark:bg-destructive-dark/20 text-destructive-light dark:text-destructive-dark border-destructive-light/30 dark:border-destructive-dark/30"
+      default:
+        return "bg-muted-light/20 dark:bg-muted-dark/20 text-muted-foreground-light dark:text-muted-foreground-dark border-muted-light/30 dark:border-muted-dark/30"
+    }
+  }
+
+  // Get difficulty badge color
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case "Beginner":
+        return "bg-success-light/20 dark:bg-success-dark/20 text-success-light dark:text-success-dark border-success-light/30 dark:border-success-dark/30"
+      case "Intermediate":
+        return "bg-accent-light/20 dark:bg-accent-dark/20 text-accent-light dark:text-accent-dark border-accent-light/30 dark:border-accent-dark/30"
+      case "Advanced":
+        return "bg-destructive-light/20 dark:bg-destructive-dark/20 text-destructive-light dark:text-destructive-dark border-destructive-light/30 dark:border-destructive-dark/30"
+      default:
+        return "bg-muted-light/20 dark:bg-muted-dark/20 text-muted-foreground-light dark:text-muted-foreground-dark border-muted-light/30 dark:border-muted-dark/30"
+    }
+  }
+
+  // Event card component
+  const EventCard = ({ event, index }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="group"
+    >
+      <Link to={`/events/${event._id}`}>
+        <Card className="h-full overflow-hidden bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
+          <div className="relative h-48 overflow-hidden">
+            {event.images && event.images.length > 0 ? (
+              <img
+                src={event.images[0].url || "/placeholder.svg"}
+                alt={event.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted-light dark:bg-muted-dark flex items-center justify-center">
+                <Calendar className="w-16 h-16 text-muted-foreground-light dark:text-muted-foreground-dark" />
+              </div>
+            )}
+            
+            {/* Overlay with badges */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            
+            {/* Top badges */}
+            <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+              <Badge className={cn("text-xs font-medium border", getStatusColor(event.status))}>
+                {event.status}
+              </Badge>
+              <Badge className={cn("text-xs font-medium border", getDifficultyColor(event.difficulty))}>
+                {event.difficulty}
+              </Badge>
+            </div>
+            
+            {/* Category badge */}
+            <div className="absolute top-3 right-3">
+              <Badge className="bg-background-light/90 dark:bg-background-dark/90 text-foreground-light dark:text-foreground-dark border-border-light dark:border-border-dark">
+                {categories.find(c => c.value === event.category)?.icon} {event.category}
+              </Badge>
+            </div>
+            
+            {/* Event title overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <h3 className="text-white text-xl font-bold mb-1 line-clamp-2 group-hover:text-primary-light dark:group-hover:text-primary-dark transition-colors">
+                {event.name}
+              </h3>
+              <div className="flex items-center text-white/90 text-sm">
+                <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                <span className="truncate">{event.location?.city}</span>
+              </div>
+            </div>
+          </div>
+          
+          <CardContent className="p-4 space-y-3">
+            {/* Date and time */}
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center text-muted-foreground-light dark:text-muted-foreground-dark">
+                <CalendarDays className="w-4 h-4 mr-1" />
+                <span>{format(new Date(event.date), "MMM dd, yyyy")}</span>
+              </div>
+              <div className="flex items-center text-muted-foreground-light dark:text-muted-foreground-dark">
+                <Clock className="w-4 h-4 mr-1" />
+                <span>{event.time}</span>
+              </div>
+            </div>
+            
+            {/* Description */}
+            <p className="text-foreground-light dark:text-foreground-dark text-sm line-clamp-2 leading-relaxed">
+              {event.description}
+            </p>
+            
+            {/* Stats */}
+            <div className="flex items-center justify-between pt-2 border-t border-border-light dark:border-border-dark">
+              <div className="flex items-center text-sm">
+                <Users className="w-4 h-4 mr-1 text-primary-light dark:text-primary-dark" />
+                <span className="text-foreground-light dark:text-foreground-dark font-medium">
+                  {event.participantCount || 0}
+                </span>
+                <span className="text-muted-foreground-light dark:text-muted-foreground-dark">
+                  /{event.maxParticipants}
+                </span>
+              </div>
+              
+              {event.averageRating > 0 && (
+                <div className="flex items-center text-sm">
+                  <Star className="w-4 h-4 mr-1 text-accent-light dark:text-accent-dark fill-current" />
+                  <span className="text-foreground-light dark:text-foreground-dark font-medium">
+                    {event.averageRating.toFixed(1)}
+                  </span>
+                </div>
+              )}
+              
+              {event.registrationFee > 0 && (
+                <div className="text-sm font-medium text-success-light dark:text-success-dark">
+                  ${event.registrationFee}
+                </div>
+              )}
+            </div>
+            
+            {/* Progress bar for participants */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-muted-foreground-light dark:text-muted-foreground-dark">
+                <span>Spots filled</span>
+                <span>{Math.round(((event.participantCount || 0) / event.maxParticipants) * 100)}%</span>
+              </div>
+              <div className="w-full bg-muted-light dark:bg-muted-dark rounded-full h-2">
+                <div
+                  className="bg-primary-light dark:bg-primary-dark h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(((event.participantCount || 0) / event.maxParticipants) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    </motion.div>
+  )
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground-light dark:text-foreground-dark mb-4 md:mb-0">
-          Sports Events
-        </h1>
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="relative flex-1 sm:max-w-xs">
-            <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={searchTerm}
-              onChange={handleSearch}
-              className="pl-10 pr-4 py-2 w-full rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-            />
-          </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 rounded-md bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
+    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+      {/* Hero Section */}
+      <div className="bg-primary-light dark:bg-primary-dark text-white py-12">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
           >
-            <Filter size={18} />
-            <span>Filters</span>
-            <ChevronDown size={16} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} />
-          </button>
-          {isAuthenticated && (
-            <Link
-              to="/events/create"
-              className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
-            >
-              <Plus size={18} />
-              <span>Create Event</span>
-            </Link>
-          )}
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Discover Sports Events
+            </h1>
+            <p className="text-xl opacity-90 max-w-2xl mx-auto">
+              Join exciting sports events in your area and connect with fellow athletes
+            </p>
+          </motion.div>
         </div>
       </div>
 
-      {showFilters && (
-        <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-4 mb-6 animate-in fade-in-50 slide-in-from-top-5 duration-300">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <SlidersHorizontal size={18} />
-              Filter Options
-            </h3>
-            <button
-              onClick={resetFilters}
-              className="text-sm text-primary-light dark:text-primary-dark hover:underline flex items-center gap-1"
-            >
-              <X size={14} />
-              Reset All
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                Category
-              </label>
-              <select
-                name="category"
-                value={filters.category}
-                onChange={handleFilterChange}
-                className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-              >
-                <option value="">All Categories</option>
-                <option value="Football">Football</option>
-                <option value="Basketball">Basketball</option>
-                <option value="Tennis">Tennis</option>
-                <option value="Running">Running</option>
-                <option value="Cycling">Cycling</option>
-                <option value="Swimming">Swimming</option>
-                <option value="Volleyball">Volleyball</option>
-                <option value="Cricket">Cricket</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                Difficulty
-              </label>
-              <select
-                name="difficulty"
-                value={filters.difficulty}
-                onChange={handleFilterChange}
-                className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-              >
-                <option value="">All Difficulties</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                Status
-              </label>
-              <select
-                name="status"
-                value={filters.status}
-                onChange={handleFilterChange}
-                className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-              >
-                <option value="">All Statuses</option>
-                <option value="Upcoming">Upcoming</option>
-                <option value="Ongoing">Ongoing</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                Date Range
-              </label>
-              <select
-                name="dateRange"
-                value={filters.dateRange}
-                onChange={handleFilterChange}
-                className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-              >
-                <option value="all">All Dates</option>
-                <option value="today">Today</option>
-                <option value="thisWeek">This Week</option>
-                <option value="thisMonth">This Month</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                Sort By
-              </label>
-              <select
-                name="sortBy"
-                value={filters.sortBy}
-                onChange={handleFilterChange}
-                className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="popular">Most Popular</option>
-                <option value="rating">Highest Rated</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="container mx-auto px-4 py-8">
+        {/* Search and Filter Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-8"
+        >
+          <Card className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search */}
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark w-5 h-5" />
+                  <Input
+                    type="text"
+                    placeholder="Search events, locations, or sports..."
+                    value={filters.search}
+                    onChange={handleSearch}
+                    className="pl-10 h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark text-foreground-light dark:text-foreground-dark"
+                  />
+                </div>
+                
+                {/* Quick filters */}
+                <div className="flex flex-wrap gap-3">
+                  <Select value={filters.category} onValueChange={(value) => handleFilterChange("category", value)}>
+                    <SelectTrigger className="w-40 h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+                      {categories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.icon} {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={filters.dateRange} onValueChange={(value) => handleFilterChange("dateRange", value)}>
+                    <SelectTrigger className="w-40 h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark">
+                      <SelectValue placeholder="Date" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+                      {dateRanges.map((range) => (
+                        <SelectItem key={range.value} value={range.value}>
+                          {range.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark hover:bg-muted-light dark:hover:bg-muted-dark"
+                  >
+                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                    More Filters
+                    <ChevronDown className={cn("w-4 h-4 ml-2 transition-transform", showFilters && "rotate-180")} />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={refreshEvents}
+                    disabled={loading}
+                    className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark hover:bg-muted-light dark:hover:bg-muted-dark"
+                  >
+                    <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Extended Filters */}
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 pt-6 border-t border-border-light dark:border-border-dark"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-2">
+                          Difficulty Level
+                        </label>
+                        <Select value={filters.difficulty} onValueChange={(value) => handleFilterChange("difficulty", value)}>
+                          <SelectTrigger className="bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+                            {difficulties.map((difficulty) => (
+                              <SelectItem key={difficulty.value} value={difficulty.value}>
+                                {difficulty.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-2">
+                          Event Status
+                        </label>
+                        <Select value={filters.status} onValueChange={(value) => handleFilterChange("status", value)}>
+                          <SelectTrigger className="bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+                            <SelectItem value="all">All Statuses</SelectItem>
+                            <SelectItem value="Upcoming">Upcoming</SelectItem>
+                            <SelectItem value="Ongoing">Ongoing</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-2">
+                          Sort By
+                        </label>
+                        <Select value={filters.sortBy} onValueChange={(value) => handleFilterChange("sortBy", value)}>
+                          <SelectTrigger className="bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+                            {sortOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="flex items-end">
+                        <Button
+                          variant="outline"
+                          onClick={resetFilters}
+                          className="w-full bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark hover:bg-muted-light dark:hover:bg-muted-dark"
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Reset Filters
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {loading || isSearching ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="flex flex-col items-center">
-            <Loader2 className="w-12 h-12 animate-spin text-primary-light dark:text-primary-dark" />
-            <p className="mt-4 text-foreground-light dark:text-foreground-dark">
-              {loading ? "Loading events..." : "Filtering events..."}
-            </p>
+        {/* Results Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"
+        >
+          <div>
+            <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
+              {loading ? "Loading..." : `${pagination.total} Events Found`}
+            </h2>
+            {!loading && pagination.total > 0 && (
+              <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
+                Showing {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} events
+              </p>
+            )}
           </div>
-        </div>
-      ) : filteredEvents.length === 0 ? (
-        <div className="text-center py-16 bg-card-light dark:bg-card-dark rounded-lg shadow">
-          <Calendar className="w-16 h-16 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-2">
-            No events found
-          </h3>
-          <p className="text-muted-foreground-light dark:text-muted-foreground-dark max-w-md mx-auto mb-6">
-            Try adjusting your search or filters to find what you're looking for.
-          </p>
-          <button
-            onClick={resetFilters}
-            className="px-6 py-3 bg-primary-light dark:bg-primary-dark text-white font-semibold rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors inline-block"
-          >
-            Reset Filters
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="mb-4 text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-            Found {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => (
-              <Link
-                to={`/events/${event._id}`}
-                key={event._id}
-                className="group bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+          
+          <div className="flex items-center gap-3">
+            {/* View Mode Toggle */}
+            <div className="flex items-center bg-muted-light dark:bg-muted-dark rounded-lg p-1">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="h-8 px-3"
               >
-                <div className="relative h-48 overflow-hidden">
-                  {event.images && event.images.length > 0 ? (
-                    <img
-                      src={event.images[0].url || "/event-placeholder.svg"}
-                      alt={event.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-muted-light dark:bg-muted-dark flex items-center justify-center">
-                      <span className="text-muted-foreground-light dark:text-muted-foreground-dark">No image</span>
-                    </div>
-                  )}
-                  <div className="absolute top-3 right-3">
-                    <span
-                      className={`
-                      px-2 py-1 rounded-full text-xs font-medium
-                      ${event.status === "Upcoming" ? "bg-primary-light/90 dark:bg-primary-dark/90 text-white" : ""}
-                      ${event.status === "Ongoing" ? "bg-accent-light/90 dark:bg-accent-dark/90 text-white" : ""}
-                      ${event.status === "Completed" ? "bg-muted-light/90 dark:bg-muted-dark/90 text-foreground-light dark:text-foreground-dark" : ""}
-                      ${event.status === "Cancelled" ? "bg-destructive-light/90 dark:bg-destructive-dark/90 text-white" : ""}
-                    `}
-                    >
-                      {event.status}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                    <h3 className="text-white text-xl font-bold truncate">{event.name}</h3>
-                    <div className="flex items-center text-white/90 text-sm">
-                      <MapPin size={14} className="mr-1" />
-                      <span className="truncate">{event.location.city}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                      <CalendarDays size={16} className="mr-1" />
-                      <span>{format(new Date(event.date), "MMM dd, yyyy")}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                      <Clock size={16} className="mr-1" />
-                      <span>{event.time}</span>
-                    </div>
-                  </div>
-                  <p className="text-foreground-light dark:text-foreground-dark line-clamp-2 mb-3">{event.description}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                      <Users size={16} className="mr-1" />
-                      <span>
-                        {event.participants?.length || 0}/{event.maxParticipants}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <span
-                        className={`
-                        px-2 py-1 rounded-full text-xs
-                        ${event.difficulty === "Beginner" ? "bg-success-light/20 dark:bg-success-dark/20 text-success-light dark:text-success-dark" : ""}
-                        ${event.difficulty === "Intermediate" ? "bg-accent-light/20 dark:bg-accent-dark/20 text-accent-light dark:text-accent-dark" : ""}
-                        ${event.difficulty === "Advanced" ? "bg-destructive-light/20 dark:bg-destructive-dark/20 text-destructive-light dark:text-destructive-dark" : ""}
-                      `}
-                      >
-                        {event.difficulty}
-                      </span>
-                    </div>
-                  </div>
-                  {event.ratings && event.ratings.length > 0 && (
-                    <div className="flex items-center mt-3 text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                      <Star size={16} className="mr-1 text-accent-light dark:text-accent-dark" />
-                      <span>
-                        {(event.ratings.reduce((acc, curr) => acc + curr.rating, 0) / event.ratings.length).toFixed(1)}
-                      </span>
-                      <span className="ml-1">({event.ratings.length})</span>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            ))}
+                <Grid3X3 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="h-8 px-3"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            {/* Create Event Button */}
+            {isAuthenticated && (
+              <Button asChild className="bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90">
+                <Link to="/events/create">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Event
+                </Link>
+              </Button>
+            )}
           </div>
-        </>
-      )}
+        </motion.div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 animate-spin text-primary-light dark:text-primary-dark mx-auto mb-4" />
+              <p className="text-muted-foreground-light dark:text-muted-foreground-dark">Loading amazing events...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-20"
+          >
+            <Card className="max-w-md mx-auto bg-card-light dark:bg-card-dark border-destructive-light dark:border-destructive-dark">
+              <CardContent className="p-8">
+                <div className="text-destructive-light dark:text-destructive-dark mb-4">
+                  <AlertTriangle className="w-16 h-16 mx-auto" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-2">
+                  Oops! Something went wrong
+                </h3>
+                <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-6">
+                  {error}
+                </p>
+                <Button onClick={refreshEvents} className="bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* No Results */}
+        {!loading && !error && events.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-20"
+          >
+            <Card className="max-w-md mx-auto bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+              <CardContent className="p-8">
+                <Calendar className="w-16 h-16 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-2">
+                  No events found
+                </h3>
+                <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-6">
+                  Try adjusting your search criteria or create a new event to get started.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button variant="outline" onClick={resetFilters}>
+                    Reset Filters
+                  </Button>
+                  {isAuthenticated && (
+                    <Button asChild className="bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90">
+                      <Link to="/events/create">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Event
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Events Grid */}
+        {!loading && !error && events.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <div className={cn(
+              "grid gap-6 mb-8",
+              viewMode === "grid" 
+                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+                : "grid-cols-1"
+            )}>
+              {events.map((event, index) => (
+                <EventCard key={event._id} event={event} index={index} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Pagination */}
+        {!loading && !error && pagination.pages > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex justify-center"
+          >
+            <Card className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={!pagination.hasPrev}
+                    className="bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+                      let pageNum
+                      if (pagination.pages <= 5) {
+                        pageNum = i + 1
+                      } else if (pagination.page <= 3) {
+                        pageNum = i + 1
+                      } else if (pagination.page >= pagination.pages - 2) {
+                        pageNum = pagination.pages - 4 + i
+                      } else {
+                        pageNum = pagination.page - 2 + i
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pagination.page === pageNum ? "default" : "outline"}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={cn(
+                            "w-10 h-10",
+                            pagination.page === pageNum
+                              ? "bg-primary-light dark:bg-primary-dark text-white"
+                              : "bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark"
+                          )}
+                        >
+                          {pageNum}
+                        </Button>
+                      )
+                    })}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={!pagination.hasNext}
+                    className="bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <div className="text-center mt-3 text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
+                  Page {pagination.page} of {pagination.pages}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </div>
     </div>
   )
 }

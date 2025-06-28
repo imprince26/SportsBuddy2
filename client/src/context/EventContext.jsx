@@ -133,7 +133,7 @@ export const EventProvider = ({ children }) => {
       queryParams.append('page', newPage);
       queryParams.append('limit', pagination.limit);
 
-      const response = await api.get(`/events?${queryParams.toString()}`);
+      const response = await api.get(`/events`);
 
       if (response.data.success) {
         setEvents(response.data.data);

@@ -1,22 +1,11 @@
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
-import { cloudinary, uploadImage, deleteImage } from "../config/cloudinary.js"; // Import Cloudinary
+import { cloudinary, uploadImage, deleteImage } from "../config/cloudinary.js";
 import { validateEvent } from "../utils/validation.js";
 
 // Create Event Controller
 export const createEvent = async (req, res) => {
   try {
-    console.log(req)
-    console.log(req.files)
-    // Validate event data
-    // const validationResult = validateEvent(req.body);
-    // if (!validationResult.success) {
-    //   return res.status(400).json({
-    //     message: "Validation failed",
-    //     errors: validationResult.errors
-    //   });
-    // }
-
     const {
       name,
       description,
@@ -36,7 +25,6 @@ export const createEvent = async (req, res) => {
     let uploadedImages = [];
     if (req.files && req.files.length > 0) {
       try {
-        // Upload each image to Cloudinary
         const uploadPromises = req.files.map(async (file) => {
           const result = await cloudinary.uploader.upload(file.path, {
             folder: "SportsBuddy/events",
@@ -60,7 +48,6 @@ export const createEvent = async (req, res) => {
 
         uploadedImages = await Promise.all(uploadPromises);
       } catch (uploadError) {
-        // If upload fails, cleanup any uploaded images
         for (const image of uploadedImages) {
           if (image.public_id) {
             await cloudinary.uploader.destroy(image.public_id);
@@ -91,12 +78,10 @@ export const createEvent = async (req, res) => {
 
     const savedEvent = await event.save();
 
-    // Populate event data
     const populatedEvent = await Event.findById(savedEvent._id)
       .populate("createdBy", "name avatar")
       .populate("participants.user", "name avatar");
 
-    // Add event to user's created events
     await User.findByIdAndUpdate(req.user._id, {
       $push: {
         createdEvents: savedEvent._id,
@@ -104,22 +89,261 @@ export const createEvent = async (req, res) => {
       }
     });
 
-    // Notify followers
     const io = req.app.get("io");
     io.emit("newEvent", populatedEvent);
 
-    res.status(201).json(populatedEvent);
+    res.status(201).json({
+      success: true,
+      data: populatedEvent
+    });
   } catch (error) {
-    // Handle any cleanup if needed
-    if (error.uploadedImages) {
-      for (const image of error.uploadedImages) {
-        await cloudinary.uploader.destroy(image.public_id);
+    res.status(400).json({
+      success: false,
+      message: "Failed to create event",
+      error: error.message
+    });
+  }
+};
+
+// Get All Events with improved filtering and pagination
+export const getAllEvents = async (req, res) => {
+  try {
+    const {
+      search,
+      category,
+      difficulty,
+      status,
+      dateRange,
+      sortBy = "date:asc",
+      radius = 10,
+      location,
+      page = 1,
+      limit = 12,
+      lat,
+      lng
+    } = req.query;
+
+    // Build query object
+    const query = {};
+    const now = new Date();
+
+    // Search filter
+    if (search && search.trim()) {
+      query.$or = [
+        { name: { $regex: search.trim(), $options: "i" } },
+        { description: { $regex: search.trim(), $options: "i" } },
+        { "location.city": { $regex: search.trim(), $options: "i" } },
+        { "location.address": { $regex: search.trim(), $options: "i" } }
+      ];
+    }
+
+    // Category filter
+    if (category && category !== "all") {
+      query.category = category;
+    }
+
+    // Difficulty filter
+    if (difficulty && difficulty !== "all") {
+      query.difficulty = difficulty;
+    }
+
+    // Status filter
+    if (status && status !== "all") {
+      query.status = status;
+    } else {
+      // Default to show only upcoming and ongoing events
+      query.status = { $in: ["Upcoming", "Ongoing"] };
+    }
+
+    // Date range filter
+    if (dateRange && dateRange !== "all") {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      switch (dateRange) {
+        case "today":
+          query.date = {
+            $gte: today,
+            $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          };
+          break;
+        case "tomorrow":
+          const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+          query.date = {
+            $gte: tomorrow,
+            $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)
+          };
+          break;
+        case "thisWeek":
+          const endOfWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+          query.date = {
+            $gte: today,
+            $lt: endOfWeek
+          };
+          break;
+        case "thisMonth":
+          const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+          query.date = {
+            $gte: today,
+            $lt: endOfMonth
+          };
+          break;
+        case "upcoming":
+          query.date = { $gte: today };
+          break;
       }
     }
 
-    res.status(400).json({
-      message: "Failed to create event",
+    // Location-based filtering
+    if (lat && lng) {
+      query["location.coordinates"] = {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(lng), parseFloat(lat)]
+          },
+          $maxDistance: parseInt(radius) * 1000 // Convert km to meters
+        }
+      };
+    }
+
+    // Pagination
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit))); // Max 50 events per page
+    const skip = (pageNum - 1) * limitNum;
+
+    // Sorting
+    let sort = {};
+    if (sortBy) {
+      const [field, order] = sortBy.split(":");
+      switch (field) {
+        case "date":
+          sort.date = order === "desc" ? -1 : 1;
+          break;
+        case "created":
+          sort.createdAt = order === "desc" ? -1 : 1;
+          break;
+        case "participants":
+          sort["participants.length"] = order === "desc" ? -1 : 1;
+          break;
+        case "name":
+          sort.name = order === "desc" ? -1 : 1;
+          break;
+        default:
+          sort.date = 1; // Default sort by date ascending
+      }
+    }
+
+    // Execute query
+    const [events, total] = await Promise.all([
+      Event.find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(limitNum)
+        .populate("createdBy", "name avatar username")
+        .populate("participants.user", "name avatar username")
+        .lean(),
+      Event.countDocuments(query)
+    ]);
+
+    // Calculate additional metadata for each event
+    const eventsWithMetadata = events.map(event => ({
+      ...event,
+      participantCount: event.participants?.length || 0,
+      spotsLeft: event.maxParticipants - (event.participants?.length || 0),
+      averageRating: event.ratings?.length > 0 
+        ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length 
+        : 0,
+      isUpcoming: new Date(event.date) > now,
+      daysUntilEvent: Math.ceil((new Date(event.date) - now) / (1000 * 60 * 60 * 24))
+    }));
+
+    // Response with pagination info
+    const response = {
+      success: true,
+      data: eventsWithMetadata,
+      pagination: {
+        total,
+        pages: Math.ceil(total / limitNum),
+        page: pageNum,
+        limit: limitNum,
+        hasNext: pageNum < Math.ceil(total / limitNum),
+        hasPrev: pageNum > 1
+      },
+      filters: {
+        search: search || "",
+        category: category || "all",
+        difficulty: difficulty || "all",
+        status: status || "all",
+        dateRange: dateRange || "all",
+        sortBy: sortBy || "date:asc"
+      }
+    };
+
+    // Set cache headers to prevent 304 responses
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
+    res.status(200).json(response);
+
+  } catch (error) {
+    console.error("Error in getAllEvents:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching events",
       error: error.message
+    });
+  }
+};
+
+// Get Event by ID
+export const getEventById = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id)
+      .populate("createdBy", "name avatar username email")
+      .populate("participants.user", "name avatar username")
+      .populate("teams.members", "name avatar username")
+      .populate("teams.captain", "name avatar username")
+      .populate("ratings.user", "name avatar username")
+      .populate("chat.user", "name avatar username");
+
+    if (!event) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Event not found" 
+      });
+    }
+
+    // Add metadata
+    const now = new Date();
+    const eventWithMetadata = {
+      ...event.toObject(),
+      participantCount: event.participants?.length || 0,
+      spotsLeft: event.maxParticipants - (event.participants?.length || 0),
+      averageRating: event.ratings?.length > 0 
+        ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length 
+        : 0,
+      isUpcoming: new Date(event.date) > now,
+      daysUntilEvent: Math.ceil((new Date(event.date) - now) / (1000 * 60 * 60 * 24))
+    };
+
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
+    res.status(200).json({
+      success: true,
+      data: eventWithMetadata
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching event",
+      error: error.message,
     });
   }
 };
@@ -133,21 +357,17 @@ export const updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Check authorization
     if (event.createdBy.toString() !== req.user._id.toString() && req.user.role !== "admin") {
       return res.status(403).json({ message: "Not authorized to update this event" });
     }
 
-    // Handle image updates
     let updatedImages = [];
 
-    // Keep existing images that weren't deleted
     if (req.body.existingImages) {
       const existingImages = JSON.parse(req.body.existingImages);
       updatedImages = [...existingImages];
     }
 
-    // Handle deleted images
     if (req.body.deletedImages) {
       const deletedImages = JSON.parse(req.body.deletedImages);
       for (const publicId of deletedImages) {
@@ -155,7 +375,6 @@ export const updateEvent = async (req, res) => {
       }
     }
 
-    // Handle new image uploads
     if (req.files && req.files.length > 0) {
       const uploadPromises = req.files.map(async (file) => {
         const result = await cloudinary.uploader.upload(file.path, {
@@ -182,7 +401,6 @@ export const updateEvent = async (req, res) => {
       updatedImages = [...updatedImages, ...newImages];
     }
 
-    // Prepare update data
     const updates = {
       name: req.body.name,
       category: req.body.category,
@@ -200,7 +418,6 @@ export const updateEvent = async (req, res) => {
       updatedAt: new Date()
     };
 
-    // Update event
     const updatedEvent = await Event.findByIdAndUpdate(
       req.params.id,
       { $set: updates },
@@ -209,14 +426,17 @@ export const updateEvent = async (req, res) => {
       .populate("createdBy", "name avatar")
       .populate("participants.user", "name avatar");
 
-    // Notify participants about the update
     const io = req.app.get("io");
     io.to(`event:${event._id}`).emit("eventUpdated", updatedEvent);
 
-    res.json(updatedEvent);
+    res.json({
+      success: true,
+      data: updatedEvent
+    });
   } catch (error) {
     console.error("Update event error:", error);
     res.status(400).json({
+      success: false,
       message: "Failed to update event",
       error: error.message
     });
@@ -239,14 +459,12 @@ export const deleteEvent = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    // Delete images from Cloudinary
     if (event.images.length > 0) {
       for (const image of event.images) {
         await cloudinary.uploader.destroy(image.public_id);
       }
     }
 
-    // Notify participants about the deletion
     const io = req.app.get("io");
     event.participants.forEach((participant) => {
       io.to(`user:${participant.user}`).emit("eventDeleted", event._id);
@@ -254,7 +472,6 @@ export const deleteEvent = async (req, res) => {
 
     await Event.findByIdAndDelete(req.params.id);
 
-    // Remove event from users' lists
     await User.updateMany(
       {
         $or: [{ createdEvents: event._id }, { participatedEvents: event._id }],
@@ -273,162 +490,8 @@ export const deleteEvent = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error deleting event",
-      error: error.message,
-    });
-  }
-};
-
-// Get All Events
-export const getAllEvents = async (req, res) => {
-  try {
-    const {
-      search,
-      category,
-      difficulty,
-      status,
-      dateRange,
-      sortBy = "date:desc",
-      radius = 10,
-      location,
-      page = 1,
-      limit = 12
-    } = req.query;
-
-    const query = {};
-
-    // Search filter
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { "location.city": { $regex: search, $options: "i" } }
-      ];
-    }
-
-    // Category filter
-    if (category) {
-      query.category = category;
-    }
-
-    // Difficulty filter
-    if (difficulty) {
-      query.difficulty = difficulty;
-    }
-
-    // Status filter
-    if (status) {
-      query.status = status;
-    }
-
-    // Date range filter
-    if (dateRange) {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-      switch (dateRange) {
-        case "today":
-          query.date = {
-            $gte: today,
-            $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
-          };
-          break;
-        case "thisWeek":
-          query.date = {
-            $gte: today,
-            $lt: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-          };
-          break;
-        case "thisMonth":
-          query.date = {
-            $gte: today,
-            $lt: new Date(today.getFullYear(), today.getMonth() + 1, 1)
-          };
-          break;
-      }
-    }
-
-    // Location filter with radius
-    if (location) {
-      const [lng, lat] = location.split(",").map(Number);
-      query.location = {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [lng, lat]
-          },
-          $maxDistance: parseInt(radius) * 1000 // Convert to meters
-        }
-      };
-    }
-
-    // Pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    // Sorting
-    let sort = {};
-    const [field, order] = sortBy.split(":");
-    sort[field] = order === "desc" ? -1 : 1;
-
-    // Execute query with pagination
-    const events = await Event.find(query)
-      .sort(sort)
-      .skip(skip)
-      .limit(parseInt(limit))
-      .populate("createdBy", "name avatar")
-      .populate("participants.user", "name avatar")
-      .populate({
-        path: "ratings",
-        populate: {
-          path: "user",
-          select: "name avatar"
-        }
-      });
-
-    // Get total count for pagination
-    const total = await Event.countDocuments(query);
-
-    // Send response
-    res.json({
-      success: true,
-      data: events,
-      pagination: {
-        total,
-        pages: Math.ceil(total / parseInt(limit)),
-        page: parseInt(page),
-        limit: parseInt(limit)
-      }
-    });
-
-  } catch (error) {
-    console.error("Error in getAllEvents:", error);
-    res.status(500).json({
       success: false,
-      message: "Error fetching events",
-      error: error.message
-    });
-  }
-};
-
-// Get Event by ID
-export const getEventById = async (req, res) => {
-  try {
-    const event = await Event.findById(req.params.id)
-      .populate("createdBy", "name avatar")
-      .populate("participants.user", "name avatar")
-      .populate("teams.members", "name avatar")
-      .populate("teams.captain", "name avatar")
-      .populate("ratings.user", "name avatar")
-      .populate("chat.user", "name avatar");
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    res.json(event);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching event",
+      message: "Error deleting event",
       error: error.message,
     });
   }
@@ -443,27 +506,30 @@ export const joinEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (event.isFull()) {
+    if (event.participants.length >= event.maxParticipants) {
       return res.status(400).json({ message: "Event is full" });
     }
 
-    if (event.isParticipant(req.user._id)) {
+    const isAlreadyParticipant = event.participants.some(
+      p => p.user.toString() === req.user._id.toString()
+    );
+
+    if (isAlreadyParticipant) {
       return res.status(400).json({ message: "Already participating" });
     }
 
     event.participants.push({
       user: req.user._id,
       status: "confirmed",
+      joinedAt: new Date()
     });
 
     await event.save();
 
-    // Add event to user's participated events
     await User.findByIdAndUpdate(req.user._id, {
       $push: { participatedEvents: event._id },
     });
 
-    // Notify event creator
     await User.findByIdAndUpdate(event.createdBy, {
       $push: {
         notifications: {
@@ -479,16 +545,19 @@ export const joinEvent = async (req, res) => {
       .populate("teams.captain", "name avatar")
       .populate("teams.members", "name avatar");
 
-    // Notify event creator
     const io = req.app.get("io");
     io.to(`user:${event.createdBy}`).emit("userJoinedEvent", {
       event: updatedEvent,
       user: req.user,
     });
 
-    res.json(updatedEvent);
+    res.json({
+      success: true,
+      data: updatedEvent
+    });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Error joining event",
       error: error.message,
     });
@@ -504,17 +573,17 @@ export const leaveEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (!event.isParticipant(req.user._id)) {
+    const participantIndex = event.participants.findIndex(
+      p => p.user.toString() === req.user._id.toString()
+    );
+
+    if (participantIndex === -1) {
       return res.status(400).json({ message: "Not participating in event" });
     }
 
-    event.participants = event.participants.filter(
-      (p) => p.user.toString() !== req.user._id.toString()
-    );
-
+    event.participants.splice(participantIndex, 1);
     await event.save();
 
-    // Remove event from user's participated events
     await User.findByIdAndUpdate(req.user._id, {
       $pull: { participatedEvents: event._id },
     });
@@ -525,16 +594,19 @@ export const leaveEvent = async (req, res) => {
       .populate("teams.captain", "name avatar")
       .populate("teams.members", "name avatar");
 
-    // Notify event creator
     const io = req.app.get("io");
     io.to(`user:${event.createdBy}`).emit("userLeftEvent", {
       event: updatedEvent,
       user: req.user,
     });
 
-    res.json(updatedEvent);
+    res.json({
+      success: true,
+      data: updatedEvent
+    });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Error leaving event",
       error: error.message,
     });
@@ -575,16 +647,19 @@ export const addTeam = async (req, res) => {
       .populate("teams.captain", "name avatar")
       .populate("teams.members", "name avatar");
 
-    // Notify participants about new team
     const io = req.app.get("io");
     io.to(`event:${event._id}`).emit("teamCreated", {
       event: updatedEvent,
       team: updatedEvent.teams[updatedEvent.teams.length - 1],
     });
 
-    res.json(updatedEvent);
+    res.json({
+      success: true,
+      data: updatedEvent
+    });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Error adding team",
       error: error.message,
     });
@@ -599,7 +674,11 @@ export const addRating = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (!event.isParticipant(req.user._id)) {
+    const isParticipant = event.participants.some(
+      p => p.user.toString() === req.user._id.toString()
+    );
+
+    if (!isParticipant) {
       return res
         .status(403)
         .json({ message: "Only participants can rate events" });
@@ -617,6 +696,7 @@ export const addRating = async (req, res) => {
       user: req.user._id,
       rating: req.body.rating,
       review: req.body.review,
+      date: new Date()
     });
 
     await event.save();
@@ -628,16 +708,19 @@ export const addRating = async (req, res) => {
       .populate("teams.members", "name avatar")
       .populate("ratings.user", "name avatar");
 
-    // Notify event creator about new rating
     const io = req.app.get("io");
     io.to(`user:${event.createdBy}`).emit("newRating", {
       event: updatedEvent,
       rating: updatedEvent.ratings[updatedEvent.ratings.length - 1],
     });
 
-    res.json(updatedEvent);
+    res.json({
+      success: true,
+      data: updatedEvent
+    });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Error adding rating",
       error: error.message,
     });
@@ -653,10 +736,11 @@ export const sendMessage = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (
-      !event.isParticipant(req.user._id) &&
-      event.createdBy.toString() !== req.user._id.toString()
-    ) {
+    const isParticipantOrCreator = event.participants.some(
+      p => p.user.toString() === req.user._id.toString()
+    ) || event.createdBy.toString() === req.user._id.toString();
+
+    if (!isParticipantOrCreator) {
       return res.status(403).json({
         message: "Only participants and creator can send messages",
       });
@@ -665,26 +749,29 @@ export const sendMessage = async (req, res) => {
     event.chat.push({
       user: req.user._id,
       message: req.body.message,
+      timestamp: new Date()
     });
 
     await event.save();
 
-    // Populate the new message with user details
     const populatedEvent = await Event.findById(event._id).populate(
       "chat.user",
       "name avatar"
     );
 
-    // Broadcast message to event participants
     const io = req.app.get("io");
     io.to(`event:${event._id}`).emit(
       "newMessage",
       populatedEvent.chat[populatedEvent.chat.length - 1]
     );
 
-    res.json(populatedEvent.chat[populatedEvent.chat.length - 1]);
+    res.json({
+      success: true,
+      data: populatedEvent.chat[populatedEvent.chat.length - 1]
+    });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Error sending message",
       error: error.message,
     });
@@ -693,7 +780,6 @@ export const sendMessage = async (req, res) => {
 
 // Get User Events
 export const getUserEvents = async (req, res) => {
-
   try {
     const userId = req.params.userId;
     const events = await Event.find({
@@ -706,11 +792,15 @@ export const getUserEvents = async (req, res) => {
       .populate("ratings.user", "name avatar")
       .populate("chat.user", "name avatar");
 
-    res.json(events);
+    res.json({
+      success: true,
+      data: events
+    });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Error fetching user events",
-      error: error,
+      error: error.message,
     });
   }
 };
@@ -770,7 +860,7 @@ export const getNearbyEvents = async (req, res) => {
             type: "Point",
             coordinates: [parseFloat(lng), parseFloat(lat)]
           },
-          $maxDistance: parseFloat(radius) * 1000 // Convert to meters
+          $maxDistance: parseFloat(radius) * 1000
         }
       }
     })

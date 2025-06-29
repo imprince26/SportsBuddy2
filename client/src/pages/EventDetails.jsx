@@ -37,6 +37,7 @@ import {
 } from "lucide-react"
 
 import { useAuth } from "@/hooks/useAuth"
+import { useEvents } from "@/hooks/useEvents"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -47,8 +48,10 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Progress } from "@/components/ui/progress"
+import EventDetailsSkeleton from "@/components/events/EventDetailsSkeleton"
+import EventDetailsError from "@/components/events/EventDetailsError"
+import { showToast } from "@/components/CustomToast"
 import { cn } from "@/lib/utils"
 import api from "@/utils/api"
 
@@ -56,6 +59,7 @@ const EventDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
+  const {deleteEvent,joinEvent,leaveEvent} = useEvents()
   const chatEndRef = useRef(null)
 
   // State management
@@ -175,10 +179,9 @@ const EventDetails = () => {
 
     setLoadingAction(true)
     try {
-      const response = await api.post(`/events/${id}/join`)
-      if (response.data.success) {
-        setEvent(response.data.data)
-      }
+      await joinEvent(id)
+      window.location.reload(); 
+  
     } catch (err) {
       console.error("Error joining event:", err)
     } finally {
@@ -189,10 +192,8 @@ const EventDetails = () => {
   const handleLeaveEvent = async () => {
     setLoadingAction(true)
     try {
-      const response = await api.post(`/events/${id}/leave`)
-      if (response.data.success) {
-        setEvent(response.data.data)
-      }
+       await leaveEvent(id)
+       window.location.reload();
     } catch (err) {
       console.error("Error leaving event:", err)
     } finally {
@@ -203,7 +204,7 @@ const EventDetails = () => {
   const handleDeleteEvent = async () => {
     setLoadingAction(true)
     try {
-      await api.delete(`/events/${id}`)
+      await deleteEvent(id)
       navigate("/events")
     } catch (err) {
       console.error("Error deleting event:", err)
@@ -269,7 +270,7 @@ const EventDetails = () => {
       case "copy":
         try {
           await navigator.clipboard.writeText(eventUrl)
-          // Add toast notification here if available
+          showToast.success("Link copied to clipboard ")
         } catch (err) {
           console.error("Failed to copy:", err)
         }
@@ -294,70 +295,14 @@ const EventDetails = () => {
   // Loading skeleton
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-background-dark">
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <Skeleton className="h-10 w-32 mb-6" />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="overflow-hidden bg-card-light dark:bg-card-dark">
-                <Skeleton className="h-96 w-full" />
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex gap-2">
-                    <Skeleton className="h-6 w-20 rounded-full" />
-                    <Skeleton className="h-6 w-24 rounded-full" />
-                  </div>
-                  <Skeleton className="h-8 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <Skeleton key={i} className="h-16 w-full" />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="space-y-6">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i} className="bg-card-light dark:bg-card-dark">
-                  <CardHeader>
-                    <Skeleton className="h-6 w-24" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-20 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <EventDetailsSkeleton />
     )
   }
 
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
-        <Card className="max-w-md mx-4 bg-card-light dark:bg-card-dark border-destructive-light dark:border-destructive-dark">
-          <CardContent className="p-8 text-center">
-            <AlertTriangle className="w-16 h-16 text-destructive-light dark:text-destructive-dark mx-auto mb-4" />
-            <h3 className="text-2xl font-semibold text-foreground-light dark:text-foreground-dark mb-2">
-              Event Not Found
-            </h3>
-            <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-6">
-              {error}
-            </p>
-            <Button asChild className="bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90">
-              <Link to="/events">
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Back to Events
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+     <EventDetailsError error={error} />
     )
   }
 
@@ -416,15 +361,15 @@ const EventDetails = () => {
                         className="absolute left-4 top-1/2 transform -translate-y-1/2 opacity-80 hover:opacity-100 bg-background-light/90 dark:bg-background-dark/90"
                         onClick={() => setActiveImageIndex(prev => prev === 0 ? event.images.length - 1 : prev - 1)}
                       >
-                        <ArrowLeft className="w-4 h-4" />
+                        <ArrowLeft className="w-4 h-4 text-foreground-light dark:text-foreground-dark " />
                       </Button>
                       <Button
                         variant="secondary"
                         size="icon"
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-80 hover:opacity-100 bg-background-light/90 dark:bg-background-dark/90"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-80 hover:opacity-100 bg-background-light dark:bg-background-dark"
                         onClick={() => setActiveImageIndex(prev => prev === event.images.length - 1 ? 0 : prev + 1)}
                       >
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-4 h-4 text-foreground-light dark:text-foreground-dark" />
                       </Button>
                     </>
                   )}
@@ -435,9 +380,9 @@ const EventDetails = () => {
                       variant="secondary"
                       size="icon"
                       onClick={() => setShowShareModal(true)}
-                      className="opacity-90 hover:opacity-100 bg-background-light/90 dark:bg-background-dark/90"
+                      className="opacity-90 hover:opacity-100 bg-background-light/90 dark:bg-background-dark"
                     >
-                      <Share2 className="w-4 h-4" />
+                      <Share2 className="w-4 h-4 text-foreground-light dark:text-foreground-dark" />
                     </Button>
 
                     <Button
@@ -449,7 +394,7 @@ const EventDetails = () => {
                         isFavorite && "text-red-500"
                       )}
                     >
-                      <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+                      <Heart className={cn("w-4 h-4 ", isFavorite && "fill-current",!isFavorite && "text-foreground-light dark:text-foreground-dark")} />
                     </Button>
 
                     <DropdownMenu>
@@ -459,14 +404,14 @@ const EventDetails = () => {
                           size="icon"
                           className="opacity-90 hover:opacity-100 bg-background-light/90 dark:bg-background-dark/90"
                         >
-                          <MoreVertical className="w-4 h-4" />
+                          <MoreVertical className="w-4 h-4 text-foreground-light dark:text-foreground-dark" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
-                        <DropdownMenuItem onClick={() => setShowReportModal(true)}>
+                        {/* <DropdownMenuItem onClick={() => setShowReportModal(true)}>
                           <Flag className="w-4 h-4 mr-2" />
                           Report Event
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                         <DropdownMenuItem onClick={() => handleShare("copy")}>
                           <Copy className="w-4 h-4 mr-2" />
                           Copy Link
@@ -483,7 +428,7 @@ const EventDetails = () => {
                           key={index}
                           onClick={() => setActiveImageIndex(index)}
                           className={cn(
-                            "w-2 h-2 rounded-full transition-colors",
+                            "w-3 h-3 rounded-full transition-colors",
                             index === activeImageIndex ? "bg-white" : "bg-white/50"
                           )}
                         />
@@ -651,18 +596,18 @@ const EventDetails = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
-                  <TabsTrigger value="details" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white">
+                <TabsList className="grid w-full grid-cols-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-full">
+                  <TabsTrigger value="details" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-full">
                     Details
                   </TabsTrigger>
-                  <TabsTrigger value="participants" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white">
+                  <TabsTrigger value="participants" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-full">
                     Participants ({event.participantCount})
                   </TabsTrigger>
-                  <TabsTrigger value="reviews" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white">
+                  <TabsTrigger value="reviews" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-full">
                     Reviews ({event.ratings?.length || 0})
                   </TabsTrigger>
                   {isAuthenticated && isParticipant() && (
-                    <TabsTrigger value="chat" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white">
+                    <TabsTrigger value="chat" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-full">
                       Chat
                     </TabsTrigger>
                   )}
@@ -755,7 +700,8 @@ const EventDetails = () => {
                       {event.participants.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {event.participants.map((participant) => (
-                            <div
+                            <Link
+                              to={`/profile/${participant.user._id}`}
                               key={participant.user._id}
                               className="flex items-center gap-3 p-4 rounded-lg border border-border-light dark:border-border-dark bg-muted-light/30 dark:bg-muted-dark/30"
                             >
@@ -779,7 +725,7 @@ const EventDetails = () => {
                                   Organizer
                                 </Badge>
                               )}
-                            </div>
+                            </Link>
                           ))}
                         </div>
                       ) : (
@@ -1123,7 +1069,7 @@ const EventDetails = () => {
                         variant="outline"
                         className="w-full bg-transparent"
                         onClick={() => {
-                          const [lng, lat] = event.location.coordinates
+                          const [lng, lat] = event.location.coordinates.coordinates
                           window.open(`https://maps.google.com/?q=${lat},${lng}`, "_blank")
                         }}
                       >
@@ -1168,14 +1114,14 @@ const EventDetails = () => {
                     {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
                   </Button>
                   
-                  <Button
+                  {/* <Button
                     variant="outline"
                     className="w-full justify-start bg-transparent"
                     onClick={() => setShowReportModal(true)}
                   >
                     <Flag className="w-4 h-4 mr-2" />
                     Report Event
-                  </Button>
+                  </Button> */}
                 </CardContent>
               </Card>
             </motion.div>

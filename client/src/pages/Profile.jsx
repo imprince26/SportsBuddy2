@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
-import { useAuth } from '@/hooks/useAuth';
-import { format } from "date-fns";
-import { toast } from "react-hot-toast";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+"use client"
+
+import { useState, useEffect } from "react"
+import { useAuth } from "@/hooks/useAuth"
+import { format } from "date-fns"
+import { toast } from "react-hot-toast"
+import { useForm, useFieldArray } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import {
   MapPin,
   Award,
@@ -17,31 +19,42 @@ import {
   Instagram,
   Dumbbell,
   Plus,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+  Users,
+  UserPlus,
+  Settings,
+  Trophy,
+  Calendar,
+  Heart,
+  TrendingUp,
+  Activity,
+  Target,
+  Crown,
+  Medal,
+  Sparkles,
+} from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
+import { Progress } from "@/components/ui/progress"
 
 // Zod schema for validation
 const profileSchema = z.object({
@@ -59,30 +72,152 @@ const profileSchema = z.object({
     twitter: z.string().optional().or(z.literal("")),
     instagram: z.string().optional().or(z.literal("")),
   }),
-  sportsPreferences: z.array(
-    z.object({
-      sport: z.enum(["Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket", "Other"]),
-      skillLevel: z.enum(["Beginner", "Intermediate", "Advanced"]),
-    })
-  ).optional(),
-});
+  sportsPreferences: z
+    .array(
+      z.object({
+        sport: z.enum([
+          "Football",
+          "Basketball",
+          "Tennis",
+          "Running",
+          "Cycling",
+          "Swimming",
+          "Volleyball",
+          "Cricket",
+          "Other",
+        ]),
+        skillLevel: z.enum(["Beginner", "Intermediate", "Advanced"]),
+      }),
+    )
+    .optional(),
+})
 
 const achievementSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional().or(z.literal("")),
   date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
-});
+})
+
+// Followers/Following Dialog Component
+const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(false)
+  const { getUserFollowers, getUserFollowing, followUser, unfollowUser, user } = useAuth()
+
+  useEffect(() => {
+    if (isOpen && userId) {
+      fetchUsers()
+    }
+  }, [isOpen, userId, type])
+
+  const fetchUsers = async () => {
+    setLoading(true)
+    try {
+      const data = type === "followers" ? await getUserFollowers(userId) : await getUserFollowing(userId)
+      setUsers(data || [])
+    } catch (error) {
+      toast.error(`Failed to load ${type}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleFollow = async (targetUserId) => {
+    try {
+      await followUser(targetUserId)
+      setUsers((prev) =>
+        prev.map((u) => (u._id === targetUserId ? { ...u, isFollowedByCurrentUser: true } : u))
+      )
+    } catch (error) {
+      toast.error("Failed to follow user")
+    }
+  }
+
+  const handleUnfollow = async (targetUserId) => {
+    try {
+      await unfollowUser(targetUserId)
+      setUsers((prev) =>
+        prev.map((u) => (u._id === targetUserId ? { ...u, isFollowedByCurrentUser: false } : u))
+      )
+    } catch (error) {
+      toast.error("Failed to unfollow user")
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md max-h-[600px] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            {type === "followers" ? "Followers" : "Following"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="overflow-y-auto max-h-[400px] space-y-3">
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : users.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>No {type} yet</p>
+            </div>
+          ) : (
+            users.map((userData) => (
+              <div
+                key={userData._id}
+                className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={userData.avatar?.url || "/placeholder.svg"} />
+                    <AvatarFallback>{userData.name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-sm">{userData.name}</p>
+                    <p className="text-xs text-muted-foreground">@{userData.username}</p>
+                  </div>
+                </div>
+                {user && user._id !== userData._id && (
+                  <Button
+                    size="sm"
+                    variant={userData.isFollowedByCurrentUser ? "outline" : "default"}
+                    onClick={() =>
+                      userData.isFollowedByCurrentUser ? handleUnfollow(userData._id) : handleFollow(userData._id)
+                    }
+                  >
+                    {userData.isFollowedByCurrentUser ? "Unfollow" : "Follow"}
+                  </Button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 const Profile = () => {
-  const { user, updateProfile, addAchievement } = useAuth();
-  const [editing, setEditing] = useState(false);
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [openSportDialog, setOpenSportDialog] = useState(false);
-  const [openAchievementDialog, setOpenAchievementDialog] = useState(false);
+  const { user, updateProfile, addAchievement } = useAuth()
+  const [editing, setEditing] = useState(false)
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarPreview, setAvatarPreview] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [openSportDialog, setOpenSportDialog] = useState(false)
+  const [openAchievementDialog, setOpenAchievementDialog] = useState(false)
+  const [followersDialogOpen, setFollowersDialogOpen] = useState(false)
+  const [followingDialogOpen, setFollowingDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState("overview")
 
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: "",
@@ -93,12 +228,16 @@ const Profile = () => {
       socialLinks: { facebook: "", twitter: "", instagram: "" },
       sportsPreferences: [],
     },
-  });
+  })
 
-  const { fields: sportsFields, append: appendSport, remove: removeSport } = useFieldArray({
+  const {
+    fields: sportsFields,
+    append: appendSport,
+    remove: removeSport,
+  } = useFieldArray({
     control,
     name: "sportsPreferences",
-  });
+  })
 
   const achievementForm = useForm({
     resolver: zodResolver(achievementSchema),
@@ -107,12 +246,12 @@ const Profile = () => {
       description: "",
       date: format(new Date(), "yyyy-MM-dd"),
     },
-  });
+  })
 
   // Dynamically set page title
   useEffect(() => {
-    document.title = `${user ? `${user.name}'s Profile` : "Profile"} - SportsBuddy`;
-  }, []);
+    document.title = `${user ? `${user.name}'s Profile` : "Profile"} - SportsBuddy`
+  }, [user])
 
   useEffect(() => {
     if (user) {
@@ -124,403 +263,673 @@ const Profile = () => {
         location: user.location || { city: "", state: "", country: "" },
         socialLinks: user.socialLinks || { facebook: "", twitter: "", instagram: "" },
         sportsPreferences: user.sportsPreferences || [],
-      });
-      setAvatarPreview(user.avatar?.url || "/placeholder.svg");
+      })
+      setAvatarPreview(user.avatar?.url || "/placeholder.svg")
     }
-  }, [user, reset]);
+  }, [user, reset])
 
   const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]
     if (file) {
-      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"]
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
-        return;
+        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)")
+        return
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("File size should be less than 5MB");
-        return;
+        toast.error("File size should be less than 5MB")
+        return
       }
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
+      setAvatarFile(file)
+      setAvatarPreview(URL.createObjectURL(file))
     }
-  };
+  }
 
   const onSubmit = async (data) => {
-    setLoading(true);
-    const toastId = toast.loading("Updating profile...");
+    setLoading(true)
+    const toastId = toast.loading("Updating profile...")
     try {
-      const formData = new FormData();
-      if (avatarFile) formData.append("avatar", avatarFile);
+      const formData = new FormData()
+      if (avatarFile) formData.append("avatar", avatarFile)
       Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, typeof value === "object" ? JSON.stringify(value) : value);
-      });
-      console.log("Submitting profile data:", data);
-      console.log("FormData entries:", Array.from(formData.entries()));
-      const response = await updateProfile(formData);
+        formData.append(key, typeof value === "object" ? JSON.stringify(value) : value)
+      })
+
+      const response = await updateProfile(formData)
 
       if (response.error) {
-        toast.error(response.error.message, { id: toastId });
-        return;
+        toast.error(response.error.message, { id: toastId })
+        return
       }
-      setEditing(false);
-      setAvatarFile(null);
-      setAvatarPreview(response.data.avatar?.url || "/placeholder.svg");
+
+      toast.success("Profile updated successfully!", { id: toastId })
+      setEditing(false)
+      setAvatarFile(null)
+      setAvatarPreview(response.data.avatar?.url || "/placeholder.svg")
     } catch (error) {
-      console.error("Profile update error:", error);
+      toast.error("Failed to update profile", { id: toastId })
+      console.error("Profile update error:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleAddAchievement = async (data) => {
     try {
-      await addAchievement(data);
-      achievementForm.reset();
-      setOpenAchievementDialog(false);
-      toast.success("Achievement added successfully");
+      await addAchievement(data)
+      achievementForm.reset()
+      setOpenAchievementDialog(false)
+      toast.success("Achievement added successfully")
     } catch (error) {
-      toast.error("Failed to add achievement");
+      toast.error("Failed to add achievement")
     }
-  };
+  }
+
+  const getSkillLevelColor = (level) => {
+    switch (level) {
+      case "Beginner":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "Intermediate":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "Advanced":
+        return "bg-red-100 text-red-800 border-red-200"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200"
+    }
+  }
+
+  const getSportIcon = (sport) => {
+    const icons = {
+      Football: "⚽",
+      Basketball: "🏀",
+      Tennis: "🎾",
+      Running: "🏃",
+      Cycling: "🚴",
+      Swimming: "🏊",
+      Volleyball: "🏐",
+      Cricket: "🏏",
+      Other: "🏃",
+    }
+    return icons[sport] || "🏃"
+  }
 
   useEffect(() => {
     return () => {
       if (avatarPreview && avatarPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(avatarPreview);
+        URL.revokeObjectURL(avatarPreview)
       }
-    };
-  }, [avatarPreview]);
+    }
+  }, [avatarPreview])
 
   if (!user) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-background-light dark:bg-background-dark">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-light dark:border-primary-dark"></div>
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background-light to-muted-light dark:from-background-dark dark:to-muted-dark py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="container mx-auto max-w-7xl px-4 py-8 space-y-8">
         {/* Profile Header Card */}
-        <Card className="bg-card-light dark:bg-card-dark shadow-xl">
-          <div className="h-48 bg-gradient-to-r from-primary-light/90 to-accent-light/90 dark:from-primary-dark/90 dark:to-accent-dark/90 relative">
-            {editing ? (
-              <div className="absolute top-4 right-4 flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    setEditing(false);
-                    setAvatarFile(null);
-                    setAvatarPreview(user.avatar?.url || "/placeholder.svg");
-                    reset();
-                  }}
-                  disabled={loading}
-                >
-                  <X size={20} />
-                </Button>
-                <Button onClick={handleSubmit(onSubmit)} disabled={loading}>
-                  {loading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-white"></div>
-                  ) : (
-                    <Save size={20} />
-                  )}
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute top-4 right-4"
-                onClick={() => setEditing(true)}
-              >
-                <Edit size={20} />
-              </Button>
-            )}
-          </div>
-          <CardContent className="relative pt-16 px-6">
-            <div className="absolute -top-16 left-6">
-              <div className="relative w-32 h-32">
-                <div className="w-full h-full rounded-full border-4 border-card-light dark:border-card-dark overflow-hidden bg-muted-light dark:bg-muted-dark">
-                  {editing ? (
-                    <div className="relative w-full h-full group">
-                      <img
-                        src={avatarPreview}
-                        alt={user.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                        <Camera size={24} className="text-white" />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleAvatarChange}
-                        />
-                      </label>
-                    </div>
-                  ) : (
-                    <img
-                      src={user.avatar?.url || "/placeholder.svg"}
-                      alt={user.name}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="ml-44 flex items-center space-x-6 pt-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
-                  {user.stats?.eventsCreated || 0}
-                </div>
-                <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                  Events Created
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
-                  {user.stats?.eventsParticipated || 0}
-                </div>
-                <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                  Events Joined
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
-                  {user.achievements?.length || 0}
-                </div>
-                <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                  Achievements
-                </div>
-              </div>
-            </div>
-            <div className="mt-6">
-              {editing ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      {...register("name")}
-                      className="mt-1"
-                    />
-                    {errors.name && <p className="text-destructive-light dark:text-destructive-dark text-sm">{errors.name.message}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      {...register("username")}
-                      className="mt-1"
-                    />
-                    {errors.username && <p className="text-destructive-light dark:text-destructive-dark text-sm">{errors.username.message}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      {...register("email")}
-                      className="mt-1"
-                    />
-                    {errors.email && <p className="text-destructive-light dark:text-destructive-dark text-sm">{errors.email.message}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      {...register("bio")}
-                      className="mt-1"
-                      rows={3}
-                    />
-                    {errors.bio && <p className="text-destructive-light dark:text-destructive-dark text-sm">{errors.bio.message}</p>}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <h1 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">{user.name}</h1>
-                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark">@{user.username}</p>
-                  {user.bio && <p className="mt-4 text-foreground-light dark:text-foreground-dark">{user.bio}</p>}
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Location & Social Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card className="bg-card-light dark:bg-card-dark">
-            <CardHeader>
-              <CardTitle>Location</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {editing ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="location.city">City</Label>
-                    <Input
-                      id="location.city"
-                      {...register("location.city")}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="location.state">State</Label>
-                    <Input
-                      id="location.state"
-                      {...register("location.state")}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="location.country">Country</Label>
-                    <Input
-                      id="location.country"
-                      {...register("location.country")}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center text-muted-foreground-light dark:text-muted-foreground-dark">
-                  <MapPin className="w-5 h-5 mr-2" />
-                  <span>
-                    {user.location?.city}
-                    {user.location?.state && `, ${user.location.state}`}
-                    {user.location?.country && `, ${user.location.country}`}
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card-light dark:bg-card-dark">
-            <CardHeader>
-              <CardTitle>Social Links</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {editing ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="socialLinks.facebook">Facebook</Label>
-                    <Input
-                      id="socialLinks.facebook"
-                      {...register("socialLinks.facebook")}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="socialLinks.twitter">Twitter</Label>
-                    <Input
-                      id="socialLinks.twitter"
-                      {...register("socialLinks.twitter")}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="socialLinks.instagram">Instagram</Label>
-                    <Input
-                      id="socialLinks.instagram"
-                      {...register("socialLinks.instagram")}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex gap-4">
-                  {user.socialLinks?.facebook && (
-                    <a
-                      href={user.socialLinks.facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
+        <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-r from-primary/5 via-background to-secondary/5">
+          <div className="relative">
+            {/* Cover Image */}
+            <div className="h-48 bg-gradient-to-r from-primary via-primary/80 to-secondary relative overflow-hidden">
+              {/* <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg%3E%3Cg fill=\"none\" fillRule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fillOpacity=\"0.1\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"4\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div> */}
+              {/* Action Buttons */}
+              <div className="absolute top-4 right-4 flex gap-2">
+                {editing ? (
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setEditing(false)
+                        setAvatarFile(null)
+                        setAvatarPreview(user.avatar?.url || "/placeholder.svg")
+                        reset()
+                      }}
+                      disabled={loading}
+                      className="bg-white/90 hover:bg-white"
                     >
-                      <Facebook size={20} />
-                    </a>
-                  )}
-                  {user.socialLinks?.twitter && (
-                    <a
-                      href={user.socialLinks.twitter}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
+                      <X className="w-4 h-4 mr-1" />
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSubmit(onSubmit)}
+                      disabled={loading}
+                      className="bg-white text-primary hover:bg-white/90"
                     >
-                      <Twitter size={20} />
-                    </a>
-                  )}
-                  {user.socialLinks?.instagram && (
-                    <a
-                      href={user.socialLinks.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
-                    >
-                      <Instagram size={20} />
-                    </a>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sports Preferences */}
-        <Card className="bg-card-light dark:bg-card-dark">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Sports Preferences
-              {editing && (
-                <Button variant="outline" size="sm" onClick={() => setOpenSportDialog(true)}>
-                  <Plus size={16} className="mr-2" /> Add Sport
-                </Button>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {sportsFields.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {sportsFields.map((sport, index) => (
-                  <div
-                    key={sport.id}
-                    className="bg-background-light dark:bg-background-dark rounded-lg p-4 flex items-center justify-between"
+                      {loading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-transparent border-primary"></div>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-1" />
+                          Save
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setEditing(true)}
+                    className="bg-white/90 hover:bg-white"
                   >
-                    <div className="flex items-center">
-                      <Dumbbell className="w-5 h-5 text-primary-light dark:text-primary-dark mr-3" />
-                      <div>
-                        <h3 className="font-medium text-foreground-light dark:text-foreground-dark">{sport.sport}</h3>
-                        <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                          {sport.skillLevel}
-                        </p>
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit Profile
+                  </Button>
+                )}
+              </div>
+            </div>
+            <CardContent className="relative pt-16 pb-6">
+              {/* Avatar */}
+              <div className="absolute -top-16 left-6">
+                <div className="relative">
+                  <Avatar className="w-32 h-32 border-4 border-background shadow-xl">
+                    <AvatarImage src={avatarPreview || "/placeholder.svg"} />
+                    <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-secondary text-white">
+                      {user.name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {editing && (
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                      <Camera className="w-6 h-6 text-white" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+              {/* Stats */}
+              <div className="flex justify-end gap-8 mb-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-foreground flex items-center gap-1">
+                    <Trophy className="w-5 h-5 text-yellow-500" />
+                    {user.stats?.eventsCreated || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Events Created</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-foreground flex items-center gap-1">
+                    <Target className="w-5 h-5 text-blue-500" />
+                    {user.stats?.eventsParticipated || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Events Joined</div>
+                </div>
+                <div className="text-center cursor-pointer" onClick={() => setFollowersDialogOpen(true)}>
+                  <div className="text-2xl font-bold text-foreground flex items-center gap-1 hover:text-primary transition-colors">
+                    <Users className="w-5 h-5 text-green-500" />
+                    {user.followers?.length || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Followers</div>
+                </div>
+                <div className="text-center cursor-pointer" onClick={() => setFollowingDialogOpen(true)}>
+                  <div className="text-2xl font-bold text-foreground flex items-center gap-1 hover:text-primary transition-colors">
+                    <UserPlus className="w-5 h-5 text-purple-500" />
+                    {user.following?.length || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Following</div>
+                </div>
+              </div>
+              {/* Profile Info */}
+              <div className="space-y-4">
+                {editing ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name" className="text-sm font-medium">
+                        Name
+                      </Label>
+                      <Input
+                        id="name"
+                        {...register("name")}
+                        className="mt-1"
+                        placeholder="Your full name"
+                      />
+                      {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
+                    </div>
+                    <div>
+                      <Label htmlFor="username" className="text-sm font-medium">
+                        Username
+                      </Label>
+                      <Input
+                        id="username"
+                        {...register("username")}
+                        className="mt-1"
+                        placeholder="@username"
+                      />
+                      {errors.username && <p className="text-destructive text-xs mt-1">{errors.username.message}</p>}
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="email" className="text-sm font-medium">
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        {...register("email")}
+                        className="mt-1"
+                        placeholder="your.email@example.com"
+                      />
+                      {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="bio" className="text-sm font-medium">
+                        Bio
+                      </Label>
+                      <Textarea
+                        id="bio"
+                        {...register("bio")}
+                        className="mt-1"
+                        rows={3}
+                        placeholder="Tell us about yourself..."
+                      />
+                      {errors.bio && <p className="text-destructive text-xs mt-1">{errors.bio.message}</p>}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+                        {user.name}
+                        {user.role === "admin" && <Crown className="w-6 h-6 text-yellow-500" />}
+                      </h1>
+                      <p className="text-muted-foreground text-lg">@{user.username}</p>
+                    </div>
+                    {user.bio && <p className="text-foreground leading-relaxed max-w-2xl">{user.bio}</p>}
+                    {/* Location & Join Date */}
+                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                      {(user.location?.city || user.location?.state || user.location?.country) && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          <span>
+                            {[user.location?.city, user.location?.state, user.location?.country]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>Joined {format(new Date(user.createdAt || Date.now()), "MMMM yyyy")}</span>
                       </div>
                     </div>
-                    {editing && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeSport(index)}
-                        className="text-destructive-light dark:text-destructive-dark"
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </div>
+        </Card>
+        {/* Main Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="sports" className="flex items-center gap-2">
+              <Dumbbell className="w-4 h-4" />
+              Sports
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="flex items-center gap-2">
+              <Award className="w-4 h-4" />
+              Achievements
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Quick Stats */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    Activity Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {user.stats?.eventsCreated || 0}
+                      </div>
+                      <div className="text-sm text-blue-600/70 dark:text-blue-400/70">Events Created</div>
+                    </div>
+                    <div className="text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        {user.stats?.eventsParticipated || 0}
+                      </div>
+                      <div className="text-sm text-green-600/70 dark:text-green-400/70">Events Joined</div>
+                    </div>
+                  </div>
+                  {/* Progress Bars */}
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Profile Completion</span>
+                        <span>85%</span>
+                      </div>
+                      <Progress value={85} className="h-2" />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Activity Level</span>
+                        <span>72%</span>
+                      </div>
+                      <Progress value={72} className="h-2" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Recent Achievements */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-yellow-500" />
+                    Recent Achievements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {user.achievements && user.achievements.length > 0 ? (
+                    <div className="space-y-3">
+                      {user.achievements.slice(0, 3).map((achievement, index) => (
+                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                          <Medal className="w-5 h-5 text-yellow-500 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{achievement.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(achievement.date), "MMM dd, yyyy")}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Award className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No achievements yet</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          {/* Sports Tab */}
+          <TabsContent value="sports" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Dumbbell className="w-5 h-5 text-primary" />
+                    Sports Preferences
+                  </div>
+                  {editing && (
+                    <Button variant="outline" size="sm" onClick={() => setOpenSportDialog(true)}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Sport
+                    </Button>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {sportsFields.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {sportsFields.map((sport, index) => (
+                      <div
+                        key={sport.id}
+                        className="relative group p-4 rounded-lg border bg-gradient-to-br from-background to-muted/20 hover:shadow-md transition-all"
                       >
-                        <X size={16} />
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{getSportIcon(sport.sport)}</span>
+                            <h3 className="font-medium">{sport.sport}</h3>
+                          </div>
+                          {editing && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeSport(index)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <Badge variant="secondary" className={`${getSkillLevelColor(sport.skillLevel)} border`}>
+                          {sport.skillLevel}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Dumbbell className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-medium mb-2">No sports preferences yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Add your favorite sports to connect with like-minded athletes
+                    </p>
+                    {editing && (
+                      <Button onClick={() => setOpenSportDialog(true)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Your First Sport
                       </Button>
                     )}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                  No sports preferences added yet
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          {/* Achievements Tab */}
+          <TabsContent value="achievements" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-5 h-5 text-primary" />
+                    Achievements
+                  </div>
+                  {!editing && (
+                    <Button variant="outline" size="sm" onClick={() => setOpenAchievementDialog(true)}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Achievement
+                    </Button>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {user.achievements && user.achievements.length > 0 ? (
+                  <div className="space-y-4">
+                    {user.achievements.map((achievement, index) => (
+                      <div
+                        key={index}
+                        className="group p-4 rounded-lg border bg-gradient-to-r from-background to-muted/20 hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800">
+                            <Award className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg mb-1">{achievement.title}</h3>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {format(new Date(achievement.date), "MMMM dd, yyyy")}
+                            </p>
+                            {achievement.description && <p className="text-foreground">{achievement.description}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-medium mb-2">No achievements yet</h3>
+                    <p className="text-muted-foreground mb-4">Start participating in events to earn achievements</p>
+                    <Button onClick={() => setOpenAchievementDialog(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Your First Achievement
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Location Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    Location
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {editing ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="location.city">City</Label>
+                        <Input
+                          id="location.city"
+                          {...register("location.city")}
+                          className="mt-1"
+                          placeholder="Your city"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="location.state">State</Label>
+                        <Input
+                          id="location.state"
+                          {...register("location.state")}
+                          className="mt-1"
+                          placeholder="Your state"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="location.country">Country</Label>
+                        <Input
+                          id="location.country"
+                          {...register("location.country")}
+                          className="mt-1"
+                          placeholder="Your country"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {(user.location?.city || user.location?.state || user.location?.country) ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="w-4 h-4" />
+                          <span>
+                            {[user.location?.city, user.location?.state, user.location?.country]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">No location set</p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              {/* Social Links */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-primary" />
+                    Social Links
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {editing ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="socialLinks.facebook">Facebook</Label>
+                        <Input
+                          id="socialLinks.facebook"
+                          {...register("socialLinks.facebook")}
+                          className="mt-1"
+                          placeholder="https://facebook.com/username"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="socialLinks.twitter">Twitter</Label>
+                        <Input
+                          id="socialLinks.twitter"
+                          {...register("socialLinks.twitter")}
+                          className="mt-1"
+                          placeholder="https://twitter.com/username"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="socialLinks.instagram">Instagram</Label>
+                        <Input
+                          id="socialLinks.instagram"
+                          {...register("socialLinks.instagram")}
+                          className="mt-1"
+                          placeholder="https://instagram.com/username"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-3">
+                      {user.socialLinks?.facebook && (
+                        <a
+                          href={user.socialLinks.facebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-3 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors dark:bg-blue-900 dark:text-blue-400"
+                        >
+                          <Facebook className="w-5 h-5" />
+                        </a>
+                      )}
+                      {user.socialLinks?.twitter && (
+                        <a
+                          href={user.socialLinks.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-3 rounded-full bg-sky-100 text-sky-600 hover:bg-sky-200 transition-colors dark:bg-sky-900 dark:text-sky-400"
+                        >
+                          <Twitter className="w-5 h-5" />
+                        </a>
+                      )}
+                      {user.socialLinks?.instagram && (
+                        <a
+                          href={user.socialLinks.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-3 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 transition-colors dark:bg-pink-900 dark:text-pink-400"
+                        >
+                          <Instagram className="w-5 h-5" />
+                        </a>
+                      )}
+                      {!user.socialLinks?.facebook &&
+                        !user.socialLinks?.twitter &&
+                        !user.socialLinks?.instagram && (
+                          <p className="text-muted-foreground">No social links added</p>
+                        )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
         {/* Sports Preference Dialog */}
         <Dialog open={openSportDialog} onOpenChange={setOpenSportDialog}>
-          <DialogContent className="bg-card-light dark:bg-card-dark">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Sport Preference</DialogTitle>
             </DialogHeader>
@@ -528,94 +937,35 @@ const Profile = () => {
               <div>
                 <Label htmlFor="sport">Sport</Label>
                 <Select
-                  onValueChange={(value) => appendSport({ sport: value, skillLevel: "Beginner" })}
+                  onValueChange={(value) => {
+                    const newSport = { sport: value, skillLevel: "Beginner" }
+                    appendSport(newSport)
+                    setOpenSportDialog(false)
+                  }}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select a sport" />
                   </SelectTrigger>
                   <SelectContent>
-                    {["Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket", "Other"].map((sport) => (
-                      <SelectItem key={sport} value={sport}>{sport}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="skillLevel">Skill Level</Label>
-                <Select
-                  onValueChange={(value) => {
-                    const lastIndex = sportsFields.length - 1;
-                    if (lastIndex >= 0) {
-                      sportsFields[lastIndex].skillLevel = value;
-                    }
-                  }}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select skill level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["Beginner", "Intermediate", "Advanced"].map((level) => (
-                      <SelectItem key={level} value={level}>{level}</SelectItem>
-                    ))}
+                    {["Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket", "Other"].map(
+                      (sport) => (
+                        <SelectItem key={sport} value={sport}>
+                          <div className="flex items-center gap-2">
+                            <span>{getSportIcon(sport)}</span>
+                            {sport}
+                          </div>
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpenSportDialog(false)}>Cancel</Button>
-              <Button
-                onClick={() => setOpenSportDialog(false)}
-                disabled={!sportsFields.length || !sportsFields[sportsFields.length - 1]?.sport}
-              >
-                Add
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {/* Achievements */}
-        <Card className="bg-card-light dark:bg-card-dark">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Achievements
-              {!editing && (
-                <Button variant="outline" size="sm" onClick={() => setOpenAchievementDialog(true)}>
-                  <Plus size={16} className="mr-2" /> Add Achievement
-                </Button>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {user.achievements && user.achievements.length > 0 ? (
-              <div className="space-y-4">
-                {user.achievements.map((achievement, index) => (
-                  <div key={index} className="bg-background-light dark:bg-background-dark rounded-lg p-4">
-                    <div className="flex items-start">
-                      <Award className="w-6 h-6 text-primary-light dark:text-primary-dark mr-3 mt-1" />
-                      <div>
-                        <h3 className="font-medium text-foreground-light dark:text-foreground-dark">{achievement.title}</h3>
-                        <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                          {format(new Date(achievement.date), "MMMM dd, yyyy")}
-                        </p>
-                        {achievement.description && (
-                          <p className="text-foreground-light dark:text-foreground-dark">{achievement.description}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground-light dark:text-muted-foreground-dark">No achievements added yet</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Achievement Dialog */}
         <Dialog open={openAchievementDialog} onOpenChange={setOpenAchievementDialog}>
-          <DialogContent className="bg-card-light dark:bg-card-dark">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Achievement</DialogTitle>
             </DialogHeader>
@@ -626,9 +976,10 @@ const Profile = () => {
                   id="title"
                   {...achievementForm.register("title")}
                   className="mt-1"
+                  placeholder="Achievement title"
                 />
                 {achievementForm.formState.errors.title && (
-                  <p className="text-destructive-light dark:text-destructive-dark text-sm">
+                  <p className="text-destructive text-xs mt-1">
                     {achievementForm.formState.errors.title.message}
                   </p>
                 )}
@@ -640,6 +991,7 @@ const Profile = () => {
                   {...achievementForm.register("description")}
                   className="mt-1"
                   rows={3}
+                  placeholder="Describe your achievement..."
                 />
               </div>
               <div>
@@ -651,21 +1003,42 @@ const Profile = () => {
                   className="mt-1"
                 />
                 {achievementForm.formState.errors.date && (
-                  <p className="text-destructive-light dark:text-destructive-dark text-sm">
+                  <p className="text-destructive text-xs mt-1">
                     {achievementForm.formState.errors.date.message}
                   </p>
                 )}
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setOpenAchievementDialog(false)}>Cancel</Button>
-                <Button type="submit" disabled={achievementForm.formState.isSubmitting}>Add</Button>
+                <Button variant="outline" onClick={() => setOpenAchievementDialog(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={achievementForm.formState.isSubmitting}>
+                  {achievementForm.formState.isSubmitting ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-transparent border-white"></div>
+                  ) : (
+                    "Add Achievement"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
+        {/* Followers/Following Dialogs */}
+        <FollowersDialog
+          isOpen={followersDialogOpen}
+          onClose={() => setFollowersDialogOpen(false)}
+          type="followers"
+          userId={user._id}
+        />
+        <FollowersDialog
+          isOpen={followingDialogOpen}
+          onClose={() => setFollowingDialogOpen(false)}
+          type="following"
+          userId={user._id}
+        />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

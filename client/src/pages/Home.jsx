@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useEvents } from "@/hooks/useEvents";
@@ -258,8 +256,8 @@ const Home = () => {
                 key={category.id}
                 to={category.id === "all" ? "/events" : `/events?category=${category.id}`}
                 className={`flex flex-col items-center p-6 rounded-lg transition-all duration-200 ${selectedCategory === category.id
-                    ? "bg-primary-light/10 dark:bg-primary-dark/10 border-2 border-primary-light dark:border-primary-dark"
-                    : "bg-card-light dark:bg-card-dark hover:bg-primary-light/5 dark:hover:bg-primary-dark/5 border-2 border-transparent"
+                  ? "bg-primary-light/10 dark:bg-primary-dark/10 border-2 border-primary-light dark:border-primary-dark"
+                  : "bg-card-light dark:bg-card-dark hover:bg-primary-light/5 dark:hover:bg-primary-dark/5 border-2 border-transparent"
                   }`}
                 onClick={() => setSelectedCategory(category.id)}
               >
@@ -449,8 +447,8 @@ const Home = () => {
                       key={i}
                       size={18}
                       className={`${i < testimonial.rating
-                          ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
-                          : "text-muted-foreground-light dark:text-muted-foreground-dark"
+                        ? "text-accent-light dark:text-accent-dark fill-accent-light dark:fill-accent-dark"
+                        : "text-muted-foreground-light dark:text-muted-foreground-dark"
                         }`}
                     />
                   ))}

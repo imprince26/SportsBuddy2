@@ -59,7 +59,7 @@ const EventDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
-  const {deleteEvent,joinEvent,leaveEvent} = useEvents()
+  const { deleteEvent, joinEvent, leaveEvent } = useEvents()
   const chatEndRef = useRef(null)
 
   // State management
@@ -68,19 +68,19 @@ const EventDetails = () => {
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState("details")
   const [activeImageIndex, setActiveImageIndex] = useState(0)
-  
+
   // Form states
   const [rating, setRating] = useState(0)
   const [review, setReview] = useState("")
   const [message, setMessage] = useState("")
   const [teamName, setTeamName] = useState("")
-  
+
   // Modal states
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
-  
+
   // Action states
   const [loadingAction, setLoadingAction] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
@@ -92,19 +92,19 @@ const EventDetails = () => {
       try {
         setLoading(true)
         setError(null)
-        
+
         const response = await api.get(`/events/${id}`)
-        
+
         if (response.data.success) {
           setEvent(response.data.data)
           document.title = `${response.data.data.name} - SportsBuddy`
-          
+
           // Check if user has already rated
           if (user && response.data.data.ratings) {
             const userRating = response.data.data.ratings.find(r => r.user._id === user.id)
             setHasRated(!!userRating)
           }
-          
+
           // Check if event is in favorites
           const favorites = JSON.parse(localStorage.getItem("favorites") || "[]")
           setIsFavorite(favorites.includes(id))
@@ -180,8 +180,8 @@ const EventDetails = () => {
     setLoadingAction(true)
     try {
       await joinEvent(id)
-      window.location.reload(); 
-  
+      window.location.reload();
+
     } catch (err) {
       console.error("Error joining event:", err)
     } finally {
@@ -192,8 +192,8 @@ const EventDetails = () => {
   const handleLeaveEvent = async () => {
     setLoadingAction(true)
     try {
-       await leaveEvent(id)
-       window.location.reload();
+      await leaveEvent(id)
+      window.location.reload();
     } catch (err) {
       console.error("Error leaving event:", err)
     } finally {
@@ -302,7 +302,7 @@ const EventDetails = () => {
   // Error state
   if (error) {
     return (
-     <EventDetailsError error={error} />
+      <EventDetailsError error={error} />
     )
   }
 
@@ -394,7 +394,7 @@ const EventDetails = () => {
                         isFavorite && "text-red-500"
                       )}
                     >
-                      <Heart className={cn("w-4 h-4 ", isFavorite && "fill-current",!isFavorite && "text-foreground-light dark:text-foreground-dark")} />
+                      <Heart className={cn("w-4 h-4 ", isFavorite && "fill-current", !isFavorite && "text-foreground-light dark:text-foreground-dark")} />
                     </Button>
 
                     <DropdownMenu>
@@ -477,13 +477,13 @@ const EventDetails = () => {
                         {format(new Date(event.date), "MMM dd, yyyy")}
                       </p>
                     </div>
-                    
+
                     <div className="bg-muted-light/50 dark:bg-muted-dark/50 rounded-lg p-4 text-center">
                       <Clock className="w-6 h-6 text-primary-light dark:text-primary-dark mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Time</p>
                       <p className="font-semibold text-foreground-light dark:text-foreground-dark">{event.time}</p>
                     </div>
-                    
+
                     <div className="bg-muted-light/50 dark:bg-muted-dark/50 rounded-lg p-4 text-center">
                       <Users className="w-6 h-6 text-primary-light dark:text-primary-dark mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Participants</p>
@@ -491,7 +491,7 @@ const EventDetails = () => {
                         {event.participantCount}/{event.maxParticipants}
                       </p>
                     </div>
-                    
+
                     {event.registrationFee > 0 ? (
                       <div className="bg-muted-light/50 dark:bg-muted-dark/50 rounded-lg p-4 text-center">
                         <DollarSign className="w-6 h-6 text-primary-light dark:text-primary-dark mx-auto mb-2" />
@@ -517,8 +517,8 @@ const EventDetails = () => {
                       <span>Event Capacity</span>
                       <span>{Math.round((event.participantCount / event.maxParticipants) * 100)}% filled</span>
                     </div>
-                    <Progress 
-                      value={(event.participantCount / event.maxParticipants) * 100} 
+                    <Progress
+                      value={(event.participantCount / event.maxParticipants) * 100}
                       className="h-3 bg-muted-light dark:bg-muted-dark"
                     />
                   </div>
@@ -991,14 +991,14 @@ const EventDetails = () => {
                       {event.participantCount}/{event.maxParticipants}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Event Type</span>
                     <span className="font-medium text-foreground-light dark:text-foreground-dark capitalize">
                       {event.eventType || "General"}
                     </span>
                   </div>
-                  
+
                   {event.averageRating > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Rating</span>
@@ -1013,21 +1013,21 @@ const EventDetails = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Spots Left</span>
                     <span className={cn(
                       "font-medium",
-                      event.spotsLeft > 5 
-                        ? "text-success-light dark:text-success-dark" 
-                        : event.spotsLeft > 0 
-                        ? "text-accent-light dark:text-accent-dark" 
-                        : "text-destructive-light dark:text-destructive-dark"
+                      event.spotsLeft > 5
+                        ? "text-success-light dark:text-success-dark"
+                        : event.spotsLeft > 0
+                          ? "text-accent-light dark:text-accent-dark"
+                          : "text-destructive-light dark:text-destructive-dark"
                     )}>
                       {event.spotsLeft}
                     </span>
                   </div>
-                  
+
                   {event.isUpcoming && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Days Until Event</span>
@@ -1063,7 +1063,7 @@ const EventDetails = () => {
                         {event.location.city}, {event.location.state}
                       </p>
                     </div>
-                    
+
                     {event.location.coordinates && (
                       <Button
                         variant="outline"
@@ -1104,7 +1104,7 @@ const EventDetails = () => {
                     <Share2 className="w-4 h-4 mr-2" />
                     Share Event
                   </Button>
-                  
+
                   <Button
                     variant="outline"
                     className="w-full justify-start bg-transparent"
@@ -1113,7 +1113,7 @@ const EventDetails = () => {
                     <Heart className={cn("w-4 h-4 mr-2", isFavorite && "fill-current text-red-500")} />
                     {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
                   </Button>
-                  
+
                   {/* <Button
                     variant="outline"
                     className="w-full justify-start bg-transparent"
@@ -1129,7 +1129,7 @@ const EventDetails = () => {
         </div>
 
         {/* Modals */}
-        
+
         {/* Delete Confirmation Modal */}
         <Dialog open={showConfirmDelete} onOpenChange={setShowConfirmDelete}>
           <DialogContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark max-w-md mx-auto">

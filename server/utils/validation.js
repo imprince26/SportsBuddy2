@@ -1,4 +1,4 @@
-import { z } from "zod"; // Make sure to install: npm install zod
+import { z } from "zod";
 
 // Location schema
 const locationSchema = z.object({

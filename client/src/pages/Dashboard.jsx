@@ -1,16 +1,13 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
 import { useEvents } from "@/hooks/useEvents"
 import { format, formatDistanceToNow } from "date-fns"
-import { Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell, Loader2, BarChart3, TrendingUp, CalendarIcon, CheckCircle, User, Dumbbell, UserPlus, Target, Zap, Trophy, FlameIcon as Fire, Eye, Settings, ArrowUp, ArrowDown, Sparkles, Crown, Medal, Timer, Globe, Heart, Share2 } from 'lucide-react'
+import { Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell, Loader2, BarChart3, TrendingUp, CalendarIcon, CheckCircle, User, Dumbbell, UserPlus, Target, Zap, Trophy, FlameIcon as Fire, Eye, Settings, ArrowUp, ArrowDown,  Crown, Medal, Timer, Globe, Heart, Share2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
@@ -70,7 +67,7 @@ const Dashboard = () => {
 
         setUserEvents({ participating, created, past })
         setStats({
-          totalEvents: events.length,
+          totalEvents: events.data.length,
           upcomingEvents: participating.length + created.length,
           completedEvents: past.length,
           achievements: user.achievements?.length || 0,
@@ -164,7 +161,7 @@ const Dashboard = () => {
       </div>
     )
   }
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-background-light via-background-light to-muted-light/30 dark:from-background-dark dark:via-background-dark dark:to-muted-dark/30">
       <div className="container mx-auto px-4 py-8">
@@ -236,7 +233,7 @@ const Dashboard = () => {
                   <Button
                     asChild
                     size="lg"
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
+                    className="rounded-xl bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
                     variant="outline"
                   >
                     <Link to="/notifications" className="flex items-center gap-2">
@@ -249,7 +246,7 @@ const Dashboard = () => {
                       )}
                     </Link>
                   </Button>
-                  <Button asChild size="lg" className="bg-white text-primary-light hover:bg-white/90">
+                  <Button asChild size="lg" className="bg-white rounded-xl text-primary-light hover:bg-white/90">
                     <Link to="/events/create" className="flex items-center gap-2">
                       <Plus className="w-5 h-5" />
                       <span>Create Event</span>
@@ -263,31 +260,31 @@ const Dashboard = () => {
           {/* Navigation Tabs */}
           <motion.div variants={itemVariants} className="mb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-1">
+              <TabsList className="grid w-full grid-cols-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-[.5rem] p-1">
                 <TabsTrigger
                   value="overview"
-                  className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-lg"
+                  className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-[.5rem]"
                 >
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Overview
                 </TabsTrigger>
                 <TabsTrigger
                   value="events"
-                  className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-lg"
+                  className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-[.5rem]"
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   Events
                 </TabsTrigger>
                 <TabsTrigger
                   value="activity"
-                  className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-lg"
+                  className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-[.5rem]"
                 >
                   <Activity className="w-4 h-4 mr-2" />
                   Activity
                 </TabsTrigger>
                 <TabsTrigger
                   value="profile"
-                  className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-lg"
+                  className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-[.5rem]"
                 >
                   <User className="w-4 h-4 mr-2" />
                   Profile

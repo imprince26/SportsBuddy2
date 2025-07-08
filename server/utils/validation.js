@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { z } from "zod"; 
+=======
+import { z } from "zod";
+>>>>>>> 8e8c6a612af72b6570d043eded10474944fb7236
 
 // Location schema
 const locationSchema = z.object({

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/useAuth"
-import { useEvents } from "@/hooks/useEvents"
 import { format } from "date-fns"
 import { toast } from "react-hot-toast"
 import { useForm, useFieldArray } from "react-hook-form"
@@ -146,7 +145,7 @@ const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[600px] overflow-hidden">
+      <DialogContent className="max-w-md max-h-[600px] overflow-hidden bg-card-light dark:bg-card-dark">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
@@ -210,7 +209,7 @@ const Profile = () => {
   const [followersDialogOpen, setFollowersDialogOpen] = useState(false)
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
-  const [userStats,SetUserStats] = useState({})
+  const [userStats, SetUserStats] = useState({})
 
   const {
     register,
@@ -255,14 +254,14 @@ const Profile = () => {
   }, [user])
 
   useEffect(() => {
-    const fetchUserStats = async () =>{
+    const fetchUserStats = async () => {
       const res = await api.get(`/users/stats/${user.id}`);
       SetUserStats(res.data.data)
-    } 
-    if(user){
+    }
+    if (user) {
       fetchUserStats();
     }
-  },[user])
+  }, [])
 
   useEffect(() => {
     if (user) {
@@ -298,7 +297,6 @@ const Profile = () => {
 
   const onSubmit = async (data) => {
     setLoading(true)
-    const toastId = toast.loading("Updating profile...")
     try {
       const formData = new FormData()
       if (avatarFile) formData.append("avatar", avatarFile)
@@ -313,12 +311,10 @@ const Profile = () => {
         return
       }
 
-      toast.success("Profile updated successfully!", { id: toastId })
       setEditing(false)
       setAvatarFile(null)
       setAvatarPreview(response.data.avatar?.url || "/placeholder.svg")
     } catch (error) {
-      toast.error("Failed to update profile", { id: toastId })
       console.error("Profile update error:", error)
     } finally {
       setLoading(false)
@@ -372,6 +368,8 @@ const Profile = () => {
     }
   }, [avatarPreview])
 
+  const cardClassName = "bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark hover:shadow-xl transition-all duration-300"
+
   if (!user) {
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -384,11 +382,10 @@ const Profile = () => {
     <div className="min-h-screen bg-gradient-to-br from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-muted-light/20 dark:to-muted-dark/20">
       <div className="container mx-auto max-w-7xl px-4 py-8 space-y-8">
         {/* Profile Header Card */}
-        <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-r from-primary-light/5 dark:from:primary-dark/5 via-background-light dark:via-background-dark to-secondary/5 dark:to-secondary-light/5">
+        <Card className="overflow-hidden border-border-light dark:border-border-dark shadow-lg rounded-xl">
           <div className="relative">
             {/* Cover Image */}
             <div className="h-48 bg-gradient-to-r from-primary via-primary/80 to-secondary relative overflow-hidden">
-              {/* <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg%3E%3Cg fill=\"none\" fillRule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fillOpacity=\"0.1\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"4\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div> */}
               {/* Action Buttons */}
               <div className="absolute top-4 right-4 flex gap-2">
                 {editing ? (
@@ -403,7 +400,7 @@ const Profile = () => {
                         reset()
                       }}
                       disabled={loading}
-                      className="bg-white/90 hover:bg-white"
+                      className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark hover:bg-white"
                     >
                       <X className="w-4 h-4 mr-1" />
                       Cancel
@@ -437,7 +434,7 @@ const Profile = () => {
                 )}
               </div>
             </div>
-            <CardContent className="relative pt-16 pb-6">
+            <CardContent className={`relative pt-16 pb-6 ${cardClassName}`}>
               {/* Avatar */}
               <div className="absolute -top-16 left-6">
                 <div className="relative">
@@ -578,22 +575,23 @@ const Profile = () => {
             </CardContent>
           </div>
         </Card>
+
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm ">
+            <TabsTrigger value="overview" className="flex items-center dark:data-[state=active]:bg-primary-dark data-[state=active]:bg-primary-light data-[state=active]:text-foreground-dark dark:text-foreground-dark gap-2 rounded-xl">
               <Activity className="w-4 h-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="sports" className="flex items-center gap-2">
+            <TabsTrigger value="sports" className="flex items-center dark:data-[state=active]:bg-primary-dark data-[state=active]:bg-primary-light data-[state=active]:text-foreground-dark dark:text-foreground-dark gap-2 rounded-xl">
               <Dumbbell className="w-4 h-4" />
               Sports
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="flex items-center gap-2">
+            <TabsTrigger value="achievements" className="flex items-center dark:data-[state=active]:bg-primary-dark data-[state=active]:bg-primary-light data-[state=active]:text-foreground-dark dark:text-foreground-dark gap-2 rounded-xl">
               <Award className="w-4 h-4" />
               Achievements
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
+            <TabsTrigger value="settings" className="flex items-center dark:data-[state=active]:bg-primary-dark data-[state=active]:bg-primary-light data-[state=active]:text-foreground-dark dark:text-foreground-dark gap-2 rounded-xl">
               <Settings className="w-4 h-4" />
               Settings
             </TabsTrigger>
@@ -602,7 +600,7 @@ const Profile = () => {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Quick Stats */}
-              <Card className="lg:col-span-2">
+              <Card className={`lg:col-span-2 ${cardClassName} `}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-primary" />
@@ -644,7 +642,7 @@ const Profile = () => {
                 </CardContent>
               </Card>
               {/* Recent Achievements */}
-              <Card>
+              <Card className={cardClassName}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-yellow-500" />
@@ -678,7 +676,7 @@ const Profile = () => {
           </TabsContent>
           {/* Sports Tab */}
           <TabsContent value="sports" className="space-y-6">
-            <Card>
+            <Card className={cardClassName}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -743,7 +741,7 @@ const Profile = () => {
           </TabsContent>
           {/* Achievements Tab */}
           <TabsContent value="achievements" className="space-y-6">
-            <Card>
+            <Card className={cardClassName}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -799,7 +797,7 @@ const Profile = () => {
           <TabsContent value="settings" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Location Settings */}
-              <Card>
+              <Card className={cardClassName}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-primary" />
@@ -856,7 +854,7 @@ const Profile = () => {
                 </CardContent>
               </Card>
               {/* Social Links */}
-              <Card>
+              <Card className={cardClassName}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Heart className="w-5 h-5 text-primary" />
@@ -938,9 +936,10 @@ const Profile = () => {
             </div>
           </TabsContent>
         </Tabs>
+
         {/* Sports Preference Dialog */}
         <Dialog open={openSportDialog} onOpenChange={setOpenSportDialog}>
-          <DialogContent>
+          <DialogContent className="max-w-lg bg-card-light dark:bg-card-dark">
             <DialogHeader>
               <DialogTitle>Add Sport Preference</DialogTitle>
             </DialogHeader>
@@ -974,9 +973,10 @@ const Profile = () => {
             </div>
           </DialogContent>
         </Dialog>
+
         {/* Achievement Dialog */}
         <Dialog open={openAchievementDialog} onOpenChange={setOpenAchievementDialog}>
-          <DialogContent>
+          <DialogContent className="max-w-lg bg-card-light dark:bg-card-dark">
             <DialogHeader>
               <DialogTitle>Add Achievement</DialogTitle>
             </DialogHeader>
@@ -1034,6 +1034,7 @@ const Profile = () => {
             </form>
           </DialogContent>
         </Dialog>
+
         {/* Followers/Following Dialogs */}
         <FollowersDialog
           isOpen={followersDialogOpen}

@@ -108,6 +108,8 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateProfile = async (profileData) => {
     setLoading(true);
+    const toastId = toast.loading("Updating profile...")
+    
     try {
       const response = await api.put(`/auth/profile`, profileData, {
         headers: {
@@ -117,12 +119,12 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         setUser(response.data.data);
-        toast.success('Profile updated successfully');
+        toast.success("Profile updated successfully!", { id: toastId })
         return { success: true };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Profile update failed';
-      toast.error(message);
+      toast.error("Failed to update profile", { id: toastId })
       return { success: false, message };
     } finally {
       setLoading(false);

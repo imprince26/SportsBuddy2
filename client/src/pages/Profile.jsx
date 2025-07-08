@@ -609,15 +609,15 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+                    <div className="text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800">
                       <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {user.stats?.eventsCreated || 0}
+                        {userStats?.eventsCreated || 0}
                       </div>
                       <div className="text-sm text-blue-600/70 dark:text-blue-400/70">Events Created</div>
                     </div>
-                    <div className="text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+                    <div className="text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800">
                       <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {user.stats?.eventsParticipated || 0}
+                        {userStats?.eventsParticipated || 0}
                       </div>
                       <div className="text-sm text-green-600/70 dark:text-green-400/70">Events Joined</div>
                     </div>
@@ -697,7 +697,7 @@ const Profile = () => {
                     {sportsFields.map((sport, index) => (
                       <div
                         key={sport.id}
-                        className="relative group p-4 rounded-lg border bg-gradient-to-br from-background to-muted/20 hover:shadow-md transition-all"
+                        className="relative group p-4 rounded-lg border bg-gradient-to-br from-background-light to-muted/20 dark:from-background-dark dark:to-muted/20 hover:bg-gradient-to-br hover:from-background-light hover:dark:from-background-dark hover:to-muted/20 hover:dark hover:shadow-md transition-all"
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -762,7 +762,7 @@ const Profile = () => {
                     {user.achievements.map((achievement, index) => (
                       <div
                         key={index}
-                        className="group p-4 rounded-lg border bg-gradient-to-r from-background to-muted/20 hover:shadow-md transition-all"
+                        className="group p-4 rounded-lg border bg-gradient-to-r from-background-light to-muted/20 dark:from-background-dark dark:to-muted/20 hover:bg-gradient-to-r hover:from-background-light hover:dark:from-background-dark hover:dark  hover:shadow-md transition-all"
                       >
                         <div className="flex items-start gap-4">
                           <div className="p-2 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800">

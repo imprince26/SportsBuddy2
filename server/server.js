@@ -11,6 +11,7 @@ import userRoute from "./routes/userRoute.js";
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
 import { uploadImage, upload } from "./config/cloudinary.js";
+import job from "./utils/cron.js";
 
 dotenv.config();
 
@@ -28,6 +29,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
+
+if (process.env.NODE_ENV === "production") job.start();
 
 const corsOptions = {
   origin: process.env.CLIENT_URL || "http://localhost:5173",

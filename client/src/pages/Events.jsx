@@ -364,9 +364,9 @@ const Events = () => {
   )
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen mx-auto max-w-7xl bg-background-light  dark:bg-background-dark">
       {/* Hero Section */}
-      <div className="bg-primary-light dark:bg-primary-dark text-white py-12">
+      <div className="bg-primary-light dark:bg-primary-dark text-white py-12 rounded-xl mx-3 mt-5">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -164,7 +164,7 @@ const Dashboard = () => {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-background-light via-background-light to-muted-light/30 dark:from-background-dark dark:via-background-dark dark:to-muted-dark/30">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
           {/* Hero Header */}
           <motion.div variants={itemVariants} className="mb-8">
@@ -181,7 +181,7 @@ const Dashboard = () => {
                 </svg>
               </div>
 
-              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center ">
                 <div className="mb-6 md:mb-0">
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -228,7 +228,7 @@ const Dashboard = () => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="flex flex-col sm:flex-row gap-3"
+                  className="flex gap-3"
                 >
                   <Button
                     asChild

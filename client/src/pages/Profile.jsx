@@ -1,7 +1,6 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/useAuth"
+import { useEvents } from "@/hooks/useEvents"
 import { format } from "date-fns"
 import { toast } from "react-hot-toast"
 import { useForm, useFieldArray } from "react-hook-form"
@@ -55,6 +54,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
+import api from "@/utils/api"
 
 // Zod schema for validation
 const profileSchema = z.object({
@@ -108,7 +108,7 @@ const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
     if (isOpen && userId) {
       fetchUsers()
     }
-  }, [isOpen, userId, type])
+  }, [isOpen, userId])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -210,6 +210,7 @@ const Profile = () => {
   const [followersDialogOpen, setFollowersDialogOpen] = useState(false)
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
+  const [userStats,SetUserStats] = useState({})
 
   const {
     register,
@@ -252,6 +253,16 @@ const Profile = () => {
   useEffect(() => {
     document.title = `${user ? `${user.name}'s Profile` : "Profile"} - SportsBuddy`
   }, [user])
+
+  useEffect(() => {
+    const fetchUserStats = async () =>{
+      const res = await api.get(`/users/stats/${user.id}`);
+      SetUserStats(res.data.data)
+    } 
+    if(user){
+      fetchUserStats();
+    }
+  },[user])
 
   useEffect(() => {
     if (user) {
@@ -370,10 +381,10 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-muted-light/20 dark:to-muted-dark/20">
       <div className="container mx-auto max-w-7xl px-4 py-8 space-y-8">
         {/* Profile Header Card */}
-        <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-r from-primary/5 via-background to-secondary/5">
+        <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-r from-primary-light/5 dark:from:primary-dark/5 via-background-light dark:via-background-dark to-secondary/5 dark:to-secondary-light/5">
           <div className="relative">
             {/* Cover Image */}
             <div className="h-48 bg-gradient-to-r from-primary via-primary/80 to-secondary relative overflow-hidden">
@@ -418,7 +429,7 @@ const Profile = () => {
                     variant="secondary"
                     size="sm"
                     onClick={() => setEditing(true)}
-                    className="bg-white/90 hover:bg-white"
+                    className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark hover:bg-white"
                   >
                     <Edit className="w-4 h-4 mr-1" />
                     Edit Profile
@@ -454,28 +465,28 @@ const Profile = () => {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground flex items-center gap-1">
                     <Trophy className="w-5 h-5 text-yellow-500" />
-                    {user.stats?.eventsCreated || 0}
+                    {userStats?.eventsCreated || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Events Created</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground flex items-center gap-1">
                     <Target className="w-5 h-5 text-blue-500" />
-                    {user.stats?.eventsParticipated || 0}
+                    {userStats?.eventsParticipated || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Events Joined</div>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => setFollowersDialogOpen(true)}>
                   <div className="text-2xl font-bold text-foreground flex items-center gap-1 hover:text-primary transition-colors">
                     <Users className="w-5 h-5 text-green-500" />
-                    {user.followers?.length || 0}
+                    {userStats?.followers || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Followers</div>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => setFollowingDialogOpen(true)}>
                   <div className="text-2xl font-bold text-foreground flex items-center gap-1 hover:text-primary transition-colors">
                     <UserPlus className="w-5 h-5 text-purple-500" />
-                    {user.following?.length || 0}
+                    {userStats?.following || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Following</div>
                 </div>

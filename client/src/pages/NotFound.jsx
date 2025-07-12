@@ -45,21 +45,21 @@ const NotFound = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
               to="/"
-              className="flex items-center justify-center gap-2 p-3 bg-primary-light dark:bg-primary-dark text-white rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
+              className="flex items-center justify-center gap-2 h-12 bg-primary-light dark:bg-primary-dark text-white rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
             >
               <Home size={18} />
               <span>Go Home</span>
             </Link>
             <Link
               to="/events"
-              className="flex items-center justify-center gap-2 p-3 bg-card-light dark:bg-card-dark text-foreground-light dark:text-foreground-dark rounded-md border border-border-light dark:border-border-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
+              className="flex items-center justify-center gap-2 h-12 bg-card-light dark:bg-card-dark text-foreground-light dark:text-foreground-dark rounded-md border border-border-light dark:border-border-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
             >
               <Calendar size={18} />
               <span>Browse Events</span>
             </Link>
             <button
               onClick={() => window.history.back()}
-              className="flex items-center justify-center gap-2 p-3 bg-card-light dark:bg-card-dark text-foreground-light dark:text-foreground-dark rounded-md border border-border-light dark:border-border-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
+              className="flex items-center justify-center gap-2 h-12 bg-card-light dark:bg-card-dark text-foreground-light dark:text-foreground-dark rounded-md border border-border-light dark:border-border-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
             >
               <ArrowLeft size={18} />
               <span>Go Back</span>

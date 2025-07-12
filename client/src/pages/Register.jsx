@@ -8,16 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 
 const Register = () => {
-  const { user, register: registerUser, loading } = useAuth()
+  const { user, register: registerUser, loading,authError } = useAuth()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [authError, setAuthError] = useState("")
+  const [authError1, setAuthError1] = useState(authError || "")
   const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   const {
@@ -41,12 +41,12 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     if (!agreedToTerms) {
-      setAuthError("Please agree to the Terms of Service and Privacy Policy")
+      setAuthError1("Please agree to the Terms of Service and Privacy Policy")
       return
     }
 
     try {
-      setAuthError("")
+      setAuthError1("")
       await registerUser({
         name: data.name,
         username: data.username,
@@ -54,7 +54,7 @@ const Register = () => {
         password: data.password,
       })
     } catch (error) {
-      setAuthError(error.message || "Registration failed. Please try again.")
+      console.error("Registration error:", error)
     }
   }
 
@@ -202,7 +202,10 @@ const Register = () => {
                     variants={itemVariants}
                   >
                     <Alert className="border-destructive-light dark:border-destructive-dark">
-                      <AlertCircle className="h-4 w-4" />
+                      <AlertCircle className="text-destructive-light dark:text-destructive-dark h-4 w-4 mt-2" />
+                      <AlertTitle className="text-destructive-light dark:text-destructive-dark">
+                        Registration Error
+                      </AlertTitle>
                       <AlertDescription className="text-destructive-light dark:text-destructive-dark">
                         {authError}
                       </AlertDescription>
@@ -215,8 +218,8 @@ const Register = () => {
                     <Label htmlFor="name" className="text-foreground-light dark:text-foreground-dark">
                       Full Name
                     </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
+                    <div className="relative flex items-center">
+                      <User className="absolute left-3  h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
                       <Input
                         id="name"
                         type="text"
@@ -243,8 +246,8 @@ const Register = () => {
                     <Label htmlFor="username" className="text-foreground-light dark:text-foreground-dark">
                       Username
                     </Label>
-                    <div className="relative">
-                      <AtSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
+                    <div className="relative flex items-center">
+                      <AtSign className="absolute left-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
                       <Input
                         id="username"
                         type="text"
@@ -277,8 +280,8 @@ const Register = () => {
                     <Label htmlFor="email" className="text-foreground-light dark:text-foreground-dark">
                       Email Address
                     </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
+                    <div className="relative flex items-center">
+                      <Mail className="absolute left-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
                       <Input
                         id="email"
                         type="email"
@@ -307,8 +310,8 @@ const Register = () => {
                     <Label htmlFor="password" className="text-foreground-light dark:text-foreground-dark">
                       Password
                     </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
+                    <div className="relative flex items-center">
+                      <Lock className="absolute left-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
@@ -328,7 +331,7 @@ const Register = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                        className="absolute right-3  text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -361,8 +364,8 @@ const Register = () => {
                     <Label htmlFor="confirmPassword" className="text-foreground-light dark:text-foreground-dark">
                       Confirm Password
                     </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
+                    <div className="relative flex items-center">
+                      <Lock className="absolute left-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
                       <Input
                         id="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
@@ -379,7 +382,7 @@ const Register = () => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-3 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                        className="absolute right-3 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>

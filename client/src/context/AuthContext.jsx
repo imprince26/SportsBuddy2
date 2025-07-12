@@ -1,17 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
-import { showToast } from '@/components/CustomToast';
 
 const AuthContext = createContext();
-
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (!context) {
-//     throw new Error('useAuth must be used within an AuthProvider');
-//   }
-//   return context;
-// };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -61,6 +52,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       }
     } catch (error) {
+      toast.error(error.response?.data?.message || 'Registration failed');
       const message = error.response?.data?.message || 'Registration failed';
       setAuthError(message);
       return { success: false, message };
@@ -84,6 +76,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       }
     } catch (error) {
+      toast.error(error.response?.data?.message || 'Login failed');
       setAuthError(error.response?.data?.message || 'Login failed');
       return { success: false, message: error.response?.data?.message || 'Login failed' };
     } finally {

@@ -84,12 +84,12 @@ export const login = async (req, res) => {
       });
     }
 
-    const isMatch = user.comparePassword(password);
+    const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Invalid Password",
       });
     }
 

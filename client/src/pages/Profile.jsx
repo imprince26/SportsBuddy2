@@ -102,7 +102,7 @@ const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(false)
   const { getUserFollowers, getUserFollowing, followUser, unfollowUser, user } = useAuth()
-
+  
   useEffect(() => {
     if (isOpen && userId) {
       fetchUsers()
@@ -1040,13 +1040,13 @@ const Profile = () => {
           isOpen={followersDialogOpen}
           onClose={() => setFollowersDialogOpen(false)}
           type="followers"
-          userId={user._id}
+          userId={user.id}
         />
         <FollowersDialog
           isOpen={followingDialogOpen}
           onClose={() => setFollowingDialogOpen(false)}
           type="following"
-          userId={user._id}
+          userId={user.id}
         />
       </div>
     </div>

@@ -8,14 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription,AlertTitle } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 
 const Login = () => {
-  const { user, login, loading } = useAuth()
+  const { user, login, loading,authError } = useAuth()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
-  const [authError, setAuthError] = useState("")
+  // const [authError, setAuthError] = useState("")
 
   const {
     register,
@@ -35,13 +35,14 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      setAuthError("")
+      // setAuthError("")
       await login({
         email: data.email,
         password: data.password,
       })
     } catch (error) {
-      setAuthError(error.message || "Login failed. Please try again.")
+      console.log("Login error:", error?.message)
+      // setAuthError(error.message || "Login failed. Please try again.")
     }
   }
 
@@ -210,12 +211,11 @@ const Login = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     variants={itemVariants}
                   >
-                    <Alert className="border-destructive-light dark:border-destructive-dark">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="text-destructive-light dark:text-destructive-dark">
-                        {authError}
-                      </AlertDescription>
-                    </Alert>
+                   <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    <AlertTitle>Error!</AlertTitle>
+                    <AlertDescription>{authError}</AlertDescription>
+                  </Alert>
                   </motion.div>
                 )}
 
@@ -224,8 +224,8 @@ const Login = () => {
                     <Label htmlFor="email" className="text-foreground-light dark:text-foreground-dark">
                       Email Address
                     </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
+                    <div className="relative flex items-center">
+                      <Mail className="absolute left-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
                       <Input
                         id="email"
                         type="email"
@@ -254,8 +254,8 @@ const Login = () => {
                     <Label htmlFor="password" className="text-foreground-light dark:text-foreground-dark">
                       Password
                     </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
+                    <div className="relative flex items-center">
+                      <Lock className="absolute left-3  h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
@@ -275,7 +275,7 @@ const Login = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                        className="absolute right-3 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>

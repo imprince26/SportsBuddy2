@@ -20,45 +20,6 @@ body {
   color: hsl(0, 0%, 100%);
 }
 
-/* Form Elements Selection */
-input::selection,
-textarea::selection {
-  background-color: hsl(221, 73%, 47%, 0.3);
-  color: hsl(0, 0%, 100%);
-}
-
-/* Dark Mode Selection */
-.dark ::selection {
-  background-color: hsl(214, 94%, 69%, 0.3);
-  /* Dark mode primary */
-  color: hsl(214, 20%, 92%);
-  /* Dark mode text */
-}
-
-.dark ::-moz-selection {
-  background-color: hsl(214, 94%, 69%, 0.3);
-  color: hsl(214, 20%, 92%);
-}
-
-.dark input::selection,
-.dark textarea::selection {
-  background-color: hsl(214, 94%, 69%, 0.3);
-  color: hsl(214, 20%, 92%);
-}
-
-/* Special Elements Selection */
-.accent-selection ::selection {
-  background-color: hsl(33, 95%, 39%, 0.3);
-  /* Accent color */
-  color: hsl(0, 0%, 100%);
-}
-
-.success-selection ::selection {
-  background-color: hsl(137, 67%, 33%, 0.3);
-  /* Success color */
-  color: hsl(0, 0%, 100%);
-}
-
 @layer base {
   :root {
     --primary: 221 73% 47%;
@@ -178,12 +139,5 @@ textarea::selection {
 
   html {
     @apply bg-background text-foreground;
-  }
-}
-
-/* Custom Glow Shadow for Interactive Elements */
-@layer utilities {
-  .shadow-glow {
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1), 0 0 24px hsl(var(--primary)/0.3);
   }
 }

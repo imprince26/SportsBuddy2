@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
@@ -38,6 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import api from "@/utils/api"
 
 // Followers/Following Dialog Component
 const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
@@ -83,7 +82,7 @@ const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[600px] overflow-hidden">
+      <DialogContent className="max-w-md max-h-[600px] overflow-hidden bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
@@ -150,6 +149,8 @@ const PublicProfile = () => {
   const [followersDialogOpen, setFollowersDialogOpen] = useState(false)
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false)
   const [followLoading, setFollowLoading] = useState(false)
+  const [userStats, SetUserStats] = useState({})
+  
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -181,37 +182,55 @@ const PublicProfile = () => {
     }
   }, [userId, getUserProfile, user])
 
-  const handleFollow = async () => {
-    if (!user) {
-      toast.error("Please log in to follow users")
-      return
-    }
-
-    setFollowLoading(true)
-    try {
-      if (isFollowing) {
-        await unfollowUser(userId)
-        setIsFollowing(false)
-        setProfile((prev) => ({
-          ...prev,
-          followers: prev.followers.filter((f) => f._id !== user._id),
-        }))
-        toast.success("Unfollowed successfully")
-      } else {
-        await followUser(userId)
-        setIsFollowing(true)
-        setProfile((prev) => ({
-          ...prev,
-          followers: [...(prev.followers || []), user],
-        }))
-        toast.success("Following successfully")
+    useEffect(() => {
+      const fetchUserStats = async () => {
+        const res = await api.get(`/users/stats/${userId}`);
+        SetUserStats(res.data.data)
       }
-    } catch (error) {
-      toast.error("Failed to update follow status")
-    } finally {
-      setFollowLoading(false)
-    }
+        fetchUserStats();
+      
+    }, [])
+
+const handleFollow = async () => {
+  if (!user) {
+    toast.error("Please login to follow users");
+    return;
   }
+
+  // Prevent following self
+  if (user._id === userId) {
+    toast.error("You cannot follow yourself");
+    return;
+  }
+
+  setFollowLoading(true);
+  try {
+    if (isFollowing) {
+      await unfollowUser(userId);
+      setIsFollowing(false);
+      // Update followers count
+      SetUserStats(prev => ({
+        ...prev,
+        followers: (prev.followers || 0) - 1
+      }));
+      toast.success("Unfollowed successfully");
+    } else {
+      await followUser(userId);
+      setIsFollowing(true);
+      // Update followers count
+      SetUserStats(prev => ({
+        ...prev,
+        followers: (prev.followers || 0) + 1
+      }));
+      toast.success("Following successfully");
+    }
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Failed to update follow status";
+    toast.error(errorMessage);
+  } finally {
+    setFollowLoading(false);
+  }
+};
 
   const getSportIcon = (sport) => {
     const icons = {
@@ -256,7 +275,7 @@ const PublicProfile = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto">
-          <Card className="text-center p-8">
+          <Card className="text-center p-8 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
             <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">Profile Not Found</h2>
             <p className="text-muted-foreground mb-6">{error}</p>
@@ -277,7 +296,7 @@ const PublicProfile = () => {
         </Button>
 
         {/* Profile Header Card */}
-        <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-r from-primary/5 via-background to-secondary/5">
+        <Card className="overflow-hidden border-0 shadow-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
           <div className="relative">
             {/* Cover Image */}
             <div className="h-48 bg-gradient-to-r from-primary via-primary/80 to-secondary relative overflow-hidden">
@@ -291,8 +310,8 @@ const PublicProfile = () => {
                     disabled={followLoading}
                     className={
                       isFollowing
-                        ? "bg-white/90 text-primary hover:bg-white"
-                        : "bg-white text-primary hover:bg-white/90"
+                        ? "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary/90"
+                        : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary/90"
                     }
                     variant={isFollowing ? "outline" : "default"}
                   >
@@ -314,7 +333,7 @@ const PublicProfile = () => {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white">
+                    <Button variant="outline" size="sm" className="bg-background-light text-foreground-light dark:bg-background-dark dark:text-foreground-dark hover:bg-white">
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -352,28 +371,28 @@ const PublicProfile = () => {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground flex items-center gap-1">
                     <Trophy className="w-5 h-5 text-yellow-500" />
-                    {profile.stats?.eventsCreated || 0}
+                    {userStats.eventsCreated || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Events Created</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground flex items-center gap-1">
                     <Target className="w-5 h-5 text-blue-500" />
-                    {profile.stats?.eventsParticipated || 0}
+                    {userStats.eventsParticipated || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Events Joined</div>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => setFollowersDialogOpen(true)}>
                   <div className="text-2xl font-bold text-foreground flex items-center gap-1 hover:text-primary transition-colors">
                     <Users className="w-5 h-5 text-green-500" />
-                    {profile.followers?.length || 0}
+                    {userStats.followers || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Followers</div>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => setFollowingDialogOpen(true)}>
                   <div className="text-2xl font-bold text-foreground flex items-center gap-1 hover:text-primary transition-colors">
                     <UserPlus className="w-5 h-5 text-purple-500" />
-                    {profile.following?.length || 0}
+                    {userStats.following || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Following</div>
                 </div>
@@ -451,20 +470,20 @@ const PublicProfile = () => {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm ">
+            <TabsTrigger value="overview" className="flex items-center dark:data-[state=active]:bg-primary-dark data-[state=active]:bg-primary-light data-[state=active]:text-foreground-dark dark:text-foreground-dark gap-2 rounded-xl">
               <Activity className="w-4 h-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="sports" className="flex items-center gap-2">
+            <TabsTrigger value="sports" className="flex items-center dark:data-[state=active]:bg-primary-dark data-[state=active]:bg-primary-light data-[state=active]:text-foreground-dark dark:text-foreground-dark gap-2 rounded-xl">
               <Dumbbell className="w-4 h-4" />
               Sports
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="flex items-center gap-2">
+            <TabsTrigger value="achievements" className="flex items-center dark:data-[state=active]:bg-primary-dark data-[state=active]:bg-primary-light data-[state=active]:text-foreground-dark dark:text-foreground-dark gap-2 rounded-xl">
               <Award className="w-4 h-4" />
               Achievements
             </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center gap-2">
+            <TabsTrigger value="events" className="flex items-center dark:data-[state=active]:bg-primary-dark data-[state=active]:bg-primary-light data-[state=active]:text-foreground-dark dark:text-foreground-dark gap-2 rounded-xl">
               <Calendar className="w-4 h-4" />
               Events
             </TabsTrigger>
@@ -474,7 +493,7 @@ const PublicProfile = () => {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Activity Stats */}
-              <Card className="lg:col-span-2">
+              <Card className="lg:col-span-2 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Activity className="w-5 h-5 text-primary" />
@@ -515,7 +534,7 @@ const PublicProfile = () => {
               </Card>
 
               {/* Recent Achievements */}
-              <Card>
+              <Card className="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-yellow-500" />
@@ -550,7 +569,7 @@ const PublicProfile = () => {
 
           {/* Sports Tab */}
           <TabsContent value="sports" className="space-y-6">
-            <Card>
+            <Card className="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Dumbbell className="w-5 h-5 text-primary" />
@@ -588,7 +607,7 @@ const PublicProfile = () => {
 
           {/* Achievements Tab */}
           <TabsContent value="achievements" className="space-y-6">
-            <Card>
+            <Card className="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Award className="w-5 h-5 text-primary" />
@@ -631,7 +650,7 @@ const PublicProfile = () => {
 
           {/* Events Tab */}
           <TabsContent value="events" className="space-y-6">
-            <Card>
+            <Card className="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-primary" />

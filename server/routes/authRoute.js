@@ -11,7 +11,7 @@ import {
   getNotifications,
   markNotificationRead,
   addAchievement,
-  getUserProfile
+  getUserProfile,
 } from "../controllers/authController.js";
 import { upload } from "../config/cloudinary.js";
 
@@ -22,6 +22,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
 router.get("/user/:userId", getUserProfile);
+
 // Protected routes
 router.use(isAuthenticated);
 router.get("/me", getCurrentUser);

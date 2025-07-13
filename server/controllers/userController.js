@@ -1,5 +1,4 @@
 import User from "../models/userModel.js";
-import Event from "../models/eventModel.js";
 
 // Get user profile
 export const getUserProfile = async (req, res) => {

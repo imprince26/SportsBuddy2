@@ -5,6 +5,7 @@ import { validationResult } from "express-validator";
 import { uploadImage, deleteImage } from "../config/cloudinary.js";
 import fs from "fs/promises";
 import validator from "validator";
+import { resolve } from "path";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -39,13 +40,11 @@ export const register = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await User.create({
       name,
-      username,
+      username, 
       email,
-      password: hashedPassword,
+      password
     });
 
     const token = generateToken(newUser);
@@ -75,43 +74,61 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select("+password");
-
-    if (!user) {
-      return res.status(404).json({
+    // Input validation
+    if (!email || !password) {
+      return res.status(400).json({
         success: false,
-        message: "User not found",
+        message: "Please provide both email and password"
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    // Find user with password
+    const user = await User.findOne({ email }).select('+password');
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Check if password matches
+    const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid Password",
+        message: "Invalid Password"
       });
     }
 
-    const token = generateToken(user);
+      // Generate token
+      const token = generateToken(user);
 
-    res.cookie("SportsBuddyToken", token, cookieOptions);
+      // Set cookie
+      res.cookie("SportsBuddyToken", token, cookieOptions);
 
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        username: user.username,
-      },
-    });
+      // Success response
+      res.status(200).json({
+        success: true,
+        message: "Login successful",
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          avatar: user.avatar
+        }
+      });
+
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({
       success: false,
       message: "Login failed",
-      error: error.message,
+      error: error.message
     });
   }
 };
@@ -449,3 +466,27 @@ export const getUserProfile = async (req, res) => {
     });
   }
 };
+
+// export const forgotPassword = async (req, res) => {
+//   try {
+//     const { email, newPassword } = req.body;
+
+//     const user = await User.findOne({ email }).select("+password");
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     user.password = await bcrypt.hash(newPassword, 10);
+//     await user.save();
+
+//     res.json({
+//       success: true,
+//       message: "Password updated successfully",
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Error updating password",
+//       error: error.message,
+//     });
+//   }
+// };

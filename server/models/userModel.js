@@ -179,25 +179,23 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Password hashing middleware
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+    
+    if (!this.isModified('password') || !this.password) return next();
+    
+    try {
+        this.password = await bcrypt.hash(this.password, 10);
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  try {
-    return await bcrypt.compare(candidatePassword, this.password);
-  } catch (error) {
-    throw error;
-  }
+// Compare entered password with hashed password
+userSchema.methods.matchPassword = async function(enteredPassword) {
+    if (!this.password) return false;
+    return await bcrypt.compare(enteredPassword, this.password);
 };
 
 // Method to get user profile (excluding sensitive information)

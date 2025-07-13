@@ -42,7 +42,7 @@ export const register = async (req, res) => {
 
     const newUser = await User.create({
       name,
-      username, 
+      username,
       email,
       password
     });
@@ -84,7 +84,7 @@ export const login = async (req, res) => {
 
     // Find user with password
     const user = await User.findOne({ email }).select('+password');
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -102,26 +102,26 @@ export const login = async (req, res) => {
       });
     }
 
-      // Generate token
-      const token = generateToken(user);
+    // Generate token
+    const token = generateToken(user);
 
-      // Set cookie
-      res.cookie("SportsBuddyToken", token, cookieOptions);
+    // Set cookie
+    res.cookie("SportsBuddyToken", token, cookieOptions);
 
-      // Success response
-      res.status(200).json({
-        success: true,
-        message: "Login successful",
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          username: user.username,
-          role: user.role,
-          avatar: user.avatar
-        }
-      });
+    // Success response
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        avatar: user.avatar
+      }
+    });
 
   } catch (error) {
     console.error("Login error:", error);
@@ -466,27 +466,3 @@ export const getUserProfile = async (req, res) => {
     });
   }
 };
-
-// export const forgotPassword = async (req, res) => {
-//   try {
-//     const { email, newPassword } = req.body;
-
-//     const user = await User.findOne({ email }).select("+password");
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     user.password = await bcrypt.hash(newPassword, 10);
-//     await user.save();
-
-//     res.json({
-//       success: true,
-//       message: "Password updated successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Error updating password",
-//       error: error.message,
-//     });
-//   }
-// };

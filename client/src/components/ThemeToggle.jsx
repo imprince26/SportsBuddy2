@@ -14,10 +14,10 @@ const ThemeToggle = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          {theme === 'light' && <Sun className="h-5 w-5" />}
-          {theme === 'dark' && <Moon className="h-5 w-5" />}
-          {theme === 'system' && <Monitor className="h-5 w-5" />}
+        <Button variant="outline" size="icon" className="hover:bg-primary/10">
+          {theme === 'light' && <Sun className="h-4 w-4" />}
+          {theme === 'dark' && <Moon className="h-4 w-4" />}
+          {theme === 'system' && <Monitor className="h-4 w-4" />}
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>

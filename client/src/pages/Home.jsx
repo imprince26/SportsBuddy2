@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useEvents } from "@/hooks/useEvents";
-import { motion } from "framer-motion"
+import { motion , AnimatePresence} from "framer-motion"
 import { format } from "date-fns"
-import { Calendar, MapPin, Users, ArrowRight, Search, Trophy, Star } from "lucide-react"
+import { Play, Calendar, Trophy, ChevronRight, Rocket, Users,ArrowRight,Star,MapPin} from "lucide-react"
+import { useAuth } from "@/hooks/useAuth";
 
 const Home = () => {
   const { events, getEvents: fetchEvents, loading } = useEvents()
+  const {user} = useAuth();
   const [upcomingEvents, setUpcomingEvents] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -32,7 +34,7 @@ const Home = () => {
   }, [events])
 
   const categories = [
-    { id: "all", name: "All Sports", icon: "🏆" },
+    // { id: "all", name: "All Sports", icon: "🏆" },
     { id: "Football", name: "Football", icon: "⚽" },
     { id: "Basketball", name: "Basketball", icon: "🏀" },
     { id: "Tennis", name: "Tennis", icon: "🎾" },
@@ -111,10 +113,225 @@ const Home = () => {
     window.location.href = `/events?search=${searchTerm}`
   }
 
+  const HeroSection = () => {
+  const { user } = useAuth()
+  
+  return (
+    <section className="relative bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark py-24 overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 overflow-hidden opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={user ? 'auth' : 'unauth'}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.5 }}
+              className="flex-1 text-center lg:text-left"
+            >
+              {user ? (
+                // Authenticated Hero Content
+                <>
+                  <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6">
+                    Welcome Back, <br/>
+                    <span className="text-yellow-300">{user.name}!</span>
+                  </h1>
+                  <p className="text-xl text-white/90 mb-8 max-w-2xl">
+                    Ready for your next game? Your sports community is waiting for you. 
+                    Create an event or join one happening near you.
+                  </p>
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                    <Link
+                      to="/events/create"
+                      className="group px-8 py-4 bg-white text-primary-light dark:text-primary-dark font-semibold rounded-xl hover:bg-white/90 transition-all duration-300 flex items-center"
+                    >
+                      <Play className="w-5 h-5 mr-2 transform group-hover:scale-110 transition-transform" />
+                      Host Event
+                    </Link>
+                    <Link
+                      to="/events"
+                      className="group px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center"
+                    >
+                      <Calendar className="w-5 h-5 mr-2" />
+                      Browse Events
+                    </Link>
+                  </div>
+                  <div className="mt-12 grid grid-cols-3 gap-6 max-w-lg mx-auto lg:mx-0">
+                    {[
+                      { label: 'Your Events', value: '12' },
+                      { label: 'Communities', value: '5' },
+                      { label: 'Achievements', value: '8' },
+                    ].map((stat, i) => (
+                      <motion.div 
+                        key={stat.label}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 + (i * 0.1) }}
+                        className="text-center"
+                      >
+                        <div className="text-2xl font-bold text-yellow-300">{stat.value}</div>
+                        <div className="text-sm text-white/80">{stat.label}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                // Unauthenticated Hero Content
+                <>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6">
+                      Find Your Perfect <br/>
+                      <span className="text-yellow-300">Sports Partner</span>
+                    </h1>
+                    <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto lg:mx-0">
+                      Join thousands of sports enthusiasts in your area. Create events, 
+                      join teams, and stay active together.
+                    </p>
+                    <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                      <Link
+                        to="/register"
+                        className="group px-8 py-4 bg-white text-primary-light dark:text-primary-dark font-semibold rounded-xl hover:bg-white/90 transition-all duration-300 flex items-center"
+                      >
+                        <Rocket className="w-5 h-5 mr-2 transform group-hover:translate-x-1 transition-transform" />
+                        Get Started Free
+                      </Link>
+                      <Link
+                        to="/events"
+                        className="group px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center"
+                      >
+                        <Trophy className="w-5 h-5 mr-2" />
+                        Explore Events
+                      </Link>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </motion.div>
+
+            {/* Hero Image Section */}
+            <motion.div 
+              className="flex-1 relative"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div className="relative">
+                <img
+                  src={user ? "/dashboard-preview.svg" : "/hero-sports.svg"}
+                  alt={user ? "Dashboard preview" : "Sports activities"}
+                  className="rounded-2xl shadow-2xl"
+                />
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+const CTASection = () => {
+  const { user } = useAuth()
+
+  if (user) {
+    return (
+      <section className="py-20 bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark">
+        <div className="container mx-auto px-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 md:p-12">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                  Ready to Level Up Your Game?
+                </h2>
+                <p className="text-white/90 text-lg mb-6">
+                  Create your next event and invite players to join. Build your sports community today!
+                </p>
+                <Link
+                  to="/events/create"
+                  className="group inline-flex items-center px-8 py-4 bg-white text-primary-light dark:text-primary-dark font-semibold rounded-xl hover:bg-white/90 transition-all duration-300"
+                >
+                  Create Event
+                  <ChevronRight className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { icon: Trophy, label: 'Host Events' },
+                  { icon: Users, label: 'Build Teams' },
+                  { icon: Calendar, label: 'Track Progress' },
+                  { icon: Rocket, label: 'Grow Community' }
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center"
+                  >
+                    <item.icon className="w-8 h-8 text-white mx-auto mb-2" />
+                    <div className="text-white font-medium">{item.label}</div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="py-20 bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark">
+      <div className="container mx-auto px-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+            Ready to Find Your Sports Community?
+          </h2>
+          <p className="text-white/90 max-w-2xl mx-auto mb-12 text-lg">
+            Join SportsBuddy today and connect with thousands of sports enthusiasts in your area.
+            Start your journey to a more active lifestyle!
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-6">
+            <Link
+              to="/register"
+              className="group px-8 py-4 bg-white text-primary-light dark:text-primary-dark font-semibold rounded-xl hover:bg-white/90 transition-all duration-300 inline-flex items-center justify-center"
+            >
+              Get Started Free
+              <ChevronRight className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link
+              to="/about"
+              className="group px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300 inline-flex items-center justify-center"
+            >
+              Learn More
+              <ChevronRight className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark py-20 md:py-32">
+      {/* <section className="relative bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark py-20 md:py-32">
         <div className="absolute inset-0 overflow-hidden">
           <svg
             className="absolute left-0 top-0 h-full w-full"
@@ -175,37 +392,15 @@ const Home = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                {/* <img
-                  src="/placeholder.svg?height=400&width=600"
-                  alt="Sports activities"
-                  className="rounded-lg shadow-2xl"
-                /> */}
-                {/* <div className="absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 flex items-center">
-                  <div className="bg-primary-light dark:bg-primary-dark rounded-full w-12 h-12 flex items-center justify-center mr-3">
-                    <Users className="text-white" size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Active Users</p>
-                    <p className="text-xl font-bold text-foreground-light dark:text-foreground-dark">10,000+</p>
-                  </div>
-                </div> */}
-                {/* <div className="absolute -top-6 -right-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 flex items-center">
-                  <div className="bg-accent-light dark:bg-accent-dark rounded-full w-12 h-12 flex items-center justify-center mr-3">
-                    <Calendar className="text-white" size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Weekly Events</p>
-                    <p className="text-xl font-bold text-foreground-light dark:text-foreground-dark">500+</p>
-                  </div>
-                </div> */}
               </motion.div>
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
+      <HeroSection />
 
       {/* Search Section */}
-      <section className="py-12 bg-background-light dark:bg-background-dark">
+      {/* <section className="py-12 bg-background-light dark:bg-background-dark">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="bg-card-light dark:bg-card-dark rounded-xl shadow-lg p-6 -mt-20 relative z-20">
@@ -236,7 +431,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Categories Section */}
       <section className="py-16 bg-muted-light/30 dark:bg-muted-dark/30">
@@ -255,10 +450,9 @@ const Home = () => {
               <Link
                 key={category.id}
                 to={category.id === "all" ? "/events" : `/events?category=${category.id}`}
-                className={`flex flex-col items-center p-6 rounded-lg transition-all duration-200 ${selectedCategory === category.id
-                  ? "bg-primary-light/10 dark:bg-primary-dark/10 border-2 border-primary-light dark:border-primary-dark"
-                  : "bg-card-light dark:bg-card-dark hover:bg-primary-light/5 dark:hover:bg-primary-dark/5 border-2 border-transparent"
-                  }`}
+                className={`flex flex-col items-center p-6 rounded-lg transition-all duration-200 
+                  bg-card-light dark:bg-card-dark hover:bg-primary-light/5 dark:hover:bg-primary-dark/5 border-2 border-transparent
+                  `}
                 onClick={() => setSelectedCategory(category.id)}
               >
                 <span className="text-4xl mb-3">{category.icon}</span>
@@ -476,7 +670,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark">
+      {/* <section className="py-20 bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Find Your Sports Community?</h2>
           <p className="text-white/90 max-w-2xl mx-auto mb-8 text-lg">
@@ -498,9 +692,13 @@ const Home = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
+      <CTASection />
+
     </div>
   )
 }
 
 export default Home
+
+

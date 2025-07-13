@@ -1,0 +1,66 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Pattern -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <rect width="40" height="40" fill="#F8FAFC" />
+    <circle cx="20" cy="20" r="1" fill="#E2E8F0" />
+  </pattern>
+  <rect width="800" height="600" fill="url(#grid)" />
+
+  <!-- Football -->
+  <g transform="translate(100, 150) rotate(-15)">
+    <circle cx="0" cy="0" r="50" fill="#000000" />
+    <path d="M-35,-35 L35,35 M-35,35 L35,-35" stroke="white" stroke-width="8" />
+    <circle cx="0" cy="0" r="15" fill="none" stroke="white" stroke-width="8" />
+  </g>
+
+  <!-- Basketball -->
+  <g transform="translate(250, 300)">
+    <circle cx="0" cy="0" r="45" fill="#FF6B00" />
+    <path d="M-45,0 H45 M0,-45 V45" stroke="black" stroke-width="4" />
+    <path d="M-32,-32 A45,45 0 0,1 32,-32 M-32,32 A45,45 0 0,0 32,32" stroke="black" stroke-width="4" fill="none" />
+  </g>
+
+  <!-- Tennis Ball -->
+  <g transform="translate(400, 200)">
+    <circle cx="0" cy="0" r="35" fill="#CFE635" />
+    <path d="M-25,-25 Q0,35 25,-25 M-25,25 Q0,-35 25,25" stroke="white" stroke-width="4" fill="none" />
+  </g>
+
+  <!-- Running Track -->
+  <path d="M50,450 Q400,350 750,450" stroke="#FF4747" stroke-width="40" fill="none" />
+  <path d="M50,460 Q400,360 750,460" stroke="#FF6B6B" stroke-width="20" fill="none" />
+
+  <!-- People Silhouettes -->
+  <g transform="translate(600, 250)">
+    <!-- Runner -->
+    <path d="M0,0 L10,-30 L-10,-30 Z" fill="#3B82F6" />
+    <path d="M0,-30 L0,-80" stroke="#3B82F6" stroke-width="10" stroke-linecap="round" />
+    <path d="M0,-60 L-20,-40 M0,-60 L20,-40" stroke="#3B82F6" stroke-width="10" stroke-linecap="round" />
+    <path d="M0,-80 L-15,-100 M0,-80 L15,-100" stroke="#3B82F6" stroke-width="10" stroke-linecap="round" />
+  </g>
+
+  <!-- Volleyball Net -->
+  <line x1="500" y1="100" x2="500" y2="300" stroke="#000000" stroke-width="4" />
+  <path d="M480,120 Q500,140 520,120 Q540,100 560,120" stroke="#000000" stroke-width="2" fill="none" />
+  
+  <!-- Animated Elements -->
+  <g transform="translate(700, 350)">
+    <circle cx="0" cy="0" r="25" fill="#3B82F6">
+      <animate attributeName="cy" values="0;-20;0" dur="2s" repeatCount="indefinite" />
+    </circle>
+  </g>
+
+  <!-- Decorative Elements -->
+  <circle cx="150" cy="500" r="8" fill="#3B82F6" opacity="0.5" />
+  <circle cx="650" cy="150" r="12" fill="#3B82F6" opacity="0.3" />
+  <circle cx="450" cy="50" r="15" fill="#3B82F6" opacity="0.4" />
+  <circle cx="50" cy="250" r="10" fill="#3B82F6" opacity="0.6" />
+  <circle cx="750" cy="400" r="6" fill="#3B82F6" opacity="0.7" />
+
+  <!-- Connection Lines -->
+  <g stroke="#3B82F6" stroke-width="2" opacity="0.2">
+    <line x1="150" y1="500" x2="650" y2="150" />
+    <line x1="450" y1="50" x2="50" y2="250" />
+    <line x1="750" y1="400" x2="450" y2="50" />
+  </g>
+</svg>

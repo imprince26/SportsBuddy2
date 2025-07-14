@@ -150,7 +150,7 @@ const PublicProfile = () => {
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false)
   const [followLoading, setFollowLoading] = useState(false)
   const [userStats, SetUserStats] = useState({})
-  
+
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -182,55 +182,55 @@ const PublicProfile = () => {
     }
   }, [userId, getUserProfile, user])
 
-    useEffect(() => {
-      const fetchUserStats = async () => {
-        const res = await api.get(`/users/stats/${userId}`);
-        SetUserStats(res.data.data)
-      }
-        fetchUserStats();
-      
-    }, [])
-
-const handleFollow = async () => {
-  if (!user) {
-    toast.error("Please login to follow users");
-    return;
-  }
-
-  // Prevent following self
-  if (user._id === userId) {
-    toast.error("You cannot follow yourself");
-    return;
-  }
-
-  setFollowLoading(true);
-  try {
-    if (isFollowing) {
-      await unfollowUser(userId);
-      setIsFollowing(false);
-      // Update followers count
-      SetUserStats(prev => ({
-        ...prev,
-        followers: (prev.followers || 0) - 1
-      }));
-      toast.success("Unfollowed successfully");
-    } else {
-      await followUser(userId);
-      setIsFollowing(true);
-      // Update followers count
-      SetUserStats(prev => ({
-        ...prev,
-        followers: (prev.followers || 0) + 1
-      }));
-      toast.success("Following successfully");
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      const res = await api.get(`/users/stats/${userId}`);
+      SetUserStats(res.data.data)
     }
-  } catch (error) {
-    const errorMessage = error.response?.data?.message || "Failed to update follow status";
-    toast.error(errorMessage);
-  } finally {
-    setFollowLoading(false);
-  }
-};
+    fetchUserStats();
+
+  }, [])
+
+  const handleFollow = async () => {
+    if (!user) {
+      toast.error("Please login to follow users");
+      return;
+    }
+
+    // Prevent following self
+    if (user._id === userId) {
+      toast.error("You cannot follow yourself");
+      return;
+    }
+
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await unfollowUser(userId);
+        setIsFollowing(false);
+        // Update followers count
+        SetUserStats(prev => ({
+          ...prev,
+          followers: (prev.followers || 0) - 1
+        }));
+        toast.success("Unfollowed successfully");
+      } else {
+        await followUser(userId);
+        setIsFollowing(true);
+        // Update followers count
+        SetUserStats(prev => ({
+          ...prev,
+          followers: (prev.followers || 0) + 1
+        }));
+        toast.success("Following successfully");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Failed to update follow status";
+      toast.error(errorMessage);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const getSportIcon = (sport) => {
     const icons = {

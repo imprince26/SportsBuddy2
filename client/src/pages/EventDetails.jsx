@@ -292,6 +292,14 @@ const EventDetails = () => {
     setShowShareModal(false)
   }
 
+  const handlePreviousPage = () => {
+    if (document.referrer) {
+      navigate(-1)
+    } else {
+      navigate("/events")
+    }
+  }
+
   // Loading skeleton
   if (loading) {
     return (
@@ -319,10 +327,10 @@ const EventDetails = () => {
           className="mb-6"
         >
           <Button variant="ghost" asChild className="pl-0 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark">
-            <Link to="/events">
+            <Button onClick={handlePreviousPage} className="flex items-center">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back to Events
-            </Link>
+            </Button>
           </Button>
         </motion.div>
 

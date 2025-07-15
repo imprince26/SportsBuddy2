@@ -551,7 +551,7 @@ const Profile = () => {
                       </h1>
                       <p className="text-muted-foreground text-lg">@{user.username}</p>
                     </div>
-                    {user.bio && <p className="text-foreground leading-relaxed max-w-2xl">{user.bio}</p>}
+                    {user.bio && <p className="text-foreground text-justify leading-relaxed max-w-2xl">{user.bio}</p>}
                     {/* Location & Join Date */}
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       {(user.location?.city || user.location?.state || user.location?.country) && (

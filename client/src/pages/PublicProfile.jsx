@@ -415,7 +415,7 @@ const PublicProfile = () => {
                   <p className="text-muted-foreground text-lg">@{profile.username}</p>
                 </div>
 
-                {profile.bio && <p className="text-foreground leading-relaxed max-w-2xl">{profile.bio}</p>}
+                {profile.bio && <p className="text-foreground leading-relaxed text-justify max-w-2xl">{profile.bio}</p>}
 
                 {/* Location & Join Date */}
                 <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">

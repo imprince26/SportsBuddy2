@@ -260,6 +260,13 @@ const PublicProfile = () => {
     }
   }
 
+  // page title
+  useEffect(() => {
+    if (profile) {
+      document.title = `Profile | ${profile.name}`
+    }
+  }, [profile])
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -504,13 +511,13 @@ const PublicProfile = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                       <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {profile.stats?.eventsCreated || 0}
+                        {userStats?.eventsCreated || 0}
                       </div>
                       <div className="text-sm text-blue-600/70 dark:text-blue-400/70">Events Created</div>
                     </div>
                     <div className="text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
                       <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {profile.stats?.eventsParticipated || 0}
+                        {userStats?.eventsJoined || 0}
                       </div>
                       <div className="text-sm text-green-600/70 dark:text-green-400/70">Events Joined</div>
                     </div>

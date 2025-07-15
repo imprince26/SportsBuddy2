@@ -326,11 +326,9 @@ const EventDetails = () => {
           transition={{ duration: 0.5 }}
           className="mb-6"
         >
-          <Button variant="ghost" asChild className="pl-0 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark">
-            <Button onClick={handlePreviousPage} className="flex items-center">
+          <Button onClick={handlePreviousPage} variant="ghost"  className="pl-0 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back to Events
-            </Button>
           </Button>
         </motion.div>
 

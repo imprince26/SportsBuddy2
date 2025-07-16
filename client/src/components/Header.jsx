@@ -1,234 +1,362 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Menu, X, LogOut, User, Home, Calendar, Shield, Trophy, Plus, Bell, Settings } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import ThemeToggle from './theme-toggle';
+import { useState, useEffect } from "react"
+import {  Link, useLocation, useNavigate } from "react-router-dom"
+import { useAuth } from "@/hooks/useAuth"
+import { Menu, X, Home, Calendar, User, Bell, LogOut, ChevronDown, Search, Moon, Sun, Shield } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 const Header = () => {
-  const { logout, user } = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const location = useLocation();
-
-  const navLinks = [
-    { to: '/', label: 'Home', icon: Home },
-    { to: '/events', label: 'Events', icon: Calendar },
-    ...(user ? [
-      { to: '/dashboard', label: 'Dashboard', icon: User },
-      { to: '/events/create', label: 'Create Event', icon: Plus }
-    ] : []),
-    ...(user?.role === 'admin' ? [{ to: '/admin/users', label: 'Admin', icon: Shield }] : []),
-  ];
-
-  const handleLogout = async () => {
-    await logout();
-    setIsMobileMenuOpen(false);
-  };
+ const { user, isAuthenticated, logout } = useAuth()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return (
+        localStorage.getItem("theme") === "dark" ||
+        (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)
+      )
+    }
+    return false
+  })
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+      setIsScrolled(window.scrollY > 10)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    setIsMenuOpen(false)
+    setIsProfileMenuOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark")
+      localStorage.setItem("theme", "dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+      localStorage.setItem("theme", "light")
+    }
+  }, [isDarkMode])
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode)
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate("/login")
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
+  }
+
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className={cn(
-        "sticky top-0 z-50 transition-all duration-300",
-        scrolled 
-          ? "bg-background/95 dark:bg-background/95 backdrop-blur-lg shadow-lg border-b border-border" 
-          : "bg-background/80 dark:bg-background/80 backdrop-blur-sm"
-      )}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-14">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
+   <>
+    {/* Header */}
+      <header
+        className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? "bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md shadow-sm" : "bg-background-light dark:bg-background-dark"
+          }`}
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 10 }}
-                transition={{ type: 'spring', stiffness: 300 }}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-8 h-8 text-primary-light dark:text-primary-dark"
               >
-                <Trophy className="h-6 w-6 text-primary" />
-              </motion.div>
-              <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                SportsBuddy
-              </span>
+                <circle cx="12" cy="12" r="10" />
+                <path d="m4.93 4.93 4.24 4.24" />
+                <path d="m14.83 9.17 4.24-4.24" />
+                <path d="m14.83 14.83 4.24 4.24" />
+                <path d="m9.17 14.83-4.24 4.24" />
+                <circle cx="12" cy="12" r="4" />
+              </svg>
+              <span className="text-xl font-bold text-foreground-light dark:text-foreground-dark">SportsBuddy</span>
             </Link>
-          </div>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-1">
-            {navLinks.map(({ to, label, icon: Icon }) => (
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-6">
               <Link
-                key={to}
-                to={to}
-                className={cn(
-                  'flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                  location.pathname === to
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-foreground hover:bg-muted hover:text-primary'
-                )}
+                to="/"
+                className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname === "/"
+                  ? "text-primary-light dark:text-primary-dark"
+                  : "text-foreground-light dark:text-foreground-dark"
+                  }`}
               >
-                <Icon className="h-4 w-4" />
-                <span>{label}</span>
+                Home
               </Link>
-            ))}
-          </div>
-
-          {/* Desktop Right Section */}
-          <div className="hidden md:flex items-center space-x-2">
-            <ThemeToggle />
-            {!user ? (
-              <>
-                <Link to="/login">
-                  <Button variant="ghost" size="sm" className="text-sm">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button size="sm" className="text-sm bg-gradient-to-r from-primary to-secondary">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-4 w-4" />
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Avatar className="cursor-pointer h-8 w-8 ring-2 ring-primary/20">
-                        <AvatarImage src={user?.avatar?.[0]?.url || "/placeholder.svg"} alt={user?.name} />
-                        <AvatarFallback className="text-xs bg-muted">
-                          {user?.name?.[0]?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                    </motion.div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="flex items-center">
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/settings" className="flex items-center">
-                        <Settings className="mr-2 h-4 w-4" />
-                        Settings
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <motion.div
-                animate={{ rotate: isMobileMenuOpen ? 90 : 0 }}
-                transition={{ duration: 0.3 }}
+              <Link
+                to="/events"
+                className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname.includes("/events") && !location.pathname.includes("/create")
+                  ? "text-primary-light dark:text-primary-dark"
+                  : "text-foreground-light dark:text-foreground-dark"
+                  }`}
               >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </motion.div>
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="md:hidden bg-background/95 backdrop-blur-lg border-t border-border"
-          >
-            <div className="px-4 pt-2 pb-4 space-y-1">
-              {navLinks.map(({ to, label, icon: Icon }) => (
+                Events
+              </Link>
+              {isAuthenticated && (
                 <Link
-                  key={to}
-                  to={to}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    'flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium',
-                    location.pathname === to
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground hover:bg-muted'
-                  )}
+                  to="/dashboard"
+                  className={`text-sm font-medium transition-colors hover:text-primary-light dark:hover:text-primary-dark ${location.pathname === "/dashboard"
+                    ? "text-primary-light dark:text-primary-dark"
+                    : "text-foreground-light dark:text-foreground-dark"
+                    }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
+                  Dashboard
                 </Link>
-              ))}
-              {!user ? (
-                <div className="pt-2 space-y-1">
+              )}
+            </nav>
+
+            {/* Right Side Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
+                aria-label="Toggle theme"
+              >
+                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+
+              {/* Search Button */}
+              <button
+                onClick={() => navigate("/events")}
+                className="p-2 rounded-full text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors md:flex items-center hidden"
+                aria-label="Search"
+              >
+                <Search size={20} />
+              </button>
+
+              {isAuthenticated ? (
+                <>
+                  {/* Notifications */}
+                  <Link
+                    to="/notifications"
+                    className="relative p-2 rounded-full text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors hidden md:block"
+                  >
+                    <Bell size={20} />
+                    {user?.notifications?.filter((n) => !n.read)?.length > 0 && (
+                      <span className="absolute top-0 right-0 w-4 h-4 bg-destructive-light dark:bg-destructive-dark rounded-full flex items-center justify-center text-[10px] text-white">
+                        {user.notifications.filter((n) => !n.read).length}
+                      </span>
+                    )}
+                  </Link>
+
+                  {/* Profile Menu (Desktop) */}
+                  <div className="relative hidden md:block">
+                    <button
+                      onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                      className="flex items-center space-x-2 focus:outline-none"
+                    >
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-muted-light dark:bg-muted-dark flex items-center justify-center">
+                        {user?.avatar? (
+                          <img
+                            src={user.avatar.url || "/placeholder.svg"}
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User size={16} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-foreground-light dark:text-foreground-dark hidden lg:block">
+                        {user?.name || "User"}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-foreground-light dark:text-foreground-dark transition-transform duration-200 ${isProfileMenuOpen ? "rotate-180" : ""
+                          }`}
+                      />
+                    </button>
+
+                    <AnimatePresence>
+                      {isProfileMenuOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute right-0 mt-2 w-48 py-2 bg-card-light dark:bg-card-dark rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+                        >
+                          <Link
+                            to="/profile"
+                            className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
+                          >
+                            <User size={16} className="mr-2" />
+                            Profile
+                          </Link>
+                          <Link
+                            to="/dashboard"
+                            className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
+                          >
+                            <Home size={16} className="mr-2" />
+                            Dashboard
+                          </Link>
+                          <Link
+                            to="/notifications"
+                            className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
+                          >
+                            <Bell size={16} className="mr-2" />
+                            Notifications
+                          </Link>
+                          {user?.role === "admin" && (
+                            <Link
+                              to="/admin/users"
+                              className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
+                            >
+                              <Shield size={16} className="mr-2" />
+                              Admin Panel
+                            </Link>
+                          )}
+                          <button
+                            onClick={handleLogout}
+                            className="flex w-full items-center px-4 py-2 text-sm text-destructive-light dark:text-destructive-dark hover:bg-muted-light dark:hover:bg-muted-dark"
+                          >
+                            <LogOut size={16} className="mr-2" />
+                            Logout
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              ) : (
+                <div className="hidden md:flex items-center space-x-4">
                   <Link
                     to="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-muted"
+                    className="text-sm font-medium text-foreground-light dark:text-foreground-dark hover:text-primary-light dark:hover:text-primary-dark"
                   >
                     Login
                   </Link>
                   <Link
                     to="/register"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block px-3 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
+                    className="text-sm font-medium bg-primary-light dark:bg-primary-dark text-white px-4 py-2 rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
                   >
                     Sign Up
                   </Link>
                 </div>
-              ) : (
-                <div className="pt-2 space-y-1">
+              )}
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 rounded-md text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors md:hidden"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-card-light dark:bg-card-dark border-b border-border-light dark:border-border-dark"
+          >
+            <div className="container mx-auto px-4 py-4 space-y-4">
+              <Link
+                to="/"
+                className="flex items-center py-2 text-foreground-light dark:text-foreground-dark hover:text-primary-light dark:hover:text-primary-dark"
+              >
+                <Home size={20} className="mr-3" />
+                Home
+              </Link>
+              <Link
+                to="/events"
+                className="flex items-center py-2 text-foreground-light dark:text-foreground-dark hover:text-primary-light dark:hover:text-primary-dark"
+              >
+                <Calendar size={20} className="mr-3" />
+                Events
+              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="flex items-center py-2 text-foreground-light dark:text-foreground-dark hover:text-primary-light dark:hover:text-primary-dark"
+                  >
+                    <Home size={20} className="mr-3" />
+                    Dashboard
+                  </Link>
                   <Link
                     to="/profile"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-muted"
+                    className="flex items-center py-2 text-foreground-light dark:text-foreground-dark hover:text-primary-light dark:hover:text-primary-dark"
                   >
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
+                    <User size={20} className="mr-3" />
+                    Profile
                   </Link>
+                  <Link
+                    to="/notifications"
+                    className="flex items-center py-2 text-foreground-light dark:text-foreground-dark hover:text-primary-light dark:hover:text-primary-dark"
+                  >
+                    <Bell size={20} className="mr-3" />
+                    Notifications
+                    {user?.notifications?.filter((n) => n.read == false)?.length > 0 && (
+                      <span className="ml-2 w-5 h-5 bg-destructive-light dark:bg-destructive-dark rounded-full flex items-center justify-center text-xs text-white">
+                        {user.notifications.filter((n) => n.read == false).length}
+                      </span>
+                    )}
+                  </Link>
+                  {user?.role === "admin" && (
+                    <Link
+                      to="/admin/users"
+                      className="flex items-center py-2 text-foreground-light dark:text-foreground-dark hover:text-primary-light dark:hover:text-primary-dark"
+                    >
+                      <Shield size={20} className="mr-3" />
+                      Admin Panel
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-muted w-full text-left"
+                    className="flex items-center py-2 w-full text-left text-destructive-light dark:text-destructive-dark hover:text-destructive-light/90 dark:hover:text-destructive-dark/90"
                   >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
+                    <LogOut size={20} className="mr-3" />
+                    Logout
                   </button>
+                </>
+              ) : (
+                <div className="flex flex-col space-y-2">
+                  <Link
+                    to="/login"
+                    className="flex items-center py-2 text-foreground-light dark:text-foreground-dark hover:text-primary-light dark:hover:text-primary-dark"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="flex items-center justify-center py-2 bg-primary-light dark:bg-primary-dark text-white rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
+                  >
+                    Sign Up
+                  </Link>
                 </div>
               )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+   </>
   );
 };
 

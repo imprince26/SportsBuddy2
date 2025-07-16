@@ -1,22 +1,22 @@
 import { Link } from 'react-router-dom'
-import {motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { Sparkles, Play, Calendar, Trophy, Users, Globe, Rocket, Heart } from 'lucide-react'
 
 const HeroSection = () => {
   const { user } = useAuth()
 
-    const stats = [
-      { label: "Active Users", value: "10K+", icon: Users, color: "text-blue-500" },
-      { label: "Events Created", value: "5K+", icon: Calendar, color: "text-green-500" },
-      { label: "Sports Categories", value: "20+", icon: Trophy, color: "text-yellow-500" },
-      { label: "Cities", value: "100+", icon: Globe, color: "text-purple-500" },
-    ]
+  const stats = [
+    { label: "Active Users", value: "10K+", icon: Users, color: "text-blue-500" },
+    { label: "Events Created", value: "5K+", icon: Calendar, color: "text-green-500" },
+    { label: "Sports Categories", value: "20+", icon: Trophy, color: "text-yellow-500" },
+    { label: "Cities", value: "100+", icon: Globe, color: "text-purple-500" },
+  ]
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-light via-accent-light to-secondary-light dark:from-primary-dark dark:via-accent-dark dark:to-secondary-dark">
+      <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-bl from-primary-light via-accent-light to-secondary-light dark:from-primary-dark dark:via-accent-dark dark:to-secondary-dark">
 
 
         {/* Floating Elements */}
@@ -51,14 +51,14 @@ const HeroSection = () => {
             >
               {user ? (
                 // Authenticated Hero Content
-                <>
+                <div className='min-h-screen'>
                   <motion.div
                     initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="mb-6"
                   >
-                    <span className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white/90 text-sm font-medium mb-4">
+                    <span className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white/90 text-sm mt-6 md:mt-4  font-medium mb-2">
                       <Sparkles className="w-4 h-4 mr-2" />
                       Welcome back to your sports community
                     </span>
@@ -95,11 +95,11 @@ const HeroSection = () => {
                   </div>
 
                   {/* User Stats */}
-                  <div className="grid grid-cols-3 gap-8 max-w-md mx-auto">
+                  <div className="grid grid-cols-2 gap-8 max-w-md mx-auto mb-10">
                     {[
                       { label: 'Events Joined', value: '12', icon: Calendar },
                       { label: 'Friends Made', value: '28', icon: Users },
-                      { label: 'Achievements', value: '8', icon: Trophy },
+                      // { label: 'Achievements', value: '8', icon: Trophy },
                     ].map((stat, i) => (
                       <motion.div
                         key={stat.label}
@@ -110,11 +110,11 @@ const HeroSection = () => {
                       >
                         <stat.icon className="w-6 h-6 text-yellow-300 mx-auto mb-2" />
                         <div className="text-2xl font-bold text-white">{stat.value}</div>
-                        <div className="text-sm text-white/80">{stat.label}</div>
+                        <div className="text-sm text-white/80 text-wrap ">{stat.label}</div>
                       </motion.div>
                     ))}
                   </div>
-                </>
+                </div>
               ) : (
                 // Unauthenticated Hero Content
                 <>
@@ -185,7 +185,7 @@ const HeroSection = () => {
 
       {/* Scroll indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        className="absolute md:flex hidden bottom-8 left-1/2 transform -translate-x-1/2"
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
       >

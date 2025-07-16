@@ -1,11 +1,9 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/utils/api';
 
 const EventContext = createContext();
-
 
 export const EventProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
@@ -30,7 +28,6 @@ export const EventProvider = ({ children }) => {
     pages: 0
   });
 
-  const { user } = useAuth();
   const { socket, joinEventRoom, leaveEventRoom } = useSocket();
 
 
@@ -149,23 +146,6 @@ export const EventProvider = ({ children }) => {
     }
   };
 
-  // Get user's events (created and participated)
-  const getUserEvents = async (userId) => {
-    if (!user) return;
-    setLoading(true);
-
-    try {
-      const response = await api.get(`/events/user/${userId}`);
-      if (response) {
-        setUserEvents(response.data);
-        return response.data;
-      }
-    } catch (error) {
-      console.error('Error fetching user events:', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Get event by ID
   const getEventById = async (eventId) => {
@@ -456,23 +436,6 @@ export const EventProvider = ({ children }) => {
     }
   };
 
-  const searchEvents = async (searchQuery) => {
-    setLoading(true);
-
-    try {
-      const response = await api.get(`/events/search?q=${searchQuery}`);
-
-      if (response.data.success) {
-        return response.data.data;
-      }
-    } catch (error) {
-      console.error('Error searching events:', error);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getNearbyEvents = async (lat, lng, radius = 10) => {
     setLoading(true);
 
@@ -501,13 +464,9 @@ export const EventProvider = ({ children }) => {
   const value = {
     events,
     userEvents,
-    currentEvent,
     loading,
     error,
-    filters,
-    pagination,
     getEvents,
-    getUserEvents,
     getEventById,
     createEvent,
     updateEvent,
@@ -517,10 +476,7 @@ export const EventProvider = ({ children }) => {
     addTeam,
     addRating,
     sendMessage,
-    searchEvents,
     getNearbyEvents,
-    setFilters,
-    setPagination
   };
 
   return <EventContext.Provider value={value}>{children}</EventContext.Provider>;

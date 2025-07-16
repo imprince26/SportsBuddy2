@@ -331,7 +331,6 @@ export const AuthProvider = ({ children }) => {
     getUserFollowing,
     updatePreferences,
     addAchievement,
-    searchUsers
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

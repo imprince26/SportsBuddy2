@@ -329,7 +329,7 @@ const Footer = () => {
               <span className="text-xs text-muted-foreground-light dark:text-muted-foreground-dark">
                 Crafted by{" "}
                 <a
-                  href="https://github.com/princepatel"
+                  href="https://github.com/imprince26"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-medium text-primary-light dark:text-primary-dark hover:underline inline-flex items-center"

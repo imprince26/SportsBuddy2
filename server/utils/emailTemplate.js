@@ -1,11 +1,11 @@
 const AdminSentEmailHtml = ({ subject, message, buttonText, buttonUrl }) => {
-  const primaryColor = '#3b82f6'; // primary.dark from your theme
-  const backgroundColor = '#f9fafb'; // background.light
-  const textColor = '#111827'; // foreground.light
-  const cardColor = '#ffffff'; // card.light
-  const footerTextColor = '#6b7280'; // muted.foreground.light
+    const primaryColor = '#3b82f6'; // primary.dark from your theme
+    const backgroundColor = '#f9fafb'; // background.light
+    const textColor = '#111827'; // foreground.light
+    const cardColor = '#ffffff'; // card.light
+    const footerTextColor = '#6b7280'; // muted.foreground.light
 
-  return `
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -139,7 +139,7 @@ const AdminSentEmailHtml = ({ subject, message, buttonText, buttonUrl }) => {
 };
 
 const welcomeEmailHtml = (name) => {
-  return `
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -180,7 +180,6 @@ const welcomeEmailHtml = (name) => {
 </body>
 </html>
     `;
-    }
-
+}
 
 export { AdminSentEmailHtml, welcomeEmailHtml };

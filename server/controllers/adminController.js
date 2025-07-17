@@ -6,9 +6,7 @@ import { AdminSentEmailHtml } from '../utils/emailTemplate.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// @desc    Get dashboard analytics
-// @route   GET /api/admin/analytics
-// @access  Private/Admin
+
 export const getDashboardAnalytics = asyncHandler(async (req, res) => {
     const totalUsers = await User.countDocuments();
     const totalEvents = await Event.countDocuments();
@@ -23,17 +21,11 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Get all users
-// @route   GET /api/admin/users
-// @access  Private/Admin
 export const manageUsers = asyncHandler(async (req, res) => {
     const users = await User.find({}).select('-password');
     res.json(users);
 });
 
-// @desc    Get user by ID
-// @route   GET /api/admin/users/:id
-// @access  Private/Admin
 export const getUserById = asyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id).select('-password');
     if (user) {
@@ -44,10 +36,6 @@ export const getUserById = asyncHandler(async (req, res) => {
     }
 });
 
-
-// @desc    Update user
-// @route   PUT /api/admin/users/:id
-// @access  Private/Admin
 export const updateUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
 
@@ -69,10 +57,6 @@ export const updateUser = asyncHandler(async (req, res) => {
     }
 });
 
-
-// @desc    Delete user
-// @route   DELETE /api/admin/users/:id
-// @access  Private/Admin
 export const deleteUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
     if (user) {
@@ -84,18 +68,11 @@ export const deleteUser = asyncHandler(async (req, res) => {
     }
 });
 
-
-// @desc    Get all events
-// @route   GET /api/admin/events
-// @access  Private/Admin
 export const manageEvents = asyncHandler(async (req, res) => {
     const events = await Event.find({}).populate('organizer', 'name email');
     res.json(events);
 });
 
-// @desc    Delete an event
-// @route   DELETE /api/admin/events/:id
-// @access  Private/Admin
 export const deleteEvent = asyncHandler(async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (event) {
@@ -107,10 +84,6 @@ export const deleteEvent = asyncHandler(async (req, res) => {
     }
 });
 
-
-// @desc    Send notification to a specific user
-// @route   POST /api/admin/notifications/user/:id
-// @access  Private/Admin
 export const sendNotificationToUser = asyncHandler(async (req, res) => {
     const { subject, message } = req.body;
     const user = await User.findById(req.params.id);
@@ -135,16 +108,12 @@ export const sendNotificationToUser = asyncHandler(async (req, res) => {
     }
 });
 
-// @desc    Send notification to all users
-// @route   POST /api/admin/notifications/all
-// @access  Private/Admin
 export const sendNotificationToAll = asyncHandler(async (req, res) => {
     const { subject, message } = req.body;
     const users = await User.find({}, 'email');
     const emails = users.map(user => user.email);
 
     try {
-        // Nodemailer can send to multiple recipients if they are in an array
         await sendEmail({
             from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
             to: emails,
@@ -159,9 +128,6 @@ export const sendNotificationToAll = asyncHandler(async (req, res) => {
     }
 });
 
-// @desc    Admin search for users or events
-// @route   GET /api/admin/search
-// @access  Private/Admin
 export const adminSearch = asyncHandler(async (req, res) => {
     const { type, query } = req.query;
     let results = [];

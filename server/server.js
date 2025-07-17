@@ -12,6 +12,7 @@ import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
 import { uploadImage, upload } from "./config/cloudinary.js";
 import job from "./utils/cron.js";
+import adminRoute from "./routes/adminRoute.js";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use(cors(corsOptions));
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/users", userRoute);
+app.use('/api/admin', adminRoute);
 app.use("/api/upload", uploadRoute);
 
 app.post("/api/upload", upload.array("file"), async (req, res) => {

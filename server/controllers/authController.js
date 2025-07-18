@@ -5,7 +5,8 @@ import { validationResult } from "express-validator";
 import { uploadImage, deleteImage } from "../config/cloudinary.js";
 import fs from "fs/promises";
 import validator from "validator";
-import { resolve } from "path";
+import sendEmail from "../config/sendEmail.js";
+import { welcomeEmailHtml } from "../utils/emailTemplate.js"; 
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -50,6 +51,14 @@ export const register = async (req, res) => {
     const token = generateToken(newUser);
 
     res.cookie("SportsBuddyToken", token, cookieOptions);
+
+    // Send welcome email
+    await sendEmail({
+      from:`Team SportsBuddy <${process.env.FROM_EMAIL}>`,
+      to: newUser.email,
+      subject: "Welcome to SportsBuddy!",
+      html: welcomeEmailHtml(name),
+    });
 
     res.status(201).json({
       success: true,

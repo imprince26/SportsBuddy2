@@ -26,7 +26,7 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
         date: { $lt: new Date() } 
     });
     const eventsByCategory = await Event.aggregate([
-        { $group: { _id: "$sport", count: { $sum: 1 } } }
+        { $group: { _id: "$category", count: { $sum: 1 } } }
     ]);
     const popularEvents = await Event.find()
         .sort({ participants: -1 })
@@ -194,8 +194,8 @@ export const adminSearch = asyncHandler(async (req, res) => {
         }).select('-password');
     } else if (type === 'events') {
         results = await Event.find({
-            $or: [{ name: searchRegex }, { description: searchRegex }, { sport: searchRegex }],
-        }).populate('organizer', 'name email');
+            $or: [{ name: searchRegex }, { description: searchRegex }, { category: searchRegex }],
+        }).populate('createdBy', 'name email');
     } else {
         res.status(400);
         throw new Error("Invalid search type. Use 'users' or 'events'.");

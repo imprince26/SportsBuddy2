@@ -629,8 +629,8 @@ export const getUserById = asyncHandler(async (req, res) => {
 
         // Get user's events count
         const eventsCreated = await Event.countDocuments({ createdBy: user._id });
-        const eventsParticipated = await Event.countDocuments({ 
-            participants: user._id 
+        const eventsParticipated = await Event.countDocuments({
+            participants: user._id
         });
 
         // Enhanced user object
@@ -661,7 +661,7 @@ export const getUserById = asyncHandler(async (req, res) => {
 export const updateUser = asyncHandler(async (req, res) => {
     try {
         const { name, email, role, isActive } = req.body;
-        
+
         const user = await User.findById(req.params.id);
 
         if (!user) {
@@ -671,9 +671,9 @@ export const updateUser = asyncHandler(async (req, res) => {
 
         // Check if email is being changed and if it's already taken
         if (email && email !== user.email) {
-            const emailExists = await User.findOne({ 
-                email, 
-                _id: { $ne: req.params.id } 
+            const emailExists = await User.findOne({
+                email,
+                _id: { $ne: req.params.id }
             });
             if (emailExists) {
                 res.status(400);
@@ -745,11 +745,11 @@ export const deleteUser = asyncHandler(async (req, res) => {
         // You can implement this based on your business logic
         await Event.updateMany(
             { createdBy: user._id },
-            { 
-                $set: { 
+            {
+                $set: {
                     createdBy: null, // or assign to another admin
                     status: 'archived' // or whatever status you want
-                } 
+                }
             }
         );
 
@@ -774,7 +774,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
 export const sendNotificationToUser = asyncHandler(async (req, res) => {
     try {
         const { subject, message } = req.body;
-        
+
         // Validation
         if (!subject || !message) {
             res.status(400);
@@ -800,17 +800,17 @@ export const sendNotificationToUser = asyncHandler(async (req, res) => {
         // Optional: Log the notification in database
         // You could create a Notification model to track sent notifications
 
-        res.status(200).json({ 
-            success: true, 
-            message: `Notification sent successfully to ${user.name}` 
+        res.status(200).json({
+            success: true,
+            message: `Notification sent successfully to ${user.name}`
         });
 
     } catch (error) {
         console.error('Error sending notification:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: error.message || 'Failed to send notification',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -818,7 +818,7 @@ export const sendNotificationToUser = asyncHandler(async (req, res) => {
 export const sendNotificationToAll = asyncHandler(async (req, res) => {
     try {
         const { subject, message, role } = req.body;
-        
+
         // Validation
         if (!subject || !message) {
             res.status(400);
@@ -832,7 +832,7 @@ export const sendNotificationToAll = asyncHandler(async (req, res) => {
         }
 
         const users = await User.find(userQuery, 'email name');
-        
+
         if (users.length === 0) {
             res.status(400);
             throw new Error('No users found to send notifications to');
@@ -849,18 +849,18 @@ export const sendNotificationToAll = asyncHandler(async (req, res) => {
             html: AdminSentEmailHtml({ subject, message }),
         });
 
-        res.status(200).json({ 
-            success: true, 
+        res.status(200).json({
+            success: true,
             message: `Notifications sent successfully to ${users.length} users`,
             recipientCount: users.length
         });
 
     } catch (error) {
         console.error('Error sending bulk notifications:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: error.message || 'Failed to send notifications',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -880,11 +880,11 @@ export const bulkUserActions = asyncHandler(async (req, res) => {
         switch (action) {
             case 'delete':
                 // Prevent deleting all admins
-                const adminCount = await User.countDocuments({ 
+                const adminCount = await User.countDocuments({
                     role: 'admin',
                     _id: { $nin: userIds }
                 });
-                
+
                 if (adminCount === 0) {
                     res.status(400);
                     throw new Error('Cannot delete all admin users');

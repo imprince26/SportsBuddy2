@@ -85,53 +85,53 @@ const ManageUsers = () => {
   })
 
   // Fetch users with filtering and pagination
-const fetchUsers = useCallback(async (forceRefresh = false) => {
-  try {
-    setRefreshing(forceRefresh)
-    setLoading(!forceRefresh)
+  const fetchUsers = useCallback(async (forceRefresh = false) => {
+    try {
+      setRefreshing(forceRefresh)
+      setLoading(!forceRefresh)
 
-    const token = localStorage.getItem('token')
-    const response = await api.get('/admin/users', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      params: {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm,
-        role: selectedRole !== 'all' ? selectedRole : undefined,
-        sortBy,
-        sortOrder
-      }
-    })
+      const token = localStorage.getItem('token')
+      const response = await api.get('/admin/users', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        params: {
+          page: currentPage,
+          limit: itemsPerPage,
+          search: searchTerm,
+          role: selectedRole !== 'all' ? selectedRole : undefined,
+          sortBy,
+          sortOrder
+        }
+      })
 
-    if (response.data?.success) {
-      setUsers(response.data.data || [])
-      setTotalPages(response.data.pagination?.totalPages || 1)
-      
-      // You can also use the statistics from the API
-      if (response.data.statistics) {
-        setUserStats(prev => ({
-          ...prev,
-          total: response.data.statistics.totalUsers
-        }))
+      if (response.data?.success) {
+        setUsers(response.data.data || [])
+        setTotalPages(response.data.pagination?.totalPages || 1)
+
+        // You can also use the statistics from the API
+        if (response.data.statistics) {
+          setUserStats(prev => ({
+            ...prev,
+            total: response.data.statistics.totalUsers
+          }))
+        }
+      } else {
+        // Fallback for old API structure
+        setUsers(Array.isArray(response.data) ? response.data : [])
+        setTotalPages(Math.ceil((response.data?.length || 0) / itemsPerPage))
       }
-    } else {
-      // Fallback for old API structure
-      setUsers(Array.isArray(response.data) ? response.data : [])
-      setTotalPages(Math.ceil((response.data?.length || 0) / itemsPerPage))
+
+      setError(null)
+    } catch (err) {
+      console.error('Failed to fetch users:', err)
+      setError(err.response?.data?.message || err.message)
+      toast.error("Failed to load users")
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
-
-    setError(null)
-  } catch (err) {
-    console.error('Failed to fetch users:', err)
-    setError(err.response?.data?.message || err.message)
-    toast.error("Failed to load users")
-  } finally {
-    setLoading(false)
-    setRefreshing(false)
-  }
-}, [currentPage, itemsPerPage, searchTerm, selectedRole, sortBy, sortOrder])
+  }, [currentPage, itemsPerPage, searchTerm, selectedRole, sortBy, sortOrder])
 
   // Fetch user statistics
   const fetchUserStats = useCallback(async () => {
@@ -290,7 +290,7 @@ const fetchUsers = useCallback(async (forceRefresh = false) => {
     try {
       setRefreshing(true)
       const token = localStorage.getItem('token')
-      
+
       // Create CSV content
       const headers = ['Name', 'Email', 'Role', 'Created At', 'Last Active']
       const csvContent = [
@@ -356,12 +356,12 @@ const fetchUsers = useCallback(async (forceRefresh = false) => {
 
   // Filter and paginate users
   const filteredUsers = users.filter(user => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesRole = selectedRole === 'all' || user.role === selectedRole
-    
+
     return matchesSearch && matchesRole
   })
 
@@ -514,23 +514,22 @@ const fetchUsers = useCallback(async (forceRefresh = false) => {
             >
               <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
+
                 <CardContent className="p-6 relative z-10">
                   <div className="flex items-center justify-between mb-4">
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.title}</p>
                       <div className="flex items-center gap-2">
                         <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                        <span className={`text-sm font-medium ${
-                          stat.changeType === "positive" ? "text-green-600" : 
-                          stat.changeType === "negative" ? "text-red-600" : "text-gray-600"
-                        }`}>
+                        <span className={`text-sm font-medium ${stat.changeType === "positive" ? "text-green-600" :
+                            stat.changeType === "negative" ? "text-red-600" : "text-gray-600"
+                          }`}>
                           {stat.change}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{stat.description}</p>
                     </div>
-                    
+
                     <div className="p-3 rounded-xl border transition-transform duration-300 group-hover:scale-110 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-blue-200/50 dark:border-blue-700/50">
                       <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -643,96 +642,95 @@ const fetchUsers = useCallback(async (forceRefresh = false) => {
                         whileHover={{ scale: 1.01 }}
                         className="group"
                       >
-                 <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 hover:border-blue-300/50 dark:hover:border-blue-600/50">
-  <CardContent className="p-6">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <Avatar className="w-12 h-12 ring-2 ring-gray-200/50 dark:ring-gray-700/50">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-              {user.name?.charAt(0)?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${
-            user.isActive !== false ? 'bg-green-500' : 'bg-gray-400'
-          }`} />
-        </div>
+                        <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 hover:border-blue-300/50 dark:hover:border-blue-600/50">
+                          <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="relative">
+                                  <Avatar className="w-12 h-12 ring-2 ring-gray-200/50 dark:ring-gray-700/50">
+                                    <AvatarImage src={user.avatar} alt={user.name} />
+                                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${user.isActive !== false ? 'bg-green-500' : 'bg-gray-400'
+                                    }`} />
+                                </div>
 
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900 dark:text-white">
-              {user.name || 'Unnamed User'}
-            </h3>
-            <Badge 
-              variant={getRoleBadgeVariant(user.role)}
-              className="flex items-center gap-1"
-            >
-              <RoleIcon className="w-3 h-3" />
-              {user.role || 'user'}
-            </Badge>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-            {user.email}
-          </p>
-          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              <span>Joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</span>
-            </div>
-            {user.location?.city && (
-              <div className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                <span>{user.location.city}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                                      {user.name || 'Unnamed User'}
+                                    </h3>
+                                    <Badge
+                                      variant={getRoleBadgeVariant(user.role)}
+                                      className="flex items-center gap-1"
+                                    >
+                                      <RoleIcon className="w-3 h-3" />
+                                      {user.role || 'user'}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    {user.email}
+                                  </p>
+                                  <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="w-3 h-3" />
+                                      <span>Joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</span>
+                                    </div>
+                                    {user.location?.city && (
+                                      <div className="flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" />
+                                        <span>{user.location.city}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
 
-      <div className="flex items-center gap-2">
-        <div className="text-right mr-4">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
-            {user.eventsCreated || 0} events
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {user.isActive !== false ? 'Active' : 'Inactive'}
-          </p>
-        </div>
+                              <div className="flex items-center gap-2">
+                                <div className="text-right mr-4">
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {user.eventsCreated || 0} events
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {user.isActive !== false ? 'Active' : 'Inactive'}
+                                  </p>
+                                </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEditUser(user)}
-            className="hover:bg-blue-100 dark:hover:bg-blue-900/20"
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleSendNotification(user)}
-            className="hover:bg-green-100 dark:hover:bg-green-900/20"
-          >
-            <Mail className="w-4 h-4" />
-          </Button>
+                                {/* Action Buttons */}
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEditUser(user)}
+                                    className="hover:bg-blue-100 dark:hover:bg-blue-900/20"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDeleteUser(user)}
-            className="hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  </CardContent>
-</Card>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleSendNotification(user)}
+                                    className="hover:bg-green-100 dark:hover:bg-green-900/20"
+                                  >
+                                    <Mail className="w-4 h-4" />
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteUser(user)}
+                                    className="hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       </motion.div>
                     )
                   })}
@@ -756,7 +754,7 @@ const fetchUsers = useCallback(async (forceRefresh = false) => {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  
+
                   <div className="flex gap-1">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       const page = i + 1

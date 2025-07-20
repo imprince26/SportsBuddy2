@@ -53,12 +53,12 @@ export const register = async (req, res) => {
     res.cookie("SportsBuddyToken", token, cookieOptions);
 
     // Send welcome email
-    await sendEmail({
-      from:`Team SportsBuddy <${process.env.FROM_EMAIL}>`,
-      to: newUser.email,
-      subject: "Welcome to SportsBuddy!",
-      html: welcomeEmailHtml(name),
-    });
+    // await sendEmail({
+    //   from:`Team SportsBuddy <${process.env.FROM_EMAIL}>`,
+    //   to: newUser.email,
+    //   subject: "Welcome to SportsBuddy!",
+    //   html: welcomeEmailHtml(name),
+    // });
 
     res.status(201).json({
       success: true,

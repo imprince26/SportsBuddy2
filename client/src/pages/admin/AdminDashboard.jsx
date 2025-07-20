@@ -75,7 +75,7 @@ const AdminDashboard = () => {
       })
 
       const data = response.data
-      
+
       // Cache the data
       localStorage.setItem(CACHE_KEY, JSON.stringify({
         data,
@@ -85,7 +85,7 @@ const AdminDashboard = () => {
       setAnalytics(data)
       setLastUpdated(new Date())
       setError(null)
-      
+
       if (forceRefresh) {
         toast.success("Dashboard data refreshed successfully!")
       }
@@ -247,7 +247,7 @@ const AdminDashboard = () => {
 
   if (error) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="flex flex-col items-center justify-center min-h-[400px] space-y-4"
@@ -266,14 +266,14 @@ const AdminDashboard = () => {
   }
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
       className="space-y-8 p-6"
     >
       {/* Header with Gradient Background */}
-      <motion.div 
+      <motion.div
         variants={itemVariants}
         className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-light via-primary-light to-secondary-light dark:from-primary-dark dark:via-primary-dark dark:to-secondary-dark p-8 text-white"
       >
@@ -297,7 +297,7 @@ const AdminDashboard = () => {
                 </p>
               </div>
             </div>
-            
+
             {lastUpdated && (
               <div className="flex items-center gap-2 text-white/70 text-sm">
                 <Clock className="w-4 h-4" />
@@ -307,8 +307,8 @@ const AdminDashboard = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               className="bg-white/20 border-white/30 text-white hover:bg-white/30"
               onClick={() => fetchAnalytics(true)}
@@ -317,8 +317,8 @@ const AdminDashboard = () => {
               <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               {refreshing ? 'Refreshing...' : 'Refresh'}
             </Button>
-            
-            <Button 
+
+            <Button
               size="sm"
               className="bg-white text-primary-light hover:bg-white/90"
             >
@@ -350,7 +350,7 @@ const AdminDashboard = () => {
                 <Card className="bg-card-light dark:bg-card-dark border-border hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-transparent to-primary-light/5 dark:to-primary-dark/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
+
                   <CardContent className="p-6 relative z-10">
                     <div className="flex items-center justify-between mb-4">
                       <div className="space-y-1">
@@ -378,20 +378,19 @@ const AdminDashboard = () => {
                         ) : (
                           <TrendingUp className="w-4 h-4 text-gray-600" />
                         )}
-                        <span className={`text-sm font-medium ${
-                          stat.trend === "positive" ? "text-green-600" :
-                          stat.trend === "negative" ? "text-red-600" :
-                          "text-muted-foreground"
-                        }`}>
+                        <span className={`text-sm font-medium ${stat.trend === "positive" ? "text-green-600" :
+                            stat.trend === "negative" ? "text-red-600" :
+                              "text-muted-foreground"
+                          }`}>
                           {stat.change}
                         </span>
                         <span className="text-sm text-muted-foreground">
                           {stat.changeType !== "neutral" ? "today" : "of total"}
                         </span>
                       </div>
-                      
+
                       <p className="text-xs text-muted-foreground">{stat.description}</p>
-                      
+
                       {/* Sub-metrics */}
                       <AnimatePresence>
                         {activeMetric === index && (
@@ -423,15 +422,15 @@ const AdminDashboard = () => {
       <motion.div variants={itemVariants}>
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-card-light dark:bg-card-dark border border-border p-1 rounded-xl">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-xl">
               <MoreHorizontal className="w-4 h-4 mr-2" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-xl">
               <TrendingUp className="w-4 h-4 mr-2" />
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="recent" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="recent" className="data-[state=active]:bg-primary-light dark:data-[state=active]:bg-primary-dark data-[state=active]:text-white rounded-xl">
               <Clock className="w-4 h-4 mr-2" />
               Recent Activity
             </TabsTrigger>
@@ -484,8 +483,8 @@ const AdminDashboard = () => {
                               {category.count} events
                             </span>
                           </div>
-                          <Progress 
-                            value={(category.count / analytics.events.total) * 100} 
+                          <Progress
+                            value={(category.count / analytics.events.total) * 100}
                             className="h-2"
                           />
                         </motion.div>
@@ -791,7 +790,7 @@ const AdminDashboard = () => {
                                 Most Active Category
                               </p>
                               <p className="text-xs text-blue-700 dark:text-blue-300">
-                                {analytics?.events.byCategory[0]?._id || 'N/A'} 
+                                {analytics?.events.byCategory[0]?._id || 'N/A'}
                                 ({analytics?.events.byCategory[0]?.count || 0} events)
                               </p>
                             </div>
@@ -895,8 +894,8 @@ const AdminDashboard = () => {
                   whileTap={{ scale: 0.98 }}
                 >
                   <Link to={action.href}>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full bg-background-light/70 dark:bg-background-dark/70 hover:bg-background-light/80 hover:dark:bg-background-dark/30 rounded-xl justify-start h-auto p-4 hover:shadow-lg transition-all duration-300"
                     >
                       <action.icon className="w-5 h-5 mr-3 shrink-0" />

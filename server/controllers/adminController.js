@@ -8,16 +8,70 @@ dotenv.config();
 
 
 export const getDashboardAnalytics = asyncHandler(async (req, res) => {
+    // User statistics
     const totalUsers = await User.countDocuments();
+    const newUsersToday = await User.countDocuments({
+        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+    });
+    const usersByRole = await User.aggregate([
+        { $group: { _id: "$role", count: { $sum: 1 } } }
+    ]);
+
+    // Event statistics
     const totalEvents = await Event.countDocuments();
-    const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5);
-    const recentEvents = await Event.find().sort({ createdAt: -1 }).limit(5);
+    const activeEvents = await Event.countDocuments({ 
+        date: { $gte: new Date() } 
+    });
+    const pastEvents = await Event.countDocuments({ 
+        date: { $lt: new Date() } 
+    });
+    const eventsByCategory = await Event.aggregate([
+        { $group: { _id: "$sport", count: { $sum: 1 } } }
+    ]);
+    const popularEvents = await Event.find()
+        .sort({ participants: -1 })
+        .limit(5)
+        .populate('createdBy', 'name email');
+
+    // Recent data
+    const recentUsers = await User.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('-password');
+    const recentEvents = await Event.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate('createdBy', 'name');
+
+    // Time-based analytics
+    const usersThisMonth = await User.countDocuments({
+        createdAt: { 
+            $gte: new Date(new Date().setDate(1)) // First day of current month
+        }
+    });
+    const eventsThisMonth = await Event.countDocuments({
+        createdAt: { 
+            $gte: new Date(new Date().setDate(1)) // First day of current month
+        }
+    });
 
     res.json({
-        totalUsers,
-        totalEvents,
-        recentUsers,
-        recentEvents,
+        users: {
+            total: totalUsers,
+            newToday: newUsersToday,
+            byRole: usersByRole,
+            thisMonth: usersThisMonth,
+            recent: recentUsers
+        },
+        events: {
+            total: totalEvents,
+            active: activeEvents,
+            past: pastEvents,
+            byCategory: eventsByCategory,
+            popular: popularEvents,
+            thisMonth: eventsThisMonth,
+            recent: recentEvents
+        }
     });
 });
 
@@ -69,7 +123,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
 });
 
 export const manageEvents = asyncHandler(async (req, res) => {
-    const events = await Event.find({}).populate('organizer', 'name email');
+    const events = await Event.find({}).populate('createdBy', 'name email');
     res.json(events);
 });
 

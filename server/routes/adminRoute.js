@@ -1,7 +1,8 @@
 import express from 'express';
 const router = express.Router();
 import {
-     getDashboardAnalytics,
+    getDashboardAnalytics,
+    exportAnalyticsPDF,
     manageUsers,
     getUserById,
     updateUser,
@@ -18,6 +19,7 @@ router.use(isAuthenticated, isAdmin);
 
 // Dashboard & Analytics
 router.route('/analytics').get(getDashboardAnalytics);
+router.route('/analytics/export').get(exportAnalyticsPDF);
 
 // User Management
 router.route('/users').get(manageUsers);

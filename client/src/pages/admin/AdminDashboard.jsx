@@ -220,6 +220,49 @@ const AdminDashboard = () => {
     }
   }
 
+  const handleExport = async () => {
+    try {
+      setRefreshing(true);
+
+      const token = localStorage.getItem('token');
+      const response = await api.get('/admin/analytics/export', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: 'blob',
+      });
+
+      if (!response || !response.data) {
+        throw new Error('Failed to export analytics report');
+      }
+
+      // Get the blob from response
+      const blob = await response.data;
+
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `sportsbuddy-analytics-${new Date().toISOString().split('T')[0]}.pdf`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("Analytics report downloaded successfully!");
+
+    } catch (err) {
+      console.error('Error exporting analytics:', err);
+      toast.error("Failed to export analytics report");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const getColorClasses = (color) => {
     const colors = {
       blue: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -317,6 +360,7 @@ const AdminDashboard = () => {
             <Button
               size="sm"
               className="bg-white text-primary-light hover:bg-white/90"
+              onClick={handleExport}
             >
               <Download className="w-4 h-4 mr-2" />
               Export Report
@@ -375,8 +419,8 @@ const AdminDashboard = () => {
                           <TrendingUp className="w-4 h-4 text-gray-600" />
                         )}
                         <span className={`text-sm font-medium ${stat.trend === "positive" ? "text-green-600" :
-                            stat.trend === "negative" ? "text-red-600" :
-                              "text-muted-foreground"
+                          stat.trend === "negative" ? "text-red-600" :
+                            "text-muted-foreground"
                           }`}>
                           {stat.change}
                         </span>

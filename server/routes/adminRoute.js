@@ -7,6 +7,7 @@ import {
     getUserById,
     updateUser,
     deleteUser,
+    bulkUserActions, // Add this new import
     manageEvents,
     deleteEvent,
     sendNotificationToUser,
@@ -23,6 +24,7 @@ router.route('/analytics/export').get(exportAnalyticsPDF);
 
 // User Management
 router.route('/users').get(manageUsers);
+router.route('/users/bulk').post(bulkUserActions); // Add this new route
 router.route('/users/:id').get(getUserById).put(updateUser).delete(deleteUser);
 
 // Event Management
@@ -35,9 +37,5 @@ router.route('/notifications/user/:id').post(sendNotificationToUser);
 
 // Search
 router.route('/search').get(adminSearch);
-
-// Routes for messages and settings can be added here as needed
-// router.route('/messages').get(getMessages);
-// router.route('/settings').put(updateSettings);
 
 export default router;

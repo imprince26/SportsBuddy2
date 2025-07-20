@@ -510,49 +510,432 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
 // });
 
 export const manageUsers = asyncHandler(async (req, res) => {
-    const users = await User.find({}).select('-password');
-    res.json(users);
-});
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            search = '',
+            role = '',
+            sortBy = 'createdAt',
+            sortOrder = 'desc'
+        } = req.query;
 
-export const getUserById = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id).select('-password');
-    if (user) {
-        res.json(user);
-    } else {
-        res.status(404);
-        throw new Error('User not found');
-    }
-});
+        // Convert page and limit to numbers
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
 
-export const updateUser = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id);
+        // Build search query
+        let searchQuery = {};
 
-    if (user) {
-        user.name = req.body.name || user.name;
-        user.email = req.body.email || user.email;
-        user.role = req.body.role || user.role;
-        // Add any other fields you want to be updatable by admin
-        const updatedUser = await user.save();
+        // Add search filter for name and email
+        if (search && search.trim() !== '') {
+            const searchRegex = new RegExp(search.trim(), 'i');
+            searchQuery.$or = [
+                { name: searchRegex },
+                { email: searchRegex }
+            ];
+        }
+
+        // Add role filter
+        if (role && role !== 'all') {
+            searchQuery.role = role;
+        }
+
+        // Build sort object
+        let sortObject = {};
+        if (sortBy) {
+            sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
+        } else {
+            sortObject.createdAt = -1; // Default sort
+        }
+
+        // Get total count for pagination
+        const totalUsers = await User.countDocuments(searchQuery);
+
+        // Fetch users with pagination, search, and sorting
+        const users = await User.find(searchQuery)
+            .select('-password -resetPasswordToken -resetPasswordExpire')
+            .sort(sortObject)
+            .skip(skip)
+            .limit(limitNum)
+            .lean(); // Use lean() for better performance
+
+        // Add computed fields
+        const enhancedUsers = users.map(user => ({
+            ...user,
+            // Add computed fields that might be useful
+            isActive: user.isActive !== false, // Default to true if not set
+            eventsCreated: 0, // This would need to be calculated from Event collection
+            lastActive: user.lastActive || user.updatedAt || user.createdAt
+        }));
+
+        // Calculate pagination info
+        const totalPages = Math.ceil(totalUsers / limitNum);
+        const hasNextPage = pageNum < totalPages;
+        const hasPrevPage = pageNum > 1;
+
+        // Get role statistics
+        const roleStats = await User.aggregate([
+            { $match: searchQuery },
+            { $group: { _id: "$role", count: { $sum: 1 } } }
+        ]);
+
+        // Response with pagination and metadata
         res.json({
-            _id: updatedUser._id,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            role: updatedUser.role,
+            success: true,
+            data: enhancedUsers,
+            pagination: {
+                currentPage: pageNum,
+                totalPages,
+                totalUsers,
+                hasNextPage,
+                hasPrevPage,
+                limit: limitNum
+            },
+            filters: {
+                search,
+                role,
+                sortBy,
+                sortOrder
+            },
+            statistics: {
+                totalUsers,
+                roleDistribution: roleStats
+            }
         });
-    } else {
-        res.status(404);
-        throw new Error('User not found');
+
+    } catch (error) {
+        console.error('Error in manageUsers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch users',
+            error: error.message
+        });
     }
 });
 
+// Enhanced getUserById with more details
+export const getUserById = asyncHandler(async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .select('-password -resetPasswordToken -resetPasswordExpire')
+            .lean();
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        // Get user's events count
+        const eventsCreated = await Event.countDocuments({ createdBy: user._id });
+        const eventsParticipated = await Event.countDocuments({ 
+            participants: user._id 
+        });
+
+        // Enhanced user object
+        const enhancedUser = {
+            ...user,
+            eventsCreated,
+            eventsParticipated,
+            isActive: user.isActive !== false,
+            accountAge: Math.floor((new Date() - new Date(user.createdAt)) / (1000 * 60 * 60 * 24)), // days
+        };
+
+        res.json({
+            success: true,
+            data: enhancedUser
+        });
+
+    } catch (error) {
+        console.error('Error in getUserById:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch user',
+            error: error.message
+        });
+    }
+});
+
+// Enhanced updateUser with validation
+export const updateUser = asyncHandler(async (req, res) => {
+    try {
+        const { name, email, role, isActive } = req.body;
+        
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        // Check if email is being changed and if it's already taken
+        if (email && email !== user.email) {
+            const emailExists = await User.findOne({ 
+                email, 
+                _id: { $ne: req.params.id } 
+            });
+            if (emailExists) {
+                res.status(400);
+                throw new Error('Email is already registered');
+            }
+        }
+
+        // Update fields if provided
+        if (name !== undefined) user.name = name;
+        if (email !== undefined) user.email = email;
+        if (role !== undefined) user.role = role;
+        if (isActive !== undefined) user.isActive = isActive;
+
+        // Update the updatedAt field
+        user.updatedAt = new Date();
+
+        const updatedUser = await user.save();
+
+        res.json({
+            success: true,
+            message: 'User updated successfully',
+            data: {
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                isActive: updatedUser.isActive,
+                updatedAt: updatedUser.updatedAt
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in updateUser:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to update user',
+            error: error.message
+        });
+    }
+});
+
+// Enhanced deleteUser with cascade delete
 export const deleteUser = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id);
-    if (user) {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        // Prevent deleting the last admin
+        if (user.role === 'admin') {
+            const adminCount = await User.countDocuments({ role: 'admin' });
+            if (adminCount <= 1) {
+                res.status(400);
+                throw new Error('Cannot delete the last admin user');
+            }
+        }
+
+        // Optional: Handle user's events (you might want to transfer ownership or delete them)
+        // For now, we'll just remove the user from events they're participating in
+        await Event.updateMany(
+            { participants: user._id },
+            { $pull: { participants: user._id } }
+        );
+
+        // Delete user's created events or transfer them to another admin
+        // You can implement this based on your business logic
+        await Event.updateMany(
+            { createdBy: user._id },
+            { 
+                $set: { 
+                    createdBy: null, // or assign to another admin
+                    status: 'archived' // or whatever status you want
+                } 
+            }
+        );
+
         await user.deleteOne();
-        res.json({ message: 'User removed' });
-    } else {
-        res.status(404);
-        throw new Error('User not found');
+
+        res.json({
+            success: true,
+            message: 'User deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error in deleteUser:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to delete user',
+            error: error.message
+        });
+    }
+});
+
+// Enhanced notification functions with better error handling
+export const sendNotificationToUser = asyncHandler(async (req, res) => {
+    try {
+        const { subject, message } = req.body;
+        
+        // Validation
+        if (!subject || !message) {
+            res.status(400);
+            throw new Error('Subject and message are required');
+        }
+
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        // Send email
+        await sendEmail({
+            from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+            to: user.email,
+            subject,
+            message,
+            html: AdminSentEmailHtml({ subject, message }),
+        });
+
+        // Optional: Log the notification in database
+        // You could create a Notification model to track sent notifications
+
+        res.status(200).json({ 
+            success: true, 
+            message: `Notification sent successfully to ${user.name}` 
+        });
+
+    } catch (error) {
+        console.error('Error sending notification:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message || 'Failed to send notification',
+            error: error.message 
+        });
+    }
+});
+
+export const sendNotificationToAll = asyncHandler(async (req, res) => {
+    try {
+        const { subject, message, role } = req.body;
+        
+        // Validation
+        if (!subject || !message) {
+            res.status(400);
+            throw new Error('Subject and message are required');
+        }
+
+        // Build query for users to notify
+        let userQuery = {};
+        if (role && role !== 'all') {
+            userQuery.role = role;
+        }
+
+        const users = await User.find(userQuery, 'email name');
+        
+        if (users.length === 0) {
+            res.status(400);
+            throw new Error('No users found to send notifications to');
+        }
+
+        const emails = users.map(user => user.email);
+
+        // Send bulk email
+        await sendEmail({
+            from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+            to: emails,
+            subject,
+            message,
+            html: AdminSentEmailHtml({ subject, message }),
+        });
+
+        res.status(200).json({ 
+            success: true, 
+            message: `Notifications sent successfully to ${users.length} users`,
+            recipientCount: users.length
+        });
+
+    } catch (error) {
+        console.error('Error sending bulk notifications:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message || 'Failed to send notifications',
+            error: error.message 
+        });
+    }
+});
+
+// Add a new endpoint for bulk user operations
+export const bulkUserActions = asyncHandler(async (req, res) => {
+    try {
+        const { action, userIds, data } = req.body;
+
+        if (!action || !userIds || !Array.isArray(userIds)) {
+            res.status(400);
+            throw new Error('Action and userIds array are required');
+        }
+
+        let result;
+
+        switch (action) {
+            case 'delete':
+                // Prevent deleting all admins
+                const adminCount = await User.countDocuments({ 
+                    role: 'admin',
+                    _id: { $nin: userIds }
+                });
+                
+                if (adminCount === 0) {
+                    res.status(400);
+                    throw new Error('Cannot delete all admin users');
+                }
+
+                result = await User.deleteMany({ _id: { $in: userIds } });
+                break;
+
+            case 'updateRole':
+                if (!data.role) {
+                    res.status(400);
+                    throw new Error('Role is required for bulk role update');
+                }
+                result = await User.updateMany(
+                    { _id: { $in: userIds } },
+                    { role: data.role, updatedAt: new Date() }
+                );
+                break;
+
+            case 'activate':
+                result = await User.updateMany(
+                    { _id: { $in: userIds } },
+                    { isActive: true, updatedAt: new Date() }
+                );
+                break;
+
+            case 'deactivate':
+                result = await User.updateMany(
+                    { _id: { $in: userIds } },
+                    { isActive: false, updatedAt: new Date() }
+                );
+                break;
+
+            default:
+                res.status(400);
+                throw new Error('Invalid action');
+        }
+
+        res.json({
+            success: true,
+            message: `Bulk ${action} completed successfully`,
+            affectedCount: result.modifiedCount || result.deletedCount
+        });
+
+    } catch (error) {
+        console.error('Error in bulk user actions:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to perform bulk action',
+            error: error.message
+        });
     }
 });
 
@@ -572,49 +955,49 @@ export const deleteEvent = asyncHandler(async (req, res) => {
     }
 });
 
-export const sendNotificationToUser = asyncHandler(async (req, res) => {
-    const { subject, message } = req.body;
-    const user = await User.findById(req.params.id);
+// export const sendNotificationToUser = asyncHandler(async (req, res) => {
+//     const { subject, message } = req.body;
+//     const user = await User.findById(req.params.id);
 
-    if (!user) {
-        res.status(404);
-        throw new Error('User not found');
-    }
+//     if (!user) {
+//         res.status(404);
+//         throw new Error('User not found');
+//     }
 
-    try {
-        await sendEmail({
-            from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-            to: user.email,
-            subject,
-            message,
-            html: AdminSentEmailHtml({ subject, message }),
-        });
-        res.status(200).json({ success: true, message: 'Notification sent successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: error.message || 'Email could not be sent' });
-    }
-});
+//     try {
+//         await sendEmail({
+//             from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+//             to: user.email,
+//             subject,
+//             message,
+//             html: AdminSentEmailHtml({ subject, message }),
+//         });
+//         res.status(200).json({ success: true, message: 'Notification sent successfully' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ success: false, message: error.message || 'Email could not be sent' });
+//     }
+// });
 
-export const sendNotificationToAll = asyncHandler(async (req, res) => {
-    const { subject, message } = req.body;
-    const users = await User.find({}, 'email');
-    const emails = users.map(user => user.email);
+// export const sendNotificationToAll = asyncHandler(async (req, res) => {
+//     const { subject, message } = req.body;
+//     const users = await User.find({}, 'email');
+//     const emails = users.map(user => user.email);
 
-    try {
-        await sendEmail({
-            from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-            to: emails,
-            subject,
-            message,
-            html: AdminSentEmailHtml({ subject, message }),
-        });
-        res.status(200).json({ success: true, message: 'Notifications sent successfully to all users' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'Email could not be sent' });
-    }
-});
+//     try {
+//         await sendEmail({
+//             from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+//             to: emails,
+//             subject,
+//             message,
+//             html: AdminSentEmailHtml({ subject, message }),
+//         });
+//         res.status(200).json({ success: true, message: 'Notifications sent successfully to all users' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ success: false, message: 'Email could not be sent' });
+//     }
+// });
 
 export const adminSearch = asyncHandler(async (req, res) => {
     const { type, query } = req.query;

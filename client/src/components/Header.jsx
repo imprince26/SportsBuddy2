@@ -217,7 +217,7 @@ const Header = () => {
                           </Link>
                           {user?.role === "admin" && (
                             <Link
-                              to="/admin/users"
+                              to="/admin/dashboard"
                               className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
                             >
                               <Shield size={16} className="mr-2" />

@@ -285,7 +285,7 @@ const AdminLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-background p-6">
+        <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6">
           {children || <Outlet />}
         </main>
       </div>

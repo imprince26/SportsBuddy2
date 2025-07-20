@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
-import { toast } from "sonner"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import toast from "react-hot-toast"
 import {
   Users,
   Calendar,
@@ -19,28 +20,21 @@ import {
   MapPin,
   Award,
   Star,
-  Mail,
   Shield,
   AlertTriangle,
-  CheckCircle,
   ArrowUpRight,
   ArrowDownRight,
   MoreHorizontal,
   Bell,
   Search,
-  Filter,
   Download,
   Zap,
-  Globe,
-  Heart,
-  Target,
   Sparkles,
   Crown,
-  TrendingDown
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { format, formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow } from "date-fns"
 import api from "@/utils/api"
 
 const AdminDashboard = () => {
@@ -903,7 +897,7 @@ const AdminDashboard = () => {
                   <Link to={action.href}>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start h-auto p-4 hover:shadow-lg transition-all duration-300"
+                      className="w-full bg-background-light/70 dark:bg-background-dark/70 hover:bg-background-light/80 hover:dark:bg-background-dark/30 rounded-xl justify-start h-auto p-4 hover:shadow-lg transition-all duration-300"
                     >
                       <action.icon className="w-5 h-5 mr-3 shrink-0" />
                       <div className="text-left">

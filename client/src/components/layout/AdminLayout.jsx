@@ -34,6 +34,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
+import api from "@/utils/api"
 
 const AdminLayout = ({ children }) => {
   const location = useLocation()
@@ -47,6 +48,39 @@ const AdminLayout = ({ children }) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [notifications, setNotifications] = useState(3)
+  const [analyticsData, setAnalyticsData] = useState({});
+
+const fetchAnalyticsData = async () => {
+    const cacheKey = 'adminAnalyticsData';
+    const cachedItem = localStorage.getItem(cacheKey);
+    const now = new Date().getTime();
+    const fiveMinutes = 5 * 60 * 1000;
+
+    if (cachedItem) {
+      const { data, timestamp } = JSON.parse(cachedItem);
+      if (now - timestamp < fiveMinutes) {
+        setAnalyticsData(data);
+        return;
+      }
+    }
+
+    try {
+   
+      const response = await api.get('/admin/analytics');
+      const dataToCache = {
+        data: response.data,
+        timestamp: now,
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(dataToCache));
+      setAnalyticsData(response.data);
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalyticsData();
+  },[]);
   
 
   const sidebarSections = [
@@ -69,14 +103,14 @@ const AdminLayout = ({ children }) => {
           name: "Users",
           path: "/admin/users",
           icon: Users,
-          badge: "1.2k",
+          badge: `${analyticsData?.users?.total || 0}`,
           description: "Manage user accounts"
         },
         {
           name: "Events",
           path: "/admin/events",
           icon: Calendar,
-          badge: "45",
+          badge: `${analyticsData?.events?.total || 0}`,
           description: "Event management"
         },
         {
@@ -242,11 +276,11 @@ const AdminLayout = ({ children }) => {
             </span>
           </div>
         </Link>
-        {isMobile && onClose && (
+        {/* {isMobile && onClose && (
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-5 h-5" />
           </Button>
-        )}
+        )} */}
       </div>
 
       {/* User Info */}
@@ -280,11 +314,11 @@ const AdminLayout = ({ children }) => {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-3 border border-blue-200/20 dark:border-blue-700/20">
             <div className="text-xs font-medium text-blue-600 dark:text-blue-400">Users</div>
-            <div className="text-lg font-bold text-blue-900 dark:text-blue-100">1.2k</div>
+            <div className="text-lg font-bold text-blue-900 dark:text-blue-100">{analyticsData?.users?.total}</div>
           </div>
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-3 border border-purple-200/20 dark:border-purple-700/20">
             <div className="text-xs font-medium text-purple-600 dark:text-purple-400">Events</div>
-            <div className="text-lg font-bold text-purple-900 dark:text-purple-100">45</div>
+            <div className="text-lg font-bold text-purple-900 dark:text-purple-100">{analyticsData?.events?.total}</div>
           </div>
         </div>
       </div>

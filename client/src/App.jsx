@@ -27,9 +27,9 @@ import TeamManagement from './pages/TeamManagement';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminSearch from './pages/admin/AdminSearch';
 import AdminMessages from './pages/admin/AdminMessages';
-import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminSettings from './pages/admin/AdminSettings';
 import NotificationsPage from './pages/admin/NotificationPage';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();

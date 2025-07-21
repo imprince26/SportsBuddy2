@@ -939,22 +939,770 @@ export const bulkUserActions = asyncHandler(async (req, res) => {
     }
 });
 
+// Enhanced manageEvents with pagination, filtering, and sorting
 export const manageEvents = asyncHandler(async (req, res) => {
-    const events = await Event.find({}).populate('createdBy', 'name email');
-    res.json(events);
-});
+    try {
+        const {
+            page = 1,
+            limit = 12,
+            search = '',
+            category = '',
+            status = '',
+            sortBy = 'createdAt',
+            sortOrder = 'desc'
+        } = req.query;
 
-export const deleteEvent = asyncHandler(async (req, res) => {
-    const event = await Event.findById(req.params.id);
-    if (event) {
-        await event.deleteOne();
-        res.json({ message: 'Event removed' });
-    } else {
-        res.status(404);
-        throw new Error('Event not found');
+        // Convert page and limit to numbers
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        // Build search query
+        let searchQuery = {};
+
+        // Add search filter for name, description, and organizer
+        if (search && search.trim() !== '') {
+            const searchRegex = new RegExp(search.trim(), 'i');
+            searchQuery.$or = [
+                { name: searchRegex },
+                { description: searchRegex },
+                { category: searchRegex }
+            ];
+        }
+
+        // Add category filter
+        if (category && category !== 'all') {
+            searchQuery.category = category;
+        }
+
+        // Add status filter
+        if (status && status !== 'all') {
+            searchQuery.status = status;
+        }
+
+        // Build sort object
+        let sortObject = {};
+        if (sortBy) {
+            if (sortBy === 'participants') {
+                // Sort by participants array length
+                sortObject = { 'participantCount': sortOrder === 'desc' ? -1 : 1 };
+            } else {
+                sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
+            }
+        } else {
+            sortObject.createdAt = -1; // Default sort
+        }
+
+        // Get total count for pagination
+        const totalEvents = await Event.countDocuments(searchQuery);
+
+        // Build aggregation pipeline for enhanced data
+        const pipeline = [
+            { $match: searchQuery },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'createdBy',
+                    foreignField: '_id',
+                    as: 'createdBy',
+                    pipeline: [
+                        { $project: { name: 1, email: 1, avatar: 1 } }
+                    ]
+                }
+            },
+            {
+                $unwind: {
+                    path: '$createdBy',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    participantCount: { $size: { $ifNull: ['$participants', []] } },
+                    isUpcoming: { $gte: ['$date', new Date()] },
+                    isPast: { $lt: ['$date', new Date()] },
+                    daysUntilEvent: {
+                        $divide: [
+                            { $subtract: ['$date', new Date()] },
+                            1000 * 60 * 60 * 24
+                        ]
+                    }
+                }
+            }
+        ];
+
+        // Add sorting
+        if (sortBy === 'participants') {
+            pipeline.push({ $sort: { participantCount: sortOrder === 'desc' ? -1 : 1 } });
+        } else {
+            pipeline.push({ $sort: sortObject });
+        }
+
+        // Add pagination
+        pipeline.push(
+            { $skip: skip },
+            { $limit: limitNum }
+        );
+
+        // Execute aggregation
+        const events = await Event.aggregate(pipeline);
+
+        // Calculate pagination info
+        const totalPages = Math.ceil(totalEvents / limitNum);
+        const hasNextPage = pageNum < totalPages;
+        const hasPrevPage = pageNum > 1;
+
+        // Get category statistics
+        const categoryStats = await Event.aggregate([
+            { $match: searchQuery },
+            { $group: { _id: "$category", count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]);
+
+        // Get status statistics
+        const statusStats = await Event.aggregate([
+            { $match: searchQuery },
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]);
+
+        // Response with pagination and metadata
+        res.json({
+            success: true,
+            data: events,
+            pagination: {
+                currentPage: pageNum,
+                totalPages,
+                totalEvents,
+                hasNextPage,
+                hasPrevPage,
+                limit: limitNum
+            },
+            filters: {
+                search,
+                category,
+                status,
+                sortBy,
+                sortOrder
+            },
+            statistics: {
+                totalEvents,
+                categoryDistribution: categoryStats,
+                statusDistribution: statusStats
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in manageEvents:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch events',
+            error: error.message
+        });
     }
 });
 
+// Get single event details
+export const getEventById = asyncHandler(async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id)
+            .populate('createdBy', 'name email avatar')
+            .populate('participants', 'name email avatar')
+            .lean();
+
+        if (!event) {
+            res.status(404);
+            throw new Error('Event not found');
+        }
+
+        // Add computed fields
+        const enhancedEvent = {
+            ...event,
+            participantCount: event.participants?.length || 0,
+            isUpcoming: new Date(event.date) >= new Date(),
+            isPast: new Date(event.date) < new Date(),
+            spotsRemaining: event.maxParticipants ? event.maxParticipants - (event.participants?.length || 0) : null,
+            daysUntilEvent: Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24))
+        };
+
+        res.json({
+            success: true,
+            data: enhancedEvent
+        });
+
+    } catch (error) {
+        console.error('Error in getEventById:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch event',
+            error: error.message
+        });
+    }
+});
+
+// Enhanced updateEvent with validation
+export const updateEvent = asyncHandler(async (req, res) => {
+    try {
+        const { name, description, category, status, maxParticipants, date, location } = req.body;
+
+        const event = await Event.findById(req.params.id);
+
+        if (!event) {
+            res.status(404);
+            throw new Error('Event not found');
+        }
+
+        // Validate max participants if being updated
+        if (maxParticipants !== undefined) {
+            const currentParticipants = event.participants?.length || 0;
+            if (maxParticipants < currentParticipants) {
+                res.status(400);
+                throw new Error(`Cannot set max participants below current participant count (${currentParticipants})`);
+            }
+        }
+
+        // Update fields if provided
+        if (name !== undefined) event.name = name;
+        if (description !== undefined) event.description = description;
+        if (category !== undefined) event.category = category;
+        if (status !== undefined) event.status = status;
+        if (maxParticipants !== undefined) event.maxParticipants = maxParticipants;
+        if (date !== undefined) event.date = new Date(date);
+        if (location !== undefined) event.location = location;
+
+        // Update the updatedAt field
+        event.updatedAt = new Date();
+
+        const updatedEvent = await event.save();
+
+        // Populate the response
+        await updatedEvent.populate('createdBy', 'name email');
+
+        res.json({
+            success: true,
+            message: 'Event updated successfully',
+            data: updatedEvent
+        });
+
+    } catch (error) {
+        console.error('Error in updateEvent:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to update event',
+            error: error.message
+        });
+    }
+});
+
+// Enhanced deleteEvent with cascade operations
+export const deleteEvent = asyncHandler(async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id)
+            .populate('participants', 'email name')
+            .populate('createdBy', 'email name');
+
+        if (!event) {
+            res.status(404);
+            throw new Error('Event not found');
+        }
+
+        // Send notification to participants before deletion (optional)
+        if (event.participants && event.participants.length > 0) {
+            const participantEmails = event.participants.map(p => p.email);
+            
+            try {
+                await sendEmail({
+                    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+                    to: participantEmails,
+                    subject: `Event Cancelled: ${event.name}`,
+                    message: `We regret to inform you that the event "${event.name}" has been cancelled by the administrator.`,
+                    html: AdminSentEmailHtml({
+                        subject: `Event Cancelled: ${event.name}`,
+                        message: `We regret to inform you that the event "${event.name}" has been cancelled by the administrator.`
+                    }),
+                });
+            } catch (emailError) {
+                console.error('Failed to send cancellation emails:', emailError);
+                // Continue with deletion even if email fails
+            }
+        }
+
+        await event.deleteOne();
+
+        res.json({
+            success: true,
+            message: 'Event deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error in deleteEvent:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to delete event',
+            error: error.message
+        });
+    }
+});
+
+// Approve event
+export const approveEvent = asyncHandler(async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id).populate('createdBy', 'email name');
+
+        if (!event) {
+            res.status(404);
+            throw new Error('Event not found');
+        }
+
+        event.status = 'Upcoming';
+        event.approvedAt = new Date();
+        await event.save();
+
+        // Send approval email to organizer
+        if (event.createdBy?.email) {
+            try {
+                await sendEmail({
+                    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+                    to: event.createdBy.email,
+                    subject: `Event Approved: ${event.name}`,
+                    message: `Great news! Your event "${event.name}" has been approved and is now live on SportsBuddy.`,
+                    html: AdminSentEmailHtml({
+                        subject: `Event Approved: ${event.name}`,
+                        message: `Great news! Your event "${event.name}" has been approved and is now live on SportsBuddy.`
+                    }),
+                });
+            } catch (emailError) {
+                console.error('Failed to send approval email:', emailError);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Event approved successfully',
+            data: event
+        });
+
+    } catch (error) {
+        console.error('Error in approveEvent:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to approve event',
+            error: error.message
+        });
+    }
+});
+
+// Reject event
+export const rejectEvent = asyncHandler(async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const event = await Event.findById(req.params.id).populate('createdBy', 'email name');
+
+        if (!event) {
+            res.status(404);
+            throw new Error('Event not found');
+        }
+
+        event.status = 'Rejected';
+        event.rejectedAt = new Date();
+        event.rejectionReason = reason || 'No reason provided';
+        await event.save();
+
+        // Send rejection email to organizer
+        if (event.createdBy?.email) {
+            try {
+                await sendEmail({
+                    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+                    to: event.createdBy.email,
+                    subject: `Event Rejected: ${event.name}`,
+                    message: `We regret to inform you that your event "${event.name}" has been rejected. Reason: ${reason || 'No specific reason provided'}`,
+                    html: AdminSentEmailHtml({
+                        subject: `Event Rejected: ${event.name}`,
+                        message: `We regret to inform you that your event "${event.name}" has been rejected. Reason: ${reason || 'No specific reason provided'}`
+                    }),
+                });
+            } catch (emailError) {
+                console.error('Failed to send rejection email:', emailError);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Event rejected successfully',
+            data: event
+        });
+
+    } catch (error) {
+        console.error('Error in rejectEvent:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to reject event',
+            error: error.message
+        });
+    }
+});
+
+// Send notification to event participants
+export const sendEventNotification = asyncHandler(async (req, res) => {
+    try {
+        const { subject, message } = req.body;
+
+        // Validation
+        if (!subject || !message) {
+            res.status(400);
+            throw new Error('Subject and message are required');
+        }
+
+        const event = await Event.findById(req.params.id)
+            .populate('participants', 'email name')
+            .populate('createdBy', 'email name');
+
+        if (!event) {
+            res.status(404);
+            throw new Error('Event not found');
+        }
+
+        if (!event.participants || event.participants.length === 0) {
+            res.status(400);
+            throw new Error('No participants found for this event');
+        }
+
+        const participantEmails = event.participants.map(p => p.email);
+
+        // Send email to all participants
+        await sendEmail({
+            from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+            to: participantEmails,
+            subject: `${subject} - ${event.name}`,
+            message,
+            html: AdminSentEmailHtml({ subject: `${subject} - ${event.name}`, message }),
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Notification sent successfully to ${event.participants.length} participants`,
+            recipientCount: event.participants.length
+        });
+
+    } catch (error) {
+        console.error('Error sending event notification:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to send notification',
+            error: error.message
+        });
+    }
+});
+
+// Export events data
+export const exportEvents = asyncHandler(async (req, res) => {
+    try {
+        const { format = 'csv' } = req.query;
+
+        const events = await Event.find({})
+            .populate('createdBy', 'name email')
+            .populate('participants', 'name email')
+            .lean();
+
+        if (format === 'csv') {
+            // Create CSV content
+            const headers = [
+                'Event ID',
+                'Name',
+                'Description',
+                'Category',
+                'Status',
+                'Date',
+                'Location (City)',
+                'Location (State)',
+                'Max Participants',
+                'Current Participants',
+                'Organizer Name',
+                'Organizer Email',
+                'Created At',
+                'Updated At'
+            ];
+
+            const csvRows = events.map(event => [
+                event._id.toString(),
+                `"${event.name || ''}"`,
+                `"${(event.description || '').replace(/"/g, '""')}"`,
+                `"${event.category || ''}"`,
+                `"${event.status || ''}"`,
+                `"${event.date ? new Date(event.date).toISOString() : ''}"`,
+                `"${event.location?.city || ''}"`,
+                `"${event.location?.state || ''}"`,
+                event.maxParticipants || '',
+                event.participants?.length || 0,
+                `"${event.createdBy?.name || ''}"`,
+                `"${event.createdBy?.email || ''}"`,
+                `"${new Date(event.createdAt).toISOString()}"`,
+                `"${new Date(event.updatedAt).toISOString()}"`
+            ]);
+
+            const csvContent = [headers.join(','), ...csvRows.map(row => row.join(','))].join('\n');
+
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename="sportsbuddy-events-${new Date().toISOString().split('T')[0]}.csv"`);
+            res.send(csvContent);
+
+        } else if (format === 'json') {
+            // Enhanced JSON export with computed fields
+            const enhancedEvents = events.map(event => ({
+                ...event,
+                participantCount: event.participants?.length || 0,
+                spotsRemaining: event.maxParticipants ? event.maxParticipants - (event.participants?.length || 0) : null,
+                isUpcoming: new Date(event.date) >= new Date(),
+                isPast: new Date(event.date) < new Date(),
+                participantEmails: event.participants?.map(p => p.email) || []
+            }));
+
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Disposition', `attachment; filename="sportsbuddy-events-${new Date().toISOString().split('T')[0]}.json"`);
+            res.json({
+                exportedAt: new Date().toISOString(),
+                totalEvents: events.length,
+                events: enhancedEvents
+            });
+
+        } else {
+            res.status(400);
+            throw new Error('Invalid export format. Use "csv" or "json"');
+        }
+
+    } catch (error) {
+        console.error('Error exporting events:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to export events',
+            error: error.message
+        });
+    }
+});
+
+// Get event statistics
+export const getEventStats = asyncHandler(async (req, res) => {
+    try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+
+        // Basic counts
+        const totalEvents = await Event.countDocuments();
+        const activeEvents = await Event.countDocuments({ date: { $gte: now } });
+        const pastEvents = await Event.countDocuments({ date: { $lt: now } });
+        const eventsThisMonth = await Event.countDocuments({ createdAt: { $gte: startOfMonth } });
+        const eventsToday = await Event.countDocuments({ createdAt: { $gte: startOfToday } });
+
+        // Status distribution
+        const statusStats = await Event.aggregate([
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]);
+
+        // Category distribution
+        const categoryStats = await Event.aggregate([
+            { $group: { _id: "$category", count: { $sum: 1 } } }
+        ]);
+
+        // Monthly growth (last 6 months)
+        const monthlyGrowth = await Event.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(new Date().setMonth(new Date().getMonth() - 6))
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+        ]);
+
+        // Participation stats
+        const participationStats = await Event.aggregate([
+            {
+                $addFields: {
+                    participantCount: { $size: { $ifNull: ["$participants", []] } }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalParticipants: { $sum: "$participantCount" },
+                    avgParticipantsPerEvent: { $avg: "$participantCount" },
+                    maxParticipants: { $max: "$participantCount" },
+                    eventsWithParticipants: {
+                        $sum: { $cond: [{ $gt: ["$participantCount", 0] }, 1, 0] }
+                    }
+                }
+            }
+        ]);
+
+        // Top events by participants
+        const topEvents = await Event.aggregate([
+            {
+                $addFields: {
+                    participantCount: { $size: { $ifNull: ["$participants", []] } }
+                }
+            },
+            { $sort: { participantCount: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'createdBy',
+                    foreignField: '_id',
+                    as: 'createdBy'
+                }
+            },
+            { $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    name: 1,
+                    category: 1,
+                    participantCount: 1,
+                    'createdBy.name': 1,
+                    date: 1
+                }
+            }
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                overview: {
+                    total: totalEvents,
+                    active: activeEvents,
+                    past: pastEvents,
+                    thisMonth: eventsThisMonth,
+                    today: eventsToday,
+                    completionRate: totalEvents > 0 ? ((pastEvents / totalEvents) * 100).toFixed(1) : 0
+                },
+                distribution: {
+                    byStatus: statusStats,
+                    byCategory: categoryStats
+                },
+                participation: participationStats[0] || {
+                    totalParticipants: 0,
+                    avgParticipantsPerEvent: 0,
+                    maxParticipants: 0,
+                    eventsWithParticipants: 0
+                },
+                trends: {
+                    monthlyGrowth
+                },
+                topEvents
+            }
+        });
+
+    } catch (error) {
+        console.error('Error getting event stats:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch event statistics',
+            error: error.message
+        });
+    }
+});
+
+// Bulk event operations
+export const bulkEventActions = asyncHandler(async (req, res) => {
+    try {
+        const { action, eventIds, data } = req.body;
+
+        if (!action || !eventIds || !Array.isArray(eventIds)) {
+            res.status(400);
+            throw new Error('Action and eventIds array are required');
+        }
+
+        let result;
+
+        switch (action) {
+            case 'delete':
+                // Get events with participants for notification
+                const eventsToDelete = await Event.find({ _id: { $in: eventIds } })
+                    .populate('participants', 'email name');
+
+                // Send notifications to all participants
+                for (const event of eventsToDelete) {
+                    if (event.participants && event.participants.length > 0) {
+                        const participantEmails = event.participants.map(p => p.email);
+                        try {
+                            await sendEmail({
+                                from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+                                to: participantEmails,
+                                subject: `Event Cancelled: ${event.name}`,
+                                message: `The event "${event.name}" has been cancelled by the administrator.`,
+                                html: AdminSentEmailHtml({
+                                    subject: `Event Cancelled: ${event.name}`,
+                                    message: `The event "${event.name}" has been cancelled by the administrator.`
+                                }),
+                            });
+                        } catch (emailError) {
+                            console.error(`Failed to send cancellation email for event ${event._id}:`, emailError);
+                        }
+                    }
+                }
+
+                result = await Event.deleteMany({ _id: { $in: eventIds } });
+                break;
+
+            case 'updateStatus':
+                if (!data.status) {
+                    res.status(400);
+                    throw new Error('Status is required for bulk status update');
+                }
+                result = await Event.updateMany(
+                    { _id: { $in: eventIds } },
+                    { status: data.status, updatedAt: new Date() }
+                );
+                break;
+
+            case 'approve':
+                result = await Event.updateMany(
+                    { _id: { $in: eventIds } },
+                    { status: 'Upcoming', approvedAt: new Date(), updatedAt: new Date() }
+                );
+                break;
+
+            case 'reject':
+                result = await Event.updateMany(
+                    { _id: { $in: eventIds } },
+                    { 
+                        status: 'Rejected', 
+                        rejectedAt: new Date(), 
+                        rejectionReason: data.reason || 'Bulk rejection',
+                        updatedAt: new Date() 
+                    }
+                );
+                break;
+
+            default:
+                res.status(400);
+                throw new Error('Invalid action');
+        }
+
+        res.json({
+            success: true,
+            message: `Bulk ${action} completed successfully`,
+            affectedCount: result.modifiedCount || result.deletedCount
+        });
+
+    } catch (error) {
+        console.error('Error in bulk event actions:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to perform bulk action',
+            error: error.message
+        });
+    }
+});
 // export const sendNotificationToUser = asyncHandler(async (req, res) => {
 //     const { subject, message } = req.body;
 //     const user = await User.findById(req.params.id);

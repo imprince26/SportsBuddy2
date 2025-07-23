@@ -465,96 +465,95 @@ const AdminDashboard = () => {
         {loading
           ? Array.from({ length: 4 }).map((_, index) => <StatCardSkeleton key={index} />)
           : getStatCards().map((stat, index) => {
-              const Icon = stat.icon
-              return (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02, y: -4 }}
-                  whileTap={{ scale: 0.98 }}
-                  onHoverStart={() => setActiveMetric(index)}
-                  onHoverEnd={() => setActiveMetric(null)}
-                >
-                  <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-transparent to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            const Icon = stat.icon
+            return (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02, y: -4 }}
+                whileTap={{ scale: 0.98 }}
+                onHoverStart={() => setActiveMetric(index)}
+                onHoverEnd={() => setActiveMetric(null)}
+              >
+                <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10">
-                      <div className="flex items-center justify-between mb-2 sm:mb-4">
-                        <div className="space-y-1 min-w-0 flex-1">
-                          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
-                            {stat.title}
-                          </p>
-                          <div className="flex items-center gap-1 sm:gap-2">
-                            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                              {stat.value}
-                            </p>
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: activeMetric === index ? 1 : 0 }}
-                              className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-600 dark:bg-blue-400 rounded-full shrink-0"
-                            />
-                          </div>
-                        </div>
-                        <div
-                          className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border transition-transform duration-300 group-hover:scale-110 shrink-0 ${getColorClasses(stat.color)}`}
-                        >
-                          <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1 sm:space-y-2">
+                  <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10">
+                    <div className="flex items-center justify-between mb-2 sm:mb-4">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
+                          {stat.title}
+                        </p>
                         <div className="flex items-center gap-1 sm:gap-2">
-                          {stat.trend === "positive" ? (
-                            <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 shrink-0" />
-                          ) : stat.trend === "negative" ? (
-                            <ArrowDownRight className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 shrink-0" />
-                          ) : (
-                            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 shrink-0" />
-                          )}
-                          <span
-                            className={`text-xs sm:text-sm font-medium truncate ${
-                              stat.trend === "positive"
-                                ? "text-green-600"
-                                : stat.trend === "negative"
-                                  ? "text-red-600"
-                                  : "text-gray-600 dark:text-gray-400"
-                            }`}
-                          >
-                            {stat.change}
-                          </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            {stat.changeType !== "neutral" ? "today" : "of total"}
-                          </span>
+                          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                            {stat.value}
+                          </p>
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: activeMetric === index ? 1 : 0 }}
+                            className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-600 dark:bg-blue-400 rounded-full shrink-0"
+                          />
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{stat.description}</p>
-
-                        {/* Sub-metrics - Hidden on mobile, shown on hover for larger screens */}
-                        <AnimatePresence>
-                          {activeMetric === index && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="hidden sm:block pt-2 border-t border-gray-200/50 dark:border-gray-700/50 space-y-1"
-                            >
-                              {stat.subMetrics.map((metric, idx) => (
-                                <div key={idx} className="flex justify-between text-xs">
-                                  <span className="text-gray-500 dark:text-gray-400 truncate">{metric.label}:</span>
-                                  <span className="font-medium text-gray-900 dark:text-white shrink-0">
-                                    {metric.value}
-                                  </span>
-                                </div>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )
-            })}
+                      <div
+                        className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border transition-transform duration-300 group-hover:scale-110 shrink-0 ${getColorClasses(stat.color)}`}
+                      >
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 sm:space-y-2">
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        {stat.trend === "positive" ? (
+                          <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 shrink-0" />
+                        ) : stat.trend === "negative" ? (
+                          <ArrowDownRight className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 shrink-0" />
+                        ) : (
+                          <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 shrink-0" />
+                        )}
+                        <span
+                          className={`text-xs sm:text-sm font-medium truncate ${stat.trend === "positive"
+                              ? "text-green-600"
+                              : stat.trend === "negative"
+                                ? "text-red-600"
+                                : "text-gray-600 dark:text-gray-400"
+                            }`}
+                        >
+                          {stat.change}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {stat.changeType !== "neutral" ? "today" : "of total"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{stat.description}</p>
+
+                      {/* Sub-metrics - Hidden on mobile, shown on hover for larger screens */}
+                      <AnimatePresence>
+                        {activeMetric === index && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="hidden sm:block pt-2 border-t border-gray-200/50 dark:border-gray-700/50 space-y-1"
+                          >
+                            {stat.subMetrics.map((metric, idx) => (
+                              <div key={idx} className="flex justify-between text-xs">
+                                <span className="text-gray-500 dark:text-gray-400 truncate">{metric.label}:</span>
+                                <span className="font-medium text-gray-900 dark:text-white shrink-0">
+                                  {metric.value}
+                                </span>
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          })}
       </motion.div>
 
       {/* Main Content Tabs - Mobile Optimized */}
@@ -610,33 +609,33 @@ const AdminDashboard = () => {
                   <CardContent className="space-y-3 sm:space-y-4">
                     {loading
                       ? Array.from({ length: 4 }).map((_, index) => (
-                          <div key={index} className="space-y-2">
-                            <div className="flex justify-between">
-                              <Skeleton className="h-3 sm:h-4 w-16 sm:w-20 bg-gray-200 dark:bg-gray-700" />
-                              <Skeleton className="h-3 sm:h-4 w-12 sm:w-16 bg-gray-200 dark:bg-gray-700" />
-                            </div>
-                            <Skeleton className="h-2 w-full bg-gray-200 dark:bg-gray-700" />
+                        <div key={index} className="space-y-2">
+                          <div className="flex justify-between">
+                            <Skeleton className="h-3 sm:h-4 w-16 sm:w-20 bg-gray-200 dark:bg-gray-700" />
+                            <Skeleton className="h-3 sm:h-4 w-12 sm:w-16 bg-gray-200 dark:bg-gray-700" />
                           </div>
-                        ))
+                          <Skeleton className="h-2 w-full bg-gray-200 dark:bg-gray-700" />
+                        </div>
+                      ))
                       : analytics?.events.byCategory.map((category, index) => (
-                          <motion.div
-                            key={index}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="space-y-2"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white capitalize truncate">
-                                {category._id || "Other"}
-                              </span>
-                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 shrink-0">
-                                {category.count} events
-                              </span>
-                            </div>
-                            <Progress value={(category.count / analytics.events.total) * 100} className="h-2" />
-                          </motion.div>
-                        ))}
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="space-y-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white capitalize truncate">
+                              {category._id || "Other"}
+                            </span>
+                            <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 shrink-0">
+                              {category.count} events
+                            </span>
+                          </div>
+                          <Progress value={(category.count / analytics.events.total) * 100} className="h-2" />
+                        </motion.div>
+                      ))}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -671,44 +670,44 @@ const AdminDashboard = () => {
                   <CardContent className="space-y-3 sm:space-y-4">
                     {loading
                       ? Array.from({ length: 5 }).map((_, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <Skeleton className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 dark:bg-gray-700" />
-                            <div className="flex-1 space-y-2">
-                              <Skeleton className="h-3 sm:h-4 w-24 sm:w-32 bg-gray-200 dark:bg-gray-700" />
-                              <Skeleton className="h-2 sm:h-3 w-16 sm:w-24 bg-gray-200 dark:bg-gray-700" />
-                            </div>
+                        <div key={index} className="flex items-center gap-3">
+                          <Skeleton className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-3 sm:h-4 w-24 sm:w-32 bg-gray-200 dark:bg-gray-700" />
+                            <Skeleton className="h-2 sm:h-3 w-16 sm:w-24 bg-gray-200 dark:bg-gray-700" />
                           </div>
-                        ))
+                        </div>
+                      ))
                       : analytics?.users.recent.map((user, index) => (
-                          <motion.div
-                            key={user._id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="flex items-center gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors"
+                        <motion.div
+                          key={user._id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-center gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors"
+                        >
+                          <Avatar className="w-8 h-8 sm:w-10 sm:h-10 ring-2 ring-white/20 dark:ring-gray-700/20 shrink-0">
+                            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs sm:text-sm">
+                              {user.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                              {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                            </p>
+                          </div>
+                          <Badge
+                            variant={user.role === "admin" ? "default" : "secondary"}
+                            className={`${user.role === "admin" ? "bg-blue-600 text-white" : ""} text-xs px-2 py-1 shrink-0`}
                           >
-                            <Avatar className="w-8 h-8 sm:w-10 sm:h-10 ring-2 ring-white/20 dark:ring-gray-700/20 shrink-0">
-                              <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs sm:text-sm">
-                                {user.name.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {user.name}
-                              </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                                {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
-                              </p>
-                            </div>
-                            <Badge
-                              variant={user.role === "admin" ? "default" : "secondary"}
-                              className={`${user.role === "admin" ? "bg-blue-600 text-white" : ""} text-xs px-2 py-1 shrink-0`}
-                            >
-                              {user.role}
-                            </Badge>
-                          </motion.div>
-                        ))}
+                            {user.role}
+                          </Badge>
+                        </motion.div>
+                      ))}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -828,37 +827,37 @@ const AdminDashboard = () => {
                   <CardContent className="space-y-3">
                     {loading
                       ? Array.from({ length: 3 }).map((_, index) => (
-                          <div key={index} className="space-y-2">
-                            <Skeleton className="h-3 sm:h-4 w-full bg-gray-200 dark:bg-gray-700" />
-                            <Skeleton className="h-2 sm:h-3 w-2/3 bg-gray-200 dark:bg-gray-700" />
-                          </div>
-                        ))
+                        <div key={index} className="space-y-2">
+                          <Skeleton className="h-3 sm:h-4 w-full bg-gray-200 dark:bg-gray-700" />
+                          <Skeleton className="h-2 sm:h-3 w-2/3 bg-gray-200 dark:bg-gray-700" />
+                        </div>
+                      ))
                       : analytics?.events.popular.slice(0, 3).map((event, index) => (
-                          <motion.div
-                            key={event._id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="p-2 sm:p-3 rounded-lg border border-gray-200/50 dark:border-gray-700/50 hover:shadow-md transition-all duration-300 bg-gray-50/50 dark:bg-gray-800/50"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {event.name}
-                                </p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                                  by {event.createdBy?.name}
-                                </p>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Badge variant="outline" className="text-xs px-2 py-0.5">
-                                    {event.participants?.length || 0} participants
-                                  </Badge>
-                                </div>
+                        <motion.div
+                          key={event._id}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="p-2 sm:p-3 rounded-lg border border-gray-200/50 dark:border-gray-700/50 hover:shadow-md transition-all duration-300 bg-gray-50/50 dark:bg-gray-800/50"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {event.name}
+                              </p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                                by {event.createdBy?.name}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                                  {event.participants?.length || 0} participants
+                                </Badge>
                               </div>
                             </div>
-                          </motion.div>
-                        ))}
+                          </div>
+                        </motion.div>
+                      ))}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -898,44 +897,44 @@ const AdminDashboard = () => {
                     <ScrollArea className="h-64 sm:h-80">
                       {loading
                         ? Array.from({ length: 4 }).map((_, index) => (
-                            <div key={index} className="space-y-2 mb-4">
-                              <Skeleton className="h-3 sm:h-4 w-full bg-gray-200 dark:bg-gray-700" />
-                              <Skeleton className="h-2 sm:h-3 w-2/3 bg-gray-200 dark:bg-gray-700" />
-                              <Skeleton className="h-2 sm:h-3 w-1/3 bg-gray-200 dark:bg-gray-700" />
-                            </div>
-                          ))
+                          <div key={index} className="space-y-2 mb-4">
+                            <Skeleton className="h-3 sm:h-4 w-full bg-gray-200 dark:bg-gray-700" />
+                            <Skeleton className="h-2 sm:h-3 w-2/3 bg-gray-200 dark:bg-gray-700" />
+                            <Skeleton className="h-2 sm:h-3 w-1/3 bg-gray-200 dark:bg-gray-700" />
+                          </div>
+                        ))
                         : analytics?.events.recent.map((event, index) => (
-                            <motion.div
-                              key={event._id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="p-2 sm:p-3 rounded-lg border border-gray-200/50 dark:border-gray-700/50 hover:shadow-md transition-all duration-300 mb-3 bg-gray-50/50 dark:bg-gray-800/50"
-                            >
-                              <div className="space-y-2">
-                                <div className="flex items-start justify-between gap-2">
-                                  <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white line-clamp-2 flex-1">
-                                    {event.name}
-                                  </h4>
-                                  <Badge variant="outline" className="text-xs shrink-0 px-2 py-0.5">
-                                    {event.category || event.sport || "Event"}
-                                  </Badge>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                                  <MapPin className="w-3 h-3 shrink-0" />
-                                  <span className="truncate">{event.location?.city || "Location TBD"}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-xs">
-                                  <span className="text-gray-600 dark:text-gray-400 truncate">
-                                    by {event.createdBy?.name}
-                                  </span>
-                                  <span className="text-gray-500 dark:text-gray-500 shrink-0">
-                                    {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
-                                  </span>
-                                </div>
+                          <motion.div
+                            key={event._id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="p-2 sm:p-3 rounded-lg border border-gray-200/50 dark:border-gray-700/50 hover:shadow-md transition-all duration-300 mb-3 bg-gray-50/50 dark:bg-gray-800/50"
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white line-clamp-2 flex-1">
+                                  {event.name}
+                                </h4>
+                                <Badge variant="outline" className="text-xs shrink-0 px-2 py-0.5">
+                                  {event.category || event.sport || "Event"}
+                                </Badge>
                               </div>
-                            </motion.div>
-                          ))}
+                              <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                <MapPin className="w-3 h-3 shrink-0" />
+                                <span className="truncate">{event.location?.city || "Location TBD"}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-600 dark:text-gray-400 truncate">
+                                  by {event.createdBy?.name}
+                                </span>
+                                <span className="text-gray-500 dark:text-gray-500 shrink-0">
+                                  {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
+                                </span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
                     </ScrollArea>
                   </CardContent>
                 </Card>

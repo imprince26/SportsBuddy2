@@ -561,7 +561,7 @@ const AdminDashboard = () => {
       <motion.div variants={itemVariants}>
         <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
           <div className="overflow-x-auto">
-            <TabsList className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/20 dark:border-gray-700/20 p-1 rounded-xl w-full sm:w-auto inline-flex">
+            <TabsList className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/20 dark:border-gray-700/20 p-1 rounded-xl w-full flex justify-evenly sm:w-auto md:inline-flex">
               <TabsTrigger
                 value="overview"
                 className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-xl transition-all duration-200 text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap"

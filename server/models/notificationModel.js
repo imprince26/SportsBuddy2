@@ -145,7 +145,6 @@ const notificationSchema = new mongoose.Schema({
     toObject: { virtuals: true }
 });
 
-// Indexes for better performance
 notificationSchema.index({ status: 1, scheduledAt: 1 });
 notificationSchema.index({ createdBy: 1 });
 notificationSchema.index({ type: 1 });
@@ -153,13 +152,11 @@ notificationSchema.index({ recipients: 1 });
 notificationSchema.index({ createdAt: -1 });
 notificationSchema.index({ 'deliveryLogs.recipient': 1 });
 
-// Virtual for engagement rate calculation
 notificationSchema.virtual('calculatedEngagementRate').get(function () {
     if (this.recipientCount === 0) return 0;
     return ((this.readCount / this.recipientCount) * 100).toFixed(2);
 });
 
-// Pre-save middleware to calculate recipient count
 notificationSchema.pre('save', async function (next) {
     if (this.isModified('recipients') || this.isNew) {
         try {

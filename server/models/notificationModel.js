@@ -181,27 +181,23 @@ notificationSchema.pre('save', async function (next) {
     next();
 });
 
-// Method to mark as sent
 notificationSchema.methods.markAsSent = function () {
     this.status = 'sent';
     this.sentAt = new Date();
     return this.save();
 };
 
-// Method to mark as failed
 notificationSchema.methods.markAsFailed = function (errorMessage) {
     this.status = 'failed';
     this.metadata.errorMessage = errorMessage;
     return this.save();
 };
 
-// Method to add delivery log
 notificationSchema.methods.addDeliveryLog = function (recipientData) {
     this.deliveryLogs.push(recipientData);
     return this.save();
 };
 
-// Method to update statistics
 notificationSchema.methods.updateStatistics = function () {
     this.deliveredCount = this.deliveryLogs.filter(log => log.deliveryStatus === 'delivered').length;
     this.readCount = this.deliveryLogs.filter(log => log.readAt).length;

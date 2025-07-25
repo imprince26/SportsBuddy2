@@ -140,7 +140,7 @@ const ManageNotifications = () => {
   const fetchNotifications = useCallback(async (page = 1, refresh = false) => {
     try {
       if (refresh) setRefreshing(true)
-      
+
       // Check cache first
       if (!refresh) {
         const cached = localStorage.getItem(`${CACHE_KEY}_${page}`)
@@ -288,9 +288,9 @@ const ManageNotifications = () => {
       const response = await api.post(`/notifications/bulk/${id}/send`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      
+
       toast.success(response.data.message || "Notification sent successfully!")
-      
+
       // Clear cache and refresh
       localStorage.removeItem(`${CACHE_KEY}_${currentPage}`)
       fetchNotifications(currentPage, true)
@@ -308,9 +308,9 @@ const ManageNotifications = () => {
       const response = await api.delete(`/notifications/bulk/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      
+
       toast.success(response.data.message || "Notification deleted successfully!")
-      
+
       // Clear cache and refresh
       localStorage.removeItem(`${CACHE_KEY}_${currentPage}`)
       fetchNotifications(currentPage, true)
@@ -328,9 +328,9 @@ const ManageNotifications = () => {
       const response = await api.put(`/notifications/bulk/${id}/archive`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      
+
       toast.success(response.data.message || "Notification archived successfully!")
-      
+
       // Clear cache and refresh
       localStorage.removeItem(`${CACHE_KEY}_${currentPage}`)
       fetchNotifications(currentPage, true)
@@ -604,7 +604,7 @@ const ManageNotifications = () => {
               >
                 <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-br from-transparent to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
+
                   <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10">
                     <div className="flex items-center justify-between mb-2 sm:mb-4">
                       <div className="space-y-1 min-w-0 flex-1">
@@ -690,7 +690,7 @@ const ManageNotifications = () => {
                       className="pl-10 bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50"
                     />
                   </div>
-                  
+
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50">
                       <SelectValue placeholder="Status" />
@@ -748,7 +748,7 @@ const ManageNotifications = () => {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent>
                 {loading ? (
                   <div className="space-y-4">
@@ -808,7 +808,7 @@ const ManageNotifications = () => {
                                 {notification.message}
                               </p>
                             </div>
-                            
+
                             {/* Status and Type Badges */}
                             <div className="flex flex-col gap-1 shrink-0">
                               <Badge className={`text-xs px-2 py-1 border ${getStatusColor(notification.status)}`}>
@@ -838,7 +838,7 @@ const ManageNotifications = () => {
                                 </span>
                               )}
                             </div>
-                            
+
                             {notification.engagementRate && (
                               <div className="flex items-center gap-1">
                                 <TrendingUp className="w-3 h-3" />
@@ -854,7 +854,7 @@ const ManageNotifications = () => {
                             </Badge>
                           )}
                         </div>
-                        
+
                         {/* Action Menu */}
                         <div className="flex-shrink-0">
                           <DropdownMenu>
@@ -864,7 +864,7 @@ const ManageNotifications = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => handleViewDetails(notification._id)}
                                 className="flex items-center"
                               >
@@ -872,7 +872,7 @@ const ManageNotifications = () => {
                                 View Details
                               </DropdownMenuItem>
                               {notification.status === 'draft' && (
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => handleSendNotification(notification._id)}
                                   className="flex items-center"
                                 >
@@ -880,7 +880,7 @@ const ManageNotifications = () => {
                                   Send Now
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => handleArchiveNotification(notification._id)}
                                 className="flex items-center"
                               >
@@ -917,7 +917,7 @@ const ManageNotifications = () => {
                       >
                         Previous
                       </Button>
-                      
+
                       {/* Page Numbers */}
                       <div className="flex items-center gap-1">
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -935,7 +935,7 @@ const ManageNotifications = () => {
                           )
                         })}
                       </div>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -975,16 +975,16 @@ const ManageNotifications = () => {
                           {type.count} ({((type.count / stats.overview.totalNotifications) * 100).toFixed(1)}%)
                         </span>
                       </div>
-                      <Progress 
-                        value={(type.count / stats.overview.totalNotifications) * 100} 
-                        className="h-2" 
+                      <Progress
+                        value={(type.count / stats.overview.totalNotifications) * 100}
+                        className="h-2"
                       />
                     </div>
                   )) || (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500 dark:text-gray-400">No data available</p>
-                    </div>
-                  )}
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 dark:text-gray-400">No data available</p>
+                      </div>
+                    )}
                 </CardContent>
               </Card>
 
@@ -1007,7 +1007,7 @@ const ManageNotifications = () => {
                           Delivery Rate
                         </p>
                         <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                          {stats?.overview?.totalRecipients ? 
+                          {stats?.overview?.totalRecipients ?
                             ((stats.overview.totalDelivered / stats.overview.totalRecipients) * 100).toFixed(1) : 0}%
                         </p>
                         <p className="text-xs text-green-700 dark:text-green-300">
@@ -1017,7 +1017,7 @@ const ManageNotifications = () => {
                       <CheckCircle className="w-8 h-8 text-green-500" />
                     </div>
                   </div>
-                  
+
                   <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50">
                     <div className="flex items-center justify-between">
                       <div>
@@ -1025,7 +1025,7 @@ const ManageNotifications = () => {
                           Open Rate
                         </p>
                         <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                          {stats?.overview?.totalDelivered ? 
+                          {stats?.overview?.totalDelivered ?
                             ((stats.overview.totalRead / stats.overview.totalDelivered) * 100).toFixed(1) : 0}%
                         </p>
                         <p className="text-xs text-blue-700 dark:text-blue-300">
@@ -1035,7 +1035,7 @@ const ManageNotifications = () => {
                       <Eye className="w-8 h-8 text-blue-500" />
                     </div>
                   </div>
-                  
+
                   <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200/50 dark:border-purple-700/50">
                     <div className="flex items-center justify-between">
                       <div>
@@ -1073,9 +1073,9 @@ const ManageNotifications = () => {
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">
-                          {new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long' 
+                          {new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long'
                           })}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -1092,10 +1092,10 @@ const ManageNotifications = () => {
                       </div>
                     </div>
                   )) || (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500 dark:text-gray-400">No monthly data available</p>
-                    </div>
-                  )}
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 dark:text-gray-400">No monthly data available</p>
+                      </div>
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -1115,7 +1115,7 @@ const ManageNotifications = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {templates.map((template) => (
-                    <motion.div 
+                    <motion.div
                       key={template.id}
                       whileHover={{ scale: 1.02 }}
                       className="p-4 border border-gray-200/50 dark:border-gray-700/50 rounded-lg hover:shadow-md transition-all duration-300 bg-gray-50/30 dark:bg-gray-800/30"
@@ -1157,7 +1157,7 @@ const ManageNotifications = () => {
                       </div>
                     </motion.div>
                   ))}
-                  
+
                   {templates.length === 0 && (
                     <div className="col-span-full text-center py-8">
                       <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -1198,8 +1198,8 @@ const ManageNotifications = () => {
               </div>
               <div>
                 <Label htmlFor="type">Type</Label>
-                <Select 
-                  value={newNotification.type} 
+                <Select
+                  value={newNotification.type}
                   onValueChange={(value) => setNewNotification({ ...newNotification, type: value })}
                 >
                   <SelectTrigger className="bg-white/50 dark:bg-gray-800/50">
@@ -1231,8 +1231,8 @@ const ManageNotifications = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="priority">Priority</Label>
-                <Select 
-                  value={newNotification.priority} 
+                <Select
+                  value={newNotification.priority}
                   onValueChange={(value) => setNewNotification({ ...newNotification, priority: value })}
                 >
                   <SelectTrigger className="bg-white/50 dark:bg-gray-800/50">
@@ -1247,8 +1247,8 @@ const ManageNotifications = () => {
               </div>
               <div>
                 <Label htmlFor="recipients">Recipients</Label>
-                <Select 
-                  value={newNotification.recipients} 
+                <Select
+                  value={newNotification.recipients}
                   onValueChange={(value) => setNewNotification({ ...newNotification, recipients: value })}
                 >
                   <SelectTrigger className="bg-white/50 dark:bg-gray-800/50">
@@ -1279,8 +1279,8 @@ const ManageNotifications = () => {
                 id="actionUrl"
                 placeholder="https://example.com/action"
                 value={newNotification.metadata.actionUrl}
-                onChange={(e) => setNewNotification({ 
-                  ...newNotification, 
+                onChange={(e) => setNewNotification({
+                  ...newNotification,
                   metadata: { ...newNotification.metadata, actionUrl: e.target.value }
                 })}
                 className="bg-white/50 dark:bg-gray-800/50"
@@ -1291,8 +1291,8 @@ const ManageNotifications = () => {
               <Switch
                 id="emailSent"
                 checked={newNotification.metadata.emailSent}
-                onCheckedChange={(checked) => setNewNotification({ 
-                  ...newNotification, 
+                onCheckedChange={(checked) => setNewNotification({
+                  ...newNotification,
                   metadata: { ...newNotification.metadata, emailSent: checked }
                 })}
               />
@@ -1339,7 +1339,7 @@ const ManageNotifications = () => {
                     <p className="text-gray-900 dark:text-white">{selectedNotification.message}</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <div>
@@ -1361,19 +1361,19 @@ const ManageNotifications = () => {
                       </Badge>
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Recipients</Label>
                     <p className="text-gray-900 dark:text-white">{selectedNotification.recipientCount || 0} users</p>
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Created</Label>
                     <p className="text-gray-900 dark:text-white">
                       {format(new Date(selectedNotification.createdAt), "MMM dd, yyyy 'at' h:mm a")}
                     </p>
                   </div>
-                  
+
                   {selectedNotification.sentAt && (
                     <div>
                       <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sent</Label>
@@ -1401,7 +1401,7 @@ const ManageNotifications = () => {
                         {selectedNotification.deliveredCount || 0}
                       </p>
                     </div>
-                    
+
                     <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200/20">
                       <div className="flex items-center gap-2">
                         <Eye className="w-4 h-4 text-green-600" />
@@ -1411,7 +1411,7 @@ const ManageNotifications = () => {
                         {selectedNotification.readCount || 0}
                       </p>
                     </div>
-                    
+
                     <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200/20">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-purple-600" />

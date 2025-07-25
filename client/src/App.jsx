@@ -517,58 +517,8 @@ function App() {
           />
         </Routes>
       </AnimatePresence>
-
-      {/* Global Toast Notifications */}
-      {/* <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: 'var(--background)',
-            color: 'var(--foreground)',
-            border: '1px solid var(--border)',
-            borderRadius: '12px',
-            fontSize: '14px',
-            maxWidth: '400px',
-            padding: '12px 16px',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-            backdropFilter: 'blur(8px)',
-          },
-          success: {
-            iconTheme: {
-              primary: '#10b981',
-              secondary: '#ffffff',
-            },
-            style: {
-              border: '1px solid #10b981',
-              background: 'rgba(16, 185, 129, 0.1)',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#ffffff',
-            },
-            style: {
-              border: '1px solid #ef4444',
-              background: 'rgba(239, 68, 68, 0.1)',
-            },
-          },
-          loading: {
-            iconTheme: {
-              primary: '#3b82f6',
-              secondary: '#ffffff',
-            },
-            style: {
-              border: '1px solid #3b82f6',
-              background: 'rgba(59, 130, 246, 0.1)',
-            },
-          },
-        }}
-      /> */}
     </ErrorBoundary>
   );
 }
-
 
 export default App;

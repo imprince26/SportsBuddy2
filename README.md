@@ -16,7 +16,7 @@
 
 ## 🌟 Demo
 
-**[Live Demo](https://sportsbuddy.vercel.app)**
+**[Live Demo](https://sports-buddy2.vercel.app)**
  <!-- | **[Video Walkthrough](https://youtu.be/sportsbuddy-demo)** -->
 
 <!-- <div align="center">

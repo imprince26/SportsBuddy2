@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
-import { 
-  Sparkles, 
-  Play, 
-  Calendar, 
-  Trophy, 
-  Users, 
-  Globe, 
-  Rocket, 
+import {
+  Sparkles,
+  Play,
+  Calendar,
+  Trophy,
+  Users,
+  Globe,
+  Rocket,
   Heart,
   Target,
   Zap,
@@ -50,7 +50,7 @@ const HeroSection = () => {
       <div className="absolute inset-0">
         {/* Main Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-purple-600/90 to-blue-800/90" />
-        
+
         {/* 3D Floating Orbs */}
         <div className="absolute inset-0">
           {[...Array(12)].map((_, i) => (
@@ -58,9 +58,8 @@ const HeroSection = () => {
               key={i}
               className={`absolute w-${4 + (i % 4) * 2} h-${4 + (i % 4) * 2} rounded-full`}
               style={{
-                background: `linear-gradient(135deg, ${
-                  ['rgba(59, 130, 246, 0.3)', 'rgba(139, 92, 246, 0.3)', 'rgba(34, 197, 94, 0.3)', 'rgba(251, 191, 36, 0.3)'][i % 4]
-                }, transparent)`,
+                background: `linear-gradient(135deg, ${['rgba(59, 130, 246, 0.3)', 'rgba(139, 92, 246, 0.3)', 'rgba(34, 197, 94, 0.3)', 'rgba(251, 191, 36, 0.3)'][i % 4]
+                  }, transparent)`,
                 backdropFilter: 'blur(10px)',
                 left: `${10 + (i * 8) % 80}%`,
                 top: `${20 + (i * 7) % 60}%`,
@@ -86,7 +85,7 @@ const HeroSection = () => {
 
         {/* 3D Grid Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div 
+          <div
             className="w-full h-full"
             style={{
               backgroundImage: `
@@ -144,7 +143,7 @@ const HeroSection = () => {
             >
               {user ? (
                 // Authenticated User Hero
-                <div className="space-y-8">
+                <div className="space-y-8 mt-5">
                   {/* Welcome Badge */}
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
@@ -175,7 +174,7 @@ const HeroSection = () => {
                   >
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
                       Ready for your next
-                      <motion.span 
+                      <motion.span
                         className="block bg-gradient-to-r from-yellow-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent"
                         animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
                         transition={{ duration: 3, repeat: Infinity }}
@@ -183,8 +182,8 @@ const HeroSection = () => {
                         Sports Adventure?
                       </motion.span>
                     </h1>
-                    
-                    <motion.p 
+
+                    <motion.p
                       className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -268,7 +267,7 @@ const HeroSection = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.4 }}
-                    className="flex flex-wrap justify-center gap-6 pt-8"
+                    className="flex flex-wrap justify-center gap-6  py-8"
                   >
                     {features.map((feature, index) => (
                       <motion.div
@@ -284,7 +283,7 @@ const HeroSection = () => {
                 </div>
               ) : (
                 // Unauthenticated User Hero
-                <div className="space-y-8">
+                <div className="space-y-8 mt-5">
                   {/* Welcome Badge */}
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
@@ -315,9 +314,9 @@ const HeroSection = () => {
                   >
                     <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-white leading-tight">
                       Find Your Perfect
-                      <motion.span 
+                      <motion.span
                         className="block bg-gradient-to-r from-yellow-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent"
-                        animate={{ 
+                        animate={{
                           backgroundPosition: ['0%', '100%', '0%'],
                           scale: [1, 1.02, 1]
                         }}
@@ -326,8 +325,8 @@ const HeroSection = () => {
                         Sports Community
                       </motion.span>
                     </h1>
-                    
-                    <motion.p 
+
+                    <motion.p
                       className="text-lg md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -389,8 +388,8 @@ const HeroSection = () => {
                         key={index}
                         initial={{ opacity: 0, rotateY: -90, z: -100 }}
                         animate={{ opacity: 1, rotateY: 0, z: 0 }}
-                        transition={{ 
-                          duration: 0.8, 
+                        transition={{
+                          duration: 0.8,
                           delay: 1.2 + index * 0.15,
                           type: "spring",
                           stiffness: 100
@@ -401,7 +400,7 @@ const HeroSection = () => {
                       >
                         {/* 3D Background Effect */}
                         <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl blur-xl group-hover:blur-lg transition-all duration-500 transform group-hover:scale-110" />
-                        
+
                         {/* Card Content */}
                         <div className={`relative p-6 lg:p-8 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 text-center hover:border-white/40 transition-all duration-500 ${stat.bgColor}`}>
                           {/* Icon Container */}
@@ -411,11 +410,11 @@ const HeroSection = () => {
                             </div>
                             <div className="absolute inset-0 w-16 h-16 mx-auto rounded-2xl bg-gradient-to-r from-white/20 to-transparent blur-md transform scale-110 group-hover:scale-125 transition-transform duration-500" />
                           </div>
-                          
+
                           {/* Stats */}
-                          <motion.div 
-                            className="text-3xl lg:text-4xl font-bold text-white mb-2"
-                            animate={{ 
+                          <motion.div
+                            className="text-3xl lg:text-4xl font-bold text-white"
+                            animate={{
                               textShadow: [
                                 "0 0 0px rgba(255,255,255,0.5)",
                                 "0 0 20px rgba(255,255,255,0.8)",
@@ -427,7 +426,7 @@ const HeroSection = () => {
                             {stat.value}
                           </motion.div>
                           <div className="text-white/90 font-medium">{stat.label}</div>
-                          
+
                           {/* Hover Effect Indicator */}
                           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
@@ -440,7 +439,7 @@ const HeroSection = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.6 }}
-                    className="flex flex-wrap justify-center items-center gap-8 pt-8"
+                    className="flex flex-wrap justify-center items-center gap-8 py-8"
                   >
                     <div className="flex items-center gap-2 text-white/80">
                       <div className="flex">

@@ -44,32 +44,21 @@ import {
   MoreHorizontal,
   Trash2,
   Eye,
-  Edit,
   Archive,
   Clock,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
   TrendingUp,
   RefreshCw,
-  Download,
   Menu,
   Copy,
   BarChart3,
-  Settings,
-  Sparkles,
   Users,
   Calendar,
-  Target,
-  Zap,
   Activity,
-  ChevronRight,
-  ChevronDown,
-  ExternalLink,
   FileText,
   PieChart
 } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { format, formatDistanceToNow } from "date-fns"
 import api from "@/utils/api"
 

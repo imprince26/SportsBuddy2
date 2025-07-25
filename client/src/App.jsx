@@ -18,7 +18,6 @@ import Search from './pages/Search';
 import EventChat from './pages/EventChat';
 import ManageUsers from './pages/admin/ManageUsers';
 import ManageEvents from './pages/admin/ManageEvents';
-import ManageNotifications from './pages/admin/ManageNotifications';
 import NotFound from './pages/NotFound';
 import AdminLayout from './components/layout/AdminLayout';
 import Settings from './pages/Settings';

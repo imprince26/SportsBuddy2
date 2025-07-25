@@ -2,26 +2,208 @@ import { useEffect, useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { useForm } from "react-hook-form"
-import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  ArrowRight,
+  AlertCircle,
+  Trophy,
+  Zap,
+  Users,
+  Target,
+  Sparkles,
+  Shield,
+  CheckCircle,
+  Activity,
+  KeyRound
+} from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription,AlertTitle } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 
+// Fixed Modern Input Component
+const ModernInput = ({
+  icon: Icon,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  onBlur,
+  name,
+  error,
+  showPassword,
+  onTogglePassword,
+  className,
+  ...props
+}) => {
+  const [isFocused, setIsFocused] = useState(false)
+  const [hasValue, setHasValue] = useState(false)
+
+  useEffect(() => {
+    setHasValue(value && value.length > 0)
+  }, [value])
+
+  return (
+    <div className="relative group">
+      {/* Floating Label */}
+      <motion.label
+        initial={false}
+        animate={{
+          y: isFocused || hasValue ? -38 : -12,
+          scale: isFocused || hasValue ? 0.75 : 1,
+          color: error
+            ? "#ef4444"
+            : isFocused
+              ? "#3b82f6"
+              : "#6b7280"
+        }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="absolute left-12 top-1/2 -translate-y-1/2 pointer-events-none font-medium z-20 bg-white dark:bg-gray-900 px-2 origin-left"
+        style={{ transformOrigin: "left center" }}
+      >
+        {placeholder}
+      </motion.label>
+
+      {/* Input Container */}
+      <div className="relative">
+        {/* Gradient Border Container */}
+        <motion.div
+          className={cn(
+            "absolute inset-0 rounded-xl p-[2px]",
+            error
+              ? "bg-gradient-to-r from-red-400 to-red-600"
+              : isFocused
+                ? "bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600"
+                : "bg-gray-200 dark:bg-gray-700"
+          )}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="w-full h-full bg-white dark:bg-gray-900 rounded-xl" />
+        </motion.div>
+
+        {/* Input Field Container */}
+        <div className={cn(
+          "relative bg-white dark:bg-gray-900 rounded-xl",
+          "border-2 transition-all duration-300",
+          error
+            ? "border-red-300 dark:border-red-700"
+            : isFocused
+              ? "border-transparent shadow-lg shadow-blue-500/20 dark:shadow-blue-400/30"
+              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+        )}>
+          {/* Icon */}
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+            <motion.div
+              animate={{
+                scale: isFocused ? 1.1 : 1,
+                color: error
+                  ? "#ef4444"
+                  : isFocused
+                    ? "#3b82f6"
+                    : "#6b7280"
+              }}
+              transition={{ duration: 0.2 }}
+            >
+              <Icon className="w-5 h-5" />
+            </motion.div>
+          </div>
+
+          {/* Input Field */}
+          <Input
+            type={type === "password" && showPassword ? "text" : type}
+            value={value}
+            onChange={(e) => {
+              onChange(e)
+              setHasValue(e.target.value.length > 0)
+            }}
+            onFocus={() => setIsFocused(true)}
+            onBlur={(e) => {
+              setIsFocused(false)
+              onBlur && onBlur(e)
+            }}
+            name={name}
+            className={cn(
+              "w-full h-12 pl-12 pr-4 bg-transparent",
+              "text-gray-900 dark:text-purple-50 text-base",
+              "placeholder:text-transparent",
+              "focus:outline-none rounded-xl",
+              "transition-all duration-300",
+              type === "password" && "pr-12",
+              className
+            )}
+
+            {...props}
+          />
+
+          {/* Password Toggle */}
+          {type === "password" && (
+            <motion.button
+              type="button"
+              onClick={onTogglePassword}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors z-10"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <motion.div
+                initial={false}
+                animate={{ rotate: showPassword ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </motion.div>
+            </motion.button>
+          )}
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-2 flex items-center gap-2 text-red-600 dark:text-red-400 text-sm"
+        >
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
+        </motion.div>
+      )}
+    </div>
+  )
+}
+
+// Validation schema
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .max(100, "Password is too long"),
+})
+
 const Login = () => {
-  const { user, login, loading,authError } = useAuth()
+  const { user, login, loading, authError } = useAuth()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
-  // const [authError, setAuthError] = useState("")
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm()
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
 
   useEffect(() => {
     if (user) {
@@ -30,19 +212,17 @@ const Login = () => {
   }, [user, navigate])
 
   useEffect(() => {
-    document.title = "Login - SportsBuddy"
+    document.title = "Sign In - SportsBuddy"
   }, [])
 
   const onSubmit = async (data) => {
     try {
-      // setAuthError("")
       await login({
         email: data.email,
         password: data.password,
       })
     } catch (error) {
       console.log("Login error:", error?.message)
-      // setAuthError(error.message || "Login failed. Please try again.")
     }
   }
 
@@ -62,80 +242,132 @@ const Login = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5 },
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      },
     },
   }
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark relative overflow-hidden">
-      {/* Background Sports SVG */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-10">
-        <svg viewBox="0 0 1200 800" className="w-full h-full object-cover" fill="currentColor">
-          {/* Soccer Ball */}
-          <circle cx="200" cy="150" r="40" className="text-primary-light dark:text-primary-dark" />
-          <path
-            d="M200 110 L220 130 L210 150 L190 150 L180 130 Z"
-            className="text-background-light dark:text-background-dark"
+    <div className="h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-blue-50/30 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-blue-950/20" />
+
+        {/* Animated Particles */}
+        {[...Array(15)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1.5 h-1.5 bg-blue-400/30 dark:bg-blue-300/30 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.3, 0.7, 0.3],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 4 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+              ease: "easeInOut"
+            }}
           />
+        ))}
 
-          {/* Basketball */}
-          <circle cx="1000" cy="200" r="35" className="text-accent-light dark:text-accent-dark" />
-          <path
-            d="M965 200 Q1000 170 1035 200 M965 200 Q1000 230 1035 200 M1000 165 L1000 235"
-            stroke="currentColor"
-            strokeWidth="2"
-            fill="none"
-            className="text-background-light dark:text-background-dark"
-          />
-
-          {/* Tennis Racket */}
-          <ellipse cx="150" cy="600" rx="25" ry="40" className="text-secondary-light dark:text-secondary-dark" />
-          <rect x="145" y="640" width="10" height="60" className="text-secondary-light dark:text-secondary-dark" />
-
-          {/* Dumbbell */}
-          <rect x="950" y="650" width="80" height="8" className="text-primary-light dark:text-primary-dark" />
-          <rect x="945" y="640" width="15" height="28" className="text-primary-light dark:text-primary-dark" />
-          <rect x="1020" y="640" width="15" height="28" className="text-primary-light dark:text-primary-dark" />
-        </svg>
+        {/* Floating Sports Icons */}
+        {[Trophy, Zap, Users, Target].map((Icon, i) => (
+          <motion.div
+            key={i}
+            className="absolute text-blue-200/15 dark:text-blue-400/20"
+            style={{
+              left: `${20 + (i * 20) % 60}%`,
+              top: `${25 + (i * 20) % 50}%`,
+            }}
+            animate={{
+              y: [0, -8, 0],
+              rotate: [0, 5, -5, 0],
+            }}
+            transition={{
+              duration: 3 + i * 0.5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Icon size={30 + (i % 2) * 10} />
+          </motion.div>
+        ))}
       </div>
 
-      <div className="relative z-10 min-h-screen flex">
+      <div className="relative z-10 h-full flex">
         {/* Left Side - Branding */}
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
+          initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
-          className="hidden lg:flex lg:w-1/2 bg-primary-light dark:bg-primary-dark items-center justify-center p-12"
+          className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 items-center justify-center p-8 relative overflow-hidden"
         >
-          <div className="max-w-md text-center text-white">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div
+              className="w-full h-full"
+              style={{
+                backgroundImage: `
+                  radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2) 0%, transparent 50%)
+                `
+              }}
+            />
+          </div>
+
+          <div className="max-w-sm text-center text-white relative z-10">
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 0, rotate: -90 }}
+              animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-              className="mb-8"
+              className="mb-6"
             >
-              <svg viewBox="0 0 200 200" className="w-32 h-32 mx-auto mb-6" fill="currentColor">
-                {/* SportsBuddy Logo */}
-                <circle cx="100" cy="100" r="90" className="text-white/20" />
-                <circle cx="100" cy="100" r="60" className="text-white" />
-                <path d="M70 85 Q100 60 130 85 Q100 110 70 85" className="text-primary-light dark:text-primary-dark" />
-                <circle cx="85" cy="90" r="8" className="text-primary-light dark:text-primary-dark" />
-                <circle cx="115" cy="90" r="8" className="text-primary-light dark:text-primary-dark" />
-                <path
-                  d="M80 120 Q100 135 120 120"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  fill="none"
-                  className="text-primary-light dark:text-primary-dark"
+              {/* SportsBuddy Logo */}
+              <div className="relative mx-auto w-24 h-24 mb-4">
+                <motion.div
+                  className="absolute inset-0 bg-white/20 rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 />
-              </svg>
+                <motion.div
+                  className="absolute inset-1 bg-white rounded-full flex items-center justify-center shadow-xl"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-8 h-8 text-blue-600"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m4.93 4.93 4.24 4.24" />
+                    <path d="m14.83 9.17 4.24-4.24" />
+                    <path d="m14.83 14.83 4.24 4.24" />
+                    <path d="m9.17 14.83-4.24 4.24" />
+                    <circle cx="12" cy="12" r="4" />
+                  </svg>
+                </motion.div>
+              </div>
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="text-4xl font-bold mb-4"
+              className="text-3xl font-bold mb-3 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent"
             >
               Welcome Back!
             </motion.h1>
@@ -143,196 +375,255 @@ const Login = () => {
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              className="text-xl opacity-90 mb-8"
+              transition={{ delay: 0.6 }}
+              className="text-lg opacity-90 mb-6 leading-relaxed"
             >
-              Connect with sports enthusiasts and discover amazing events in your area.
+              Connect with sports enthusiasts and discover amazing events.
             </motion.p>
 
+            {/* Sports Icons */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
-              className="flex justify-center space-x-8"
+              transition={{ delay: 0.8 }}
+              className="flex justify-center space-x-6"
             >
-              {/* Sports Icons */}
-              <div className="text-center">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 2 L12 22 M2 12 L22 12" stroke="currentColor" strokeWidth="1" />
-                  </svg>
-                </div>
-                <span className="text-sm">Football</span>
-              </div>
+              {[
+                { icon: "⚽", name: "Football" },
+                { icon: "🏀", name: "Basketball" },
+                { icon: "🎾", name: "Tennis" },
+                { icon: "🏐", name: "Volleyball" },
+              ].map((sport, index) => (
+                <motion.div
+                  key={sport.name}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 + index * 0.1 }}
+                  whileHover={{ scale: 1.1, y: -3 }}
+                  className="text-center group cursor-pointer"
+                >
+                  <motion.div
+                    className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 group-hover:bg-white/30 transition-all duration-300"
+                    whileHover={{ rotate: [0, -5, 5, 0] }}
+                  >
+                    <span className="text-lg">{sport.icon}</span>
+                  </motion.div>
+                  <span className="text-xs font-medium opacity-90">{sport.name}</span>
+                </motion.div>
+              ))}
+            </motion.div>
 
-              <div className="text-center">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 2 Q18 8 12 12 Q6 8 12 2 M12 12 Q18 16 12 22 Q6 16 12 12" />
-                  </svg>
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="mt-8 grid grid-cols-3 gap-4 text-center"
+            >
+              {[
+                { number: "50K+", label: "Athletes" },
+                { number: "1000+", label: "Events" },
+                { number: "100+", label: "Cities" },
+              ].map((stat, index) => (
+                <div key={stat.label}>
+                  <div className="text-lg font-bold text-white">{stat.number}</div>
+                  <div className="text-xs text-white/80">{stat.label}</div>
                 </div>
-                <span className="text-sm">Basketball</span>
-              </div>
-
-              <div className="text-center">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
-                    <ellipse cx="12" cy="12" rx="8" ry="4" />
-                    <rect x="11" y="16" width="2" height="6" />
-                  </svg>
-                </div>
-                <span className="text-sm">Tennis</span>
-              </div>
+              ))}
             </motion.div>
           </div>
         </motion.div>
 
         {/* Right Side - Login Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
-          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full max-w-md">
-            <Card className="backdrop-blur-lg border-border-light dark:border-border-dark bg-card-light/95 dark:bg-card-dark/95 shadow-2xl">
-              <CardHeader className="space-y-1 pb-6">
-                <motion.div variants={itemVariants} className="text-center mb-2">
-                  <CardTitle className="text-3xl font-bold text-foreground-light dark:text-foreground-dark">
-                    Sign In
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="w-full max-w-sm"
+          >
+            <Card className="backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/90 dark:bg-gray-900/90 shadow-xl rounded-2xl">
+              <CardHeader className="pb-6 pt-6">
+                <motion.div variants={itemVariants} className="text-center">
+                  <div className="flex items-center justify-center mb-4">
+                    <motion.div
+                      className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
+                      whileHover={{ scale: 1.05, rotate: 5 }}
+                    >
+                      <Shield className="w-6 h-6 text-white" />
+                    </motion.div>
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    Welcome Back
                   </CardTitle>
-                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark mt-2">
-                    Enter your credentials to access your account
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Sign in to continue your sports journey
                   </p>
                 </motion.div>
               </CardHeader>
 
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 px-6 pb-6">
                 {authError && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     variants={itemVariants}
                   >
-                   <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    <AlertTitle>Error!</AlertTitle>
-                    <AlertDescription>{authError}</AlertDescription>
-                  </Alert>
+                    <Alert className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 rounded-xl">
+                      <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      <AlertTitle className="text-red-800 dark:text-red-200 font-semibold text-sm">
+                        Authentication Error
+                      </AlertTitle>
+                      <AlertDescription className="text-red-700 dark:text-red-300 text-sm">
+                        {authError}
+                      </AlertDescription>
+                    </Alert>
                   </motion.div>
                 )}
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <motion.div variants={itemVariants} className="space-y-2">
-                    <Label htmlFor="email" className="text-foreground-light dark:text-foreground-dark">
-                      Email Address
-                    </Label>
-                    <div className="relative flex items-center">
-                      <Mail className="absolute left-3 h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        className={cn(
-                          "pl-10 h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark",
-                          errors.email && "border-destructive-light dark:border-destructive-dark",
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    <motion.div variants={itemVariants}>
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <ModernInput
+                                icon={Mail}
+                                type="email"
+                                placeholder="Email Address"
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                error={form.formState.errors.email?.message}
+                              />
+                            </FormControl>
+                          </FormItem>
                         )}
-                        {...register("email", {
-                          required: "Email is required",
-                          pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: "Invalid email address",
-                          },
-                        })}
                       />
-                    </div>
-                    {errors.email && (
-                      <p className="text-sm text-destructive-light dark:text-destructive-dark">
-                        {errors.email.message}
-                      </p>
-                    )}
-                  </motion.div>
+                    </motion.div>
 
-                  <motion.div variants={itemVariants} className="space-y-2">
-                    <Label htmlFor="password" className="text-foreground-light dark:text-foreground-dark">
-                      Password
-                    </Label>
-                    <div className="relative flex items-center">
-                      <Lock className="absolute left-3  h-4 w-4 text-muted-foreground-light dark:text-muted-foreground-dark" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        className={cn(
-                          "pl-10 pr-10 h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark",
-                          errors.password && "border-destructive-light dark:border-destructive-dark",
+                    <motion.div variants={itemVariants}>
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <ModernInput
+                                icon={KeyRound}
+                                type="password"
+                                placeholder="Password"
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                error={form.formState.errors.password?.message}
+                                showPassword={showPassword}
+                                onTogglePassword={() => setShowPassword(!showPassword)}
+                              />
+                            </FormControl>
+                          </FormItem>
                         )}
-                        {...register("password", {
-                          required: "Password is required",
-                          minLength: {
-                            value: 6,
-                            message: "Password must be at least 6 characters",
-                          },
-                        })}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="flex justify-end">
+                      <Link
+                        to="/forgot-password"
+                        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium hover:underline transition-colors"
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                    {errors.password && (
-                      <p className="text-sm text-destructive-light dark:text-destructive-dark">
-                        {errors.password.message}
-                      </p>
-                    )}
-                  </motion.div>
+                        Forgot password?
+                      </Link>
+                    </motion.div>
 
-                  <motion.div variants={itemVariants} className="flex items-center justify-between">
-                    <Link
-                      to="/forgot-password"
-                      className="text-sm text-primary-light dark:text-primary-dark hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </motion.div>
-
-                  <motion.div variants={itemVariants}>
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting || loading}
-                      className="w-full h-12 bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 text-white font-semibold text-base group"
-                    >
-                      {isSubmitting || loading ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span>Signing In...</span>
+                    <motion.div variants={itemVariants}>
+                      <Button
+                        type="submit"
+                        disabled={form.formState.isSubmitting || loading}
+                        className="w-full h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl group relative overflow-hidden"
+                      >
+                        <div className="relative z-10 flex items-center justify-center">
+                          {form.formState.isSubmitting || loading ? (
+                            <div className="flex items-center space-x-2">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                              />
+                              <span>Signing In...</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <span>Sign In</span>
+                              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="flex items-center space-x-2">
-                          <span>Sign In</span>
-                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      )}
-                    </Button>
-                  </motion.div>
-                </form>
+                      </Button>
+                    </motion.div>
+                  </form>
+                </Form>
 
                 <motion.div
                   variants={itemVariants}
-                  className="text-center pt-4 border-t border-border-light dark:border-border-dark"
+                  className="text-center pt-4 border-t border-gray-200 dark:border-gray-700"
                 >
-                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
                     Don't have an account?{" "}
                     <Link
                       to="/register"
-                      className="text-primary-light dark:text-primary-dark hover:underline font-semibold"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold hover:underline transition-colors"
                     >
                       Sign up here
                     </Link>
                   </p>
                 </motion.div>
+
+                {/* Trust Indicators */}
+                <motion.div
+                  variants={itemVariants}
+                  className="flex items-center justify-center space-x-6 pt-2"
+                >
+                  {[
+                    { icon: Shield, text: "Secure", color: "text-green-500" },
+                    { icon: CheckCircle, text: "Trusted", color: "text-blue-500" },
+                    { icon: Sparkles, text: "Premium", color: "text-purple-500" },
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.text}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.2 + index * 0.1 }}
+                      className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400"
+                    >
+                      <item.icon className={`w-3 h-3 ${item.color}`} />
+                      <span className="font-medium">{item.text}</span>
+                    </motion.div>
+                  ))}
+                </motion.div>
               </CardContent>
             </Card>
+
+            {/* Mobile Logo */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="lg:hidden text-center mt-6"
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Trophy className="w-5 h-5 text-blue-600" />
+                <span className="font-bold text-lg text-gray-900 dark:text-white">SportsBuddy</span>
+                <Zap className="w-5 h-5 text-purple-600" />
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Your sports community awaits
+              </p>
+            </motion.div>
           </motion.div>
         </div>
       </div>

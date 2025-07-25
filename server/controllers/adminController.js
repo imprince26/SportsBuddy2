@@ -1567,7 +1567,7 @@ export const adminSearch = asyncHandler(async (req, res) => {
         } = req.query;
 
         // Validate required parameters
-        if (!type || !query) {
+        if (!type || !query || query.trim().length === 0) {
             res.status(400);
             throw new Error("Search type and query are required");
         }
@@ -1594,8 +1594,16 @@ export const adminSearch = asyncHandler(async (req, res) => {
             parsedFilters = filters;
         }
 
-        // Create case-insensitive search regex
-        const searchRegex = new RegExp(query.trim(), 'i');
+        // Clean up filters - convert empty strings and "all" to undefined
+        Object.keys(parsedFilters).forEach(key => {
+            if (parsedFilters[key] === '' || parsedFilters[key] === 'all') {
+                delete parsedFilters[key];
+            }
+        });
+
+        // Create case-insensitive search regex with word boundary support
+        const searchTerm = query.trim();
+        const searchRegex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
         
         // Build sort object
         const sortObject = {};
@@ -1604,13 +1612,12 @@ export const adminSearch = asyncHandler(async (req, res) => {
         let results = {};
 
         if (type === 'users' || type === 'all') {
-            // Advanced user search
+            // Advanced user search with better query structure
             const userQuery = {
                 $or: [
-                    { name: searchRegex },
-                    { email: searchRegex },
-                    { username: searchRegex },
-                    { 'bio': searchRegex }
+                    { name: { $regex: searchRegex } },
+                    { email: { $regex: searchRegex } },
+                    { username: { $regex: searchRegex } }
                 ]
             };
 
@@ -1619,7 +1626,7 @@ export const adminSearch = asyncHandler(async (req, res) => {
                 userQuery.role = parsedFilters.role;
             }
             if (parsedFilters.isActive !== undefined) {
-                userQuery.isActive = parsedFilters.isActive;
+                userQuery.isActive = parsedFilters.isActive === 'true' || parsedFilters.isActive === true;
             }
             if (parsedFilters.dateFrom) {
                 userQuery.createdAt = { 
@@ -1633,13 +1640,8 @@ export const adminSearch = asyncHandler(async (req, res) => {
                     $lte: new Date(parsedFilters.dateTo) 
                 };
             }
-            if (parsedFilters.location) {
-                userQuery.$or.push(
-                    { 'location.city': searchRegex },
-                    { 'location.state': searchRegex },
-                    { 'location.country': searchRegex }
-                );
-            }
+
+            console.log('User search query:', JSON.stringify(userQuery, null, 2));
 
             // Get total count for users
             const totalUsers = await User.countDocuments(userQuery);
@@ -1659,24 +1661,24 @@ export const adminSearch = asyncHandler(async (req, res) => {
                     $lookup: {
                         from: 'events',
                         localField: '_id',
-                        foreignField: 'participants.user',
+                        foreignField: 'participants',
                         as: 'participatedEvents'
                     }
                 },
                 {
                     $addFields: {
-                        eventsCreated: { $size: '$createdEvents' },
-                        eventsParticipated: { $size: '$participatedEvents' },
+                        eventsCreated: { $size: { $ifNull: ['$createdEvents', []] } },
+                        eventsParticipated: { $size: { $ifNull: ['$participatedEvents', []] } },
                         totalEngagement: { 
                             $add: [
-                                { $size: '$createdEvents' }, 
-                                { $size: '$participatedEvents' }
+                                { $size: { $ifNull: ['$createdEvents', []] } }, 
+                                { $size: { $ifNull: ['$participatedEvents', []] } }
                             ] 
                         },
                         accountAge: {
                             $divide: [
                                 { $subtract: [new Date(), '$createdAt'] },
-                                1000 * 60 * 60 * 24 // Convert to days
+                                1000 * 60 * 60 * 24
                             ]
                         }
                     }
@@ -1710,15 +1712,15 @@ export const adminSearch = asyncHandler(async (req, res) => {
         }
 
         if (type === 'events' || type === 'all') {
-            // Advanced event search
+            // Advanced event search with better query structure
             const eventQuery = {
                 $or: [
-                    { name: searchRegex },
-                    { description: searchRegex },
-                    { category: searchRegex },
-                    { 'location.city': searchRegex },
-                    { 'location.state': searchRegex },
-                    { 'location.address': searchRegex }
+                    { name: { $regex: searchRegex } },
+                    { description: { $regex: searchRegex } },
+                    { category: { $regex: searchRegex } },
+                    { 'location.city': { $regex: searchRegex } },
+                    { 'location.state': { $regex: searchRegex } },
+                    { 'location.address': { $regex: searchRegex } }
                 ]
             };
 
@@ -1744,14 +1746,8 @@ export const adminSearch = asyncHandler(async (req, res) => {
                     $lte: new Date(parsedFilters.dateTo) 
                 };
             }
-            if (parsedFilters.minParticipants) {
-                eventQuery['participants.0'] = { $exists: true };
-            }
-            if (parsedFilters.maxParticipants) {
-                eventQuery.maxParticipants = { 
-                    $lte: parseInt(parsedFilters.maxParticipants) 
-                };
-            }
+
+            console.log('Event search query:', JSON.stringify(eventQuery, null, 2));
 
             // Get total count for events
             const totalEvents = await Event.countDocuments(eventQuery);
@@ -1767,17 +1763,6 @@ export const adminSearch = asyncHandler(async (req, res) => {
                         as: 'organizer',
                         pipeline: [
                             { $project: { name: 1, email: 1, avatar: 1, role: 1 } }
-                        ]
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'participants.user',
-                        foreignField: '_id',
-                        as: 'participantDetails',
-                        pipeline: [
-                            { $project: { name: 1, email: 1, avatar: 1 } }
                         ]
                     }
                 },
@@ -1805,20 +1790,15 @@ export const adminSearch = asyncHandler(async (req, res) => {
                                 1000 * 60 * 60 * 24
                             ]
                         },
-                        avgRating: { $avg: '$ratings.rating' },
+                        avgRating: { $avg: { $ifNull: ['$ratings.rating', []] } },
                         totalRatings: { $size: { $ifNull: ['$ratings', []] } },
                         searchRelevance: {
                             $sum: [
-                                { $cond: [{ $regexMatch: { input: '$name', regex: searchRegex } }, 10, 0] },
-                                { $cond: [{ $regexMatch: { input: '$description', regex: searchRegex } }, 5, 0] },
-                                { $cond: [{ $regexMatch: { input: '$category', regex: searchRegex } }, 3, 0] }
+                                { $cond: [{ $regexMatch: { input: { $ifNull: ['$name', ''] }, regex: searchRegex } }, 10, 0] },
+                                { $cond: [{ $regexMatch: { input: { $ifNull: ['$description', ''] }, regex: searchRegex } }, 5, 0] },
+                                { $cond: [{ $regexMatch: { input: { $ifNull: ['$category', ''] }, regex: searchRegex } }, 3, 0] }
                             ]
                         }
-                    }
-                },
-                {
-                    $project: {
-                        participantDetails: 0
                     }
                 },
                 { 
@@ -1845,109 +1825,120 @@ export const adminSearch = asyncHandler(async (req, res) => {
         }
 
         if (type === 'notifications' || type === 'all') {
-            // Advanced notification search
-            const Notification = (await import('../models/notificationModel.js')).default;
-            
-            const notificationQuery = {
-                $or: [
-                    { title: searchRegex },
-                    { message: searchRegex },
-                    { type: searchRegex }
-                ]
-            };
-
-            // Apply notification-specific filters
-            if (parsedFilters.notificationType) {
-                notificationQuery.type = parsedFilters.notificationType;
-            }
-            if (parsedFilters.priority) {
-                notificationQuery.priority = parsedFilters.priority;
-            }
-            if (parsedFilters.status) {
-                notificationQuery.status = parsedFilters.status;
-            }
-            if (parsedFilters.dateFrom) {
-                notificationQuery.createdAt = { 
-                    ...notificationQuery.createdAt, 
-                    $gte: new Date(parsedFilters.dateFrom) 
+            try {
+                // Try to import notification model
+                const { default: Notification } = await import('../models/notificationModel.js');
+                
+                const notificationQuery = {
+                    $or: [
+                        { title: { $regex: searchRegex } },
+                        { message: { $regex: searchRegex } },
+                        { type: { $regex: searchRegex } }
+                    ]
                 };
-            }
-            if (parsedFilters.dateTo) {
-                notificationQuery.createdAt = { 
-                    ...notificationQuery.createdAt, 
-                    $lte: new Date(parsedFilters.dateTo) 
-                };
-            }
 
-            // Get total count for notifications
-            const totalNotifications = await Notification.countDocuments(notificationQuery);
+                // Apply notification-specific filters
+                if (parsedFilters.notificationType) {
+                    notificationQuery.type = parsedFilters.notificationType;
+                }
+                if (parsedFilters.priority) {
+                    notificationQuery.priority = parsedFilters.priority;
+                }
+                if (parsedFilters.status) {
+                    notificationQuery.status = parsedFilters.status;
+                }
+                if (parsedFilters.dateFrom) {
+                    notificationQuery.createdAt = { 
+                        ...notificationQuery.createdAt, 
+                        $gte: new Date(parsedFilters.dateFrom) 
+                    };
+                }
+                if (parsedFilters.dateTo) {
+                    notificationQuery.createdAt = { 
+                        ...notificationQuery.createdAt, 
+                        $lte: new Date(parsedFilters.dateTo) 
+                    };
+                }
 
-            // Enhanced notification aggregation pipeline
-            const notificationPipeline = [
-                { $match: notificationQuery },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'createdBy',
-                        foreignField: '_id',
-                        as: 'creator',
-                        pipeline: [
-                            { $project: { name: 1, email: 1, role: 1 } }
-                        ]
-                    }
-                },
-                {
-                    $addFields: {
-                        creator: { $arrayElemAt: ['$creator', 0] },
-                        deliveryRate: {
-                            $cond: {
-                                if: { $gt: ['$recipientCount', 0] },
-                                then: { 
-                                    $multiply: [
-                                        { $divide: ['$deliveredCount', '$recipientCount'] },
-                                        100
-                                    ]
-                                },
-                                else: 0
-                            }
-                        },
-                        openRate: {
-                            $cond: {
-                                if: { $gt: ['$deliveredCount', 0] },
-                                then: { 
-                                    $multiply: [
-                                        { $divide: ['$readCount', '$deliveredCount'] },
-                                        100
-                                    ]
-                                },
-                                else: 0
-                            }
-                        },
-                        daysAgo: {
-                            $divide: [
-                                { $subtract: [new Date(), '$createdAt'] },
-                                1000 * 60 * 60 * 24
+                console.log('Notification search query:', JSON.stringify(notificationQuery, null, 2));
+
+                // Get total count for notifications
+                const totalNotifications = await Notification.countDocuments(notificationQuery);
+
+                // Enhanced notification aggregation pipeline
+                const notificationPipeline = [
+                    { $match: notificationQuery },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'createdBy',
+                            foreignField: '_id',
+                            as: 'creator',
+                            pipeline: [
+                                { $project: { name: 1, email: 1, role: 1 } }
                             ]
                         }
-                    }
-                },
-                { $sort: sortObject },
-                { $skip: type === 'all' ? 0 : skip },
-                { $limit: type === 'all' ? 5 : limitNum }
-            ];
+                    },
+                    {
+                        $addFields: {
+                            creator: { $arrayElemAt: ['$creator', 0] },
+                            deliveryRate: {
+                                $cond: {
+                                    if: { $gt: [{ $ifNull: ['$recipientCount', 0] }, 0] },
+                                    then: { 
+                                        $multiply: [
+                                            { $divide: [{ $ifNull: ['$deliveredCount', 0] }, { $ifNull: ['$recipientCount', 1] }] },
+                                            100
+                                        ]
+                                    },
+                                    else: 0
+                                }
+                            },
+                            openRate: {
+                                $cond: {
+                                    if: { $gt: [{ $ifNull: ['$deliveredCount', 0] }, 0] },
+                                    then: { 
+                                        $multiply: [
+                                            { $divide: [{ $ifNull: ['$readCount', 0] }, { $ifNull: ['$deliveredCount', 1] }] },
+                                            100
+                                        ]
+                                    },
+                                    else: 0
+                                }
+                            },
+                            daysAgo: {
+                                $divide: [
+                                    { $subtract: [new Date(), '$createdAt'] },
+                                    1000 * 60 * 60 * 24
+                                ]
+                            }
+                        }
+                    },
+                    { $sort: sortObject },
+                    { $skip: type === 'all' ? 0 : skip },
+                    { $limit: type === 'all' ? 5 : limitNum }
+                ];
 
-            const notifications = await Notification.aggregate(notificationPipeline);
+                const notifications = await Notification.aggregate(notificationPipeline);
 
-            results.notifications = {
-                data: notifications,
-                pagination: type !== 'all' ? {
-                    currentPage: pageNum,
-                    totalPages: Math.ceil(totalNotifications / limitNum),
-                    total: totalNotifications,
-                    hasNext: pageNum < Math.ceil(totalNotifications / limitNum),
-                    hasPrev: pageNum > 1
-                } : { total: totalNotifications, showing: notifications.length }
-            };
+                results.notifications = {
+                    data: notifications,
+                    pagination: type !== 'all' ? {
+                        currentPage: pageNum,
+                        totalPages: Math.ceil(totalNotifications / limitNum),
+                        total: totalNotifications,
+                        hasNext: pageNum < Math.ceil(totalNotifications / limitNum),
+                        hasPrev: pageNum > 1
+                    } : { total: totalNotifications, showing: notifications.length }
+                };
+            } catch (notificationError) {
+                console.log('Notification model not available:', notificationError.message);
+                // Skip notifications if model doesn't exist
+                results.notifications = {
+                    data: [],
+                    pagination: { total: 0, showing: 0 }
+                };
+            }
         }
 
         // Generate search insights for 'all' type
@@ -1973,11 +1964,17 @@ export const adminSearch = asyncHandler(async (req, res) => {
         if (type !== 'all') {
             const categoryResult = results[type];
             if (categoryResult && categoryResult.pagination.total < 3) {
-                // Generate search suggestions
                 const suggestions = await generateSearchSuggestions(type, query);
                 categoryResult.suggestions = suggestions;
             }
         }
+
+        console.log('Search results summary:', {
+            searchTerm: query,
+            type,
+            totalResults: type === 'all' ? results.insights?.totalResults : results[type]?.pagination?.total,
+            appliedFilters: parsedFilters
+        });
 
         res.json({
             success: true,
@@ -1993,27 +1990,32 @@ export const adminSearch = asyncHandler(async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Search failed',
-            error: error.message
+            error: error.message,
+            debug: {
+                query: req.query,
+                searchTerm: req.query.query
+            }
         });
     }
 });
 
+// Updated search suggestions function
 export const generateSearchSuggestions = async (type, query) => {
     try {
         const suggestions = [];
+        const searchRegex = new RegExp(query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
         
         if (type === 'users') {
             // Get popular user search terms
             const popularUsers = await User.aggregate([
                 {
-                    $project: {
-                        name: 1,
-                        role: 1,
+                    $addFields: {
                         eventsCreated: { $size: { $ifNull: ['$createdEvents', []] } }
                     }
                 },
                 { $sort: { eventsCreated: -1 } },
-                { $limit: 5 }
+                { $limit: 5 },
+                { $project: { name: 1, role: 1, eventsCreated: 1 } }
             ]);
             
             suggestions.push(
@@ -2026,8 +2028,8 @@ export const generateSearchSuggestions = async (type, query) => {
             
             // Add role-based suggestions
             suggestions.push(
-                { type: 'filter', suggestion: 'role:admin', reason: 'Search admin users' },
-                { type: 'filter', suggestion: 'role:user', reason: 'Search regular users' }
+                { type: 'filter', suggestion: 'admin', reason: 'Search admin users' },
+                { type: 'filter', suggestion: 'user', reason: 'Search regular users' }
             );
             
         } else if (type === 'events') {
@@ -2048,29 +2050,20 @@ export const generateSearchSuggestions = async (type, query) => {
             
             // Add time-based suggestions
             suggestions.push(
-                { type: 'filter', suggestion: 'status:Upcoming', reason: 'Search upcoming events' },
-                { type: 'filter', suggestion: 'dateFrom:today', reason: 'Search recent events' }
+                { type: 'filter', suggestion: 'upcoming events', reason: 'Search upcoming events' },
+                { type: 'filter', suggestion: 'football', reason: 'Popular sport category' }
             );
             
         } else if (type === 'notifications') {
-            // Get popular notification types
-            const Notification = (await import('../models/notificationModel.js')).default;
-            const popularTypes = await Notification.aggregate([
-                { $group: { _id: '$type', count: { $sum: 1 } } },
-                { $sort: { count: -1 } },
-                { $limit: 3 }
-            ]);
-            
+            // Add generic notification suggestions
             suggestions.push(
-                ...popularTypes.map(type => ({
-                    type: 'notification_type',
-                    suggestion: type._id,
-                    reason: `${type.count} notifications of this type`
-                }))
+                { type: 'filter', suggestion: 'announcement', reason: 'Announcement notifications' },
+                { type: 'filter', suggestion: 'system', reason: 'System notifications' },
+                { type: 'filter', suggestion: 'event', reason: 'Event notifications' }
             );
         }
         
-        return suggestions.slice(0, 5); // Limit to 5 suggestions
+        return suggestions.slice(0, 5);
         
     } catch (error) {
         console.error('Error generating suggestions:', error);

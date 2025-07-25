@@ -1,941 +1,1122 @@
-"use client"
-
-import { useState, useEffect, useRef } from "react"
-import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { useAuth } from '@/hooks/useAuth';
-import { SearchIcon, Filter, User, Calendar, Users, Shield, ChevronDown, X, Loader2, MoreHorizontal, CheckCircle2, AlertTriangle, UserCheck, UserX, Edit, Trash2, Eye, ArrowUpDown, CalendarDays } from 'lucide-react'
-import { format } from "date-fns"
-import AdminLayout from "@/components/layout/AdminLayout"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import toast from "react-hot-toast"
+import {
+  Search,
+  Users,
+  Calendar,
+  Bell,
+  Filter,
+  MoreHorizontal,
+  Eye,
+  RefreshCw,
+  Clock,
+  MapPin,
+  Star,
+  TrendingUp,
+  ChevronRight,
+  X,
+  Target,
+  Menu,
+  History,
+  Mail,
+  Calendar as CalendarIcon,
+  User,
+  Settings,
+  BarChart3,
+  Lightbulb,
+  Compass
+} from "lucide-react"
+import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
+import { format, formatDistanceToNow } from "date-fns"
+import api from "@/utils/api"
 
 const AdminSearch = () => {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const { user, searchUsers, searchEvents, updateUserStatus, updateUserRole, deleteUser, deleteEvent } = useAuth()
-  
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "")
-  const [searchType, setSearchType] = useState(searchParams.get("type") || "users")
-  const [showFilters, setShowFilters] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState({ users: [], events: [] })
-  const [totalResults, setTotalResults] = useState(0)
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1"))
-  const [totalPages, setTotalPages] = useState(1)
-  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "createdAt:desc")
-  const [showSortOptions, setShowSortOptions] = useState(false)
-  const [actionItem, setActionItem] = useState(null)
-  const [confirmAction, setConfirmAction] = useState(null)
-  
+  // State management
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchType, setSearchType] = useState("all")
+  const [results, setResults] = useState({})
+  const [searching, setSearching] = useState(false)
+  const [lastSearchTime, setLastSearchTime] = useState(null)
+  const [searchHistory, setSearchHistory] = useState([])
+  const [suggestions, setSuggestions] = useState([])
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Filter states
   const [filters, setFilters] = useState({
-    role: searchParams.get("role") || "",
-    status: searchParams.get("status") || "",
-    category: searchParams.get("category") || "",
-    startDate: searchParams.get("startDate") || "",
-    endDate: searchParams.get("endDate") || "",
+    role: "all",
+    status: "all",
+    category: "all",
+    priority: "all",
+    dateFrom: "",
+    dateTo: "",
+    location: "",
+    isActive: "all",
+    relevanceSort: false
   })
-  
+
+  // Pagination and sorting
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(20)
+  const [sortBy, setSortBy] = useState("createdAt")
+  const [sortOrder, setSortOrder] = useState("desc")
+
+  // Refs
   const searchInputRef = useRef(null)
-  const sortRef = useRef(null)
-  
-  // Check admin access
+  const debounceRef = useRef(null)
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 },
+    },
+  }
+
+  // Load search history from localStorage
   useEffect(() => {
-    if (!user || user.role !== "admin") {
-      navigate("/dashboard")
-    }
-  }, [user, navigate])
-  
-  // Handle outside clicks for sort dropdown
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sortRef.current && !sortRef.current.contains(event.target)) {
-        setShowSortOptions(false)
-      }
-    }
-    
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
-  
-  // Focus search input on mount
-  useEffect(() => {
-    if (searchInputRef.current) {
-      searchInputRef.current.focus()
-    }
-  }, [])
-  
-  // Perform search when params change
-  useEffect(() => {
-    const performSearch = async () => {
-      if (!searchTerm && !Object.values(filters).some(val => val)) return
-      
-      setLoading(true)
+    const history = localStorage.getItem("admin_search_history")
+    if (history) {
       try {
-        if (searchType === "users") {
-          const response = await searchUsers({
-            search: searchTerm,
-            role: filters.role,
-            status: filters.status,
-            sortBy,
-            page: currentPage,
-          })
-          
-          setResults({ ...results, users: response.data })
-          setTotalResults(response.pagination.total)
-          setTotalPages(response.pagination.pages)
-        } else {
-          const response = await searchEvents({
-            search: searchTerm,
-            category: filters.category,
-            startDate: filters.startDate,
-            endDate: filters.endDate,
-            sortBy,
-            page: currentPage,
-          })
-          
-          setResults({ ...results, events: response.data })
-          setTotalResults(response.pagination.total)
-          setTotalPages(response.pagination.pages)
-        }
+        setSearchHistory(JSON.parse(history))
       } catch (error) {
-        console.error("Search error:", error)
-      } finally {
-        setLoading(false)
+        console.error("Error parsing search history:", error)
+        setSearchHistory([])
       }
     }
+  }, [])
+
+  // Save search to history
+  const saveSearchToHistory = useCallback((query, type) => {
+    if (!query.trim()) return
     
-    performSearch()
-  }, [searchParams])
-  
-  const handleSearch = (e) => {
+    const newSearch = {
+      id: Date.now(),
+      query: query.trim(),
+      type,
+      timestamp: new Date().toISOString(),
+      resultsCount: Object.values(results).reduce((sum, category) => 
+        sum + (category.pagination?.total || 0), 0
+      )
+    }
+
+    setSearchHistory(prev => {
+      const updatedHistory = [newSearch, ...prev.filter(h => 
+        !(h.query === newSearch.query && h.type === newSearch.type)
+      )].slice(0, 10)
+      
+      localStorage.setItem("admin_search_history", JSON.stringify(updatedHistory))
+      return updatedHistory
+    })
+  }, [results])
+
+  // Perform search
+  const performSearch = useCallback(async (query, type, page = 1, forceSearch = false) => {
+    if (!query.trim() && !forceSearch) {
+      setResults({})
+      setLastSearchTime(null)
+      return
+    }
+
+    try {
+      setSearching(true)
+      const token = localStorage.getItem("token")
+      
+      // Convert "all" values back to empty strings for API
+      const apiFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        acc[key] = value === "all" ? "" : value
+        return acc
+      }, {})
+
+      const params = new URLSearchParams({
+        type,
+        query: query.trim(),
+        page: page.toString(),
+        limit: itemsPerPage.toString(),
+        sortBy,
+        sortOrder,
+        filters: JSON.stringify(apiFilters)
+      })
+
+      const response = await api.get(`/admin/search?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      const data = response.data
+      setResults(data.results || {})
+      setLastSearchTime(new Date())
+      
+      // Save to search history if it's a new search
+      if (page === 1) {
+        saveSearchToHistory(query, type)
+      }
+
+      // Show suggestions if results are low
+      if (data.results?.[type]?.suggestions) {
+        setSuggestions(data.results[type].suggestions)
+      } else {
+        setSuggestions([])
+      }
+
+      const totalResults = data.results?.insights?.totalResults || 
+        Object.values(data.results || {}).reduce((sum, category) => 
+          sum + (category.pagination?.total || 0), 0
+        )
+
+      toast.success(`Found ${totalResults} results`)
+
+    } catch (error) {
+      console.error("Search failed:", error)
+      toast.error("Search failed. Please try again.")
+      setResults({})
+    } finally {
+      setSearching(false)
+    }
+  }, [itemsPerPage, sortBy, sortOrder, filters, saveSearchToHistory])
+
+  // Debounced search
+  const debouncedSearch = useCallback((query, type) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+
+    debounceRef.current = setTimeout(() => {
+      performSearch(query, type)
+    }, 500)
+  }, [performSearch])
+
+  // Handle search input change
+  const handleSearchChange = (value) => {
+    setSearchQuery(value)
+    if (value.trim().length > 2) {
+      debouncedSearch(value, searchType)
+    } else if (value.trim().length === 0) {
+      setResults({})
+      setLastSearchTime(null)
+    }
+  }
+
+  // Handle search submission
+  const handleSearchSubmit = (e) => {
     e.preventDefault()
-    
-    // Update URL params
-    const params = new URLSearchParams()
-    params.set("q", searchTerm)
-    params.set("type", searchType)
-    params.set("page", "1") // Reset to first page on new search
-    
-    if (filters.role) params.set("role", filters.role)
-    if (filters.status) params.set("status", filters.status)
-    if (filters.category) params.set("category", filters.category)
-    if (filters.startDate) params.set("startDate", filters.startDate)
-    if (filters.endDate) params.set("endDate", filters.endDate)
-    if (sortBy) params.set("sort", sortBy)
-    
-    setSearchParams(params)
-    setCurrentPage(1)
+    if (searchQuery.trim()) {
+      performSearch(searchQuery, searchType, 1, true)
+    }
   }
-  
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target
-    setFilters(prev => ({ ...prev, [name]: value }))
+
+  // Handle filter change
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }))
   }
-  
+
+  // Apply filters
+  const applyFilters = () => {
+    if (searchQuery.trim()) {
+      performSearch(searchQuery, searchType, 1, true)
+    }
+  }
+
+  // Clear filters
   const clearFilters = () => {
     setFilters({
-      role: "",
-      status: "",
-      category: "",
-      startDate: "",
-      endDate: "",
+      role: "all",
+      status: "all",
+      category: "all",
+      priority: "all",
+      dateFrom: "",
+      dateTo: "",
+      location: "",
+      isActive: "all",
+      relevanceSort: false
     })
   }
-  
-  const handlePageChange = (page) => {
-    setCurrentPage(page)
-    const params = new URLSearchParams(searchParams)
-    params.set("page", page.toString())
-    setSearchParams(params)
+
+  // Use search suggestion
+  const useSuggestion = (suggestion) => {
+    setSearchQuery(suggestion.suggestion)
+    performSearch(suggestion.suggestion, searchType, 1, true)
   }
-  
-  const handleSortChange = (value) => {
-    setSortBy(value)
-    setShowSortOptions(false)
-    
-    const params = new URLSearchParams(searchParams)
-    params.set("sort", value)
-    setSearchParams(params)
-  }
-  
-  const getSortLabel = () => {
-    switch (sortBy) {
-      case "createdAt:desc":
-        return "Newest First"
-      case "createdAt:asc":
-        return "Oldest First"
-      case "name:asc":
-        return "Name (A-Z)"
-      case "name:desc":
-        return "Name (Z-A)"
+
+  // Get status color
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "active":
+      case "upcoming":
+      case "sent":
+        return "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 border-green-200/20"
+      case "draft":
+      case "pending":
+        return "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300 border-yellow-200/20"
+      case "rejected":
+      case "failed":
+        return "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 border-red-200/20"
+      case "scheduled":
+        return "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200/20"
       default:
-        return "Sort By"
+        return "bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300 border-gray-200/20"
     }
   }
-  
-  const handleUserAction = async (action, userId) => {
-    try {
-      switch (action) {
-        case "suspend":
-          await updateUserStatus(userId, "suspended")
-          break
-        case "activate":
-          await updateUserStatus(userId, "active")
-          break
-        case "makeAdmin":
-          await updateUserRole(userId, "admin")
-          break
-        case "removeAdmin":
-          await updateUserRole(userId, "user")
-          break
-        case "delete":
-          setConfirmAction({ type: "user", id: userId })
-          return
-        default:
-          return
-      }
-      
-      // Update local state
-      setResults(prev => ({
-        ...prev,
-        users: prev.users.map(u => {
-          if (u._id === userId) {
-            if (action === "suspend") return { ...u, status: "suspended" }
-            if (action === "activate") return { ...u, status: "active" }
-            if (action === "makeAdmin") return { ...u, role: "admin" }
-            if (action === "removeAdmin") return { ...u, role: "user" }
-          }
-          return u
-        })
-      }))
-      
-      setActionItem(null)
-    } catch (error) {
-      console.error(`Error performing action ${action}:`, error)
+
+  // Get role color
+  const getRoleColor = (role) => {
+    switch (role?.toLowerCase()) {
+      case "admin":
+        return "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border-purple-200/20"
+      case "user":
+        return "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200/20"
+      default:
+        return "bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300 border-gray-200/20"
     }
   }
-  
-  const handleEventAction = async (action, eventId) => {
-    try {
-      switch (action) {
-        case "delete":
-          setConfirmAction({ type: "event", id: eventId })
-          return
-        default:
-          return
-      }
-    } catch (error) {
-      console.error(`Error performing action ${action}:`, error)
-    }
-  }
-  
-  const confirmDelete = async () => {
-    try {
-      if (confirmAction.type === "user") {
-        await deleteUser(confirmAction.id)
-        setResults(prev => ({
-          ...prev,
-          users: prev.users.filter(u => u._id !== confirmAction.id)
-        }))
-      } else if (confirmAction.type === "event") {
-        await deleteEvent(confirmAction.id)
-        setResults(prev => ({
-          ...prev,
-          events: prev.events.filter(e => e._id !== confirmAction.id)
-        }))
-      }
-      setConfirmAction(null)
-    } catch (error) {
-      console.error("Error deleting item:", error)
-    }
-  }
-  
-  if (!user || user.role !== "admin") {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6 text-center">
-          <AlertTriangle className="w-16 h-16 text-destructive-light dark:text-destructive-dark mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark mb-2">Access Denied</h2>
-          <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-6">
-            You don't have permission to access this page.
-          </p>
-          <Link
-            to="/dashboard"
-            className="px-6 py-3 bg-primary-light dark:bg-primary-dark text-white font-semibold rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
+
+  // Mobile Controls Component
+  const MobileControls = () => (
+    <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="lg:hidden bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
+        >
+          <Menu className="w-4 h-4" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-80 sm:w-96">
+        <SheetHeader>
+          <SheetTitle>Search Controls</SheetTitle>
+          <SheetDescription>Advanced search options and filters</SheetDescription>
+        </SheetHeader>
+        <div className="space-y-4 mt-6">
+          <Button
+            variant="outline"
+            className="w-full justify-start bg-transparent"
+            onClick={() => {
+              clearFilters()
+              setMobileMenuOpen(false)
+            }}
           >
-            Go to Dashboard
-          </Link>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Clear Filters
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full justify-start bg-transparent"
+            onClick={() => {
+              setSearchQuery("")
+              setResults({})
+              setMobileMenuOpen(false)
+            }}
+          >
+            <X className="w-4 h-4 mr-2" />
+            Clear Search
+          </Button>
         </div>
-      </div>
-    )
-  }
-  
-  return (
-      <div className="p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <h1 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark mb-4 md:mb-0">
-            Admin Search
-          </h1>
-        </div>
+      </SheetContent>
+    </Sheet>
+  )
+
+  // Search result card components
+  const UserResultCard = ({ user, index }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="p-4 border border-gray-200/50 dark:border-gray-700/50 rounded-lg hover:shadow-md transition-all duration-300 bg-gray-50/30 dark:bg-gray-800/30"
+    >
+      <div className="flex items-start gap-4">
+        <Avatar className="w-12 h-12 ring-2 ring-white/20 dark:ring-gray-700/20 shrink-0">
+          <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+            {user.name?.charAt(0)?.toUpperCase() || 'U'}
+          </AvatarFallback>
+        </Avatar>
         
-        {/* Search Form */}
-        <form onSubmit={handleSearch} className="mb-6">
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-1">
-              <SearchIcon
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
-                size={20}
-              />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search users, events..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-3 w-full rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark hover:text-foreground-light dark:hover:text-foreground-dark"
-                >
-                  <X size={16} />
-                </button>
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-medium text-gray-900 dark:text-white truncate">
+              {user.name}
+            </h3>
+            <div className="flex items-center gap-2">
+              <Badge className={`text-xs border ${getRoleColor(user.role)}`}>
+                {user.role}
+              </Badge>
+              {user.isActive !== false && (
+                <Badge variant="outline" className="text-xs border-green-200/20 bg-green-50 text-green-700">
+                  Active
+                </Badge>
               )}
-            </div>
-            
-            <div className="flex gap-2">
-              <div className="flex rounded-md overflow-hidden border border-input-light dark:border-input-dark">
-                <button
-                  type="button"
-                  onClick={() => setSearchType("users")}
-                  className={`px-4 py-2 ${
-                    searchType === "users"
-                      ? "bg-primary-light dark:bg-primary-dark text-white"
-                      : "bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                  }`}
-                >
-                  Users
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSearchType("events")}
-                  className={`px-4 py-2 ${
-                    searchType === "events"
-                      ? "bg-primary-light dark:bg-primary-dark text-white"
-                      : "bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                  }`}
-                >
-                  Events
-                </button>
-              </div>
-              
-              <button
-                type="button"
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-1 px-4 py-2 rounded-md bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
-              >
-                <Filter size={18} />
-                <span className="hidden sm:inline">Filters</span>
-                <ChevronDown size={16} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} />
-              </button>
-              
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary-light dark:bg-primary-dark text-white rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
-              >
-                <SearchIcon size={18} />
-              </button>
             </div>
           </div>
           
-          {/* Filters */}
-          {showFilters && (
-            <div className="mt-4 p-4 bg-card-light dark:bg-card-dark rounded-lg border border-border-light dark:border-border-dark">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">Filters</h3>
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="text-sm text-primary-light dark:text-primary-dark hover:underline"
-                >
-                  Clear All
-                </button>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <Mail className="w-4 h-4 shrink-0" />
+              <span className="truncate">{user.email}</span>
+            </div>
+            {user.location && (
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <MapPin className="w-4 h-4 shrink-0" />
+                <span className="truncate">
+                  {user.location.city || user.location.state || user.location.country}
+                </span>
               </div>
-              
-              {searchType === "users" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                      Role
-                    </label>
-                    <select
-                      name="role"
-                      value={filters.role}
-                      onChange={handleFilterChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    >
-                      <option value="">All Roles</option>
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={filters.status}
-                      onChange={handleFilterChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    >
-                      <option value="">All Statuses</option>
-                      <option value="active">Active</option>
-                      <option value="suspended">Suspended</option>
-                    </select>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                      Category
-                    </label>
-                    <select
-                      name="category"
-                      value={filters.category}
-                      onChange={handleFilterChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    >
-                      <option value="">All Categories</option>
-                      <option value="Football">Football</option>
-                      <option value="Basketball">Basketball</option>
-                      <option value="Tennis">Tennis</option>
-                      <option value="Running">Running</option>
-                      <option value="Cycling">Cycling</option>
-                      <option value="Swimming">Swimming</option>
-                      <option value="Volleyball">Volleyball</option>
-                      <option value="Cricket">Cricket</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      name="startDate"
-                      value={filters.startDate}
-                      onChange={handleFilterChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                      End Date
-                    </label>
-                    <input
-                      type="date"
-                      name="endDate"
-                      value={filters.endDate}
-                      onChange={handleFilterChange}
-                      className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </form>
-        
-        {/* Results Header */}
-        {(searchTerm || Object.values(filters).some(val => val)) && (
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark">
-                {loading ? "Searching..." : `${totalResults} results found`}
-              </h2>
-              <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                {searchType === "users" ? "Users" : "Events"} matching your search
-              </p>
-            </div>
-            
-            <div className="mt-2 sm:mt-0 relative" ref={sortRef}>
-              <button
-                type="button"
-                onClick={() => setShowSortOptions(!showSortOptions)}
-                className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light/80 dark:hover:bg-muted-dark/80 transition-colors"
-              >
-                <ArrowUpDown size={16} />
-                <span>{getSortLabel()}</span>
-                <ChevronDown size={16} className={`transition-transform ${showSortOptions ? "rotate-180" : ""}`} />
-              </button>
-              
-              {showSortOptions && (
-                <div className="absolute right-0 mt-1 w-48 bg-card-light dark:bg-card-dark rounded-md shadow-lg z-10 border border-border-light dark:border-border-dark">
-                  <div className="py-1">
-                    <button
-                      type="button"
-                      onClick={() => handleSortChange("createdAt:desc")}
-                      className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                    >
-                      {sortBy === "createdAt:desc" && <CheckCircle2 size={16} className="mr-2 text-primary-light dark:text-primary-dark" />}
-                      <span className={sortBy === "createdAt:desc" ? "ml-6" : "ml-0"}>Newest First</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSortChange("createdAt:asc")}
-                      className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                    >
-                      {sortBy === "createdAt:asc" && <CheckCircle2 size={16} className="mr-2 text-primary-light dark:text-primary-dark" />}
-                      <span className={sortBy === "createdAt:asc" ? "ml-6" : "ml-0"}>Oldest First</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSortChange("name:asc")}
-                      className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                    >
-                      {sortBy === "name:asc" && <CheckCircle2 size={16} className="mr-2 text-primary-light dark:text-primary-dark" />}
-                      <span className={sortBy === "name:asc" ? "ml-6" : "ml-0"}>Name (A-Z)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSortChange("name:desc")}
-                      className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                    >
-                      {sortBy === "name:desc" && <CheckCircle2 size={16} className="mr-2 text-primary-light dark:text-primary-dark" />}
-                      <span className={sortBy === "name:desc" ? "ml-6" : "ml-0"}>Name (Z-A)</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        )}
-        
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="flex flex-col items-center">
-              <Loader2 className="w-12 h-12 animate-spin text-primary-light dark:text-primary-dark" />
-              <p className="mt-4 text-foreground-light dark:text-foreground-dark">Searching...</p>
-            </div>
+          
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>
+              {user.eventsCreated || 0} events created • {user.eventsParticipated || 0} participated
+            </span>
+            <span>
+              Joined {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+            </span>
           </div>
-        )}
+        </div>
         
-        {/* Empty State */}
-        {!loading && totalResults === 0 && (searchTerm || Object.values(filters).some(val => val)) && (
-          <div className="text-center py-12 bg-card-light dark:bg-card-dark rounded-lg">
-            <SearchIcon className="w-16 h-16 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-2">
-              No results found
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link to={`/admin/users/${user._id}`} className="flex items-center">
+                <Eye className="w-4 h-4 mr-2" />
+                View Details
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="flex items-center">
+              <Mail className="w-4 h-4 mr-2" />
+              Send Message
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </motion.div>
+  )
+
+  const EventResultCard = ({ event, index }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="p-4 border border-gray-200/50 dark:border-gray-700/50 rounded-lg hover:shadow-md transition-all duration-300 bg-gray-50/30 dark:bg-gray-800/30"
+    >
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-gray-900 dark:text-white line-clamp-2">
+              {event.name}
             </h3>
-            <p className="text-muted-foreground-light dark:text-muted-foreground-dark max-w-md mx-auto">
-              We couldn't find any {searchType} matching your search criteria. Try adjusting your filters or search term.
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+              {event.description}
             </p>
           </div>
-        )}
+          <div className="flex flex-col gap-1 shrink-0">
+            <Badge className={`text-xs border ${getStatusColor(event.status)}`}>
+              {event.status}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {event.category}
+            </Badge>
+          </div>
+        </div>
         
-        {/* Results - Users */}
-        {!loading && searchType === "users" && results.users.length > 0 && (
-          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted-light dark:bg-muted-dark">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      User
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Joined
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-light dark:divide-border-dark">
-                  {results.users.map((user) => (
-                    <tr
-                      key={user._id}
-                      className="hover:bg-muted-light/50 dark:hover:bg-muted-dark/50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full overflow-hidden bg-muted-light dark:bg-muted-dark flex items-center justify-center mr-3">
-                            {user.avatar ? (
-                              <img
-                                src={user.avatar || "/placeholder.svg"}
-                                alt={user.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <User
-                                size={16}
-                                className="text-muted-foreground-light dark:text-muted-foreground-dark"
-                              />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-medium text-foreground-light dark:text-foreground-dark">
-                              {user.name}
-                            </div>
-                            <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                              @{user.username}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-foreground-light dark:text-foreground-dark">
-                        {user.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            user.role === "admin"
-                              ? "bg-primary-light/20 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark"
-                              : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-                          }`}
-                        >
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            user.status === "active"
-                              ? "bg-success-light/20 dark:bg-success-dark/20 text-success-light dark:text-success-dark"
-                              : "bg-destructive-light/20 dark:bg-destructive-dark/20 text-destructive-light dark:text-destructive-dark"
-                          }`}
-                        >
-                          {user.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                        {format(new Date(user.createdAt), "MMM dd, yyyy")}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="relative">
-                          <button
-                            onClick={() => setActionItem(actionItem === user._id ? null : user._id)}
-                            className="p-2 rounded-md hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                          >
-                            <MoreHorizontal
-                              size={16}
-                              className="text-muted-foreground-light dark:text-muted-foreground-dark"
-                            />
-                          </button>
-                          {actionItem === user._id && (
-                            <div className="absolute right-0 mt-2 w-48 bg-card-light dark:bg-card-dark rounded-md shadow-lg z-10 border border-border-light dark:border-border-dark">
-                              <Link
-                                to={`/profile/${user._id}`}
-                                className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                              >
-                                <Eye size={16} className="mr-2" />
-                                View Profile
-                              </Link>
-                              <button
-                                onClick={() =>
-                                  handleUserAction(user.status === "active" ? "suspend" : "activate", user._id)
-                                }
-                                className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark text-left"
-                              >
-                                {user.status === "active" ? (
-                                  <>
-                                    <UserX
-                                      size={16}
-                                      className="mr-2 text-destructive-light dark:text-destructive-dark"
-                                    />
-                                    Suspend User
-                                  </>
-                                ) : (
-                                  <>
-                                    <UserCheck size={16} className="mr-2 text-success-light dark:text-success-dark" />
-                                    Activate User
-                                  </>
-                                )}
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleUserAction(user.role === "user" ? "makeAdmin" : "removeAdmin", user._id)
-                                }
-                                className="flex items-center w-full px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark text-left"
-                              >
-                                {user.role === "user" ? (
-                                  <>
-                                    <Shield size={16} className="mr-2 text-primary-light dark:text-primary-dark" />
-                                    Make Admin
-                                  </>
-                                ) : (
-                                  <>
-                                    <Shield
-                                      size={16}
-                                      className="mr-2 text-muted-foreground-light dark:text-muted-foreground-dark"
-                                    />
-                                    Remove Admin
-                                  </>
-                                )}
-                              </button>
-                              <Link
-                                to={`/admin/users/edit/${user._id}`}
-                                className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                              >
-                                <Edit size={16} className="mr-2" />
-                                Edit User
-                              </Link>
-                              <button
-                                onClick={() => handleUserAction("delete", user._id)}
-                                className="flex items-center w-full px-4 py-2 text-sm text-destructive-light dark:text-destructive-dark hover:bg-muted-light dark:hover:bg-muted-dark text-left"
-                              >
-                                <Trash2 size={16} className="mr-2" />
-                                Delete User
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <User className="w-4 h-4 shrink-0" />
+              <span className="truncate">by {event.organizer?.name || event.createdBy?.name}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <MapPin className="w-4 h-4 shrink-0" />
+              <span className="truncate">
+                {event.location?.city || event.location?.address || "Location TBD"}
+              </span>
             </div>
           </div>
-        )}
-        
-        {/* Results - Events */}
-        {!loading && searchType === "events" && results.events.length > 0 && (
-          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted-light dark:bg-muted-dark">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Event
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Category
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Participants
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground-light dark:text-muted-foreground-dark uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-light dark:divide-border-dark">
-                  {results.events.map((event) => (
-                    <tr
-                      key={event._id}
-                      className="hover:bg-muted-light/50 dark:hover:bg-muted-dark/50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-md overflow-hidden bg-muted-light dark:bg-muted-dark flex items-center justify-center mr-3">
-                            {event.images && event.images.length > 0 ? (
-                              <img
-                                src={event.images[0].url || "/placeholder.svg"}
-                                alt={event.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <CalendarDays
-                                size={16}
-                                className="text-muted-foreground-light dark:text-muted-foreground-dark"
-                              />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-medium text-foreground-light dark:text-foreground-dark">
-                              {event.name}
-                            </div>
-                            <div className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                              Created by {event.createdBy?.name || "Unknown"}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-foreground-light dark:text-foreground-dark">
-                        {event.category}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-foreground-light dark:text-foreground-dark">
-                        {format(new Date(event.date), "MMM dd, yyyy")}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-foreground-light dark:text-foreground-dark">
-                        {event.location.city}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            event.status === "Upcoming" ? "bg-primary-light/20 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark" : 
-                            event.status === "Ongoing" ? "bg-accent-light/20 dark:bg-accent-dark/20 text-accent-light dark:text-accent-dark" :
-                            event.status === "Completed" ? "bg-muted-light/20 dark:bg-muted-dark/20 text-foreground-light dark:text-foreground-dark" :
-                            "bg-destructive-light/20 dark:bg-destructive-dark/20 text-destructive-light dark:text-destructive-dark"
-                          }`}
-                        >
-                          {event.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-foreground-light dark:text-foreground-dark">
-                        {event.participants?.length || 0}/{event.maxParticipants || "∞"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="relative">
-                          <button
-                            onClick={() => setActionItem(actionItem === event._id ? null : event._id)}
-                            className="p-2 rounded-md hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                          >
-                            <MoreHorizontal
-                              size={16}
-                              className="text-muted-foreground-light dark:text-muted-foreground-dark"
-                            />
-                          </button>
-                          {actionItem === event._id && (
-                            <div className="absolute right-0 mt-2 w-48 bg-card-light dark:bg-card-dark rounded-md shadow-lg z-10 border border-border-light dark:border-border-dark">
-                              <Link
-                                to={`/events/${event._id}`}
-                                className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                              >
-                                <Eye size={16} className="mr-2" />
-                                View Event
-                              </Link>
-                              <Link
-                                to={`/admin/events/edit/${event._id}`}
-                                className="flex items-center px-4 py-2 text-sm text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                              >
-                                <Edit size={16} className="mr-2" />
-                                Edit Event
-                              </Link>
-                              <button
-                                onClick={() => handleEventAction("delete", event._id)}
-                                className="flex items-center w-full px-4 py-2 text-sm text-destructive-light dark:text-destructive-dark hover:bg-muted-light dark:hover:bg-muted-dark text-left"
-                              >
-                                <Trash2 size={16} className="mr-2" />
-                                Delete Event
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <CalendarIcon className="w-4 h-4 shrink-0" />
+              <span className="truncate">
+                {event.date ? format(new Date(event.date), "MMM dd, yyyy") : "Date TBD"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <Users className="w-4 h-4 shrink-0" />
+              <span>
+                {event.participantCount || 0}
+                {event.maxParticipants ? ` / ${event.maxParticipants}` : ""} participants
+              </span>
             </div>
           </div>
-        )}
+        </div>
         
-        {/* Pagination */}
-        {!loading && totalPages > 1 && (
-          <div className="flex justify-center mt-8">
-            <div className="flex space-x-1">
-              <button
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === 1
-                    ? "text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                    : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                }`}
-              >
-                Previous
-              </button>
-              
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                // Show pages around current page
-                let pageNum
-                if (totalPages <= 5) {
-                  pageNum = i + 1
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i
-                } else {
-                  pageNum = currentPage - 2 + i
-                }
-                
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-md ${
-                      currentPage === pageNum
-                        ? "bg-primary-light dark:bg-primary-dark text-white"
-                        : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                )
-              })}
-              
-              <button
-                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === totalPages
-                    ? "text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                    : "text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark"
-                }`}
-              >
-                Next
-              </button>
+        <div className="flex items-center justify-between pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <span>
+              Created {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
+            </span>
+            {event.avgRating && (
+              <div className="flex items-center gap-1">
+                <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                <span>{event.avgRating.toFixed(1)}</span>
+              </div>
+            )}
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="w-8 h-8">
+                <MoreHorizontal className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to={`/admin/events/${event._id}`} className="flex items-center">
+                  <Eye className="w-4 h-4 mr-2" />
+                  View Details
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center">
+                <Settings className="w-4 h-4 mr-2" />
+                Manage Event
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </motion.div>
+  )
+
+  const NotificationResultCard = ({ notification, index }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="p-4 border border-gray-200/50 dark:border-gray-700/50 rounded-lg hover:shadow-md transition-all duration-300 bg-gray-50/30 dark:bg-gray-800/30"
+    >
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-gray-900 dark:text-white line-clamp-1">
+              {notification.title}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+              {notification.message}
+            </p>
+          </div>
+          <div className="flex flex-col gap-1 shrink-0">
+            <Badge className={`text-xs border ${getStatusColor(notification.status)}`}>
+              {notification.status}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {notification.type}
+            </Badge>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <Target className="w-4 h-4 shrink-0" />
+              <span>{notification.recipientCount || 0} recipients</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <User className="w-4 h-4 shrink-0" />
+              <span className="truncate">by {notification.creator?.name}</span>
             </div>
           </div>
-        )}
+          
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <TrendingUp className="w-4 h-4 shrink-0" />
+              <span>{notification.deliveryRate?.toFixed(1) || 0}% delivered</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <Eye className="w-4 h-4 shrink-0" />
+              <span>{notification.openRate?.toFixed(1) || 0}% opened</span>
+            </div>
+          </div>
+        </div>
         
-        {/* Confirmation Modal */}
-        {confirmAction && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg w-full max-w-md p-6">
-              <h3 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
-                Confirm Delete
-              </h3>
-              <p className="text-foreground-light dark:text-foreground-dark mb-6">
-                Are you sure you want to delete this {confirmAction.type}? This action cannot be undone.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setConfirmAction(null)}
-                  className="px-4 py-2 rounded-md border border-input-light dark:border-input-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="px-4 py-2 rounded-md bg-destructive-light dark:bg-destructive-dark text-white hover:bg-destructive-light/90 dark:hover:bg-destructive-dark/90 transition-colors"
-                >
-                  Delete
-                </button>
+        <div className="flex items-center justify-between pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+          </span>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="w-8 h-8">
+                <MoreHorizontal className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to={`/admin/notifications`} className="flex items-center">
+                  <Eye className="w-4 h-4 mr-2" />
+                  View Details
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </motion.div>
+  )
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-4 sm:space-y-6 lg:space-y-8 px-4 sm:px-6 lg:px-0"
+    >
+      {/* Header with Gradient Background */}
+      <motion.div
+        variants={itemVariants}
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-4 sm:p-6 lg:p-8 text-white shadow-xl"
+      >
+        <div className="relative z-10 flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:justify-between lg:items-center">
+          <div className="flex-1">
+            <div className="flex items-start gap-3 mb-3 sm:mb-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-1 leading-tight">
+                  Advanced Search
+                </h1>
+                <p className="text-white/90 text-sm sm:text-base lg:text-lg leading-relaxed">
+                  Find users, events, and notifications across your platform
+                </p>
               </div>
             </div>
+            {lastSearchTime && (
+              <div className="flex items-center gap-2 text-white/70 text-xs sm:text-sm">
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                <span className="truncate">
+                  Last search: {formatDistanceToNow(lastSearchTime, { addSuffix: true })}
+                </span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+
+          {/* Desktop Controls */}
+          <div className="hidden lg:flex items-center gap-3 z-10 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
+              onClick={clearFilters}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Clear Filters
+            </Button>
+            <Button
+              size="sm"
+              className="bg-white text-blue-600 hover:bg-white/90"
+              onClick={() => {
+                setSearchQuery("")
+                setResults({})
+              }}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear Search
+            </Button>
+          </div>
+
+          {/* Mobile Controls */}
+          <div className="flex lg:hidden justify-end">
+            <MobileControls />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Search Interface */}
+      <motion.div variants={itemVariants}>
+        <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
+              <Compass className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 shrink-0" />
+              <span className="truncate">Search & Filters</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Search Form */}
+            <form onSubmit={handleSearchSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Search Input */}
+                <div className="lg:col-span-2 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search users, events, notifications..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-10 bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50"
+                  />
+                  {searchQuery && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6"
+                      onClick={() => {
+                        setSearchQuery("")
+                        setResults({})
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Search Type */}
+                <Select value={searchType} onValueChange={setSearchType}>
+                  <SelectTrigger className="bg-white/50 dark:bg-gray-800/50">
+                    <SelectValue placeholder="Search Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="users">Users</SelectItem>
+                    <SelectItem value="events">Events</SelectItem>
+                    <SelectItem value="notifications">Notifications</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Search Button */}
+                <Button 
+                  type="submit" 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  disabled={searching}
+                >
+                  {searching ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4 mr-2" />
+                  )}
+                  Search
+                </Button>
+              </div>
+            </form>
+
+            {/* Advanced Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+              <Select value={filters.role} onValueChange={(value) => handleFilterChange("role", value)}>
+                <SelectTrigger className="bg-white/50 dark:bg-gray-800/50">
+                  <SelectValue placeholder="User Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="user">User</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.status} onValueChange={(value) => handleFilterChange("status", value)}>
+                <SelectTrigger className="bg-white/50 dark:bg-gray-800/50">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="upcoming">Upcoming</SelectItem>
+                  <SelectItem value="past">Past</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.category} onValueChange={(value) => handleFilterChange("category", value)}>
+                <SelectTrigger className="bg-white/50 dark:bg-gray-800/50">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="Football">Football</SelectItem>
+                  <SelectItem value="Basketball">Basketball</SelectItem>
+                  <SelectItem value="Tennis">Tennis</SelectItem>
+                  <SelectItem value="Swimming">Swimming</SelectItem>
+                  <SelectItem value="Running">Running</SelectItem>
+                  <SelectItem value="Cycling">Cycling</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={applyFilters}
+                  className="flex-1 bg-white/50 dark:bg-gray-800/50"
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  Apply
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="bg-white/50 dark:bg-gray-800/50"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Search History */}
+      {searchHistory.length > 0 && !searchQuery && (
+        <motion.div variants={itemVariants}>
+          <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
+                <History className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 shrink-0" />
+                <span className="truncate">Recent Searches</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {searchHistory.slice(0, 6).map((search) => (
+                  <Button
+                    key={search.id}
+                    variant="outline"
+                    className="justify-start h-auto p-3 bg-gray-50/50 dark:bg-gray-800/50 hover:bg-gray-100/50 dark:hover:bg-gray-700/50"
+                    onClick={() => {
+                      setSearchQuery(search.query)
+                      setSearchType(search.type)
+                      performSearch(search.query, search.type, 1, true)
+                    }}
+                  >
+                    <div className="text-left min-w-0 flex-1">
+                      <div className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                        {search.query}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {search.type} • {search.resultsCount} results
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Search Suggestions */}
+      {suggestions.length > 0 && (
+        <motion.div variants={itemVariants}>
+          <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
+                <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 shrink-0" />
+                <span className="truncate">Search Suggestions</span>
+              </CardTitle>
+              <CardDescription>
+                Try these suggestions to find what you're looking for
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {suggestions.map((suggestion, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="justify-start h-auto p-3 bg-yellow-50/50 dark:bg-yellow-900/20 hover:bg-yellow-100/50 dark:hover:bg-yellow-800/30 border-yellow-200/50 dark:border-yellow-700/50"
+                    onClick={() => useSuggestion(suggestion)}
+                  >
+                    <div className="text-left min-w-0 flex-1">
+                      <div className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                        {suggestion.suggestion}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                        {suggestion.reason}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Search Results */}
+      {Object.keys(results).length > 0 && (
+        <motion.div variants={itemVariants}>
+          <Tabs value={searchType} onValueChange={setSearchType} className="space-y-4">
+            <div className="overflow-x-auto">
+              <TabsList className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/20 dark:border-gray-700/20 p-1 rounded-xl w-full flex justify-evenly sm:w-auto md:inline-flex">
+                {searchType === "all" && (
+                  <>
+                    <TabsTrigger
+                      value="users"
+                      className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-xl transition-all duration-200 text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap"
+                      onClick={() => setSearchType("users")}
+                    >
+                      <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      Users ({results.users?.pagination?.total || 0})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="events"
+                      className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-xl transition-all duration-200 text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap"
+                      onClick={() => setSearchType("events")}
+                    >
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      Events ({results.events?.pagination?.total || 0})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="notifications"
+                      className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-xl transition-all duration-200 text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap"
+                      onClick={() => setSearchType("notifications")}
+                    >
+                      <Bell className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      Notifications ({results.notifications?.pagination?.total || 0})
+                    </TabsTrigger>
+                  </>
+                )}
+              </TabsList>
+            </div>
+
+            {/* Results Content */}
+            <div className="space-y-4">
+              {/* Users Results */}
+              {(searchType === "users" || searchType === "all") && results.users?.data && (
+                <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 shrink-0" />
+                        <span className="truncate">
+                          Users ({results.users.pagination?.total || 0})
+                        </span>
+                      </CardTitle>
+                      {searchType === "all" && results.users.data.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSearchType("users")}
+                        >
+                          View All
+                          <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {results.users.data.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          No users found
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Try adjusting your search criteria or filters.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {results.users.data.map((user, index) => (
+                          <UserResultCard key={user._id} user={user} index={index} />
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Events Results */}
+              {(searchType === "events" || searchType === "all") && results.events?.data && (
+                <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />
+                        <span className="truncate">
+                          Events ({results.events.pagination?.total || 0})
+                        </span>
+                      </CardTitle>
+                      {searchType === "all" && results.events.data.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSearchType("events")}
+                        >
+                          View All
+                          <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {results.events.data.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          No events found
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Try adjusting your search criteria or filters.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {results.events.data.map((event, index) => (
+                          <EventResultCard key={event._id} event={event} index={index} />
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Notifications Results */}
+              {(searchType === "notifications" || searchType === "all") && results.notifications?.data && (
+                <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
+                        <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 shrink-0" />
+                        <span className="truncate">
+                          Notifications ({results.notifications.pagination?.total || 0})
+                        </span>
+                      </CardTitle>
+                      {searchType === "all" && results.notifications.data.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSearchType("notifications")}
+                        >
+                          View All
+                          <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {results.notifications.data.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          No notifications found
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Try adjusting your search criteria or filters.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {results.notifications.data.map((notification, index) => (
+                          <NotificationResultCard key={notification._id} notification={notification} index={index} />
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Search Insights for 'all' type */}
+              {searchType === "all" && results.insights && (
+                <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
+                      <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 shrink-0" />
+                      <span className="truncate">Search Insights</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="text-center p-4 rounded-lg bg-blue-50/50 dark:bg-blue-900/20">
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          {results.insights.totalResults}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Total Results</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg bg-purple-50/50 dark:bg-purple-900/20">
+                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                          {results.insights.categoryBreakdown?.length || 0}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Categories</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg bg-green-50/50 dark:bg-green-900/20">
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          {results.insights.appliedFilters || 0}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Filters Applied</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </Tabs>
+        </motion.div>
+      )}
+
+      {/* Empty State */}
+      {!searching && !searchQuery && Object.keys(results).length === 0 && (
+        <motion.div variants={itemVariants}>
+          <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+            <CardContent className="text-center py-12">
+              <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Start Your Search
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                Use the search box above to find users, events, and notifications across your platform.
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {["users", "events", "football", "admin", "notifications"].map((term) => (
+                  <Button
+                    key={term}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery(term)
+                      performSearch(term, "all", 1, true)
+                    }}
+                    className="bg-gray-50/50 dark:bg-gray-800/50"
+                  >
+                    {term}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </motion.div>
   )
 }
 

@@ -1552,67 +1552,528 @@ export const bulkEventActions = asyncHandler(async (req, res) => {
             error: error.message
         });
     }
-});//     const { subject, message } = req.body;
-//     const user = await User.findById(req.params.id);
-
-//     if (!user) {
-//         res.status(404);
-//         throw new Error('User not found');
-//     }
-
-//     try {
-//         await sendEmail({
-//             from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-//             to: user.email,
-//             subject,
-//             message,
-//             html: AdminSentEmailHtml({ subject, message }),
-//         });
-//         res.status(200).json({ success: true, message: 'Notification sent successfully' });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ success: false, message: error.message || 'Email could not be sent' });
-//     }
-// });
-
-// export const sendNotificationToAll = asyncHandler(async (req, res) => {
-//     const { subject, message } = req.body;
-//     const users = await User.find({}, 'email');
-//     const emails = users.map(user => user.email);
-
-//     try {
-//         await sendEmail({
-//             from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-//             to: emails,
-//             subject,
-//             message,
-//             html: AdminSentEmailHtml({ subject, message }),
-//         });
-//         res.status(200).json({ success: true, message: 'Notifications sent successfully to all users' });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ success: false, message: 'Email could not be sent' });
-//     }
-// });
+});
 
 export const adminSearch = asyncHandler(async (req, res) => {
-    const { type, query } = req.query;
-    let results = [];
+    try {
+        const { 
+            type, 
+            query, 
+            page = 1, 
+            limit = 20,
+            sortBy = 'createdAt',
+            sortOrder = 'desc',
+            filters = {}
+        } = req.query;
 
-    const searchRegex = new RegExp(query, 'i'); // Case-insensitive search
+        // Validate required parameters
+        if (!type || !query) {
+            res.status(400);
+            throw new Error("Search type and query are required");
+        }
 
-    if (type === 'users') {
-        results = await User.find({
-            $or: [{ name: searchRegex }, { email: searchRegex }],
-        }).select('-password');
-    } else if (type === 'events') {
-        results = await Event.find({
-            $or: [{ name: searchRegex }, { description: searchRegex }, { category: searchRegex }],
-        }).populate('createdBy', 'name email');
-    } else {
-        res.status(400);
-        throw new Error("Invalid search type. Use 'users' or 'events'.");
+        if (!['users', 'events', 'notifications', 'all'].includes(type)) {
+            res.status(400);
+            throw new Error("Invalid search type. Use 'users', 'events', 'notifications', or 'all'");
+        }
+
+        // Convert page and limit to numbers
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        // Parse filters if provided as string
+        let parsedFilters = {};
+        if (typeof filters === 'string') {
+            try {
+                parsedFilters = JSON.parse(filters);
+            } catch (error) {
+                parsedFilters = {};
+            }
+        } else {
+            parsedFilters = filters;
+        }
+
+        // Create case-insensitive search regex
+        const searchRegex = new RegExp(query.trim(), 'i');
+        
+        // Build sort object
+        const sortObject = {};
+        sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+        let results = {};
+
+        if (type === 'users' || type === 'all') {
+            // Advanced user search
+            const userQuery = {
+                $or: [
+                    { name: searchRegex },
+                    { email: searchRegex },
+                    { username: searchRegex },
+                    { 'bio': searchRegex }
+                ]
+            };
+
+            // Apply user-specific filters
+            if (parsedFilters.role) {
+                userQuery.role = parsedFilters.role;
+            }
+            if (parsedFilters.isActive !== undefined) {
+                userQuery.isActive = parsedFilters.isActive;
+            }
+            if (parsedFilters.dateFrom) {
+                userQuery.createdAt = { 
+                    ...userQuery.createdAt, 
+                    $gte: new Date(parsedFilters.dateFrom) 
+                };
+            }
+            if (parsedFilters.dateTo) {
+                userQuery.createdAt = { 
+                    ...userQuery.createdAt, 
+                    $lte: new Date(parsedFilters.dateTo) 
+                };
+            }
+            if (parsedFilters.location) {
+                userQuery.$or.push(
+                    { 'location.city': searchRegex },
+                    { 'location.state': searchRegex },
+                    { 'location.country': searchRegex }
+                );
+            }
+
+            // Get total count for users
+            const totalUsers = await User.countDocuments(userQuery);
+
+            // Enhanced user aggregation pipeline
+            const userPipeline = [
+                { $match: userQuery },
+                {
+                    $lookup: {
+                        from: 'events',
+                        localField: '_id',
+                        foreignField: 'createdBy',
+                        as: 'createdEvents'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'events',
+                        localField: '_id',
+                        foreignField: 'participants.user',
+                        as: 'participatedEvents'
+                    }
+                },
+                {
+                    $addFields: {
+                        eventsCreated: { $size: '$createdEvents' },
+                        eventsParticipated: { $size: '$participatedEvents' },
+                        totalEngagement: { 
+                            $add: [
+                                { $size: '$createdEvents' }, 
+                                { $size: '$participatedEvents' }
+                            ] 
+                        },
+                        accountAge: {
+                            $divide: [
+                                { $subtract: [new Date(), '$createdAt'] },
+                                1000 * 60 * 60 * 24 // Convert to days
+                            ]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        password: 0,
+                        resetPasswordToken: 0,
+                        resetPasswordExpire: 0,
+                        createdEvents: 0,
+                        participatedEvents: 0
+                    }
+                },
+                { $sort: sortObject },
+                { $skip: type === 'all' ? 0 : skip },
+                { $limit: type === 'all' ? 5 : limitNum }
+            ];
+
+            const users = await User.aggregate(userPipeline);
+
+            results.users = {
+                data: users,
+                pagination: type !== 'all' ? {
+                    currentPage: pageNum,
+                    totalPages: Math.ceil(totalUsers / limitNum),
+                    total: totalUsers,
+                    hasNext: pageNum < Math.ceil(totalUsers / limitNum),
+                    hasPrev: pageNum > 1
+                } : { total: totalUsers, showing: users.length }
+            };
+        }
+
+        if (type === 'events' || type === 'all') {
+            // Advanced event search
+            const eventQuery = {
+                $or: [
+                    { name: searchRegex },
+                    { description: searchRegex },
+                    { category: searchRegex },
+                    { 'location.city': searchRegex },
+                    { 'location.state': searchRegex },
+                    { 'location.address': searchRegex }
+                ]
+            };
+
+            // Apply event-specific filters
+            if (parsedFilters.category) {
+                eventQuery.category = parsedFilters.category;
+            }
+            if (parsedFilters.status) {
+                eventQuery.status = parsedFilters.status;
+            }
+            if (parsedFilters.difficulty) {
+                eventQuery.difficulty = parsedFilters.difficulty;
+            }
+            if (parsedFilters.dateFrom) {
+                eventQuery.date = { 
+                    ...eventQuery.date, 
+                    $gte: new Date(parsedFilters.dateFrom) 
+                };
+            }
+            if (parsedFilters.dateTo) {
+                eventQuery.date = { 
+                    ...eventQuery.date, 
+                    $lte: new Date(parsedFilters.dateTo) 
+                };
+            }
+            if (parsedFilters.minParticipants) {
+                eventQuery['participants.0'] = { $exists: true };
+            }
+            if (parsedFilters.maxParticipants) {
+                eventQuery.maxParticipants = { 
+                    $lte: parseInt(parsedFilters.maxParticipants) 
+                };
+            }
+
+            // Get total count for events
+            const totalEvents = await Event.countDocuments(eventQuery);
+
+            // Enhanced event aggregation pipeline
+            const eventPipeline = [
+                { $match: eventQuery },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'createdBy',
+                        foreignField: '_id',
+                        as: 'organizer',
+                        pipeline: [
+                            { $project: { name: 1, email: 1, avatar: 1, role: 1 } }
+                        ]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'participants.user',
+                        foreignField: '_id',
+                        as: 'participantDetails',
+                        pipeline: [
+                            { $project: { name: 1, email: 1, avatar: 1 } }
+                        ]
+                    }
+                },
+                {
+                    $addFields: {
+                        organizer: { $arrayElemAt: ['$organizer', 0] },
+                        participantCount: { $size: { $ifNull: ['$participants', []] } },
+                        spotsRemaining: {
+                            $cond: {
+                                if: '$maxParticipants',
+                                then: { 
+                                    $subtract: [
+                                        '$maxParticipants', 
+                                        { $size: { $ifNull: ['$participants', []] } }
+                                    ] 
+                                },
+                                else: null
+                            }
+                        },
+                        isUpcoming: { $gte: ['$date', new Date()] },
+                        isPast: { $lt: ['$date', new Date()] },
+                        daysUntilEvent: {
+                            $divide: [
+                                { $subtract: ['$date', new Date()] },
+                                1000 * 60 * 60 * 24
+                            ]
+                        },
+                        avgRating: { $avg: '$ratings.rating' },
+                        totalRatings: { $size: { $ifNull: ['$ratings', []] } },
+                        searchRelevance: {
+                            $sum: [
+                                { $cond: [{ $regexMatch: { input: '$name', regex: searchRegex } }, 10, 0] },
+                                { $cond: [{ $regexMatch: { input: '$description', regex: searchRegex } }, 5, 0] },
+                                { $cond: [{ $regexMatch: { input: '$category', regex: searchRegex } }, 3, 0] }
+                            ]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        participantDetails: 0
+                    }
+                },
+                { 
+                    $sort: parsedFilters.relevanceSort ? 
+                        { searchRelevance: -1, ...sortObject } : 
+                        sortObject 
+                },
+                { $skip: type === 'all' ? 0 : skip },
+                { $limit: type === 'all' ? 5 : limitNum }
+            ];
+
+            const events = await Event.aggregate(eventPipeline);
+
+            results.events = {
+                data: events,
+                pagination: type !== 'all' ? {
+                    currentPage: pageNum,
+                    totalPages: Math.ceil(totalEvents / limitNum),
+                    total: totalEvents,
+                    hasNext: pageNum < Math.ceil(totalEvents / limitNum),
+                    hasPrev: pageNum > 1
+                } : { total: totalEvents, showing: events.length }
+            };
+        }
+
+        if (type === 'notifications' || type === 'all') {
+            // Advanced notification search
+            const Notification = (await import('../models/notificationModel.js')).default;
+            
+            const notificationQuery = {
+                $or: [
+                    { title: searchRegex },
+                    { message: searchRegex },
+                    { type: searchRegex }
+                ]
+            };
+
+            // Apply notification-specific filters
+            if (parsedFilters.notificationType) {
+                notificationQuery.type = parsedFilters.notificationType;
+            }
+            if (parsedFilters.priority) {
+                notificationQuery.priority = parsedFilters.priority;
+            }
+            if (parsedFilters.status) {
+                notificationQuery.status = parsedFilters.status;
+            }
+            if (parsedFilters.dateFrom) {
+                notificationQuery.createdAt = { 
+                    ...notificationQuery.createdAt, 
+                    $gte: new Date(parsedFilters.dateFrom) 
+                };
+            }
+            if (parsedFilters.dateTo) {
+                notificationQuery.createdAt = { 
+                    ...notificationQuery.createdAt, 
+                    $lte: new Date(parsedFilters.dateTo) 
+                };
+            }
+
+            // Get total count for notifications
+            const totalNotifications = await Notification.countDocuments(notificationQuery);
+
+            // Enhanced notification aggregation pipeline
+            const notificationPipeline = [
+                { $match: notificationQuery },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'createdBy',
+                        foreignField: '_id',
+                        as: 'creator',
+                        pipeline: [
+                            { $project: { name: 1, email: 1, role: 1 } }
+                        ]
+                    }
+                },
+                {
+                    $addFields: {
+                        creator: { $arrayElemAt: ['$creator', 0] },
+                        deliveryRate: {
+                            $cond: {
+                                if: { $gt: ['$recipientCount', 0] },
+                                then: { 
+                                    $multiply: [
+                                        { $divide: ['$deliveredCount', '$recipientCount'] },
+                                        100
+                                    ]
+                                },
+                                else: 0
+                            }
+                        },
+                        openRate: {
+                            $cond: {
+                                if: { $gt: ['$deliveredCount', 0] },
+                                then: { 
+                                    $multiply: [
+                                        { $divide: ['$readCount', '$deliveredCount'] },
+                                        100
+                                    ]
+                                },
+                                else: 0
+                            }
+                        },
+                        daysAgo: {
+                            $divide: [
+                                { $subtract: [new Date(), '$createdAt'] },
+                                1000 * 60 * 60 * 24
+                            ]
+                        }
+                    }
+                },
+                { $sort: sortObject },
+                { $skip: type === 'all' ? 0 : skip },
+                { $limit: type === 'all' ? 5 : limitNum }
+            ];
+
+            const notifications = await Notification.aggregate(notificationPipeline);
+
+            results.notifications = {
+                data: notifications,
+                pagination: type !== 'all' ? {
+                    currentPage: pageNum,
+                    totalPages: Math.ceil(totalNotifications / limitNum),
+                    total: totalNotifications,
+                    hasNext: pageNum < Math.ceil(totalNotifications / limitNum),
+                    hasPrev: pageNum > 1
+                } : { total: totalNotifications, showing: notifications.length }
+            };
+        }
+
+        // Generate search insights for 'all' type
+        if (type === 'all') {
+            const insights = {
+                totalResults: Object.values(results).reduce((sum, category) => 
+                    sum + (category.pagination?.total || 0), 0
+                ),
+                categoryBreakdown: Object.entries(results).map(([key, value]) => ({
+                    category: key,
+                    count: value.pagination?.total || 0,
+                    showing: value.data?.length || 0
+                })),
+                searchTerm: query,
+                appliedFilters: Object.keys(parsedFilters).length,
+                searchTime: new Date().toISOString()
+            };
+
+            results.insights = insights;
+        }
+
+        // Add search suggestions for low results
+        if (type !== 'all') {
+            const categoryResult = results[type];
+            if (categoryResult && categoryResult.pagination.total < 3) {
+                // Generate search suggestions
+                const suggestions = await generateSearchSuggestions(type, query);
+                categoryResult.suggestions = suggestions;
+            }
+        }
+
+        res.json({
+            success: true,
+            searchQuery: query,
+            searchType: type,
+            appliedFilters: parsedFilters,
+            results,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('Error in advanced admin search:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Search failed',
+            error: error.message
+        });
     }
-
-    res.json(results);
 });
+
+export const generateSearchSuggestions = async (type, query) => {
+    try {
+        const suggestions = [];
+        
+        if (type === 'users') {
+            // Get popular user search terms
+            const popularUsers = await User.aggregate([
+                {
+                    $project: {
+                        name: 1,
+                        role: 1,
+                        eventsCreated: { $size: { $ifNull: ['$createdEvents', []] } }
+                    }
+                },
+                { $sort: { eventsCreated: -1 } },
+                { $limit: 5 }
+            ]);
+            
+            suggestions.push(
+                ...popularUsers.map(user => ({
+                    type: 'user',
+                    suggestion: user.name,
+                    reason: 'Popular organizer'
+                }))
+            );
+            
+            // Add role-based suggestions
+            suggestions.push(
+                { type: 'filter', suggestion: 'role:admin', reason: 'Search admin users' },
+                { type: 'filter', suggestion: 'role:user', reason: 'Search regular users' }
+            );
+            
+        } else if (type === 'events') {
+            // Get popular categories
+            const popularCategories = await Event.aggregate([
+                { $group: { _id: '$category', count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 5 }
+            ]);
+            
+            suggestions.push(
+                ...popularCategories.map(cat => ({
+                    type: 'category',
+                    suggestion: cat._id,
+                    reason: `${cat.count} events in this category`
+                }))
+            );
+            
+            // Add time-based suggestions
+            suggestions.push(
+                { type: 'filter', suggestion: 'status:Upcoming', reason: 'Search upcoming events' },
+                { type: 'filter', suggestion: 'dateFrom:today', reason: 'Search recent events' }
+            );
+            
+        } else if (type === 'notifications') {
+            // Get popular notification types
+            const Notification = (await import('../models/notificationModel.js')).default;
+            const popularTypes = await Notification.aggregate([
+                { $group: { _id: '$type', count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 3 }
+            ]);
+            
+            suggestions.push(
+                ...popularTypes.map(type => ({
+                    type: 'notification_type',
+                    suggestion: type._id,
+                    reason: `${type.count} notifications of this type`
+                }))
+            );
+        }
+        
+        return suggestions.slice(0, 5); // Limit to 5 suggestions
+        
+    } catch (error) {
+        console.error('Error generating suggestions:', error);
+        return [];
+    }
+};

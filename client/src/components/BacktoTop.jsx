@@ -13,9 +13,10 @@ const BackToTop = () => {
     const scrolled = document.documentElement.scrollTop;
     const maxHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     const progress = (scrolled / maxHeight) * 100;
-    
+
     setScrollProgress(progress);
-    setIsVisible(scrolled > 300);
+    // Reduced scroll threshold for mobile
+    setIsVisible(scrolled > 200);
   };
 
   // Set the scroll event listener
@@ -33,14 +34,14 @@ const BackToTop = () => {
   };
 
   const containerVariants = {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       scale: 0.3,
       y: 100,
       rotate: -180
     },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       scale: 1,
       y: 0,
       rotate: 0,
@@ -51,8 +52,8 @@ const BackToTop = () => {
         duration: 0.6
       }
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       scale: 0.3,
       y: 100,
       rotate: 180,
@@ -64,12 +65,12 @@ const BackToTop = () => {
   };
 
   const iconVariants = {
-    normal: { 
+    normal: {
       rotate: 0,
       scale: 1,
       y: 0
     },
-    hover: { 
+    hover: {
       rotate: [0, -10, 10, 0],
       scale: 1.1,
       y: -3,
@@ -94,7 +95,7 @@ const BackToTop = () => {
 
   const progressVariants = {
     hidden: { pathLength: 0 },
-    visible: { 
+    visible: {
       pathLength: scrollProgress / 100,
       transition: {
         duration: 0.3,
@@ -111,33 +112,43 @@ const BackToTop = () => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed bottom-6 right-6 z-50 group"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] group"
           onHoverStart={() => setIsHovered(true)}
           onHoverEnd={() => setIsHovered(false)}
+          style={{ zIndex: 9999 }} // Ensure high z-index
         >
           {/* Main Button Container */}
           <motion.button
             onClick={scrollToTop}
             className={cn(
-              "relative w-14 h-14 rounded-2xl overflow-hidden",
+              "relative overflow-hidden",
+              // Responsive sizing
+              "w-12 h-12 sm:w-14 sm:h-14",
+              "rounded-xl sm:rounded-2xl",
+              // Background and styling
               "bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700",
               "hover:from-blue-700 hover:via-purple-700 hover:to-blue-800",
-              "shadow-2xl hover:shadow-3xl",
+              "shadow-lg sm:shadow-2xl hover:shadow-xl sm:hover:shadow-3xl",
               "border border-white/20",
               "backdrop-blur-xl",
               "transition-all duration-300",
               "group-hover:scale-105",
-              "active:scale-95"
+              "active:scale-95",
+              // Touch-friendly
+              "touch-manipulation"
             )}
             whileHover="hover"
             whileTap="tap"
             style={{
               filter: isHovered ? 'brightness(1.1)' : 'brightness(1)',
+              // Ensure visibility on all devices
+              minWidth: '48px',
+              minHeight: '48px'
             }}
           >
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-20">
-              <div 
+              <div
                 className="w-full h-full"
                 style={{
                   backgroundImage: `
@@ -167,15 +178,15 @@ const BackToTop = () => {
             />
 
             {/* Progress Ring */}
-            <svg 
-              className="absolute inset-0 w-full h-full -rotate-90" 
+            <svg
+              className="absolute inset-0 w-full h-full -rotate-90"
               viewBox="0 0 56 56"
             >
               {/* Background Ring */}
               <circle
                 cx="28"
                 cy="28"
-                r="26"
+                r="24"
                 stroke="rgba(255,255,255,0.2)"
                 strokeWidth="2"
                 fill="none"
@@ -184,7 +195,7 @@ const BackToTop = () => {
               <motion.circle
                 cx="28"
                 cy="28"
-                r="26"
+                r="24"
                 stroke="#fbbf24"
                 strokeWidth="3"
                 fill="none"
@@ -204,17 +215,17 @@ const BackToTop = () => {
               variants={iconVariants}
               className="absolute inset-0 flex items-center justify-center"
             >
-              <ArrowUp className="w-6 h-6 text-white drop-shadow-lg" />
+              <ArrowUp className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg" />
             </motion.div>
 
-            {/* Floating Sports Icons */}
+            {/* Floating Sports Icons - Only show on larger screens */}
             {isHovered && (
-              <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-0 pointer-events-none hidden sm:block">
                 {[Trophy, Zap, Target].map((Icon, index) => (
                   <motion.div
                     key={index}
                     className="absolute"
-                    initial={{ 
+                    initial={{
                       opacity: 0,
                       scale: 0,
                       x: 28,
@@ -241,7 +252,7 @@ const BackToTop = () => {
 
             {/* Pulse Effect */}
             <motion.div
-              className="absolute inset-0 rounded-2xl bg-white/20"
+              className="absolute inset-0 rounded-xl sm:rounded-2xl bg-white/20"
               animate={{
                 scale: isHovered ? [1, 1.2, 1] : 1,
                 opacity: isHovered ? [0.3, 0.1, 0.3] : 0,
@@ -255,7 +266,7 @@ const BackToTop = () => {
 
             {/* Shine Effect */}
             <motion.div
-              className="absolute inset-0 rounded-2xl"
+              className="absolute inset-0 rounded-xl sm:rounded-2xl"
               style={{
                 background: `linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)`,
                 transform: 'translateX(-100%)',
@@ -272,7 +283,7 @@ const BackToTop = () => {
             />
           </motion.button>
 
-          {/* Tooltip */}
+          {/* Tooltip - Only show on larger screens */}
           <AnimatePresence>
             {isHovered && (
               <motion.div
@@ -280,7 +291,7 @@ const BackToTop = () => {
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 10, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-full top-1/2 -translate-y-1/2 mr-3 whitespace-nowrap"
+                className="absolute right-full top-1/2 -translate-y-1/2 mr-3 whitespace-nowrap hidden sm:block"
               >
                 <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
                   Back to top
@@ -290,24 +301,24 @@ const BackToTop = () => {
             )}
           </AnimatePresence>
 
-          {/* Floating Particles */}
+          {/* Floating Particles - Simplified for mobile */}
           {isHovered && (
             <div className="absolute inset-0 pointer-events-none">
-              {[...Array(6)].map((_, i) => (
+              {[...Array(window.innerWidth < 640 ? 3 : 6)].map((_, i) => (
                 <motion.div
                   key={i}
                   className="absolute w-1 h-1 bg-yellow-400 rounded-full"
                   style={{
-                    left: `${20 + Math.random() * 60}%`,
-                    top: `${20 + Math.random() * 60}%`,
+                    left: `${30 + Math.random() * 40}%`,
+                    top: `${30 + Math.random() * 40}%`,
                   }}
                   animate={{
-                    y: [0, -20, -40],
+                    y: [0, -15, -30],
                     opacity: [0, 1, 0],
-                    scale: [0, 1.5, 0],
+                    scale: [0, 1.2, 0],
                   }}
                   transition={{
-                    duration: 2,
+                    duration: 1.5,
                     delay: i * 0.2,
                     repeat: Infinity,
                     ease: "easeOut"
@@ -318,7 +329,7 @@ const BackToTop = () => {
           )}
 
           {/* Glow Effect */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300 -z-10" />
+          <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 blur-lg sm:blur-xl opacity-20 sm:opacity-30 group-hover:opacity-40 sm:group-hover:opacity-50 transition-opacity duration-300 -z-10" />
         </motion.div>
       )}
     </AnimatePresence>

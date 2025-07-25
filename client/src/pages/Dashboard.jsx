@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
 import { useEvents } from "@/hooks/useEvents"
 import { format, formatDistanceToNow } from "date-fns"
-import { 
-  Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell, 
-  Loader2, BarChart3, TrendingUp, CalendarIcon, CheckCircle, User, Dumbbell, 
-  UserPlus, Target, Zap, Trophy, Flame, Eye, Settings, ArrowUp, ArrowDown, Crown, 
+import {
+  Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell,
+  Loader2, BarChart3, TrendingUp, CalendarIcon, CheckCircle, User, Dumbbell,
+  UserPlus, Target, Zap, Trophy, Flame, Eye, Settings, ArrowUp, ArrowDown, Crown,
   Medal, Timer, Globe, Heart, Share2, Sparkles, Rocket, Shield, MessageCircle,
   Camera, Edit, BookOpen, Gift, Compass, Briefcase, Coffee, Music
 } from 'lucide-react'
@@ -98,7 +98,7 @@ const Dashboard = () => {
       images: [{ url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4U-43sYipS4JxVU_wrkLYcRSMfEk0Cs7XJQ&s" }]
     },
     {
-      _id: "2", 
+      _id: "2",
       name: "Morning Basketball",
       location: { city: "Brooklyn, NY" },
       date: "2024-02-18",
@@ -114,7 +114,7 @@ const Dashboard = () => {
       name: "Tennis Tournament",
       location: { city: "Queens, NY" },
       date: "2024-02-20",
-      time: "2:00 PM", 
+      time: "2:00 PM",
       category: "Tennis",
       maxParticipants: 16,
       participantCount: 12,
@@ -126,7 +126,7 @@ const Dashboard = () => {
   const getGreeting = () => {
     const greetings = {
       morning: "Good morning",
-      afternoon: "Good afternoon", 
+      afternoon: "Good afternoon",
       evening: "Good evening",
     }
     return greetings[timeOfDay] || "Hello"
@@ -188,7 +188,7 @@ const Dashboard = () => {
             <Loader2 className="w-16 h-16 animate-spin text-blue-600" />
             <div className="absolute inset-0 w-16 h-16 border-4 border-blue-400/20 rounded-full animate-pulse" />
           </div>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -196,7 +196,7 @@ const Dashboard = () => {
           >
             Loading your dashboard...
           </motion.p>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -208,14 +208,14 @@ const Dashboard = () => {
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden relative">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-blue-950/20" />
-        
+
         {/* Animated Particles */}
         {[...Array(25)].map((_, i) => (
           <motion.div
@@ -250,9 +250,8 @@ const Dashboard = () => {
               top: `${10 + (i * 12) % 80}%`,
               width: `${30 + (i % 3) * 20}px`,
               height: `${30 + (i % 3) * 20}px`,
-              background: `linear-gradient(135deg, ${
-                ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'][i % 5]
-              }, transparent)`,
+              background: `linear-gradient(135deg, ${['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'][i % 5]
+                }, transparent)`,
               borderRadius: i % 2 === 0 ? '50%' : '20%',
             }}
             animate={{
@@ -271,7 +270,7 @@ const Dashboard = () => {
 
         {/* Grid Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div 
+          <div
             className="w-full h-full"
             style={{
               backgroundImage: `
@@ -344,13 +343,13 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div>
-                      <motion.h1 
+                      <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
                         className="text-3xl md:text-4xl font-bold mb-1 text-gray-900 dark:text-white"
                       >
-                        {getGreeting()}, {currentUser?.name?.split(" ")[0] || "Athlete"}! 
+                        {getGreeting()}, {currentUser?.name?.split(" ")[0] || "Athlete"}!
                         <motion.span
                           animate={{ rotate: [0, 15, -15, 0] }}
                           transition={{ duration: 2, repeat: Infinity, delay: 1 }}
@@ -369,21 +368,21 @@ const Dashboard = () => {
                     transition={{ delay: 0.4 }}
                     className="flex flex-wrap gap-4"
                   >
-                    <motion.div 
+                    <motion.div
                       whileHover={{ scale: 1.05 }}
                       className="flex items-center gap-2 bg-blue-500/10 rounded-full px-4 py-2 border border-blue-500/20"
                     >
                       <Flame className="w-5 h-5 text-orange-500" />
                       <span className="font-medium text-gray-900 dark:text-white">{stats.totalEvents} Events</span>
                     </motion.div>
-                    <motion.div 
+                    <motion.div
                       whileHover={{ scale: 1.05 }}
                       className="flex items-center gap-2 bg-purple-500/10 rounded-full px-4 py-2 border border-purple-500/20"
                     >
                       <Trophy className="w-5 h-5 text-yellow-500" />
                       <span className="font-medium text-gray-900 dark:text-white">{stats.achievements} Achievements</span>
                     </motion.div>
-                    <motion.div 
+                    <motion.div
                       whileHover={{ scale: 1.05 }}
                       className="flex items-center gap-2 bg-green-500/10 rounded-full px-4 py-2 border border-green-500/20"
                     >
@@ -510,8 +509,8 @@ const Dashboard = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      whileHover={{ 
-                        scale: 1.02, 
+                      whileHover={{
+                        scale: 1.02,
                         rotateY: 5,
                         z: 50
                       }}
@@ -523,7 +522,7 @@ const Dashboard = () => {
                       <Card className="relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-2xl transition-all duration-500">
                         {/* Background Gradient */}
                         <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                        
+
                         {/* Floating Particles for Each Card */}
                         {hoveredCard === index && (
                           <div className="absolute inset-0 pointer-events-none">
@@ -536,7 +535,7 @@ const Dashboard = () => {
                                   top: `${20 + Math.random() * 60}%`,
                                 }}
                                 initial={{ opacity: 0, scale: 0 }}
-                                animate={{ 
+                                animate={{
                                   opacity: [0, 1, 0],
                                   scale: [0, 1.5, 0],
                                   y: [0, -20, -40],
@@ -553,7 +552,7 @@ const Dashboard = () => {
 
                         <CardContent className="relative p-6">
                           <div className="flex items-center justify-between mb-4">
-                            <motion.div 
+                            <motion.div
                               animate={{
                                 rotate: hoveredCard === index ? [0, 10, -10, 0] : 0,
                               }}
@@ -667,7 +666,7 @@ const Dashboard = () => {
                             gradient: "from-blue-500 to-blue-600",
                           },
                           {
-                            title: "Create Event", 
+                            title: "Create Event",
                             description: "Organize your own event",
                             icon: Plus,
                             href: "/events/create",
@@ -797,11 +796,11 @@ const Dashboard = () => {
                                       {event.category}
                                     </Badge>
                                   </div>
-                                  
+
                                   {/* Progress Bar */}
                                   <div className="mt-3">
-                                    <Progress 
-                                      value={(event.participantCount / event.maxParticipants) * 100} 
+                                    <Progress
+                                      value={(event.participantCount / event.maxParticipants) * 100}
                                       className="h-2"
                                     />
                                   </div>
@@ -957,8 +956,8 @@ const Dashboard = () => {
                             <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                               {sport.sport}
                             </h3>
-                            <Badge 
-                              variant="secondary" 
+                            <Badge
+                              variant="secondary"
                               className={cn(
                                 "text-xs",
                                 sport.skillLevel === "Advanced" && "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300",
@@ -986,7 +985,7 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <motion.div 
+                        <motion.div
                           whileHover={{ scale: 1.05 }}
                           className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50/50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200/30 dark:border-blue-700/30"
                         >
@@ -1000,8 +999,8 @@ const Dashboard = () => {
                             Total Activity Time
                           </p>
                         </motion.div>
-                        
-                        <motion.div 
+
+                        <motion.div
                           whileHover={{ scale: 1.05 }}
                           className="text-center p-4 rounded-xl bg-gradient-to-br from-green-50/50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20 border border-green-200/30 dark:border-green-700/30"
                         >
@@ -1015,8 +1014,8 @@ const Dashboard = () => {
                             Events Liked
                           </p>
                         </motion.div>
-                        
-                        <motion.div 
+
+                        <motion.div
                           whileHover={{ scale: 1.05 }}
                           className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50/50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200/30 dark:border-purple-700/30"
                         >
@@ -1049,7 +1048,7 @@ const Dashboard = () => {
         }}
         transition={{ duration: 4, repeat: Infinity }}
       />
-      
+
       <motion.div
         className="absolute bottom-10 left-10 w-16 h-16 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-xl"
         animate={{

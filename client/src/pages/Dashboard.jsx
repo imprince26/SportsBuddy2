@@ -943,7 +943,7 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {currentUser.sportsPreferences.map((sport, index) => (
+                        {/* {currentUser.sportsPreferences.map((sport, index) => (
                           <motion.div
                             key={index}
                             initial={{ opacity: 0, scale: 0.9 }}
@@ -970,7 +970,7 @@ const Dashboard = () => {
                               {sport.skillLevel}
                             </Badge>
                           </motion.div>
-                        ))}
+                        ))} */}
                       </div>
                     </CardContent>
                   </Card>

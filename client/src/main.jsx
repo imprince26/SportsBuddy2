@@ -12,7 +12,7 @@ import { ThemeProvider } from "./context/ThemeProvider";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter future={{v7_startTransition:true,v7_relativeSplatPath:true}}>
-      <ThemeProvider defaultTheme="dark" storageKey="sports-buddy-theme">
+      <ThemeProvider defaultTheme="dark" storageKey="SportsBuddy-theme">
         <AuthProvider>
           <SocketProvider>
             <EventProvider>

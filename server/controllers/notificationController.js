@@ -5,9 +5,6 @@ import Event from '../models/eventModel.js';
 import sendEmail from '../config/sendEmail.js';
 import { AdminSentEmailHtml } from '../utils/emailTemplate.js';
 
-// @desc    Create bulk notification
-// @route   POST /api/notifications/bulk
-// @access  Admin
 export const createBulkNotification = asyncHandler(async (req, res) => {
     const { title, message, type, priority, recipients, specificRecipients, scheduledAt, metadata } = req.body;
 
@@ -41,12 +38,9 @@ export const createBulkNotification = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Send bulk notification immediately
-// @route   POST /api/notifications/bulk/:id/send
-// @access  Admin
 export const sendBulkNotificationNow = asyncHandler(async (notificationId, res = null) => {
     let notification;
-    
+
     if (typeof notificationId === 'string') {
         notification = await Notification.findById(notificationId);
     } else {
@@ -78,7 +72,7 @@ export const sendBulkNotificationNow = asyncHandler(async (notificationId, res =
         // Add in-app notifications to users
         for (const user of users) {
             await user.addBulkNotification(notification);
-            
+
             // Log delivery
             notification.deliveryLogs.push({
                 recipient: user._id,
@@ -91,19 +85,19 @@ export const sendBulkNotificationNow = asyncHandler(async (notificationId, res =
         // Send emails if enabled
         if (notification.metadata.emailSent !== false && users.length > 0) {
             const emails = users.map(user => user.email);
-            
+
             try {
                 await sendEmail({
                     from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
                     to: emails,
                     subject: notification.title,
                     message: notification.message,
-                    html: AdminSentEmailHtml({ 
-                        subject: notification.title, 
-                        message: notification.message 
+                    html: AdminSentEmailHtml({
+                        subject: notification.title,
+                        message: notification.message
                     })
                 });
-                
+
                 notification.metadata.emailSent = true;
             } catch (emailError) {
                 console.error('Email sending failed:', emailError);
@@ -140,7 +134,7 @@ export const sendBulkNotificationNow = asyncHandler(async (notificationId, res =
 // @access  Admin
 export const getBulkNotifications = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, status, type, priority } = req.query;
-    
+
     const query = {};
     if (status) query.status = status;
     if (type) query.type = type;
@@ -239,15 +233,15 @@ export const deleteBulkNotification = asyncHandler(async (req, res) => {
 // @access  Private
 export const getUserNotifications = asyncHandler(async (req, res) => {
     const { page = 1, limit = 20, unreadOnly = false } = req.query;
-    
+
     const user = await User.findById(req.user._id).select('notifications');
-    
+
     let notifications = user.notifications;
-    
+
     if (unreadOnly === 'true') {
         notifications = notifications.filter(notif => !notif.read);
     }
-    
+
     // Pagination
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + parseInt(limit);
@@ -369,7 +363,7 @@ export const sendEventNotification = asyncHandler(async (req, res) => {
     const { eventId } = req.params;
 
     const event = await Event.findById(eventId).populate('participants.user', 'email name');
-    
+
     if (!event) {
         res.status(404);
         throw new Error('Event not found');
@@ -398,7 +392,7 @@ export const sendPersonalNotification = asyncHandler(async (req, res) => {
     const { userId } = req.params;
 
     const user = await User.findById(userId);
-    
+
     if (!user) {
         res.status(404);
         throw new Error('User not found');
@@ -421,15 +415,12 @@ export const sendPersonalNotification = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Archive bulk notification
-// @route   PUT /api/notifications/bulk/:id/archive
-// @access  Admin
 export const archiveBulkNotification = asyncHandler(async (req, res) => {
     const notification = await Notification.findByIdAndUpdate(
         req.params.id,
-        { 
-            archived: true, 
-            archivedAt: new Date() 
+        {
+            archived: true,
+            archivedAt: new Date()
         },
         { new: true }
     );
@@ -446,9 +437,6 @@ export const archiveBulkNotification = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Get notification templates
-// @route   GET /api/notifications/templates
-// @access  Admin
 export const getNotificationTemplates = asyncHandler(async (req, res) => {
     const templates = [
         {

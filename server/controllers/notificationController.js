@@ -244,9 +244,6 @@ export const getUserNotifications = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Mark notification as read
-// @route   PUT /api/notifications/user/:notificationId/read
-// @access  Private
 export const markNotificationAsRead = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
     await user.markNotificationAsRead(req.params.notificationId);
@@ -257,9 +254,6 @@ export const markNotificationAsRead = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Mark all notifications as read
-// @route   PUT /api/notifications/user/read-all
-// @access  Private
 export const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
     await user.markAllNotificationsAsRead();
@@ -270,9 +264,6 @@ export const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Delete user notification
-// @route   DELETE /api/notifications/user/:notificationId
-// @access  Private
 export const deleteUserNotification = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
     user.notifications.id(req.params.notificationId).remove();
@@ -284,9 +275,6 @@ export const deleteUserNotification = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Get notification statistics
-// @route   GET /api/notifications/stats
-// @access  Admin
 export const getNotificationStats = asyncHandler(async (req, res) => {
     const stats = await Notification.aggregate([
         {
@@ -340,9 +328,6 @@ export const getNotificationStats = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Send notification to event participants
-// @route   POST /api/notifications/event/:eventId
-// @access  Private (Event Creator or Admin)
 export const sendEventNotification = asyncHandler(async (req, res) => {
     const { title, message, priority = 'normal' } = req.body;
     const { eventId } = req.params;
@@ -369,9 +354,6 @@ export const sendEventNotification = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Send personal notification to user
-// @route   POST /api/notifications/user/:userId
-// @access  Admin
 export const sendPersonalNotification = asyncHandler(async (req, res) => {
     const { title, message, type = 'system', priority = 'normal', actionUrl } = req.body;
     const { userId } = req.params;

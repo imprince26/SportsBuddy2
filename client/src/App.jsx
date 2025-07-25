@@ -33,7 +33,7 @@ import AdminAnalytics from './pages/admin/AdminAnalytics';
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated, loading } = useAuth();
 
-  if (loading) {
+  if (!loading) {
     return <SportsBuddyLoader />;
   }
 

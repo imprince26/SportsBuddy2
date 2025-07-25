@@ -248,6 +248,34 @@ eventSchema.methods.isParticipant = function (userId) {
   return this.participants.some((p) => p.user.toString() === userId.toString());
 };
 
+eventSchema.methods.notifyParticipants = async function (notification) {
+  const User = mongoose.model("User");
+  
+  if (this.participants && this.participants.length > 0) {
+    const participantIds = this.participants.map(p => p.user);
+    
+    // Add notification to each participant
+    await User.updateMany(
+      { _id: { $in: participantIds } },
+      {
+        $push: {
+          notifications: {
+            $each: [{
+              type: "event",
+              title: notification.title || `Event Update: ${this.name}`,
+              message: notification.message,
+              relatedEvent: this._id,
+              priority: notification.priority || "normal",
+              timestamp: new Date()
+            }],
+            $position: 0
+          }
+        }
+      }
+    );
+  }
+};
+
 // Update event status based on date
 eventSchema.pre("save", function (next) {
   const now = new Date();

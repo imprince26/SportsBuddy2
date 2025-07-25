@@ -5,11 +5,15 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ["event", "chat", "team", "system"],
+    enum: ["event", "chat", "team", "system", "announcement", "marketing"],
   },
   message: {
     type: String,
     required: true,
+  },
+  title: {
+    type: String,
+    trim: true,
   },
   read: {
     type: Boolean,
@@ -19,6 +23,16 @@ const notificationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Event",
   },
+  relatedNotification: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Notification",
+  },
+  priority: {
+    type: String,
+    enum: ["low", "normal", "high"],
+    default: "normal",
+  },
+  actionUrl: String,
   timestamp: {
     type: Date,
     default: Date.now,
@@ -223,8 +237,33 @@ userSchema.methods.updateStats = async function () {
 
 // Add notification method
 userSchema.methods.addNotification = async function (notification) {
+  // Limit notifications to prevent memory issues
+  if (this.notifications.length >= 100) {
+    this.notifications = this.notifications.slice(0, 50);
+  }
+  
   this.notifications.unshift(notification);
   await this.save();
+};
+
+// Add method to create notification from bulk notification
+userSchema.methods.addBulkNotification = async function (bulkNotification) {
+  const notification = {
+    type: bulkNotification.type === 'announcement' ? 'system' : bulkNotification.type,
+    title: bulkNotification.title,
+    message: bulkNotification.message,
+    relatedNotification: bulkNotification._id,
+    priority: bulkNotification.priority,
+    actionUrl: bulkNotification.metadata?.actionUrl,
+    timestamp: new Date()
+  };
+  
+  await this.addNotification(notification);
+};
+
+// Get unread notification count
+userSchema.methods.getUnreadNotificationCount = function () {
+  return this.notifications.filter(notification => !notification.read).length;
 };
 
 // Mark notification as read

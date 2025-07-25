@@ -350,10 +350,7 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
             recent: recentEvents
         }
     });
-});
-
-// export const exportAnalytics = asyncHandler(async (req, res) => {
-//     try {
+});//     try {
 //         // Fetch all analytics data
 //         const totalUsers = await User.countDocuments();
 //         const newUsersToday = await User.countDocuments({
@@ -770,174 +767,79 @@ export const deleteUser = asyncHandler(async (req, res) => {
     }
 });
 
-// Enhanced notification functions with better error handling
-export const sendNotificationToUser = asyncHandler(async (req, res) => {
-    try {
-        const { subject, message } = req.body;
-
-        // Validation
-        if (!subject || !message) {
-            res.status(400);
-            throw new Error('Subject and message are required');
-        }
-
-        const user = await User.findById(req.params.id);
-
-        if (!user) {
-            res.status(404);
-            throw new Error('User not found');
-        }
-
-        // Send email
-        await sendEmail({
-            from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-            to: user.email,
-            subject,
-            message,
-            html: AdminSentEmailHtml({ subject, message }),
-        });
-
-        // Optional: Log the notification in database
-        // You could create a Notification model to track sent notifications
-
-        res.status(200).json({
-            success: true,
-            message: `Notification sent successfully to ${user.name}`
-        });
-
-    } catch (error) {
-        console.error('Error sending notification:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to send notification',
-            error: error.message
-        });
-    }
-});
-
-export const sendNotificationToAll = asyncHandler(async (req, res) => {
-    try {
-        const { subject, message, role } = req.body;
-
-        // Validation
-        if (!subject || !message) {
-            res.status(400);
-            throw new Error('Subject and message are required');
-        }
-
-        // Build query for users to notify
-        let userQuery = {};
-        if (role && role !== 'all') {
-            userQuery.role = role;
-        }
-
-        const users = await User.find(userQuery, 'email name');
-
-        if (users.length === 0) {
-            res.status(400);
-            throw new Error('No users found to send notifications to');
-        }
-
-        const emails = users.map(user => user.email);
-
-        // Send bulk email
-        await sendEmail({
-            from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-            to: emails,
-            subject,
-            message,
-            html: AdminSentEmailHtml({ subject, message }),
-        });
-
-        res.status(200).json({
-            success: true,
-            message: `Notifications sent successfully to ${users.length} users`,
-            recipientCount: users.length
-        });
-
-    } catch (error) {
-        console.error('Error sending bulk notifications:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to send notifications',
-            error: error.message
-        });
-    }
-});
-
 // Add a new endpoint for bulk user operations
-export const bulkUserActions = asyncHandler(async (req, res) => {
-    try {
-        const { action, userIds, data } = req.body;
+// export const bulkUserActions = asyncHandler(async (req, res) => {
+//     try {
+//         const { action, userIds, data } = req.body;
 
-        if (!action || !userIds || !Array.isArray(userIds)) {
-            res.status(400);
-            throw new Error('Action and userIds array are required');
-        }
+//         if (!action || !userIds || !Array.isArray(userIds)) {
+//             res.status(400);
+//             throw new Error('Action and userIds array are required');
+//         }
 
-        let result;
+//         let result;
 
-        switch (action) {
-            case 'delete':
-                // Prevent deleting all admins
-                const adminCount = await User.countDocuments({
-                    role: 'admin',
-                    _id: { $nin: userIds }
-                });
+//         switch (action) {
+//             case 'delete':
+//                 // Prevent deleting all admins
+//                 const adminCount = await User.countDocuments({
+//                     role: 'admin',
+//                     _id: { $nin: userIds }
+//                 });
 
-                if (adminCount === 0) {
-                    res.status(400);
-                    throw new Error('Cannot delete all admin users');
-                }
+//                 if (adminCount === 0) {
+//                     res.status(400);
+//                     throw new Error('Cannot delete all admin users');
+//                 }
 
-                result = await User.deleteMany({ _id: { $in: userIds } });
-                break;
+//                 result = await User.deleteMany({ _id: { $in: userIds } });
+//                 break;
 
-            case 'updateRole':
-                if (!data.role) {
-                    res.status(400);
-                    throw new Error('Role is required for bulk role update');
-                }
-                result = await User.updateMany(
-                    { _id: { $in: userIds } },
-                    { role: data.role, updatedAt: new Date() }
-                );
-                break;
+//             case 'updateRole':
+//                 if (!data.role) {
+//                     res.status(400);
+//                     throw new Error('Role is required for bulk role update');
+//                 }
+//                 result = await User.updateMany(
+//                     { _id: { $in: userIds } },
+//                     { role: data.role, updatedAt: new Date() }
+//                 );
+//                 break;
 
-            case 'activate':
-                result = await User.updateMany(
-                    { _id: { $in: userIds } },
-                    { isActive: true, updatedAt: new Date() }
-                );
-                break;
+//             case 'activate':
+//                 result = await User.updateMany(
+//                     { _id: { $in: userIds } },
+//                     { isActive: true, updatedAt: new Date() }
+//                 );
+//                 break;
 
-            case 'deactivate':
-                result = await User.updateMany(
-                    { _id: { $in: userIds } },
-                    { isActive: false, updatedAt: new Date() }
-                );
-                break;
+//             case 'deactivate':
+//                 result = await User.updateMany(
+//                     { _id: { $in: userIds } },
+//                     { isActive: false, updatedAt: new Date() }
+//                 );
+//                 break;
 
-            default:
-                res.status(400);
-                throw new Error('Invalid action');
-        }
+//             default:
+//                 res.status(400);
+//                 throw new Error('Invalid action');
+//         }
 
-        res.json({
-            success: true,
-            message: `Bulk ${action} completed successfully`,
-            affectedCount: result.modifiedCount || result.deletedCount
-        });
+//         res.json({
+//             success: true,
+//             message: `Bulk ${action} completed successfully`,
+//             affectedCount: result.modifiedCount || result.deletedCount
+//         });
 
-    } catch (error) {
-        console.error('Error in bulk user actions:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to perform bulk action',
-            error: error.message
-        });
-    }
-});
+//     } catch (error) {
+//         console.error('Error in bulk user actions:', error);
+//         res.status(500).json({
+//             success: false,
+//             message: error.message || 'Failed to perform bulk action',
+//             error: error.message
+//         });
+//     }
+// });
 
 // Enhanced manageEvents with pagination, filtering, and sorting
 export const manageEvents = asyncHandler(async (req, res) => {
@@ -1341,58 +1243,6 @@ export const rejectEvent = asyncHandler(async (req, res) => {
     }
 });
 
-// Send notification to event participants
-export const sendEventNotification = asyncHandler(async (req, res) => {
-    try {
-        const { subject, message } = req.body;
-
-        // Validation
-        if (!subject || !message) {
-            res.status(400);
-            throw new Error('Subject and message are required');
-        }
-
-        const event = await Event.findById(req.params.id)
-            .populate('participants', 'email name')
-            .populate('createdBy', 'email name');
-
-        if (!event) {
-            res.status(404);
-            throw new Error('Event not found');
-        }
-
-        if (!event.participants || event.participants.length === 0) {
-            res.status(400);
-            throw new Error('No participants found for this event');
-        }
-
-        const participantEmails = event.participants.map(p => p.email);
-
-        // Send email to all participants
-        await sendEmail({
-            from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-            to: participantEmails,
-            subject: `${subject} - ${event.name}`,
-            message,
-            html: AdminSentEmailHtml({ subject: `${subject} - ${event.name}`, message }),
-        });
-
-        res.status(200).json({
-            success: true,
-            message: `Notification sent successfully to ${event.participants.length} participants`,
-            recipientCount: event.participants.length
-        });
-
-    } catch (error) {
-        console.error('Error sending event notification:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to send notification',
-            error: error.message
-        });
-    }
-});
-
 // Export events data
 export const exportEvents = asyncHandler(async (req, res) => {
     try {
@@ -1702,9 +1552,7 @@ export const bulkEventActions = asyncHandler(async (req, res) => {
             error: error.message
         });
     }
-});
-// export const sendNotificationToUser = asyncHandler(async (req, res) => {
-//     const { subject, message } = req.body;
+});//     const { subject, message } = req.body;
 //     const user = await User.findById(req.params.id);
 
 //     if (!user) {

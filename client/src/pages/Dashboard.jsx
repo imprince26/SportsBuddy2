@@ -396,27 +396,29 @@ const Dashboard = () => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="flex gap-3"
+                  className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"
                 >
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                     <Button
                       asChild
                       size="lg"
-                      className="rounded-xl bg-gray-100/80 hover:bg-gray-200/80 text-gray-900 border border-gray-200/50 backdrop-blur-sm shadow-lg"
+                      className="w-full sm:w-auto rounded-xl bg-gray-100/80 hover:bg-gray-200/80 text-gray-900 border border-gray-200/50 backdrop-blur-sm shadow-lg"
                       variant="outline"
                     >
-                      <Link to="/notifications" className="flex items-center gap-2">
+                      <Link to="/notifications" className="flex items-center justify-center sm:justify-start gap-2">
                         <Bell className="w-5 h-5" />
-                        <span>Notifications</span>
+                        <span className="hidden sm:inline">Notifications</span>
+                        <span className="sm:hidden">Notify</span>
                         <Badge className="bg-red-500 text-white border-0">3</Badge>
                       </Link>
                     </Button>
                   </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl text-white shadow-lg">
-                      <Link to="/events/create" className="flex items-center gap-2">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+                    <Button asChild size="lg" className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl text-white shadow-lg">
+                      <Link to="/events/create" className="flex items-center justify-center sm:justify-start gap-2">
                         <Plus className="w-5 h-5" />
-                        <span>Create Event</span>
+                        <span className="hidden sm:inline">Create Event</span>
+                        <span className="sm:hidden">Create</span>
                       </Link>
                     </Button>
                   </motion.div>

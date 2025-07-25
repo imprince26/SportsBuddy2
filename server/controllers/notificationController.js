@@ -129,9 +129,6 @@ export const sendBulkNotificationNow = asyncHandler(async (notificationId, res =
     }
 });
 
-// @desc    Get all bulk notifications
-// @route   GET /api/notifications/bulk
-// @access  Admin
 export const getBulkNotifications = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, status, type, priority } = req.query;
 
@@ -160,9 +157,6 @@ export const getBulkNotifications = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Get bulk notification by ID
-// @route   GET /api/notifications/bulk/:id
-// @access  Admin
 export const getBulkNotificationById = asyncHandler(async (req, res) => {
     const notification = await Notification.findById(req.params.id)
         .populate('createdBy', 'name email')
@@ -179,9 +173,6 @@ export const getBulkNotificationById = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Update bulk notification
-// @route   PUT /api/notifications/bulk/:id
-// @access  Admin
 export const updateBulkNotification = asyncHandler(async (req, res) => {
     const notification = await Notification.findById(req.params.id);
 
@@ -209,9 +200,6 @@ export const updateBulkNotification = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Delete bulk notification
-// @route   DELETE /api/notifications/bulk/:id
-// @access  Admin
 export const deleteBulkNotification = asyncHandler(async (req, res) => {
     const notification = await Notification.findById(req.params.id);
 
@@ -228,9 +216,6 @@ export const deleteBulkNotification = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Get user's personal notifications
-// @route   GET /api/notifications/user
-// @access  Private
 export const getUserNotifications = asyncHandler(async (req, res) => {
     const { page = 1, limit = 20, unreadOnly = false } = req.query;
 

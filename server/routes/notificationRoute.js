@@ -20,7 +20,6 @@ import { isAuthenticated, isAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Bulk notification routes (isAdmin only)
 router.route('/bulk')
     .post(isAuthenticated, isAdmin, createBulkNotification)
     .get(isAuthenticated, isAdmin, getBulkNotifications);
@@ -36,7 +35,6 @@ router.route('/bulk/:id/send')
 router.route('/bulk/:id/archive')
     .put(isAuthenticated, isAdmin, archiveBulkNotification);
 
-// User notification routes
 router.route('/user')
     .get(isAuthenticated, getUserNotifications);
 
@@ -49,15 +47,12 @@ router.route('/user/:notificationId')
 router.route('/user/:notificationId/read')
     .put(isAuthenticated, markNotificationAsRead);
 
-// Personal notification to specific user (Admin only)
 router.route('/user/:userId/send')
     .post(isAuthenticated, isAdmin, sendPersonalNotification);
 
-// Event notification routes
 router.route('/event/:eventId')
     .post(isAuthenticated, sendEventNotification);
 
-// Statistics and templates (Admin only)
 router.route('/stats')
     .get(isAuthenticated, isAdmin, getNotificationStats);
 

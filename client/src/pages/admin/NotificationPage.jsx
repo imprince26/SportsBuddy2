@@ -639,41 +639,41 @@ const ManageNotifications = () => {
       >
         {loading
           ? Array.from({ length: 4 }).map((_, index) => (
-              <StatCardSkeleton key={index} />
-            ))
+            <StatCardSkeleton key={index} />
+          ))
           : getStatsCards().map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02, y: -4 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-transparent to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <CardContent className="p-3 relative z-10">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="space-y-1 min-w-0 flex-1">
-                          <p className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">
-                            {stat.title}
-                          </p>
-                          <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
-                            {stat.value}
-                          </p>
-                        </div>
-                        <div className="p-2 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200/20 dark:border-blue-700/20 border transition-transform duration-300 group-hover:scale-110 shrink-0">
-                          <Icon className="w-4 h-4" />
-                        </div>
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02, y: -4 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <CardContent className="p-3 relative z-10">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">
+                          {stat.title}
+                        </p>
+                        <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                          {stat.value}
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {stat.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
+                      <div className="p-2 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200/20 dark:border-blue-700/20 border transition-transform duration-300 group-hover:scale-110 shrink-0">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {stat.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
       </motion.div>
 
       {/* Main Content */}
@@ -1069,12 +1069,12 @@ const ManageNotifications = () => {
                       />
                     </div>
                   )) || (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500 dark:text-gray-400">
-                        No data available
-                      </p>
-                    </div>
-                  )}
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 dark:text-gray-400">
+                          No data available
+                        </p>
+                      </div>
+                    )}
                 </CardContent>
               </Card>
 
@@ -1098,10 +1098,10 @@ const ManageNotifications = () => {
                         <p className="text-xl font-bold text-green-600 dark:text-green-400">
                           {stats?.overview?.totalRecipients
                             ? (
-                                (stats.overview.totalDelivered /
-                                  stats.overview.totalRecipients) *
-                                100
-                              ).toFixed(1)
+                              (stats.overview.totalDelivered /
+                                stats.overview.totalRecipients) *
+                              100
+                            ).toFixed(1)
                             : 0}
                           %
                         </p>
@@ -1123,10 +1123,10 @@ const ManageNotifications = () => {
                         <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                           {stats?.overview?.totalDelivered
                             ? (
-                                (stats.overview.totalRead /
-                                  stats.overview.totalDelivered) *
-                                100
-                              ).toFixed(1)
+                              (stats.overview.totalRead /
+                                stats.overview.totalDelivered) *
+                              100
+                            ).toFixed(1)
                             : 0}
                           %
                         </p>
@@ -1198,12 +1198,12 @@ const ManageNotifications = () => {
                         </div>
                       </div>
                     )) || (
-                      <div className="text-center py-8">
-                        <p className="text-gray-500 dark:text-gray-400">
-                          No monthly data available
-                        </p>
-                      </div>
-                    )}
+                        <div className="text-center py-8">
+                          <p className="text-gray-500 dark:text-gray-400">
+                            No monthly data available
+                          </p>
+                        </div>
+                      )}
                   </div>
                 </CardContent>
               </Card>
@@ -1458,9 +1458,7 @@ const ManageNotifications = () => {
       </Dialog>
 
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-        <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 w-[95vw] max-w-md sm:max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
-        {/* <ScrollArea className="max-h-[80vh]">  */}
-
+        <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 w-[95vw] max-w-md sm:max-w-lg mx-auto max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="w-4 h-4 text-blue-600" />
@@ -1471,174 +1469,175 @@ const ManageNotifications = () => {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedNotification && (
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Title
-                  </Label>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {selectedNotification.title}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Message
-                  </Label>
-                  <p className="text-gray-900 dark:text-white">
-                    {selectedNotification.message}
-                  </p>
-                </div>
-              </div>
-
+          <ScrollArea className="max-h-[60vh] pr-4">
+            {selectedNotification && (
               <div className="space-y-4">
-                <div className="flex flex-wrap gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Status
+                      Title
                     </Label>
-                    <Badge
-                      className={`text-xs px-2 py-1 border ${getStatusColor(
-                        selectedNotification.status
-                      )}`}
-                    >
-                      {selectedNotification.status}
-                    </Badge>
+                    <p className="text-gray-900 dark:text-white font-medium">
+                      {selectedNotification.title}
+                    </p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Type
+                      Message
                     </Label>
-                    <Badge
-                      className={`text-xs px-2 py-1 border ${getTypeColor(
-                        selectedNotification.type
-                      )}`}
-                    >
-                      {selectedNotification.type}
-                    </Badge>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Priority
-                    </Label>
-                    <Badge
-                      className={`text-xs px-2 py-1 border ${getPriorityColor(
-                        selectedNotification.priority
-                      )}`}
-                    >
-                      {selectedNotification.priority}
-                    </Badge>
+                    <p className="text-gray-900 dark:text-white">
+                      {selectedNotification.message}
+                    </p>
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Recipients
-                  </Label>
-                  <p className="text-gray-900 dark:text-white">
-                    {selectedNotification.recipientCount || 0} users
-                  </p>
-                </div>
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Status
+                      </Label>
+                      <Badge
+                        className={`text-xs px-2 py-1 border ${getStatusColor(
+                          selectedNotification.status
+                        )}`}
+                      >
+                        {selectedNotification.status}
+                      </Badge>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Type
+                      </Label>
+                      <Badge
+                        className={`text-xs px-2 py-1 border ${getTypeColor(
+                          selectedNotification.type
+                        )}`}
+                      >
+                        {selectedNotification.type}
+                      </Badge>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Priority
+                      </Label>
+                      <Badge
+                        className={`text-xs px-2 py-1 border ${getPriorityColor(
+                          selectedNotification.priority
+                        )}`}
+                      >
+                        {selectedNotification.priority}
+                      </Badge>
+                    </div>
+                  </div>
 
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Created
-                  </Label>
-                  <p className="text-gray-900 dark:text-white">
-                    {format(
-                      new Date(selectedNotification.createdAt),
-                      "MMM dd, yyyy 'at' h:mm a"
-                    )}
-                  </p>
-                </div>
-
-                {selectedNotification.sentAt && (
                   <div>
                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Sent
+                      Recipients
+                    </Label>
+                    <p className="text-gray-900 dark:text-white">
+                      {selectedNotification.recipientCount || 0} users
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Created
                     </Label>
                     <p className="text-gray-900 dark:text-white">
                       {format(
-                        new Date(selectedNotification.sentAt),
+                        new Date(selectedNotification.createdAt),
                         "MMM dd, yyyy 'at' h:mm a"
                       )}
                     </p>
                   </div>
+
+                  {selectedNotification.sentAt && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Sent
+                      </Label>
+                      <p className="text-gray-900 dark:text-white">
+                        {format(
+                          new Date(selectedNotification.sentAt),
+                          "MMM dd, yyyy 'at' h:mm a"
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {selectedNotification.deliveryLogs &&
+                  selectedNotification.deliveryLogs.length > 0 && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 block">
+                        Delivery Statistics
+                      </Label>
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200/20">
+                          <div className="flex items-center gap-2">
+                            <Send className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                              Delivered
+                            </span>
+                          </div>
+                          <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                            {selectedNotification.deliveredCount || 0}
+                          </p>
+                        </div>
+
+                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200/20">
+                          <div className="flex items-center gap-2">
+                            <Eye className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-medium text-green-900 dark:text-green-100">
+                              Opened
+                            </span>
+                          </div>
+                          <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                            {selectedNotification.readCount || 0}
+                          </p>
+                        </div>
+
+                        <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200/20">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 text-purple-600" />
+                            <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                              Engagement
+                            </span>
+                          </div>
+                          <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                            {selectedNotification.engagementRate?.toFixed(1) || 0}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                {selectedNotification.createdBy && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                      Created By
+                    </Label>
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="bg-blue-600 text-white text-xs">
+                          {selectedNotification.createdBy.name?.charAt(0) || "A"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {selectedNotification.createdBy.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {selectedNotification.createdBy.email}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {selectedNotification.deliveryLogs &&
-                selectedNotification.deliveryLogs.length > 0 && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 block">
-                      Delivery Statistics
-                    </Label>
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200/20">
-                        <div className="flex items-center gap-2">
-                          <Send className="w-4 h-4 text-blue-600" />
-                          <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                            Delivered
-                          </span>
-                        </div>
-                        <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                          {selectedNotification.deliveredCount || 0}
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200/20">
-                        <div className="flex items-center gap-2">
-                          <Eye className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-medium text-green-900 dark:text-green-100">
-                            Opened
-                          </span>
-                        </div>
-                        <p className="text-xl font-bold text-green-600 dark:text-green-400">
-                          {selectedNotification.readCount || 0}
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200/20">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-purple-600" />
-                          <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
-                            Engagement
-                          </span>
-                        </div>
-                        <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                          {selectedNotification.engagementRate?.toFixed(1) || 0}%
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-              {selectedNotification.createdBy && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                    Created By
-                  </Label>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="bg-blue-600 text-white text-xs">
-                        {selectedNotification.createdBy.name?.charAt(0) || "A"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {selectedNotification.createdBy.name}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {selectedNotification.createdBy.email}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </ScrollArea>
 
           <DialogFooter>
             <Button
@@ -1648,7 +1647,6 @@ const ManageNotifications = () => {
               Close
             </Button>
           </DialogFooter>
-        {/* </ScrollArea> */}
         </DialogContent>
       </Dialog>
 

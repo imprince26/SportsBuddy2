@@ -49,6 +49,7 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
+        toast.success('Registration successful! Redirecting to dashboard...');
         return { success: true };
       }
     } catch (error) {
@@ -73,6 +74,7 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
+        toast.success('Login successful! Redirecting to dashboard...');
         return { success: true };
       }
     } catch (error) {

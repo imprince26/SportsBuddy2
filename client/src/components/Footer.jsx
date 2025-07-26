@@ -67,7 +67,7 @@ const Footer = () => {
 
   const socialLinks = [
     { name: 'Facebook', icon: Facebook, url: 'https://facebook.com/sportsbuddy', color: '#1877F2', description: 'Join our community' },
-    { name: 'Twitter', icon: Twitter, url: 'https://twitter.com/sportsbuddy', color: '#1DA1F2', description: 'Latest updates' },
+    { name: 'Twitter', icon: Twitter, url: 'https://twitter.com/sportsbuddy', color: '#111111', description: 'Latest updates' },
     { name: 'Instagram', icon: Instagram, url: 'https://instagram.com/sportsbuddy', color: '#E4405F', description: 'Behind the scenes' },
     { name: 'LinkedIn', icon: Linkedin, url: 'https://linkedin.com/company/sportsbuddy', color: '#0A66C2', description: 'Professional network' },
     { name: 'YouTube', icon: Youtube, url: 'https://youtube.com/sportsbuddy', color: '#FF0000', description: 'Video content' },
@@ -137,7 +137,7 @@ const Footer = () => {
 
       <div className="relative z-10">
         {/* Newsletter Section */}
-        <motion.div
+        {/* <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -148,7 +148,6 @@ const Footer = () => {
             variants={itemVariants}
             className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-8 md:p-12 text-white shadow-2xl"
           >
-            {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
               <svg viewBox="0 0 100 100" className="w-full h-full">
                 <defs>
@@ -180,7 +179,6 @@ const Footer = () => {
                   sports recommendations delivered straight to your inbox.
                 </p>
 
-                {/* Stats */}
                 <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-8">
                   {stats.map((stat, index) => (
                     <motion.div
@@ -245,7 +243,7 @@ const Footer = () => {
               </div>
             </div>
           </motion.div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Main Footer Content */}
         <motion.div

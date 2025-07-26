@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { 
-  Shield, 
-  Lock, 
-  Eye, 
-  UserCheck, 
-  Globe, 
-  Database, 
-  Cookie, 
-  Settings, 
-  Mail, 
-  Phone, 
+import {
+  Shield,
+  Lock,
+  Eye,
+  UserCheck,
+  Globe,
+  Database,
+  Cookie,
+  Settings,
+  Mail,
+  Phone,
   MapPin,
   Download,
   ExternalLink,
@@ -33,12 +33,9 @@ import {
   Filter,
   RotateCcw,
   Edit,
-  Save,
   Cloud,
   Server,
   Smartphone,
-  Monitor,
-  Wifi,
   Activity
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -67,14 +64,14 @@ const Privacy = () => {
       // Find active section
       const sections = document.querySelectorAll("[data-section]")
       let current = ""
-      
+
       sections.forEach((section) => {
         const rect = section.getBoundingClientRect()
         if (rect.top <= 100 && rect.bottom >= 100) {
           current = section.getAttribute("data-section")
         }
       })
-      
+
       setActiveSection(current)
     }
 
@@ -375,16 +372,15 @@ const Privacy = () => {
                   {tableOfContents.map((item, index) => {
                     const Icon = item.icon
                     const isActive = activeSection === item.id
-                    
+
                     return (
                       <motion.button
                         key={item.id}
                         onClick={() => scrollToSection(item.id)}
-                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${
-                          isActive
+                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${isActive
                             ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700"
                             : "hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                        }`}
+                          }`}
                         whileHover={{ scale: 1.02, x: 2 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -483,7 +479,7 @@ const Privacy = () => {
 
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      At SportsBuddy, we take your privacy seriously. This policy explains how we collect, 
+                      At SportsBuddy, we take your privacy seriously. This policy explains how we collect,
                       use, and protect your personal information when you use our sports community platform.
                     </p>
                   </div>
@@ -554,7 +550,7 @@ const Privacy = () => {
                           Your Privacy Rights
                         </h4>
                         <p className="text-purple-700 dark:text-purple-300 text-sm">
-                          You have the right to access, correct, delete, or transfer your data at any time. 
+                          You have the right to access, correct, delete, or transfer your data at any time.
                           We provide easy-to-use tools to exercise these rights directly from your account settings.
                         </p>
                       </div>
@@ -636,118 +632,118 @@ const Privacy = () => {
 
                 <Separator className="my-8" />
 
-           {/* Section 3: How We Use Data */}
-<motion.section
-  id="usage"
-  data-section="usage"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-      <Settings className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      3. How We Use Your Information
-    </h2>
-  </div>
+                {/* Section 3: How We Use Data */}
+                <motion.section
+                  id="usage"
+                  data-section="usage"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                      <Settings className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      3. How We Use Your Information
+                    </h2>
+                  </div>
 
-  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-    <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-800">
-      <TabsTrigger value="platform" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">Platform</TabsTrigger>
-      <TabsTrigger value="communication" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">Communication</TabsTrigger>
-      <TabsTrigger value="safety" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">Safety</TabsTrigger>
-      <TabsTrigger value="improvement" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">Improvement</TabsTrigger>
-    </TabsList>
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-800">
+                      <TabsTrigger value="platform" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">Platform</TabsTrigger>
+                      <TabsTrigger value="communication" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">Communication</TabsTrigger>
+                      <TabsTrigger value="safety" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">Safety</TabsTrigger>
+                      <TabsTrigger value="improvement" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">Improvement</TabsTrigger>
+                    </TabsList>
 
-    <TabsContent value="platform" className="space-y-4 mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          { icon: Users, title: "Profile Management", desc: "Create and maintain your sports profile" },
-          { icon: Search, title: "Discovery", desc: "Help you find relevant events and users" },
-          { icon: Target, title: "Personalization", desc: "Customize your experience based on preferences" },
-          { icon: Activity, title: "Progress Tracking", desc: "Monitor your fitness and sports activities" }
-        ].map((item, index) => (
-          <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </TabsContent>
+                    <TabsContent value="platform" className="space-y-4 mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          { icon: Users, title: "Profile Management", desc: "Create and maintain your sports profile" },
+                          { icon: Search, title: "Discovery", desc: "Help you find relevant events and users" },
+                          { icon: Target, title: "Personalization", desc: "Customize your experience based on preferences" },
+                          { icon: Activity, title: "Progress Tracking", desc: "Monitor your fitness and sports activities" }
+                        ].map((item, index) => (
+                          <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
+                              <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </TabsContent>
 
-    <TabsContent value="communication" className="space-y-4 mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          { icon: Mail, title: "Notifications", desc: "Send you important updates and alerts" },
-          { icon: Bell, title: "Event Updates", desc: "Notify about event changes and reminders" },
-          { icon: Heart, title: "Community", desc: "Facilitate connections with other users" },
-          { icon: Star, title: "Achievements", desc: "Celebrate your sports milestones" }
-        ].map((item, index) => (
-          <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </TabsContent>
+                    <TabsContent value="communication" className="space-y-4 mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          { icon: Mail, title: "Notifications", desc: "Send you important updates and alerts" },
+                          { icon: Bell, title: "Event Updates", desc: "Notify about event changes and reminders" },
+                          { icon: Heart, title: "Community", desc: "Facilitate connections with other users" },
+                          { icon: Star, title: "Achievements", desc: "Celebrate your sports milestones" }
+                        ].map((item, index) => (
+                          <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
+                              <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </TabsContent>
 
-    <TabsContent value="safety" className="space-y-4 mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          { icon: Shield, title: "Security", desc: "Protect against fraud and unauthorized access" },
-          { icon: Eye, title: "Monitoring", desc: "Detect and prevent harmful behavior" },
-          { icon: AlertTriangle, title: "Compliance", desc: "Ensure adherence to community guidelines" },
-          { icon: Lock, title: "Verification", desc: "Verify user identity and authenticity" }
-        ].map((item, index) => (
-          <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </TabsContent>
+                    <TabsContent value="safety" className="space-y-4 mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          { icon: Shield, title: "Security", desc: "Protect against fraud and unauthorized access" },
+                          { icon: Eye, title: "Monitoring", desc: "Detect and prevent harmful behavior" },
+                          { icon: AlertTriangle, title: "Compliance", desc: "Ensure adherence to community guidelines" },
+                          { icon: Lock, title: "Verification", desc: "Verify user identity and authenticity" }
+                        ].map((item, index) => (
+                          <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
+                              <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </TabsContent>
 
-    <TabsContent value="improvement" className="space-y-4 mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          { icon: Zap, title: "Performance", desc: "Optimize app speed and functionality" },
-          { icon: Trophy, title: "Features", desc: "Develop new sports and fitness features" },
-          { icon: Target, title: "Analytics", desc: "Understand usage patterns and preferences" },
-          { icon: RotateCcw, title: "Bug Fixes", desc: "Identify and resolve technical issues" }
-        ].map((item, index) => (
-          <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </TabsContent>
-  </Tabs>
-</motion.section>
+                    <TabsContent value="improvement" className="space-y-4 mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          { icon: Zap, title: "Performance", desc: "Optimize app speed and functionality" },
+                          { icon: Trophy, title: "Features", desc: "Develop new sports and fitness features" },
+                          { icon: Target, title: "Analytics", desc: "Understand usage patterns and preferences" },
+                          { icon: RotateCcw, title: "Bug Fixes", desc: "Identify and resolve technical issues" }
+                        ].map((item, index) => (
+                          <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
+                              <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </motion.section>
 
                 <Separator className="my-8" />
 
@@ -779,7 +775,7 @@ const Privacy = () => {
                             We Do NOT Sell Your Data
                           </h3>
                           <p className="text-red-700 dark:text-red-300">
-                            SportsBuddy has never sold and will never sell your personal information to third parties. 
+                            SportsBuddy has never sold and will never sell your personal information to third parties.
                             Your data is not a commodity – it's your property that we help you manage.
                           </p>
                         </div>
@@ -977,7 +973,7 @@ const Privacy = () => {
                           How to Exercise Your Rights
                         </h4>
                         <p className="text-indigo-700 dark:text-indigo-300 text-sm mb-3">
-                          You can exercise most privacy rights directly from your account settings. 
+                          You can exercise most privacy rights directly from your account settings.
                           For more complex requests, contact our Data Protection Officer.
                         </p>
                         <div className="flex gap-2">
@@ -996,387 +992,387 @@ const Privacy = () => {
                 </motion.section>
 
                 <Separator className="my-8" />
-{/* Section 7: Cookies & Tracking */}
-<motion.section
-  id="cookies"
-  data-section="cookies"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
-      <Cookie className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      7. Cookies & Tracking Technologies
-    </h2>
-  </div>
+                {/* Section 7: Cookies & Tracking */}
+                <motion.section
+                  id="cookies"
+                  data-section="cookies"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                      <Cookie className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      7. Cookies & Tracking Technologies
+                    </h2>
+                  </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
-      <div className="flex items-center gap-3 mb-3">
-        <Cookie className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-        <h4 className="font-semibold text-blue-800 dark:text-blue-300">Essential Cookies</h4>
-      </div>
-      <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-        <li>• Authentication and login sessions</li>
-        <li>• Security and fraud prevention</li>
-        <li>• Core platform functionality</li>
-        <li>• User preference storage</li>
-      </ul>
-    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Cookie className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        <h4 className="font-semibold text-blue-800 dark:text-blue-300">Essential Cookies</h4>
+                      </div>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                        <li>• Authentication and login sessions</li>
+                        <li>• Security and fraud prevention</li>
+                        <li>• Core platform functionality</li>
+                        <li>• User preference storage</li>
+                      </ul>
+                    </div>
 
-    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
-      <div className="flex items-center gap-3 mb-3">
-        <Activity className="w-6 h-6 text-green-600 dark:text-green-400" />
-        <h4 className="font-semibold text-green-800 dark:text-green-300">Analytics Cookies</h4>
-      </div>
-      <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
-        <li>• Usage patterns and statistics</li>
-        <li>• Performance monitoring</li>
-        <li>• Feature effectiveness tracking</li>
-        <li>• Error reporting and debugging</li>
-      </ul>
-    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Activity className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        <h4 className="font-semibold text-green-800 dark:text-green-300">Analytics Cookies</h4>
+                      </div>
+                      <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                        <li>• Usage patterns and statistics</li>
+                        <li>• Performance monitoring</li>
+                        <li>• Feature effectiveness tracking</li>
+                        <li>• Error reporting and debugging</li>
+                      </ul>
+                    </div>
 
-    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200/50 dark:border-purple-700/50">
-      <div className="flex items-center gap-3 mb-3">
-        <Target className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-        <h4 className="font-semibold text-purple-800 dark:text-purple-300">Personalization</h4>
-      </div>
-      <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
-        <li>• Content recommendations</li>
-        <li>• Language and region settings</li>
-        <li>• Customized user interface</li>
-        <li>• Sports interest tracking</li>
-      </ul>
-    </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200/50 dark:border-purple-700/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Target className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        <h4 className="font-semibold text-purple-800 dark:text-purple-300">Personalization</h4>
+                      </div>
+                      <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
+                        <li>• Content recommendations</li>
+                        <li>• Language and region settings</li>
+                        <li>• Customized user interface</li>
+                        <li>• Sports interest tracking</li>
+                      </ul>
+                    </div>
 
-    <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200/50 dark:border-orange-700/50">
-      <div className="flex items-center gap-3 mb-3">
-        <Share2 className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-        <h4 className="font-semibold text-orange-800 dark:text-orange-300">Social & Marketing</h4>
-      </div>
-      <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
-        <li>• Social media integration</li>
-        <li>• Marketing campaign tracking</li>
-        <li>• Third-party advertising (optional)</li>
-        <li>• Referral program tracking</li>
-      </ul>
-    </div>
-  </div>
+                    <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200/50 dark:border-orange-700/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Share2 className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                        <h4 className="font-semibold text-orange-800 dark:text-orange-300">Social & Marketing</h4>
+                      </div>
+                      <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                        <li>• Social media integration</li>
+                        <li>• Marketing campaign tracking</li>
+                        <li>• Third-party advertising (optional)</li>
+                        <li>• Referral program tracking</li>
+                      </ul>
+                    </div>
+                  </div>
 
-  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 border border-gray-200/50 dark:border-gray-700/50">
-    <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-      <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-      Cookie Management
-    </h4>
-    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-      You can control cookies through your browser settings or our cookie preference center. 
-      Note that disabling certain cookies may impact platform functionality.
-    </p>
-    <div className="flex gap-2">
-      <Button size="sm" variant="outline">
-        <Settings className="w-4 h-4 mr-2" />
-        Cookie Preferences
-      </Button>
-      <Button size="sm" variant="outline">
-        <ExternalLink className="w-4 h-4 mr-2" />
-        Browser Settings
-      </Button>
-    </div>
-  </div>
-</motion.section>
+                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 border border-gray-200/50 dark:border-gray-700/50">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      Cookie Management
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      You can control cookies through your browser settings or our cookie preference center.
+                      Note that disabling certain cookies may impact platform functionality.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Cookie Preferences
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Browser Settings
+                      </Button>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 8: Children's Privacy */}
-<motion.section
-  id="children"
-  data-section="children"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
-      <Users className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      8. Children's Privacy
-    </h2>
-  </div>
+                {/* Section 8: Children's Privacy */}
+                <motion.section
+                  id="children"
+                  data-section="children"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
+                      <Users className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      8. Children's Privacy
+                    </h2>
+                  </div>
 
-  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 border border-red-200 dark:border-red-700/50">
-    <div className="flex items-start gap-3">
-      <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-      <div>
-        <h3 className="font-semibold text-red-800 dark:text-red-300 mb-2 text-lg">
-          Age Requirement: 13+
-        </h3>
-        <p className="text-red-700 dark:text-red-300 mb-4">
-          SportsBuddy is designed for users 13 years and older. We do not knowingly collect 
-          personal information from children under 13 without verified parental consent.
-        </p>
-      </div>
-    </div>
-  </div>
+                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 border border-red-200 dark:border-red-700/50">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-red-800 dark:text-red-300 mb-2 text-lg">
+                          Age Requirement: 13+
+                        </h3>
+                        <p className="text-red-700 dark:text-red-300 mb-4">
+                          SportsBuddy is designed for users 13 years and older. We do not knowingly collect
+                          personal information from children under 13 without verified parental consent.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div className="space-y-4">
-      <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-        <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-        For Ages 13-17
-      </h4>
-      <div className="space-y-3">
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Parental Consent</div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Required for users under 16 in certain regions</div>
-        </div>
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Enhanced Privacy</div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Additional privacy protections and restricted features</div>
-        </div>
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Content Filtering</div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Age-appropriate content and interaction limits</div>
-        </div>
-      </div>
-    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        For Ages 13-17
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Parental Consent</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">Required for users under 16 in certain regions</div>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Enhanced Privacy</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">Additional privacy protections and restricted features</div>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Content Filtering</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">Age-appropriate content and interaction limits</div>
+                        </div>
+                      </div>
+                    </div>
 
-    <div className="space-y-4">
-      <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-        <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
-        Parental Rights
-      </h4>
-      <div className="space-y-3">
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Access & Review</div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">View your child's personal information</div>
-        </div>
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Deletion Request</div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Request deletion of your child's account</div>
-        </div>
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Consent Management</div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Modify or withdraw consent at any time</div>
-        </div>
-      </div>
-    </div>
-  </div>
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        Parental Rights
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Access & Review</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">View your child's personal information</div>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Deletion Request</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">Request deletion of your child's account</div>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                          <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Consent Management</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">Modify or withdraw consent at any time</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700/50">
-    <div className="flex items-start gap-3">
-      <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-      <div>
-        <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
-          Contact for Child Privacy Matters
-        </h4>
-        <p className="text-blue-700 dark:text-blue-300 text-sm mb-2">
-          If you believe your child under 13 has provided personal information to us, 
-          please contact us immediately.
-        </p>
-        <a href="mailto:privacy@sportsbuddy.com" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-          privacy@sportsbuddy.com
-        </a>
-      </div>
-    </div>
-  </div>
-</motion.section>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700/50">
+                    <div className="flex items-start gap-3">
+                      <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                          Contact for Child Privacy Matters
+                        </h4>
+                        <p className="text-blue-700 dark:text-blue-300 text-sm mb-2">
+                          If you believe your child under 13 has provided personal information to us,
+                          please contact us immediately.
+                        </p>
+                        <a href="mailto:privacy@sportsbuddy.com" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                          privacy@sportsbuddy.com
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 9: International Transfers */}
-<motion.section
-  id="international"
-  data-section="international"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center">
-      <Globe className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      9. International Data Transfers
-    </h2>
-  </div>
+                {/* Section 9: International Transfers */}
+                <motion.section
+                  id="international"
+                  data-section="international"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center">
+                      <Globe className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      9. International Data Transfers
+                    </h2>
+                  </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
-      <div className="flex items-center gap-3 mb-3">
-        <Globe className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-        <h4 className="font-semibold text-blue-800 dark:text-blue-300">GDPR Compliance</h4>
-      </div>
-      <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-        <li>• Standard Contractual Clauses</li>
-        <li>• Adequacy decisions</li>
-        <li>• Data transfer impact assessments</li>
-        <li>• EU-US Data Privacy Framework</li>
-      </ul>
-    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Globe className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        <h4 className="font-semibold text-blue-800 dark:text-blue-300">GDPR Compliance</h4>
+                      </div>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                        <li>• Standard Contractual Clauses</li>
+                        <li>• Adequacy decisions</li>
+                        <li>• Data transfer impact assessments</li>
+                        <li>• EU-US Data Privacy Framework</li>
+                      </ul>
+                    </div>
 
-    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
-      <div className="flex items-center gap-3 mb-3">
-        <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
-        <h4 className="font-semibold text-green-800 dark:text-green-300">Safeguards</h4>
-      </div>
-      <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
-        <li>• Encryption in transit and at rest</li>
-        <li>• Contractual data protection obligations</li>
-        <li>• Regular compliance audits</li>
-        <li>• Data minimization practices</li>
-      </ul>
-    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        <h4 className="font-semibold text-green-800 dark:text-green-300">Safeguards</h4>
+                      </div>
+                      <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                        <li>• Encryption in transit and at rest</li>
+                        <li>• Contractual data protection obligations</li>
+                        <li>• Regular compliance audits</li>
+                        <li>• Data minimization practices</li>
+                      </ul>
+                    </div>
 
-    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200/50 dark:border-purple-700/50">
-      <div className="flex items-center gap-3 mb-3">
-        <Key className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-        <h4 className="font-semibold text-purple-800 dark:text-purple-300">Your Rights</h4>
-      </div>
-      <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
-        <li>• Object to cross-border transfers</li>
-        <li>• Request data localization</li>
-        <li>• Withdraw consent for transfers</li>
-        <li>• File complaints with authorities</li>
-      </ul>
-    </div>
-  </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200/50 dark:border-purple-700/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Key className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        <h4 className="font-semibold text-purple-800 dark:text-purple-300">Your Rights</h4>
+                      </div>
+                      <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
+                        <li>• Object to cross-border transfers</li>
+                        <li>• Request data localization</li>
+                        <li>• Withdraw consent for transfers</li>
+                        <li>• File complaints with authorities</li>
+                      </ul>
+                    </div>
+                  </div>
 
-  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 border border-gray-200/50 dark:border-gray-700/50">
-    <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-      <MapPin className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-      Data Processing Locations
-    </h4>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <h5 className="font-medium text-gray-800 dark:text-gray-300 mb-2">Primary Processing</h5>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>🇺🇸 United States (Primary servers)</li>
-          <li>🇪🇺 European Union (GDPR compliance)</li>
-          <li>🇨🇦 Canada (Backup and redundancy)</li>
-        </ul>
-      </div>
-      <div>
-        <h5 className="font-medium text-gray-800 dark:text-gray-300 mb-2">Service Providers</h5>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>🔒 All bound by strict data protection agreements</li>
-          <li>📋 Regular compliance assessments</li>
-          <li>🛡️ Same security standards as SportsBuddy</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</motion.section>
+                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 border border-gray-200/50 dark:border-gray-700/50">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      Data Processing Locations
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h5 className="font-medium text-gray-800 dark:text-gray-300 mb-2">Primary Processing</h5>
+                        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <li>🇺🇸 United States (Primary servers)</li>
+                          <li>🇪🇺 European Union (GDPR compliance)</li>
+                          <li>🇨🇦 Canada (Backup and redundancy)</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 className="font-medium text-gray-800 dark:text-gray-300 mb-2">Service Providers</h5>
+                        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <li>🔒 All bound by strict data protection agreements</li>
+                          <li>📋 Regular compliance assessments</li>
+                          <li>🛡️ Same security standards as SportsBuddy</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 10: Policy Updates */}
-<motion.section
-  id="updates"
-  data-section="updates"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-      <Bell className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      10. Policy Updates & Changes
-    </h2>
-  </div>
+                {/* Section 10: Policy Updates */}
+                <motion.section
+                  id="updates"
+                  data-section="updates"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                      <Bell className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      10. Policy Updates & Changes
+                    </h2>
+                  </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
-      <div className="flex items-start gap-3">
-        <Bell className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
-            How We Notify You
-          </h3>
-          <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-            <li>• Email notification to registered users</li>
-            <li>• In-app notifications and banners</li>
-            <li>• Website announcement</li>
-            <li>• 30-day advance notice for major changes</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
+                      <div className="flex items-start gap-3">
+                        <Bell className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                            How We Notify You
+                          </h3>
+                          <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                            <li>• Email notification to registered users</li>
+                            <li>• In-app notifications and banners</li>
+                            <li>• Website announcement</li>
+                            <li>• 30-day advance notice for major changes</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
 
-    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
-      <div className="flex items-start gap-3">
-        <Clock className="w-6 h-6 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2">
-            Types of Changes
-          </h3>
-          <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
-            <li>• Minor clarifications (immediate effect)</li>
-            <li>• Feature updates (7-day notice)</li>
-            <li>• Significant policy changes (30-day notice)</li>
-            <li>• Legal compliance updates (as required)</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
+                      <div className="flex items-start gap-3">
+                        <Clock className="w-6 h-6 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2">
+                            Types of Changes
+                          </h3>
+                          <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                            <li>• Minor clarifications (immediate effect)</li>
+                            <li>• Feature updates (7-day notice)</li>
+                            <li>• Significant policy changes (30-day notice)</li>
+                            <li>• Legal compliance updates (as required)</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-700/50">
-    <div className="flex items-start gap-3">
-      <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-      <div>
-        <h4 className="font-semibold text-amber-800 dark:text-amber-300 mb-2">
-          Your Choices When We Update
-        </h4>
-        <p className="text-amber-700 dark:text-amber-300 text-sm mb-3">
-          If you don't agree with significant policy changes, you can delete your account 
-          before the changes take effect. Continued use of SportsBuddy after the effective 
-          date means you accept the updated policy.
-        </p>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Download My Data
-          </Button>
-          <Button size="sm" variant="outline">
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete Account
-          </Button>
-        </div>
-      </div>
-    </div>
-  </div>
+                  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-700/50">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-amber-800 dark:text-amber-300 mb-2">
+                          Your Choices When We Update
+                        </h4>
+                        <p className="text-amber-700 dark:text-amber-300 text-sm mb-3">
+                          If you don't agree with significant policy changes, you can delete your account
+                          before the changes take effect. Continued use of SportsBuddy after the effective
+                          date means you accept the updated policy.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline">
+                            <Download className="w-4 h-4 mr-2" />
+                            Download My Data
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Account
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-  <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700/50">
-    <div className="flex items-start gap-3">
-      <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
-      <div>
-        <h4 className="font-semibold text-indigo-800 dark:text-indigo-300 mb-2">
-          Version Control
-        </h4>
-        <p className="text-indigo-700 dark:text-indigo-300 text-sm">
-          Each version of our Privacy Policy is archived and accessible. You can review 
-          previous versions and track changes over time. The current version date is always 
-          displayed at the top of this document.
-        </p>
-      </div>
-    </div>
-  </div>
-</motion.section>
+                  <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700/50">
+                    <div className="flex items-start gap-3">
+                      <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-indigo-800 dark:text-indigo-300 mb-2">
+                          Version Control
+                        </h4>
+                        <p className="text-indigo-700 dark:text-indigo-300 text-sm">
+                          Each version of our Privacy Policy is archived and accessible. You can review
+                          previous versions and track changes over time. The current version date is always
+                          displayed at the top of this document.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
                 <Separator className="my-8" />
                 {/* Contact Section */}
                 <motion.section

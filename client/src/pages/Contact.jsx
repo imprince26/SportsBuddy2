@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Clock, 
-  Send, 
-  User, 
-  MessageSquare, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Send,
+  User,
+  MessageSquare,
   Shield,
   Globe,
   Star,
@@ -17,7 +17,6 @@ import {
   Heart,
   Zap,
   ArrowRight,
-  Calendar,
   Headphones,
   Building,
   Navigation
@@ -33,10 +32,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner'
 import {
   FaFacebook as Facebook,
-  FaLinkedin  as Linkedin,
-  FaYoutube  as Youtube,
+  FaLinkedin as Linkedin,
+  FaYoutube as Youtube,
   FaInstagram as Instagram
-  } from "react-icons/fa";
+} from "react-icons/fa";
 import { FaXTwitter as Twitter } from "react-icons/fa6";
 
 const Contact = () => {
@@ -215,7 +214,7 @@ const Contact = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       toast.success("Message sent successfully! We'll get back to you soon.")
       setFormData({
         name: '',
@@ -309,7 +308,7 @@ const Contact = () => {
               variants={itemVariants}
               className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed"
             >
-              Have questions about SportsBuddy? Need help with your account? Want to partner with us? 
+              Have questions about SportsBuddy? Need help with your account? Want to partner with us?
               Our friendly team is here to help you connect with the sports community you love.
             </motion.p>
 
@@ -418,7 +417,7 @@ const Contact = () => {
                     Our Office
                   </h3>
                 </div>
-                
+
                 <div className="space-y-3 text-sm">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
@@ -431,14 +430,14 @@ const Contact = () => {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <Phone className="w-4 h-4 text-gray-400" />
                     <p className="text-gray-600 dark:text-gray-400">
                       {officeDetails.phone}
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <Mail className="w-4 h-4 text-gray-400" />
                     <p className="text-gray-600 dark:text-gray-400">
@@ -460,9 +459,9 @@ const Contact = () => {
                     </div>
                   </div>
 
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="w-full mt-4"
                     onClick={() => window.open(`https://maps.google.com?q=${encodeURIComponent(officeDetails.address)}`, '_blank')}
                   >

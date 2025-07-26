@@ -6,16 +6,16 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import {
   Trophy, ArrowRight, Mail, Phone, MapPin, Heart,
-  ChevronRight, Check, Star, Globe, Users, Calendar,
-  Zap, Activity, Target, Send, ExternalLink,
-  Shield, Sparkles
+  ChevronRight, Star, Globe, Users, Calendar,
+  Zap, Activity, Target, ExternalLink,
+  Shield
 } from 'lucide-react'
 import {
   FaFacebook as Facebook,
-  FaLinkedin  as Linkedin,
-  FaYoutube  as Youtube,
+  FaLinkedin as Linkedin,
+  FaYoutube as Youtube,
   FaInstagram as Instagram
-  } from "react-icons/fa";
+} from "react-icons/fa";
 import { FaXTwitter as Twitter } from "react-icons/fa6";
 
 const Footer = () => {
@@ -107,16 +107,15 @@ const Footer = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-blue-950/20" />
-        
+
         {/* Floating Orbs */}
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-32 h-32 rounded-full opacity-10"
             style={{
-              background: `linear-gradient(135deg, ${
-                ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'][i % 4]
-              }, transparent)`,
+              background: `linear-gradient(135deg, ${['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'][i % 4]
+                }, transparent)`,
               left: `${20 + (i * 15) % 60}%`,
               top: `${10 + (i * 20) % 80}%`,
             }}
@@ -290,7 +289,7 @@ const Footer = () => {
               </Link>
 
               <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-                SportsBuddy is the ultimate platform for sports enthusiasts to discover events, 
+                SportsBuddy is the ultimate platform for sports enthusiasts to discover events,
                 connect with like-minded athletes, and build lasting friendships through sports.
               </p>
 
@@ -345,7 +344,7 @@ const Footer = () => {
                         }}
                       >
                         <Icon className="h-4 w-4 text-gray-600 dark:text-gray-400 group-hover:text-white transition-colors z-10 relative" />
-                        <div 
+                        <div
                           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                           style={{ backgroundColor: social.color }}
                         />

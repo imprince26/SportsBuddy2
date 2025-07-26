@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { 
-  Shield, 
-  FileText, 
-  Clock, 
-  Users, 
-  Lock, 
-  AlertTriangle, 
-  CheckCircle, 
-  Mail, 
-  Phone, 
+import {
+  Shield,
+  FileText,
+  Clock,
+  Users,
+  Lock,
+  AlertTriangle,
+  CheckCircle,
+  Mail,
+  Phone,
   MapPin,
-  ArrowRight,
   Eye,
   UserCheck,
   Globe,
@@ -53,14 +52,14 @@ const Terms = () => {
       // Find active section
       const sections = document.querySelectorAll("[data-section]")
       let current = ""
-      
+
       sections.forEach((section) => {
         const rect = section.getBoundingClientRect()
         if (rect.top <= 100 && rect.bottom >= 100) {
           current = section.getAttribute("data-section")
         }
       })
-      
+
       setActiveSection(current)
     }
 
@@ -231,16 +230,15 @@ const Terms = () => {
                   {tableOfContents.map((item, index) => {
                     const Icon = item.icon
                     const isActive = activeSection === item.id
-                    
+
                     return (
                       <motion.button
                         key={item.id}
                         onClick={() => scrollToSection(item.id)}
-                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${
-                          isActive
+                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${isActive
                             ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700"
                             : "hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                        }`}
+                          }`}
                         whileHover={{ scale: 1.02, x: 2 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -342,8 +340,8 @@ const Terms = () => {
 
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      Welcome to SportsBuddy! These Terms of Service govern your use of our platform. 
-                      By accessing or using SportsBuddy, you agree to be bound by these terms. 
+                      Welcome to SportsBuddy! These Terms of Service govern your use of our platform.
+                      By accessing or using SportsBuddy, you agree to be bound by these terms.
                       Please read them carefully.
                     </p>
                   </div>
@@ -372,13 +370,13 @@ const Terms = () => {
 
                   <div className="prose prose-gray dark:prose-invert max-w-none">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                      By creating an account, accessing, or using any part of SportsBuddy's services, 
-                      you acknowledge that you have read, understood, and agree to be bound by these 
+                      By creating an account, accessing, or using any part of SportsBuddy's services,
+                      you acknowledge that you have read, understood, and agree to be bound by these
                       Terms of Service and our Privacy Policy.
                     </p>
-                    
+
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                      If you do not agree to these terms, you must not use our services. Your continued 
+                      If you do not agree to these terms, you must not use our services. Your continued
                       use of SportsBuddy constitutes acceptance of any modifications to these terms.
                     </p>
 
@@ -390,7 +388,7 @@ const Terms = () => {
                             Important Notice
                           </h4>
                           <p className="text-amber-700 dark:text-amber-300 text-sm">
-                            These terms include important provisions regarding liability limitations, 
+                            These terms include important provisions regarding liability limitations,
                             dispute resolution, and your rights and responsibilities.
                           </p>
                         </div>
@@ -449,7 +447,7 @@ const Terms = () => {
                     </div>
 
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      We reserve the right to modify, suspend, or discontinue any aspect of our services 
+                      We reserve the right to modify, suspend, or discontinue any aspect of our services
                       at any time with reasonable notice to users.
                     </p>
                   </div>
@@ -516,7 +514,7 @@ const Terms = () => {
                             Prohibited Users
                           </h4>
                           <p className="text-red-700 dark:text-red-300 text-sm">
-                            Users who have been previously banned, suspended, or removed from SportsBuddy 
+                            Users who have been previously banned, suspended, or removed from SportsBuddy
                             are prohibited from creating new accounts.
                           </p>
                         </div>
@@ -592,8 +590,8 @@ const Terms = () => {
                     </div>
 
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      You are solely responsible for all activities that occur under your account. 
-                      SportsBuddy cannot and will not be liable for any loss or damage arising from 
+                      You are solely responsible for all activities that occur under your account.
+                      SportsBuddy cannot and will not be liable for any loss or damage arising from
                       unauthorized use of your account.
                     </p>
                   </div>
@@ -622,7 +620,7 @@ const Terms = () => {
 
                   <div className="prose prose-gray dark:prose-invert max-w-none">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                      You agree to use SportsBuddy responsibly and respect other users. 
+                      You agree to use SportsBuddy responsibly and respect other users.
                       The following behaviors are strictly prohibited:
                     </p>
 
@@ -654,7 +652,7 @@ const Terms = () => {
                             Community Guidelines
                           </h4>
                           <p className="text-blue-700 dark:text-blue-300 text-sm">
-                            We encourage positive interactions, support for fellow athletes, 
+                            We encourage positive interactions, support for fellow athletes,
                             and creating an inclusive environment for all sports enthusiasts.
                           </p>
                         </div>
@@ -665,696 +663,696 @@ const Terms = () => {
 
                 <Separator className="my-8" />
 
-             {/* Section 6: Content Guidelines */}
-<motion.section
-  id="content"
-  data-section="content"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
-      <FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      6. Content Guidelines
-    </h2>
-  </div>
+                {/* Section 6: Content Guidelines */}
+                <motion.section
+                  id="content"
+                  data-section="content"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      6. Content Guidelines
+                    </h2>
+                  </div>
 
-  <div className="prose prose-gray dark:prose-invert max-w-none">
-    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-      When posting content on SportsBuddy, you must ensure that your content:
-    </p>
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                      When posting content on SportsBuddy, you must ensure that your content:
+                    </p>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-          Acceptable Content
-        </h4>
-        <ul className="space-y-2 text-sm">
-          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
-            <Star className="w-3 h-3 text-yellow-500 mt-1 flex-shrink-0" />
-            Sports-related discussions and activities
-          </li>
-          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
-            <Star className="w-3 h-3 text-yellow-500 mt-1 flex-shrink-0" />
-            Fitness tips and workout routines
-          </li>
-          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
-            <Star className="w-3 h-3 text-yellow-500 mt-1 flex-shrink-0" />
-            Event announcements and invitations
-          </li>
-          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
-            <Star className="w-3 h-3 text-yellow-500 mt-1 flex-shrink-0" />
-            Motivational and supportive messages
-          </li>
-        </ul>
-      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          Acceptable Content
+                        </h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                            <Star className="w-3 h-3 text-yellow-500 mt-1 flex-shrink-0" />
+                            Sports-related discussions and activities
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                            <Star className="w-3 h-3 text-yellow-500 mt-1 flex-shrink-0" />
+                            Fitness tips and workout routines
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                            <Star className="w-3 h-3 text-yellow-500 mt-1 flex-shrink-0" />
+                            Event announcements and invitations
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                            <Star className="w-3 h-3 text-yellow-500 mt-1 flex-shrink-0" />
+                            Motivational and supportive messages
+                          </li>
+                        </ul>
+                      </div>
 
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
-          Prohibited Content
-        </h4>
-        <ul className="space-y-2 text-sm">
-          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
-            <AlertTriangle className="w-3 h-3 text-red-500 mt-1 flex-shrink-0" />
-            Copyrighted material without permission
-          </li>
-          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
-            <AlertTriangle className="w-3 h-3 text-red-500 mt-1 flex-shrink-0" />
-            False or misleading information
-          </li>
-          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
-            <AlertTriangle className="w-3 h-3 text-red-500 mt-1 flex-shrink-0" />
-            Inappropriate or explicit content
-          </li>
-          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
-            <AlertTriangle className="w-3 h-3 text-red-500 mt-1 flex-shrink-0" />
-            Spam or repetitive posts
-          </li>
-        </ul>
-      </div>
-    </div>
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                          Prohibited Content
+                        </h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                            <AlertTriangle className="w-3 h-3 text-red-500 mt-1 flex-shrink-0" />
+                            Copyrighted material without permission
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                            <AlertTriangle className="w-3 h-3 text-red-500 mt-1 flex-shrink-0" />
+                            False or misleading information
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                            <AlertTriangle className="w-3 h-3 text-red-500 mt-1 flex-shrink-0" />
+                            Inappropriate or explicit content
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                            <AlertTriangle className="w-3 h-3 text-red-500 mt-1 flex-shrink-0" />
+                            Spam or repetitive posts
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
 
-    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700/50">
-      <div className="flex items-start gap-3">
-        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
-            Content Ownership
-          </h4>
-          <p className="text-blue-700 dark:text-blue-300 text-sm">
-            You retain ownership of your content, but grant SportsBuddy a license to use, 
-            display, and distribute it on our platform for the purpose of providing our services.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</motion.section>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700/50">
+                      <div className="flex items-start gap-3">
+                        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                            Content Ownership
+                          </h4>
+                          <p className="text-blue-700 dark:text-blue-300 text-sm">
+                            You retain ownership of your content, but grant SportsBuddy a license to use,
+                            display, and distribute it on our platform for the purpose of providing our services.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 7: Privacy & Data */}
-<motion.section
-  id="privacy"
-  data-section="privacy"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
-      <Lock className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      7. Privacy & Data Protection
-    </h2>
-  </div>
+                {/* Section 7: Privacy & Data */}
+                <motion.section
+                  id="privacy"
+                  data-section="privacy"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
+                      <Lock className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      7. Privacy & Data Protection
+                    </h2>
+                  </div>
 
-  <div className="prose prose-gray dark:prose-invert max-w-none">
-    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-      Your privacy is important to us. This section outlines how we handle your personal data:
-    </p>
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                      Your privacy is important to us. This section outlines how we handle your personal data:
+                    </p>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      {[
-        {
-          icon: Shield,
-          title: "Data Security",
-          desc: "We use industry-standard encryption and security measures to protect your personal information."
-        },
-        {
-          icon: Eye,
-          title: "Data Transparency",
-          desc: "You have the right to know what data we collect and how it's used for our services."
-        },
-        {
-          icon: UserCheck,
-          title: "Access Control",
-          desc: "You can access, update, or delete your personal data at any time through your account settings."
-        },
-        {
-          icon: Globe,
-          title: "Data Portability",
-          desc: "You can request a copy of your data or transfer it to another service when technically feasible."
-        }
-      ].map((item, index) => (
-        <div key={index} className="bg-violet-50 dark:bg-violet-900/10 rounded-lg p-4 border border-violet-200/50 dark:border-violet-700/30">
-          <div className="flex items-start gap-3">
-            <item.icon className="w-5 h-5 text-violet-600 dark:text-violet-400 mt-1 flex-shrink-0" />
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                {item.title}
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {item.desc}
-              </p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      {[
+                        {
+                          icon: Shield,
+                          title: "Data Security",
+                          desc: "We use industry-standard encryption and security measures to protect your personal information."
+                        },
+                        {
+                          icon: Eye,
+                          title: "Data Transparency",
+                          desc: "You have the right to know what data we collect and how it's used for our services."
+                        },
+                        {
+                          icon: UserCheck,
+                          title: "Access Control",
+                          desc: "You can access, update, or delete your personal data at any time through your account settings."
+                        },
+                        {
+                          icon: Globe,
+                          title: "Data Portability",
+                          desc: "You can request a copy of your data or transfer it to another service when technically feasible."
+                        }
+                      ].map((item, index) => (
+                        <div key={index} className="bg-violet-50 dark:bg-violet-900/10 rounded-lg p-4 border border-violet-200/50 dark:border-violet-700/30">
+                          <div className="flex items-start gap-3">
+                            <item.icon className="w-5 h-5 text-violet-600 dark:text-violet-400 mt-1 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                                {item.title}
+                              </h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {item.desc}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
 
-    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700/50">
-      <div className="flex items-start gap-3">
-        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">
-            GDPR & Privacy Compliance
-          </h4>
-          <p className="text-green-700 dark:text-green-300 text-sm mb-2">
-            We comply with GDPR, CCPA, and other privacy regulations. For detailed information, 
-            please review our comprehensive Privacy Policy.
-          </p>
-          <Button variant="outline" size="sm" className="mt-2" asChild>
-            <Link to="/privacy">
-              <ExternalLink className="w-3 h-3 mr-1" />
-              View Privacy Policy
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </div>
-  </div>
-</motion.section>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700/50">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">
+                            GDPR & Privacy Compliance
+                          </h4>
+                          <p className="text-green-700 dark:text-green-300 text-sm mb-2">
+                            We comply with GDPR, CCPA, and other privacy regulations. For detailed information,
+                            please review our comprehensive Privacy Policy.
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-2" asChild>
+                            <Link to="/privacy">
+                              <ExternalLink className="w-3 h-3 mr-1" />
+                              View Privacy Policy
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 8: Event Participation */}
-<motion.section
-  id="events"
-  data-section="events"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-      <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      8. Event Participation
-    </h2>
-  </div>
+                {/* Section 8: Event Participation */}
+                <motion.section
+                  id="events"
+                  data-section="events"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      8. Event Participation
+                    </h2>
+                  </div>
 
-  <div className="prose prose-gray dark:prose-invert max-w-none">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          Event Organizers
-        </h4>
-        <ul className="space-y-2 text-sm">
-          <li className="text-gray-700 dark:text-gray-300">
-            • Responsible for event safety and logistics
-          </li>
-          <li className="text-gray-700 dark:text-gray-300">
-            • Must provide accurate event information
-          </li>
-          <li className="text-gray-700 dark:text-gray-300">
-            • Should have appropriate insurance coverage
-          </li>
-          <li className="text-gray-700 dark:text-gray-300">
-            • Must comply with local laws and regulations
-          </li>
-        </ul>
-      </div>
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          Event Organizers
+                        </h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="text-gray-700 dark:text-gray-300">
+                            • Responsible for event safety and logistics
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300">
+                            • Must provide accurate event information
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300">
+                            • Should have appropriate insurance coverage
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300">
+                            • Must comply with local laws and regulations
+                          </li>
+                        </ul>
+                      </div>
 
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Target className="w-4 h-4 text-green-600 dark:text-green-400" />
-          Event Participants
-        </h4>
-        <ul className="space-y-2 text-sm">
-          <li className="text-gray-700 dark:text-gray-300">
-            • Participate at your own risk
-          </li>
-          <li className="text-gray-700 dark:text-gray-300">
-            • Follow event rules and guidelines
-          </li>
-          <li className="text-gray-700 dark:text-gray-300">
-            • Respect other participants and organizers
-          </li>
-          <li className="text-gray-700 dark:text-gray-300">
-            • Report any safety concerns immediately
-          </li>
-        </ul>
-      </div>
-    </div>
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Target className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          Event Participants
+                        </h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="text-gray-700 dark:text-gray-300">
+                            • Participate at your own risk
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300">
+                            • Follow event rules and guidelines
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300">
+                            • Respect other participants and organizers
+                          </li>
+                          <li className="text-gray-700 dark:text-gray-300">
+                            • Report any safety concerns immediately
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
 
-    <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-700/50 mb-4">
-      <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 className="font-semibold text-amber-800 dark:text-amber-300 mb-2">
-            Assumption of Risk
-          </h4>
-          <p className="text-amber-700 dark:text-amber-300 text-sm">
-            By participating in events through SportsBuddy, you acknowledge and assume all risks 
-            associated with physical activities, including but not limited to injury, equipment damage, 
-            or other losses.
-          </p>
-        </div>
-      </div>
-    </div>
+                    <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-700/50 mb-4">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-amber-800 dark:text-amber-300 mb-2">
+                            Assumption of Risk
+                          </h4>
+                          <p className="text-amber-700 dark:text-amber-300 text-sm">
+                            By participating in events through SportsBuddy, you acknowledge and assume all risks
+                            associated with physical activities, including but not limited to injury, equipment damage,
+                            or other losses.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-      SportsBuddy serves as a platform to connect users but is not responsible for the organization, 
-      conduct, or outcomes of events. All interactions and agreements between users are independent 
-      of SportsBuddy.
-    </p>
-  </div>
-</motion.section>
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                      SportsBuddy serves as a platform to connect users but is not responsible for the organization,
+                      conduct, or outcomes of events. All interactions and agreements between users are independent
+                      of SportsBuddy.
+                    </p>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 9: Payments & Fees */}
-<motion.section
-  id="payments"
-  data-section="payments"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
-      <Trophy className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      9. Payments & Fees
-    </h2>
-  </div>
+                {/* Section 9: Payments & Fees */}
+                <motion.section
+                  id="payments"
+                  data-section="payments"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      9. Payments & Fees
+                    </h2>
+                  </div>
 
-  <div className="prose prose-gray dark:prose-invert max-w-none">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
-        <div className="flex items-center gap-2 mb-3">
-          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Free Services</h4>
-        </div>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>• Basic account creation</li>
-          <li>• Event browsing</li>
-          <li>• Basic messaging</li>
-          <li>• Community participation</li>
-        </ul>
-      </div>
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Free Services</h4>
+                        </div>
+                        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <li>• Basic account creation</li>
+                          <li>• Event browsing</li>
+                          <li>• Basic messaging</li>
+                          <li>• Community participation</li>
+                        </ul>
+                      </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
-        <div className="flex items-center gap-2 mb-3">
-          <Star className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Premium Features</h4>
-        </div>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>• Advanced event creation</li>
-          <li>• Priority support</li>
-          <li>• Enhanced profile features</li>
-          <li>• Analytics and insights</li>
-        </ul>
-      </div>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Star className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Premium Features</h4>
+                        </div>
+                        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <li>• Advanced event creation</li>
+                          <li>• Priority support</li>
+                          <li>• Enhanced profile features</li>
+                          <li>• Analytics and insights</li>
+                        </ul>
+                      </div>
 
-      <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200/50 dark:border-purple-700/50">
-        <div className="flex items-center gap-2 mb-3">
-          <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Event Fees</h4>
-        </div>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>• Set by event organizers</li>
-          <li>• Processed securely</li>
-          <li>• Refund policy applies</li>
-          <li>• Platform fee may apply</li>
-        </ul>
-      </div>
-    </div>
+                      <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200/50 dark:border-purple-700/50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Event Fees</h4>
+                        </div>
+                        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <li>• Set by event organizers</li>
+                          <li>• Processed securely</li>
+                          <li>• Refund policy applies</li>
+                          <li>• Platform fee may apply</li>
+                        </ul>
+                      </div>
+                    </div>
 
-    <div className="space-y-4 mb-6">
-      <h4 className="font-semibold text-gray-900 dark:text-white">Payment Terms:</h4>
-      <ul className="space-y-2">
-        <li className="flex items-start gap-3">
-          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300 text-sm">
-            All payments are processed through secure, PCI-compliant payment processors
-          </span>
-        </li>
-        <li className="flex items-start gap-3">
-          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300 text-sm">
-            Subscription fees are billed automatically on a recurring basis
-          </span>
-        </li>
-        <li className="flex items-start gap-3">
-          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300 text-sm">
-            You can cancel subscriptions at any time through your account settings
-          </span>
-        </li>
-        <li className="flex items-start gap-3">
-          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300 text-sm">
-            Refunds are subject to our refund policy and applicable laws
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
-</motion.section>
+                    <div className="space-y-4 mb-6">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Payment Terms:</h4>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-3">
+                          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 text-sm">
+                            All payments are processed through secure, PCI-compliant payment processors
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 text-sm">
+                            Subscription fees are billed automatically on a recurring basis
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 text-sm">
+                            You can cancel subscriptions at any time through your account settings
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 text-sm">
+                            Refunds are subject to our refund policy and applicable laws
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 10: Intellectual Property */}
-<motion.section
-  id="intellectual"
-  data-section="intellectual"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
-      <Scale className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      10. Intellectual Property Rights
-    </h2>
-  </div>
+                {/* Section 10: Intellectual Property */}
+                <motion.section
+                  id="intellectual"
+                  data-section="intellectual"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
+                      <Scale className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      10. Intellectual Property Rights
+                    </h2>
+                  </div>
 
-  <div className="prose prose-gray dark:prose-invert max-w-none">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          SportsBuddy's Rights
-        </h4>
-        <div className="space-y-3">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            SportsBuddy owns all rights to:
-          </p>
-          <ul className="space-y-2 text-sm">
-            <li className="text-gray-700 dark:text-gray-300">
-              • Platform design and functionality
-            </li>
-            <li className="text-gray-700 dark:text-gray-300">
-              • SportsBuddy branding and logos
-            </li>
-            <li className="text-gray-700 dark:text-gray-300">
-              • Software and technology
-            </li>
-            <li className="text-gray-700 dark:text-gray-300">
-              • Original content and materials
-            </li>
-          </ul>
-        </div>
-      </div>
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          SportsBuddy's Rights
+                        </h4>
+                        <div className="space-y-3">
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            SportsBuddy owns all rights to:
+                          </p>
+                          <ul className="space-y-2 text-sm">
+                            <li className="text-gray-700 dark:text-gray-300">
+                              • Platform design and functionality
+                            </li>
+                            <li className="text-gray-700 dark:text-gray-300">
+                              • SportsBuddy branding and logos
+                            </li>
+                            <li className="text-gray-700 dark:text-gray-300">
+                              • Software and technology
+                            </li>
+                            <li className="text-gray-700 dark:text-gray-300">
+                              • Original content and materials
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
 
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <UserCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
-          Your Rights
-        </h4>
-        <div className="space-y-3">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            You retain ownership of:
-          </p>
-          <ul className="space-y-2 text-sm">
-            <li className="text-gray-700 dark:text-gray-300">
-              • Your original content and posts
-            </li>
-            <li className="text-gray-700 dark:text-gray-300">
-              • Your personal information
-            </li>
-            <li className="text-gray-700 dark:text-gray-300">
-              • Your photos and media uploads
-            </li>
-            <li className="text-gray-700 dark:text-gray-300">
-              • Your creative contributions
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <UserCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          Your Rights
+                        </h4>
+                        <div className="space-y-3">
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            You retain ownership of:
+                          </p>
+                          <ul className="space-y-2 text-sm">
+                            <li className="text-gray-700 dark:text-gray-300">
+                              • Your original content and posts
+                            </li>
+                            <li className="text-gray-700 dark:text-gray-300">
+                              • Your personal information
+                            </li>
+                            <li className="text-gray-700 dark:text-gray-300">
+                              • Your photos and media uploads
+                            </li>
+                            <li className="text-gray-700 dark:text-gray-300">
+                              • Your creative contributions
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
 
-    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700/50 mb-4">
-      <div className="flex items-start gap-3">
-        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
-            License Grant
-          </h4>
-          <p className="text-blue-700 dark:text-blue-300 text-sm">
-            By posting content on SportsBuddy, you grant us a non-exclusive, worldwide, 
-            royalty-free license to use, display, and distribute your content solely for 
-            the purpose of operating and improving our platform.
-          </p>
-        </div>
-      </div>
-    </div>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700/50 mb-4">
+                      <div className="flex items-start gap-3">
+                        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                            License Grant
+                          </h4>
+                          <p className="text-blue-700 dark:text-blue-300 text-sm">
+                            By posting content on SportsBuddy, you grant us a non-exclusive, worldwide,
+                            royalty-free license to use, display, and distribute your content solely for
+                            the purpose of operating and improving our platform.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-    <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-700/50">
-      <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 className="font-semibold text-red-800 dark:text-red-300 mb-2">
-            Copyright Infringement
-          </h4>
-          <p className="text-red-700 dark:text-red-300 text-sm">
-            We respect intellectual property rights. If you believe your copyright has been 
-            infringed, please contact us with a detailed DMCA notice. We will investigate 
-            and take appropriate action.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</motion.section>
+                    <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-700/50">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-red-800 dark:text-red-300 mb-2">
+                            Copyright Infringement
+                          </h4>
+                          <p className="text-red-700 dark:text-red-300 text-sm">
+                            We respect intellectual property rights. If you believe your copyright has been
+                            infringed, please contact us with a detailed DMCA notice. We will investigate
+                            and take appropriate action.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 12: Account Termination */}
-<motion.section
-  id="termination"
-  data-section="termination"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-      <Gavel className="w-5 h-5 text-red-600 dark:text-red-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      12. Account Termination
-    </h2>
-  </div>
+                {/* Section 12: Account Termination */}
+                <motion.section
+                  id="termination"
+                  data-section="termination"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                      <Gavel className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      12. Account Termination
+                    </h2>
+                  </div>
 
-  <div className="prose prose-gray dark:prose-invert max-w-none">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          Voluntary Termination
-        </h4>
-        <div className="space-y-2">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            You may terminate your account at any time by:
-          </p>
-          <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-            <li>• Using the account deletion option in settings</li>
-            <li>• Contacting our support team</li>
-            <li>• Sending a written request via email</li>
-          </ul>
-        </div>
-      </div>
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          Voluntary Termination
+                        </h4>
+                        <div className="space-y-2">
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            You may terminate your account at any time by:
+                          </p>
+                          <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                            <li>• Using the account deletion option in settings</li>
+                            <li>• Contacting our support team</li>
+                            <li>• Sending a written request via email</li>
+                          </ul>
+                        </div>
+                      </div>
 
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Gavel className="w-4 h-4 text-red-600 dark:text-red-400" />
-          Involuntary Termination
-        </h4>
-        <div className="space-y-2">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            We may terminate accounts for:
-          </p>
-          <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-            <li>• Violation of terms of service</li>
-            <li>• Harmful or abusive behavior</li>
-            <li>• Fraudulent or illegal activities</li>
-            <li>• Extended periods of inactivity</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Gavel className="w-4 h-4 text-red-600 dark:text-red-400" />
+                          Involuntary Termination
+                        </h4>
+                        <div className="space-y-2">
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            We may terminate accounts for:
+                          </p>
+                          <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                            <li>• Violation of terms of service</li>
+                            <li>• Harmful or abusive behavior</li>
+                            <li>• Fraudulent or illegal activities</li>
+                            <li>• Extended periods of inactivity</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
 
-    <div className="space-y-4">
-      <h4 className="font-semibold text-gray-900 dark:text-white">Effects of Termination:</h4>
-      <ul className="space-y-2">
-        <li className="flex items-start gap-3">
-          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300 text-sm">
-            Immediate loss of access to your account and all associated data
-          </span>
-        </li>
-        <li className="flex items-start gap-3">
-          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300 text-sm">
-            Cancellation of all active subscriptions and services
-          </span>
-        </li>
-        <li className="flex items-start gap-3">
-          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300 text-sm">
-            Forfeiture of any unused credits or benefits
-          </span>
-        </li>
-        <li className="flex items-start gap-3">
-          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300 text-sm">
-            Removal of your content from public areas of the platform
-          </span>
-        </li>
-      </ul>
-    </div>
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Effects of Termination:</h4>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 text-sm">
+                            Immediate loss of access to your account and all associated data
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 text-sm">
+                            Cancellation of all active subscriptions and services
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 text-sm">
+                            Forfeiture of any unused credits or benefits
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 text-sm">
+                            Removal of your content from public areas of the platform
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
 
-    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200/50 dark:border-gray-700/50">
-      <div className="flex items-start gap-3">
-        <Info className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-            Data Retention
-          </h4>
-          <p className="text-gray-700 dark:text-gray-300 text-sm">
-            We may retain certain information as required by law or for legitimate business 
-            purposes, even after account termination. Personal data will be handled according 
-            to our Privacy Policy.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</motion.section>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200/50 dark:border-gray-700/50">
+                      <div className="flex items-start gap-3">
+                        <Info className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
+                            Data Retention
+                          </h4>
+                          <p className="text-gray-700 dark:text-gray-300 text-sm">
+                            We may retain certain information as required by law or for legitimate business
+                            purposes, even after account termination. Personal data will be handled according
+                            to our Privacy Policy.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
-{/* Section 13: Terms Modifications */}
-<motion.section
-  id="modifications"
-  data-section="modifications"
-  variants={sectionVariants}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
-  className="space-y-6"
->
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-      <Book className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-      13. Terms Modifications
-    </h2>
-  </div>
+                {/* Section 13: Terms Modifications */}
+                <motion.section
+                  id="modifications"
+                  data-section="modifications"
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                      <Book className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      13. Terms Modifications
+                    </h2>
+                  </div>
 
-  <div className="prose prose-gray dark:prose-invert max-w-none">
-    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-      SportsBuddy reserves the right to modify these Terms of Service at any time. 
-      We will provide notice of significant changes through appropriate channels.
-    </p>
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                      SportsBuddy reserves the right to modify these Terms of Service at any time.
+                      We will provide notice of significant changes through appropriate channels.
+                    </p>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
-        <div className="flex items-center gap-2 mb-3">
-          <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Notification Methods</h4>
-        </div>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>• Email notifications to registered users</li>
-          <li>• In-app notifications and announcements</li>
-          <li>• Updates posted on our website</li>
-          <li>• Blog posts for major changes</li>
-        </ul>
-      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Notification Methods</h4>
+                        </div>
+                        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <li>• Email notifications to registered users</li>
+                          <li>• In-app notifications and announcements</li>
+                          <li>• Updates posted on our website</li>
+                          <li>• Blog posts for major changes</li>
+                        </ul>
+                      </div>
 
-      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
-        <div className="flex items-center gap-2 mb-3">
-          <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Effective Timeline</h4>
-        </div>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>• Minor changes: Effective immediately</li>
-          <li>• Major changes: 30 days advance notice</li>
-          <li>• Policy changes: 14 days minimum notice</li>
-          <li>• Emergency updates: As legally required</li>
-        </ul>
-      </div>
-    </div>
+                      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Effective Timeline</h4>
+                        </div>
+                        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <li>• Minor changes: Effective immediately</li>
+                          <li>• Major changes: 30 days advance notice</li>
+                          <li>• Policy changes: 14 days minimum notice</li>
+                          <li>• Emergency updates: As legally required</li>
+                        </ul>
+                      </div>
+                    </div>
 
-    <div className="space-y-4">
-      <h4 className="font-semibold text-gray-900 dark:text-white">Your Options:</h4>
-      <ul className="space-y-3">
-        <li className="flex items-start gap-3">
-          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">Continue Using:</span>
-            <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
-              Continued use after changes indicates acceptance of new terms
-            </span>
-          </div>
-        </li>
-        <li className="flex items-start gap-3">
-          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">Object to Changes:</span>
-            <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
-              Contact us within 30 days to discuss concerns
-            </span>
-          </div>
-        </li>
-        <li className="flex items-start gap-3">
-          <Users className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">Terminate Account:</span>
-            <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
-              You may close your account if you disagree with changes
-            </span>
-          </div>
-        </li>
-      </ul>
-    </div>
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Your Options:</h4>
+                      <ul className="space-y-3">
+                        <li className="flex items-start gap-3">
+                          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">Continue Using:</span>
+                            <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
+                              Continued use after changes indicates acceptance of new terms
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">Object to Changes:</span>
+                            <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
+                              Contact us within 30 days to discuss concerns
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <Users className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">Terminate Account:</span>
+                            <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
+                              You may close your account if you disagree with changes
+                            </span>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
 
-    <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700/50">
-      <div className="flex items-start gap-3">
-        <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 className="font-semibold text-indigo-800 dark:text-indigo-300 mb-2">
-            Version Control
-          </h4>
-          <p className="text-indigo-700 dark:text-indigo-300 text-sm">
-            Each version of our Terms of Service is archived and accessible. You can review 
-            previous versions and track changes over time. The current version date is always 
-            displayed at the top of this document.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</motion.section>
+                    <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700/50">
+                      <div className="flex items-start gap-3">
+                        <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-indigo-800 dark:text-indigo-300 mb-2">
+                            Version Control
+                          </h4>
+                          <p className="text-indigo-700 dark:text-indigo-300 text-sm">
+                            Each version of our Terms of Service is archived and accessible. You can review
+                            previous versions and track changes over time. The current version date is always
+                            displayed at the top of this document.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
 
-<Separator className="my-8" />
+                <Separator className="my-8" />
 
                 {/* Section 11: Limitation of Liability */}
                 <motion.section
@@ -1384,8 +1382,8 @@ const Terms = () => {
                             Important Legal Notice
                           </h4>
                           <p className="text-orange-700 dark:text-orange-300 leading-relaxed">
-                            SportsBuddy provides its services "as is" and makes no warranties, express or implied. 
-                            We are not liable for any injuries, damages, or losses that may occur during sports 
+                            SportsBuddy provides its services "as is" and makes no warranties, express or implied.
+                            We are not liable for any injuries, damages, or losses that may occur during sports
                             activities or events organized through our platform.
                           </p>
                         </div>
@@ -1394,20 +1392,20 @@ const Terms = () => {
 
                     <div className="space-y-4">
                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        <strong>Assumption of Risk:</strong> You acknowledge that participation in sports and 
-                        physical activities involves inherent risks of injury or damage. You voluntarily assume 
+                        <strong>Assumption of Risk:</strong> You acknowledge that participation in sports and
+                        physical activities involves inherent risks of injury or damage. You voluntarily assume
                         all such risks.
                       </p>
 
                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        <strong>Third-Party Interactions:</strong> SportsBuddy is not responsible for the 
-                        actions, content, or behavior of other users or third parties you interact with 
+                        <strong>Third-Party Interactions:</strong> SportsBuddy is not responsible for the
+                        actions, content, or behavior of other users or third parties you interact with
                         through our platform.
                       </p>
 
                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        <strong>Limitation of Damages:</strong> To the maximum extent permitted by law, 
-                        SportsBuddy's total liability shall not exceed the amount you paid us in the 
+                        <strong>Limitation of Damages:</strong> To the maximum extent permitted by law,
+                        SportsBuddy's total liability shall not exceed the amount you paid us in the
                         12 months preceding the claim.
                       </p>
                     </div>
@@ -1437,7 +1435,7 @@ const Terms = () => {
 
                   <div className="prose prose-gray dark:prose-invert max-w-none">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                      If you have questions about these Terms of Service or need support, 
+                      If you have questions about these Terms of Service or need support,
                       please contact us through any of the following methods:
                     </p>
 

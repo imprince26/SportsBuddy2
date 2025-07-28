@@ -1,18 +1,18 @@
 import { useState, useEffect, useRef } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
-import { 
-  Menu, 
-  X, 
-  Home, 
-  Calendar, 
-  User, 
-  Bell, 
-  LogOut, 
-  ChevronDown, 
-  Search, 
-  Moon, 
-  Sun, 
+import {
+  Menu,
+  X,
+  Home,
+  Calendar,
+  User,
+  Bell,
+  LogOut,
+  ChevronDown,
+  Search,
+  Moon,
+  Sun,
   Shield,
   Trophy,
   Users,
@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth()
@@ -105,27 +106,27 @@ const Header = () => {
 
   // Navigation links
   const navigationLinks = [
-    { 
-      name: "Home", 
-      path: "/", 
+    {
+      name: "Home",
+      path: "/",
       icon: Home,
       description: "Back to homepage"
     },
-    { 
-      name: "Events", 
-      path: "/events", 
+    {
+      name: "Events",
+      path: "/events",
       icon: Calendar,
       description: "Browse sports events"
     },
     ...(isAuthenticated ? [{
-      name: "Dashboard", 
-      path: "/dashboard", 
+      name: "Dashboard",
+      path: "/dashboard",
       icon: Activity,
       description: "Your personal dashboard"
     }] : []),
-    { 
-      name: "Community", 
-      path: "/community", 
+    {
+      name: "Community",
+      path: "/community",
       icon: Users,
       description: "Connect with athletes"
     },
@@ -152,9 +153,9 @@ const Header = () => {
   // Animation variants
   const menuVariants = {
     closed: { opacity: 0, y: -10, scale: 0.95 },
-    open: { 
-      opacity: 1, 
-      y: 0, 
+    open: {
+      opacity: 1,
+      y: 0,
       scale: 1,
       transition: {
         type: "spring",
@@ -166,8 +167,8 @@ const Header = () => {
 
   const mobileMenuVariants = {
     closed: { opacity: 0, height: 0 },
-    open: { 
-      opacity: 1, 
+    open: {
+      opacity: 1,
       height: "auto",
       transition: {
         duration: 0.3,
@@ -178,8 +179,8 @@ const Header = () => {
 
   const itemVariants = {
     closed: { opacity: 0, x: -10 },
-    open: { 
-      opacity: 1, 
+    open: {
+      opacity: 1,
       x: 0,
       transition: { duration: 0.2 }
     }
@@ -192,11 +193,10 @@ const Header = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`sticky top-0 z-50 w-full transition-all duration-500 ${
-          isScrolled 
-            ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg border-b border-gray-200/20 dark:border-gray-700/20" 
+        className={`sticky top-0 z-50 w-full transition-all duration-500 ${isScrolled
+            ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg border-b border-gray-200/20 dark:border-gray-700/20"
             : "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm"
-        }`}
+          }`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
@@ -243,9 +243,9 @@ const Header = () => {
             <nav className="hidden lg:flex items-center space-x-1">
               {navigationLinks.map((link, index) => {
                 const Icon = link.icon
-                const isActive = location.pathname === link.path || 
+                const isActive = location.pathname === link.path ||
                   (link.path !== "/" && location.pathname.startsWith(link.path))
-                
+
                 return (
                   <motion.div
                     key={link.path}
@@ -257,16 +257,15 @@ const Header = () => {
                       <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
-                          isActive
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${isActive
                             ? "bg-blue-600 text-white shadow-lg"
                             : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400"
-                        }`}
+                          }`}
                       >
                         <Icon className="w-4 h-4" />
                         <span className="font-medium">{link.name}</span>
                       </motion.div>
-                      
+
                       {/* Tooltip */}
                       <motion.div
                         initial={{ opacity: 0, y: 10, scale: 0.9 }}
@@ -356,14 +355,14 @@ const Header = () => {
                   >
                     <Link
                       to="/notifications"
-                      className="relative p-2 lg:p-3 rounded-xl text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                      className="relative h-10 p-2 lg:p-3 rounded-xl text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
                     >
                       <Bell className="w-5 h-5" />
                       {unreadNotifications > 0 && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                          className="absolute top-6 -right-4 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
                         >
                           <span className="text-xs text-white font-bold">
                             {unreadNotifications > 9 ? "9+" : unreadNotifications}
@@ -382,15 +381,15 @@ const Header = () => {
                       className="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     >
                       <Avatar className="w-8 h-8 lg:w-10 lg:h-10 ring-2 ring-gray-200 dark:ring-gray-700">
-                        <AvatarImage 
-                          src={user?.avatar?.url} 
-                          alt={user?.name || "User"} 
+                        <AvatarImage
+                          src={user?.avatar?.url}
+                          alt={user?.name || "User"}
                         />
                         <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
                           {user?.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
-                      
+
                       <div className="hidden lg:block text-left">
                         <div className="text-sm font-semibold text-gray-900 dark:text-white">
                           {user?.name || "User"}
@@ -399,7 +398,7 @@ const Header = () => {
                           {user?.role === "admin" ? "Administrator" : "Athlete"}
                         </div>
                       </div>
-                      
+
                       <motion.div
                         animate={{ rotate: isProfileMenuOpen ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
@@ -421,9 +420,9 @@ const Header = () => {
                           <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                             <div className="flex items-center space-x-3">
                               <Avatar className="w-12 h-12 ring-2 ring-white/20">
-                                <AvatarImage 
-                                  src={user?.avatar?.url} 
-                                  alt={user?.name || "User"} 
+                                <AvatarImage
+                                  src={user?.avatar?.url}
+                                  alt={user?.name || "User"}
                                 />
                                 <AvatarFallback className="bg-white/20 text-white">
                                   {user?.name?.charAt(0) || "U"}
@@ -586,173 +585,176 @@ const Header = () => {
             exit="closed"
             className="lg:hidden fixed inset-x-0 top-16 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200/20 dark:border-gray-700/20 shadow-xl"
           >
-            <div className="container mx-auto px-4 py-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-              {/* User Profile (Mobile) */}
-              {isAuthenticated && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center space-x-4 p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl text-white mb-6"
-                >
-                  <Avatar className="w-12 h-12 ring-2 ring-white/20">
-                    <AvatarImage 
-                      src={user?.avatar?.url} 
-                      alt={user?.name || "User"} 
-                    />
-                    <AvatarFallback className="bg-white/20 text-white">
-                      {user?.name?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-semibold">{user?.name || "User"}</div>
-                    <div className="text-sm opacity-90">{user?.email}</div>
-                    {user?.role === "admin" && (
-                      <Badge className="mt-1 bg-white/20 text-white border-white/30 text-xs">
-                        <Shield className="w-3 h-3 mr-1" />
-                        Admin
-                      </Badge>
-                    )}
-                  </div>
-                  {unreadNotifications > 0 && (
-                    <div className="ml-auto">
-                      <Badge className="bg-red-500 text-white">
-                        {unreadNotifications} new
-                      </Badge>
+            <ScrollArea className="max-h-[calc(100vh-4rem)]">
+
+              <div className="container mx-auto px-4 py-6 max-h-[calc(100vh-4rem)]">
+                {/* User Profile (Mobile) */}
+                {isAuthenticated && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center space-x-4 p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl text-white mb-6"
+                  >
+                    <Avatar className="w-12 h-12 ring-2 ring-white/20">
+                      <AvatarImage
+                        src={user?.avatar?.url}
+                        alt={user?.name || "User"}
+                      />
+                      <AvatarFallback className="bg-white/20 text-white">
+                        {user?.name?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold">{user?.name || "User"}</div>
+                      <div className="text-sm opacity-90">{user?.email}</div>
+                      {user?.role === "admin" && (
+                        <Badge className="mt-1 bg-white/20 text-white border-white/30 text-xs">
+                          <Shield className="w-3 h-3 mr-1" />
+                          Admin
+                        </Badge>
+                      )}
                     </div>
-                  )}
-                </motion.div>
-              )}
+                    {unreadNotifications > 0 && (
+                      <div className="ml-auto">
+                        <Badge className="bg-red-500 text-white">
+                          {unreadNotifications} new
+                        </Badge>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
 
-              {/* Navigation Links */}
-              <div className="space-y-2 mb-6">
-                {navigationLinks.map((link, index) => {
-                  const Icon = link.icon
-                  const isActive = location.pathname === link.path
-                  
-                  return (
-                    <motion.div
-                      key={link.path}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <Link
-                        to={link.path}
-                        onClick={() => setIsMenuOpen(false)}
-                        className={`flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 ${
-                          isActive
-                            ? "bg-blue-600 text-white shadow-lg"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <div>
-                          <div className="font-medium">{link.name}</div>
-                          <div className={`text-xs ${isActive ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
-                            {link.description}
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  )
-                })}
-              </div>
+                {/* Navigation Links */}
+                <div className="space-y-2 mb-6">
+                  {navigationLinks.map((link, index) => {
+                    const Icon = link.icon
+                    const isActive = location.pathname === link.path
 
-              {isAuthenticated ? (
-                <>
-                  {/* Quick Actions (Mobile) */}
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    {quickActions.map((action, index) => {
-                      const Icon = action.icon
-                      return (
-                        <motion.div
-                          key={action.path}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.1 + index * 0.05 }}
-                        >
-                          <Link
-                            to={action.path}
-                            onClick={() => setIsMenuOpen(false)}
-                            className={`flex items-center justify-center space-x-2 p-4 rounded-xl transition-all duration-300 ${action.color} ${action.bgColor}`}
-                          >
-                            <Icon className="w-5 h-5" />
-                            <span className="font-medium">{action.name}</span>
-                          </Link>
-                        </motion.div>
-                      )
-                    })}
-                  </div>
-
-                  {/* Account Links */}
-                  <div className="space-y-2 border-t border-gray-200/50 dark:border-gray-700/50 pt-6">
-                    {[
-                      { icon: User, label: "Profile", path: "/profile" },
-                      { icon: Bell, label: "Notifications", path: "/notifications", badge: unreadNotifications },
-                      { icon: Settings, label: "Settings", path: "/settings" },
-                      ...(user?.role === "admin" ? [{ icon: Shield, label: "Admin Panel", path: "/admin/dashboard" }] : [])
-                    ].map((item, index) => (
+                    return (
                       <motion.div
-                        key={item.path}
+                        key={link.path}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 + index * 0.05 }}
+                        transition={{ delay: index * 0.05 }}
                       >
                         <Link
-                          to={item.path}
+                          to={link.path}
                           onClick={() => setIsMenuOpen(false)}
-                          className="flex items-center justify-between p-4 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                          className={`flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 ${isActive
+                              ? "bg-blue-600 text-white shadow-lg"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            }`}
                         >
-                          <div className="flex items-center space-x-4">
-                            <item.icon className="w-5 h-5" />
-                            <span className="font-medium">{item.label}</span>
+                          <Icon className="w-5 h-5" />
+                          <div>
+                            <div className="font-medium">{link.name}</div>
+                            <div className={`text-xs ${isActive ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
+                              {link.description}
+                            </div>
                           </div>
-                          {item.badge && item.badge > 0 && (
-                            <Badge className="bg-red-500 text-white">
-                              {item.badge}
-                            </Badge>
-                          )}
                         </Link>
                       </motion.div>
-                    ))}
+                    )
+                  })}
+                </div>
 
-                    {/* Logout */}
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center space-x-4 w-full p-4 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300"
+                {isAuthenticated ? (
+                  <>
+                    {/* Quick Actions (Mobile) */}
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                      {quickActions.map((action, index) => {
+                        const Icon = action.icon
+                        return (
+                          <motion.div
+                            key={action.path}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.1 + index * 0.05 }}
+                          >
+                            <Link
+                              to={action.path}
+                              onClick={() => setIsMenuOpen(false)}
+                              className={`flex items-center justify-center space-x-2 p-4 rounded-xl transition-all duration-300 ${action.color} ${action.bgColor}`}
+                            >
+                              <Icon className="w-5 h-5" />
+                              <span className="font-medium">{action.name}</span>
+                            </Link>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Account Links */}
+                    <div className="space-y-2 border-t border-gray-200/50 dark:border-gray-700/50 pt-6">
+                      {[
+                        { icon: User, label: "Profile", path: "/profile" },
+                        { icon: Bell, label: "Notifications", path: "/notifications", badge: unreadNotifications },
+                        { icon: Settings, label: "Settings", path: "/settings" },
+                        ...(user?.role === "admin" ? [{ icon: Shield, label: "Admin Panel", path: "/admin/dashboard" }] : [])
+                      ].map((item, index) => (
+                        <motion.div
+                          key={item.path}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 + index * 0.05 }}
+                        >
+                          <Link
+                            to={item.path}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center justify-between p-4 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                          >
+                            <div className="flex items-center space-x-4">
+                              <item.icon className="w-5 h-5" />
+                              <span className="font-medium">{item.label}</span>
+                            </div>
+                            {item.badge && item.badge > 0 && (
+                              <Badge className="bg-red-500 text-white">
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </Link>
+                        </motion.div>
+                      ))}
+
+                      {/* Logout */}
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 }}
                       >
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-medium">Sign Out</span>
-                      </button>
-                    </motion.div>
-                  </div>
-                </>
-              ) : (
-                /* Auth Buttons (Mobile) */
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-3 border-t border-gray-200/50 dark:border-gray-700/50 pt-6"
-                >
-                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" className="w-full justify-center text-base py-3">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link to="/register" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-base py-3">
-                      Get Started
-                    </Button>
-                  </Link>
-                </motion.div>
-              )}
-            </div>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center space-x-4 w-full p-4 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300"
+                        >
+                          <LogOut className="w-5 h-5" />
+                          <span className="font-medium">Sign Out</span>
+                        </button>
+                      </motion.div>
+                    </div>
+                  </>
+                ) : (
+                  /* Auth Buttons (Mobile) */
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-3 border-t border-gray-200/50 dark:border-gray-700/50 pt-6"
+                  >
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full justify-center text-base py-3">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/register" onClick={() => setIsMenuOpen(false)}>
+                      <Button className="w-full justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-base py-3">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </motion.div>
+                )}
+              </div>
+            </ScrollArea>
+
           </motion.div>
         )}
       </AnimatePresence>

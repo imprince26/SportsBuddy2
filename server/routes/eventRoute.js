@@ -14,13 +14,17 @@ import {
   sendMessage,
   getUserEvents,
   searchEvents,
-  getNearbyEvents
+  getNearbyEvents,
+   getFeaturedEvents,
+  getTrendingEvents
 } from '../controllers/eventController.js';
 
 const router = express.Router();
 
 // Public routes
 router.get('/', getAllEvents);
+router.get('/featured', getFeaturedEvents);
+router.get('/trending', getTrendingEvents);
 router.get('/:id', getEventById);
 router.get('/search', searchEvents);
 router.get('/nearby', getNearbyEvents);

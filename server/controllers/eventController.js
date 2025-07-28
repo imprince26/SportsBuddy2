@@ -105,7 +105,6 @@ export const createEvent = async (req, res) => {
   }
 };
 
-// Get All Events with improved filtering and pagination
 export const getAllEvents = async (req, res) => {
   try {
     const {
@@ -114,6 +113,7 @@ export const getAllEvents = async (req, res) => {
       difficulty,
       status,
       dateRange,
+      feeType, // Added feeType filter
       sortBy = "date:asc",
       radius = 10,
       location,
@@ -133,7 +133,8 @@ export const getAllEvents = async (req, res) => {
         { name: { $regex: search.trim(), $options: "i" } },
         { description: { $regex: search.trim(), $options: "i" } },
         { "location.city": { $regex: search.trim(), $options: "i" } },
-        { "location.address": { $regex: search.trim(), $options: "i" } }
+        { "location.address": { $regex: search.trim(), $options: "i" } },
+        { category: { $regex: search.trim(), $options: "i" } }
       ];
     }
 
@@ -153,6 +154,19 @@ export const getAllEvents = async (req, res) => {
     } else {
       // Default to show only upcoming and ongoing events
       query.status = { $in: ["Upcoming", "Ongoing"] };
+    }
+
+    // Fee type filter
+    if (feeType && feeType !== "all") {
+      if (feeType === "free") {
+        query.$or = [
+          { registrationFee: { $exists: false } },
+          { registrationFee: 0 },
+          { registrationFee: null }
+        ];
+      } else if (feeType === "paid") {
+        query.registrationFee = { $gt: 0 };
+      }
     }
 
     // Date range filter
@@ -223,39 +237,131 @@ export const getAllEvents = async (req, res) => {
           sort.createdAt = order === "desc" ? -1 : 1;
           break;
         case "participants":
-          sort["participants.length"] = order === "desc" ? -1 : 1;
+          // For participant count sorting, we'll use aggregation
           break;
         case "name":
           sort.name = order === "desc" ? -1 : 1;
+          break;
+        case "fee":
+          sort.registrationFee = order === "desc" ? -1 : 1;
           break;
         default:
           sort.date = 1; // Default sort by date ascending
       }
     }
 
-    // Execute query
-    const [events, total] = await Promise.all([
-      Event.find(query)
-        .sort(sort)
-        .skip(skip)
-        .limit(limitNum)
-        .populate("createdBy", "name avatar username")
-        .populate("participants.user", "name avatar username")
-        .lean(),
-      Event.countDocuments(query)
-    ]);
+    // Use aggregation pipeline if we need to sort by participant count
+    let events, total;
+    
+    if (sortBy && sortBy.startsWith("participants:")) {
+      const [, order] = sortBy.split(":");
+      
+      // Aggregation pipeline for complex sorting
+      const pipeline = [
+        { $match: query },
+        {
+          $addFields: {
+            participantCount: { $size: "$participants" },
+            averageRating: {
+              $cond: {
+                if: { $gt: [{ $size: "$ratings" }, 0] },
+                then: {
+                  $divide: [
+                    { $sum: "$ratings.rating" },
+                    { $size: "$ratings" }
+                  ]
+                },
+                else: 0
+              }
+            }
+          }
+        },
+        {
+          $sort: {
+            participantCount: order === "desc" ? -1 : 1,
+            date: 1 // Secondary sort by date
+          }
+        },
+        { $skip: skip },
+        { $limit: limitNum },
+        {
+          $lookup: {
+            from: "users",
+            localField: "createdBy",
+            foreignField: "_id",
+            as: "createdBy",
+            pipeline: [
+              { $project: { name: 1, avatar: 1, username: 1 } }
+            ]
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "participants.user",
+            foreignField: "_id",
+            as: "participantUsers",
+            pipeline: [
+              { $project: { name: 1, avatar: 1, username: 1 } }
+            ]
+          }
+        },
+        { $unwind: "$createdBy" }
+      ];
+
+      [events, total] = await Promise.all([
+        Event.aggregate(pipeline),
+        Event.countDocuments(query)
+      ]);
+
+      // Map participant users back to participants array
+      events = events.map(event => {
+        const participantMap = new Map(
+          event.participantUsers.map(user => [user._id.toString(), user])
+        );
+        
+        event.participants = event.participants.map(participant => ({
+          ...participant,
+          user: participantMap.get(participant.user.toString()) || participant.user
+        }));
+        
+        delete event.participantUsers;
+        return event;
+      });
+
+    } else {
+      // Regular query for simple sorting
+      [events, total] = await Promise.all([
+        Event.find(query)
+          .sort(sort)
+          .skip(skip)
+          .limit(limitNum)
+          .populate("createdBy", "name avatar username")
+          .populate("participants.user", "name avatar username")
+          .lean(),
+        Event.countDocuments(query)
+      ]);
+    }
 
     // Calculate additional metadata for each event
-    const eventsWithMetadata = events.map(event => ({
-      ...event,
-      participantCount: event.participants?.length || 0,
-      spotsLeft: event.maxParticipants - (event.participants?.length || 0),
-      averageRating: event.ratings?.length > 0 
+    const eventsWithMetadata = events.map(event => {
+      const participantCount = event.participants?.length || 0;
+      const averageRating = event.ratings?.length > 0 
         ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length 
-        : 0,
-      isUpcoming: new Date(event.date) > now,
-      daysUntilEvent: Math.ceil((new Date(event.date) - now) / (1000 * 60 * 60 * 24))
-    }));
+        : 0;
+      
+      return {
+        ...event,
+        participantCount,
+        spotsLeft: event.maxParticipants - participantCount,
+        averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+        isUpcoming: new Date(event.date) > now,
+        daysUntilEvent: Math.ceil((new Date(event.date) - now) / (1000 * 60 * 60 * 24)),
+        isFreeEvent: !event.registrationFee || event.registrationFee === 0,
+        fillPercentage: Math.round((participantCount / event.maxParticipants) * 100),
+        isAlmostFull: (participantCount / event.maxParticipants) > 0.85
+      };
+    });
 
     // Response with pagination info
     const response = {
@@ -275,7 +381,18 @@ export const getAllEvents = async (req, res) => {
         difficulty: difficulty || "all",
         status: status || "all",
         dateRange: dateRange || "all",
+        feeType: feeType || "all",
         sortBy: sortBy || "date:asc"
+      },
+      stats: {
+        totalEvents: total,
+        freeEvents: eventsWithMetadata.filter(e => e.isFreeEvent).length,
+        paidEvents: eventsWithMetadata.filter(e => !e.isFreeEvent).length,
+        upcomingEvents: eventsWithMetadata.filter(e => e.isUpcoming).length,
+        categories: [...new Set(eventsWithMetadata.map(e => e.category))],
+        avgRating: eventsWithMetadata.length > 0 
+          ? Math.round((eventsWithMetadata.reduce((sum, e) => sum + (e.averageRating || 0), 0) / eventsWithMetadata.length) * 10) / 10
+          : 0
       }
     };
 
@@ -293,7 +410,8 @@ export const getAllEvents = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching events",
-      error: error.message
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
@@ -609,6 +727,390 @@ export const leaveEvent = async (req, res) => {
       success: false,
       message: "Error leaving event",
       error: error.message,
+    });
+  }
+};
+
+// ...existing code...
+
+// Get Featured Events
+export const getFeaturedEvents = async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+    const now = new Date();
+    
+    // Define criteria for featured events
+    const featuredQuery = {
+      status: { $in: ["Upcoming", "Ongoing"] },
+      date: { $gte: now }, // Only future events
+      $or: [
+        // Events with high participant count (80% or more filled)
+        {
+          $expr: {
+            $gte: [
+              { $divide: [{ $size: "$participants" }, "$maxParticipants"] },
+              0.8
+            ]
+          }
+        },
+        // Events with high ratings (4.0 or above)
+        {
+          $expr: {
+            $gte: [
+              {
+                $cond: {
+                  if: { $gt: [{ $size: "$ratings" }, 0] },
+                  then: {
+                    $divide: [
+                      { $sum: "$ratings.rating" },
+                      { $size: "$ratings" }
+                    ]
+                  },
+                  else: 0
+                }
+              },
+              4.0
+            ]
+          }
+        },
+        // Recently created events (within last 7 days)
+        {
+          createdAt: {
+            $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          }
+        },
+        // Events with images (more engaging)
+        {
+          $expr: { $gt: [{ $size: "$images" }, 0] }
+        },
+        // Events in popular categories
+        {
+          category: { $in: ["Football", "Basketball", "Tennis", "Running"] }
+        }
+      ]
+    };
+
+    // Aggregation pipeline for featured events
+    const featuredEvents = await Event.aggregate([
+      { $match: featuredQuery },
+      
+      // Add computed fields
+      {
+        $addFields: {
+          participantCount: { $size: "$participants" },
+          averageRating: {
+            $cond: {
+              if: { $gt: [{ $size: "$ratings" }, 0] },
+              then: {
+                $divide: [
+                  { $sum: "$ratings.rating" },
+                  { $size: "$ratings" }
+                ]
+              },
+              else: 0
+            }
+          },
+          fillPercentage: {
+            $divide: [{ $size: "$participants" }, "$maxParticipants"]
+          },
+          daysUntilEvent: {
+            $divide: [
+              { $subtract: ["$date", now] },
+              1000 * 60 * 60 * 24
+            ]
+          },
+          hasImages: { $gt: [{ $size: "$images" }, 0] },
+          recentlyCreated: {
+            $gte: [
+              "$createdAt",
+              new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            ]
+          }
+        }
+      },
+      
+      // Calculate feature score
+      {
+        $addFields: {
+          featureScore: {
+            $add: [
+              // High fill percentage gets more points
+              { $multiply: ["$fillPercentage", 30] },
+              
+              // High rating gets more points
+              { $multiply: ["$averageRating", 15] },
+              
+              // Recent events get bonus points
+              { $cond: ["$recentlyCreated", 20, 0] },
+              
+              // Events with images get bonus points
+              { $cond: ["$hasImages", 10, 0] },
+              
+              // Upcoming events get more points (sooner = higher score)
+              {
+                $cond: {
+                  if: { $lte: ["$daysUntilEvent", 7] },
+                  then: { $subtract: [15, "$daysUntilEvent"] },
+                  else: 5
+                }
+              },
+              
+              // Popular categories get bonus points
+              {
+                $cond: {
+                  if: { 
+                    $in: ["$category", ["Football", "Basketball", "Tennis", "Running"]] 
+                  },
+                  then: 10,
+                  else: 5
+                }
+              }
+            ]
+          }
+        }
+      },
+      
+      // Sort by feature score
+      { $sort: { featureScore: -1, createdAt: -1 } },
+      
+      // Limit results
+      { $limit: parseInt(limit) },
+      
+      // Populate references
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
+          pipeline: [
+            { $project: { name: 1, avatar: 1, username: 1 } }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "participants.user",
+          foreignField: "_id",
+          as: "participantUsers",
+          pipeline: [
+            { $project: { name: 1, avatar: 1, username: 1 } }
+          ]
+        }
+      },
+      
+      // Unwind createdBy array
+      { $unwind: "$createdBy" },
+      
+      // Add final metadata
+      {
+        $addFields: {
+          spotsLeft: { $subtract: ["$maxParticipants", "$participantCount"] },
+          isUpcoming: { $gt: ["$date", now] },
+          isFeatured: true
+        }
+      },
+      
+      // Project final fields
+      {
+        $project: {
+          featureScore: 0,
+          fillPercentage: 0,
+          hasImages: 0,
+          recentlyCreated: 0,
+          participantUsers: 0
+        }
+      }
+    ]);
+
+    // If we don't have enough featured events, get some recent popular events
+    if (featuredEvents.length < parseInt(limit)) {
+      const remaining = parseInt(limit) - featuredEvents.length;
+      const featuredIds = featuredEvents.map(event => event._id);
+      
+      const additionalEvents = await Event.find({
+        _id: { $nin: featuredIds },
+        status: { $in: ["Upcoming", "Ongoing"] },
+        date: { $gte: now }
+      })
+        .sort({ createdAt: -1, participantCount: -1 })
+        .limit(remaining)
+        .populate("createdBy", "name avatar username")
+        .populate("participants.user", "name avatar username")
+        .lean();
+
+      // Add metadata to additional events
+      const additionalWithMetadata = additionalEvents.map(event => ({
+        ...event,
+        participantCount: event.participants?.length || 0,
+        spotsLeft: event.maxParticipants - (event.participants?.length || 0),
+        averageRating: event.ratings?.length > 0 
+          ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length 
+          : 0,
+        isUpcoming: new Date(event.date) > now,
+        daysUntilEvent: Math.ceil((new Date(event.date) - now) / (1000 * 60 * 60 * 24)),
+        isFeatured: false
+      }));
+
+      featuredEvents.push(...additionalWithMetadata);
+    }
+
+    // Get some stats for the featured events
+    const stats = {
+      totalFeatured: featuredEvents.length,
+      categories: [...new Set(featuredEvents.map(e => e.category))],
+      avgRating: featuredEvents.length > 0 
+        ? (featuredEvents.reduce((sum, e) => sum + (e.averageRating || 0), 0) / featuredEvents.length).toFixed(1)
+        : 0,
+      totalParticipants: featuredEvents.reduce((sum, e) => sum + (e.participantCount || 0), 0)
+    };
+
+    res.json({
+      success: true,
+      data: featuredEvents,
+      stats,
+      meta: {
+        timestamp: now.toISOString(),
+        limit: parseInt(limit),
+        algorithm: "hybrid_scoring",
+        criteria: [
+          "High participation rate (80%+)",
+          "High ratings (4.0+)",
+          "Recently created",
+          "Has images",
+          "Popular categories",
+          "Upcoming events"
+        ]
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching featured events:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching featured events",
+      error: error.message
+    });
+  }
+};
+
+export const getTrendingEvents = async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const trendingEvents = await Event.aggregate([
+      {
+        $match: {
+          status: { $in: ["Upcoming", "Ongoing"] },
+          date: { $gte: now },
+          createdAt: { $gte: oneWeekAgo } // Only events from last week
+        }
+      },
+      
+      {
+        $addFields: {
+          participantCount: { $size: "$participants" },
+          recentParticipants: {
+            $size: {
+              $filter: {
+                input: "$participants",
+                cond: { $gte: ["$$this.joinedAt", oneDayAgo] }
+              }
+            }
+          },
+          recentRatings: {
+            $size: {
+              $filter: {
+                input: "$ratings",
+                cond: { $gte: ["$$this.date", oneDayAgo] }
+              }
+            }
+          },
+          trendScore: {
+            $add: [
+              { $multiply: [{ $size: "$participants" }, 2] }, // Total participants
+              { $multiply: [
+                {
+                  $size: {
+                    $filter: {
+                      input: "$participants",
+                      cond: { $gte: ["$$this.joinedAt", oneDayAgo] }
+                    }
+                  }
+                }, 
+                10
+              ]}, // Recent participants (weighted more)
+              { $multiply: [
+                {
+                  $size: {
+                    $filter: {
+                      input: "$ratings",
+                      cond: { $gte: ["$$this.date", oneDayAgo] }
+                    }
+                  }
+                }, 
+                5
+              ]} // Recent ratings
+            ]
+          }
+        }
+      },
+      
+      { $match: { trendScore: { $gt: 0 } } }, // Only events with some activity
+      { $sort: { trendScore: -1, createdAt: -1 } },
+      { $limit: parseInt(limit) },
+      
+      // Populate references
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
+          pipeline: [{ $project: { name: 1, avatar: 1, username: 1 } }]
+        }
+      },
+      { $unwind: "$createdBy" },
+      
+      {
+        $addFields: {
+          averageRating: {
+            $cond: {
+              if: { $gt: [{ $size: "$ratings" }, 0] },
+              then: { $divide: [{ $sum: "$ratings.rating" }, { $size: "$ratings" }] },
+              else: 0
+            }
+          },
+          spotsLeft: { $subtract: ["$maxParticipants", "$participantCount"] },
+          isUpcoming: { $gt: ["$date", now] },
+          isTrending: true
+        }
+      },
+      
+      { $project: { trendScore: 0, recentParticipants: 0, recentRatings: 0 } }
+    ]);
+
+    res.json({
+      success: true,
+      data: trendingEvents,
+      meta: {
+        timestamp: now.toISOString(),
+        limit: parseInt(limit),
+        algorithm: "activity_based_trending",
+        timeWindow: "24_hours"
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching trending events:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching trending events",
+      error: error.message
     });
   }
 };

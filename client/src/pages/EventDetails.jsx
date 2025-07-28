@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
@@ -439,9 +437,8 @@ const EventDetails = () => {
                   style={{
                     width: `${20 + (i % 3) * 10}px`,
                     height: `${20 + (i % 3) * 10}px`,
-                    background: `linear-gradient(135deg, ${
-                      ["rgba(59, 130, 246, 0.2)", "rgba(139, 92, 246, 0.2)", "rgba(34, 197, 94, 0.2)"][i % 3]
-                    }, transparent)`,
+                    background: `linear-gradient(135deg, ${["rgba(59, 130, 246, 0.2)", "rgba(139, 92, 246, 0.2)", "rgba(34, 197, 94, 0.2)"][i % 3]
+                      }, transparent)`,
                     backdropFilter: "blur(10px)",
                     left: `${10 + ((i * 12) % 80)}%`,
                     top: `${20 + ((i * 8) % 60)}%`,
@@ -1594,7 +1591,7 @@ const EventDetails = () => {
                       <div className={cn("max-w-xs lg:max-w-md", msg.user._id === user?.id ? "text-right" : "")}>
                         <div
                           className={cn(
-                            "px-4 py-2 rounded-2xl",
+                            "inline-block px-4 py-2 rounded-2xl",
                             msg.user._id === user?.id
                               ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
                               : "bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600",
@@ -1605,7 +1602,7 @@ const EventDetails = () => {
                         <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
                           <span>{msg.user.name}</span>
                           <span>•</span>
-                          <span>{formatDistanceToNow(new Date(msg.createdAt))} ago</span>
+                          <span>{formatDistanceToNow(new Date(msg.timestamp))} ago</span>
                         </div>
                       </div>
                     </motion.div>

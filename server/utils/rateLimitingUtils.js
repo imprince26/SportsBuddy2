@@ -91,14 +91,14 @@ export const createRateLimit = (windowMs, max, message, options = {}) => {
 // Predefined rate limiters with updated configuration
 export const rateLimiters = {
   global: createRateLimit(
-    15 * 60 * 1000, // 15 minutes
+    30 * 60 * 1000,
     1000,
     "Too many requests from this IP/user, please try again later.",
     { enableLogging: true }
   ),
   
   auth: createRateLimit(
-    15 * 60 * 1000, // 15 minutes
+    30 * 60 * 1000,
     10,
     "Too many authentication attempts, please try again later.",
     { 

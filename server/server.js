@@ -50,7 +50,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Routes
-app.use("/api/auth", rateLimiters.auth, authRoute);
+app.use("/api/auth", authRoute);
 app.use("/api/events", rateLimiters.api, eventRoute);
 app.use("/api/users", rateLimiters.api, userRoute);
 app.use('/api/admin', rateLimiters.admin, adminRoute);

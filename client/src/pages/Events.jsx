@@ -579,7 +579,7 @@ const Events = () => {
           {/* Mobile Controls */}
           <div className="flex sm:hidden items-center justify-between gap-3">
             {/* Filter Toggle */}
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
@@ -587,7 +587,7 @@ const Events = () => {
             >
               <Filter className="w-4 h-4 mr-2" />
               Filters
-            </Button>
+            </Button> */}
 
             {/* View Mode Toggle - Mobile */}
             <div className="flex items-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-1 shadow-lg border border-gray-200/50 dark:border-gray-700/50">

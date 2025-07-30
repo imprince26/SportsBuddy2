@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
@@ -6,7 +5,7 @@ import { uploadImage, deleteImage } from "../config/cloudinary.js";
 import fs from "fs/promises";
 import validator from "validator";
 import sendEmail from "../config/sendEmail.js";
-import { welcomeEmailHtml } from "../utils/emailTemplate.js"; 
+import { welcomeEmailHtml } from "../utils/emailTemplate.js";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -244,7 +243,7 @@ export const updateProfile = async (req, res) => {
           ? JSON.parse(value)
           : value;
       } catch (error) {
-        updates[key] = value; // Fallback to original value if not JSON
+        updates[key] = value;
       }
     }
 

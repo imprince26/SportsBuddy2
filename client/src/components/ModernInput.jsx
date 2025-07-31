@@ -6,7 +6,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils" 
+import { cn } from "@/lib/utils"
 
 const ModernInput = ({
   icon: Icon,
@@ -29,14 +29,17 @@ const ModernInput = ({
     setHasValue(value && value.length > 0)
   }, [value])
 
+  // Determine if label should be in "up" position
+  const shouldLabelBeUp = isFocused || hasValue || error
+
   return (
     <div className="relative group">
       {/* Floating Label */}
       <motion.label
         initial={false}
         animate={{
-          y: isFocused || hasValue ? -38 : -12,
-          scale: isFocused || hasValue ? 0.75 : 1,
+          y: shouldLabelBeUp ? -38 : -12,
+          scale: shouldLabelBeUp ? 0.75 : 1,
           color: error
             ? "#ef4444"
             : isFocused
@@ -44,7 +47,11 @@ const ModernInput = ({
               : "#6b7280"
         }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="absolute left-12 top-1/2 -translate-y-1/2 pointer-events-none font-medium z-20 bg-white dark:bg-gray-900 px-2 origin-left"
+        className={cn(
+          "absolute left-12 top-1/2 -translate-y-1/2 pointer-events-none font-medium z-20 px-2 origin-left",
+          "bg-white dark:bg-gray-900",
+          shouldLabelBeUp && "bg-white dark:bg-gray-900"
+        )}
         style={{ transformOrigin: "left center" }}
       >
         {placeholder}
@@ -110,39 +117,37 @@ const ModernInput = ({
               onBlur && onBlur(e)
             }}
             name={name}
+            placeholder=""
             className={cn(
-              "w-full h-12 pl-12 pr-4 bg-transparent",
+              "w-full h-12 pl-12 bg-transparent border-0",
               "text-gray-900 dark:text-purple-50 text-base",
               "placeholder:text-transparent",
-              "focus:outline-none rounded-xl",
+              "focus:outline-none focus:ring-0 rounded-xl",
               "transition-all duration-300",
               type === "password" && "pr-12",
+              !type.includes("password") && "pr-4",
               className
             )}
             {...props}
           />
 
-          {/* Password Toggle - Fixed positioning */}
+          {/* Password Toggle */}
           {type === "password" && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 z-30">
               <motion.button
                 type="button"
                 onClick={onTogglePassword}
-                className="flex items-center justify-center w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                whileHover={{ 
+                className="flex items-center justify-center w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors rounded"
+                whileHover={{
                   scale: 1.1,
                   backgroundColor: "rgba(59, 130, 246, 0.1)"
                 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                style={{
-                  transformOrigin: "center",
-                  borderRadius: "4px"
-                }}
               >
                 <motion.div
                   initial={false}
-                  animate={{ 
+                  animate={{
                     rotate: showPassword ? 180 : 0,
                     scale: showPassword ? 1.05 : 1
                   }}
@@ -166,6 +171,7 @@ const ModernInput = ({
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
           className="mt-2 flex items-center gap-2 text-red-600 dark:text-red-400 text-sm"
         >
           <AlertCircle className="w-4 h-4 flex-shrink-0" />

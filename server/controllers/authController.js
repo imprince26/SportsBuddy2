@@ -5,7 +5,8 @@ import { uploadImage, deleteImage } from "../config/cloudinary.js";
 import fs from "fs/promises";
 import validator from "validator";
 import sendEmail from "../config/sendEmail.js";
-import { welcomeEmailHtml } from "../utils/emailTemplate.js";
+import { welcomeEmailHtml,resetPasswordEmailHtml,passwordResetSuccessEmailHtml } from "../utils/emailTemplate.js";
+import crypto from "crypto";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -379,6 +380,231 @@ export const updatePassword = async (req, res) => {
     res.status(500).json({
       message: "Error updating password",
       error: error.message,
+    });
+  }
+};
+
+// Forgot Password - Send Reset Code
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required"
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email address"
+      });
+    }
+
+    // Check if user is currently blocked
+    if (user.resetPasswordBlockedUntil && user.resetPasswordBlockedUntil > Date.now()) {
+      const blockedMinutes = Math.ceil((user.resetPasswordBlockedUntil - Date.now()) / (1000 * 60));
+      return res.status(429).json({
+        success: false,
+        message: `Too many reset attempts. Please try again in ${blockedMinutes} minutes.`
+      });
+    }
+
+    // Generate reset code
+    const resetCode = user.generateResetPasswordCode();
+    await user.save({ validateBeforeSave: false });
+
+    try {
+      // Send reset code email
+      await sendEmail({
+        from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+        to: user.email,
+        subject: "Password Reset Code - SportsBuddy",
+        html: resetPasswordEmailHtml({
+          name: user.name,
+          resetCode: resetCode
+        }),
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Password reset code sent to your email",
+        data: {
+          email: user.email,
+          expiresIn: "10 minutes"
+        }
+      });
+
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      
+      // Clear reset fields if email fails
+      user.clearResetPassword();
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send reset code. Please try again."
+      });
+    }
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+      error: error.message
+    });
+  }
+};
+
+// Verify Reset Code
+export const verifyResetCode = async (req, res) => {
+  try {
+    const { email, resetCode } = req.body;
+
+    if (!email || !resetCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and reset code are required"
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid email or reset code"
+      });
+    }
+
+    try {
+      // Verify the reset code
+      user.verifyResetCode(resetCode);
+      
+      // Generate a temporary token for password reset
+      const resetToken = jwt.sign(
+        { 
+          userId: user._id, 
+          email: user.email,
+          purpose: 'password-reset',
+          codeVerified: true
+        }, 
+        process.env.JWT_SECRET, 
+        { expiresIn: '15m' }
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Reset code verified successfully",
+        data: {
+          resetToken,
+          expiresIn: "15 minutes"
+        }
+      });
+
+    } catch (verificationError) {
+      // Save any changes to attempts/blocking
+      await user.save({ validateBeforeSave: false });
+      
+      return res.status(400).json({
+        success: false,
+        message: verificationError.message
+      });
+    }
+
+  } catch (error) {
+    console.error('Verify reset code error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+      error: error.message
+    });
+  }
+};
+
+// Reset Password with Token
+export const resetPassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+
+    if (!resetToken || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Reset token and new password are required"
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long"
+      });
+    }
+
+    // Verify the reset token
+    let decoded;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+      
+      if (decoded.purpose !== 'password-reset' || !decoded.codeVerified) {
+        throw new Error('Invalid token purpose');
+      }
+    } catch (tokenError) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired reset token"
+      });
+    }
+
+    const user = await User.findOne({ 
+      _id: decoded.userId, 
+      email: decoded.email 
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Update password and clear reset fields
+    user.password = newPassword;
+    user.clearResetPassword();
+    await user.save();
+
+    try {
+      // Send confirmation email
+      await sendEmail({
+        from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+        to: user.email,
+        subject: "Password Reset Successful - SportsBuddy",
+        html: passwordResetSuccessEmailHtml({
+          name: user.name
+        }),
+      });
+    } catch (emailError) {
+      console.error('Confirmation email error:', emailError);
+      // Don't fail the request if confirmation email fails
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully. You can now login with your new password."
+    });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+      error: error.message
     });
   }
 };

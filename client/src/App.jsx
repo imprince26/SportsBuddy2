@@ -9,8 +9,10 @@ import AdminLayout from '@/components/layout/AdminLayout';
 
 // Public Pages
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import ResetPassword from './pages/auth/ResetPassword';
+import ForgotPassword from './pages/auth/ForgotPassword';
 import Events from './pages/Events';
 import EventDetails from './pages/EventDetails';
 import PublicProfile from './pages/PublicProfile';
@@ -146,6 +148,24 @@ function App() {
               element={
                 <PublicRoute title="Register">
                   <Register />
+                </PublicRoute>
+              }
+            />
+
+            <Route
+              path="forgot-password"
+              element={
+                <PublicRoute title="Forgot-Password">
+                  <ForgotPassword/>
+                </PublicRoute>
+              }
+            />
+
+               <Route
+              path="reset-password"
+              element={
+                <PublicRoute title="Reset-Password">
+                  <ResetPassword/>
                 </PublicRoute>
               }
             />

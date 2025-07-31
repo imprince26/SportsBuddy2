@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const notificationSchema = new mongoose.Schema({
   type: {
@@ -68,6 +69,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
+    },
+    resetPasswordCode: {
+      type: String,
+    },
+    resetPasswordExpire: {
+      type: Date,
+    },
+    resetPasswordAttempts: {
+      type: Number,
+      default: 0,
+    },
+    resetPasswordBlockedUntil: {
+      type: Date,
     },
     role: {
       type: String,
@@ -281,6 +295,66 @@ userSchema.methods.markAllNotificationsAsRead = async function () {
     notification.read = true;
   });
   await this.save();
+};
+
+// Method to generate reset password code
+userSchema.methods.generateResetPasswordCode = function() {
+  // Generate 6-digit code
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // Hash the code before saving
+  this.resetPasswordCode = crypto.createHash('sha256').update(resetCode).digest('hex');
+  
+  // Set expire time (10 minutes)
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  
+  // Reset attempts if not blocked
+  if (!this.resetPasswordBlockedUntil || this.resetPasswordBlockedUntil < Date.now()) {
+    this.resetPasswordAttempts = 0;
+    this.resetPasswordBlockedUntil = undefined;
+  }
+  
+  return resetCode;
+};
+
+// Method to verify reset code
+userSchema.methods.verifyResetCode = function(enteredCode) {
+  // Check if user is blocked
+  if (this.resetPasswordBlockedUntil && this.resetPasswordBlockedUntil > Date.now()) {
+    const blockedMinutes = Math.ceil((this.resetPasswordBlockedUntil - Date.now()) / (1000 * 60));
+    throw new Error(`Too many failed attempts. Try again in ${blockedMinutes} minutes.`);
+  }
+  
+  // Check if code has expired
+  if (!this.resetPasswordExpire || this.resetPasswordExpire < Date.now()) {
+    throw new Error('Reset code has expired');
+  }
+  
+  // Hash the entered code and compare
+  const hashedCode = crypto.createHash('sha256').update(enteredCode).digest('hex');
+  
+  if (hashedCode !== this.resetPasswordCode) {
+    // Increment attempts
+    this.resetPasswordAttempts += 1;
+    
+    // Block user after 5 failed attempts for 30 minutes
+    if (this.resetPasswordAttempts >= 5) {
+      this.resetPasswordBlockedUntil = Date.now() + 30 * 60 * 1000;
+      throw new Error('Too many failed attempts. Account temporarily blocked for 30 minutes.');
+    }
+    
+    throw new Error(`Invalid reset code. ${5 - this.resetPasswordAttempts} attempts remaining.`);
+  }
+  
+  return true;
+};
+
+// Method to clear reset password fields
+userSchema.methods.clearResetPassword = function() {
+  this.resetPasswordCode = undefined;
+  this.resetPasswordExpire = undefined;
+  this.resetPasswordAttempts = 0;
+  this.resetPasswordBlockedUntil = undefined;
 };
 
 const User = mongoose.model("User", userSchema);

@@ -12,6 +12,9 @@ import {
   markNotificationRead,
   addAchievement,
   getUserProfile,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword,
 } from "../controllers/authController.js";
 import { upload } from "../config/cloudinary.js";
 
@@ -22,6 +25,12 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
 router.get("/user/:userId", getUserProfile);
+
+// Password reset routes (public)
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-code", verifyResetCode);
+router.post("/reset-password", resetPassword);
+
 
 // Protected routes
 router.use(isAuthenticated);

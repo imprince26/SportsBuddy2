@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
 import { useEvents } from "@/hooks/useEvents"
 import { format, formatDistanceToNow } from "date-fns"
 import {
   Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell,
-  Loader2, BarChart3, TrendingUp, CalendarIcon, CheckCircle, User, Dumbbell,
+  Loader2, BarChart3, TrendingUp, CheckCircle, User, Dumbbell,
   UserPlus, Target, Zap, Trophy, Flame, Eye, Settings, ArrowUp, ArrowDown, Crown,
-  Medal, Timer, Globe, Heart, Share2, Sparkles, Rocket, Shield, MessageCircle,
-  Camera, Edit, BookOpen, Gift, Compass, Briefcase, Coffee, Music
+  Medal, Timer, Globe, Heart, Share2
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"

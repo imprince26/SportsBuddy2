@@ -14,15 +14,10 @@ import {
   Moon,
   Sun,
   Shield,
-  Trophy,
   Users,
   Settings,
   PlusCircle,
-  MessageSquare,
-  Star,
   Activity,
-  Zap,
-  Globe
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
@@ -741,7 +736,7 @@ const Header = () => {
                     className="space-y-3 border-t border-gray-200/50 dark:border-gray-700/50 pt-6"
                   >
                     <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" className="w-full justify-center text-base py-3">
+                      <Button variant="outline" className="w-full mb-4 justify-center text-base py-3">
                         Sign In
                       </Button>
                     </Link>

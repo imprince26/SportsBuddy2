@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import toast, { Toaster, ToastBar } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeProvider';
 import {
@@ -236,7 +236,7 @@ const CustomToast = () => {
         zIndex: 9999,
       }}
       toastOptions={{
-        duration: 4000,
+        duration: 3000,
         style: {
           background: 'transparent',
           boxShadow: 'none',

@@ -15,6 +15,8 @@ import {
   forgotPassword,
   verifyResetCode,
   resetPassword,
+  deleteNotification,
+  markAllNotificationsRead
 } from "../controllers/authController.js";
 import { upload } from "../config/cloudinary.js";
 
@@ -39,7 +41,9 @@ router.get("/profile", getProfile);
 router.put("/profile",upload.single("avatar"), updateProfile);
 router.put("/password", updatePassword);
 router.get("/notifications", getNotifications);
-router.put("/notifications/:notificationId", markNotificationRead);
+router.put("/notifications/:notificationId/read", markNotificationRead);
+router.put("/notifications/read-all", markAllNotificationsRead);
+router.delete("/notifications/:notificationId", deleteNotification);
 router.post("/achievements", addAchievement);
 
 export default router;

@@ -656,6 +656,63 @@ export const markNotificationRead = async (req, res) => {
   }
 };
 
+export const markAllNotificationsRead = async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      {
+        _id: req.user._id,
+      },
+      {
+        $set: {
+          notifications: [],
+        },
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      data: user.notifications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating notifications",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteNotification = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+
+    const user = await User.findOneAndUpdate(
+      {
+        _id: req.user._id,
+        "notifications._id": notificationId,
+      },
+      {
+        $pull: {
+          notifications: {
+            _id: notificationId,
+          },
+        },
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      data: user.notifications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting notification",
+      error: error.message,
+    });
+  }
+};
+
 export const addAchievement = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);

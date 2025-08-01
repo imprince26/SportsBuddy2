@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -40,31 +39,21 @@ import {
   Bell,
   BellRing,
   Search,
-  Filter,
   MoreHorizontal,
   Trash2,
   Eye,
-  EyeOff,
   Check,
   CheckCheck,
   Calendar,
   Clock,
   Users,
   MessageSquare,
-  Trophy,
-  Zap,
   Settings,
   RefreshCw,
   ExternalLink,
   Star,
-  Heart,
-  User,
-  MapPin,
   AlertTriangle,
-  Info,
   Sparkles,
-  Activity,
-  X,
 } from "lucide-react";
 import { format, formatDistanceToNow, isToday, isYesterday } from "date-fns";
 import api from "@/utils/api";
@@ -111,7 +100,7 @@ const Notifications = () => {
   const fetchNotifications = useCallback(async (refresh = false) => {
     try {
       if (refresh) setRefreshing(true);
-      
+
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Please login to view notifications");
@@ -126,11 +115,11 @@ const Notifications = () => {
       setNotifications(userNotifications);
 
       // Calculate stats
-      const todayNotifications = userNotifications.filter(n => 
+      const todayNotifications = userNotifications.filter(n =>
         isToday(new Date(n.timestamp))
       );
       const unreadNotifications = userNotifications.filter(n => !n.read);
-      const importantNotifications = userNotifications.filter(n => 
+      const importantNotifications = userNotifications.filter(n =>
         n.priority === "high"
       );
 
@@ -160,13 +149,8 @@ const Notifications = () => {
   // Mark notification as read
   const markAsRead = async (notificationId) => {
     try {
-      const token = localStorage.getItem("token");
-      await api.patch(
-        `/auth/notifications/${notificationId}/read`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      await api.put(
+        `/auth/notifications/${notificationId}/read`
       );
 
       setNotifications(prev =>
@@ -191,9 +175,8 @@ const Notifications = () => {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem("token");
-      await api.patch(
+      await api.put(
         "/auth/notifications/read-all",
-        {},
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -224,14 +207,14 @@ const Notifications = () => {
 
       setStats(prev => ({
         total: prev.total - 1,
-        unread: deletedNotification && !deletedNotification.read 
-          ? prev.unread - 1 
+        unread: deletedNotification && !deletedNotification.read
+          ? prev.unread - 1
           : prev.unread,
-        today: isToday(new Date(deletedNotification?.timestamp)) 
-          ? prev.today - 1 
+        today: isToday(new Date(deletedNotification?.timestamp))
+          ? prev.today - 1
           : prev.today,
-        important: deletedNotification?.priority === "high" 
-          ? prev.important - 1 
+        important: deletedNotification?.priority === "high"
+          ? prev.important - 1
           : prev.important,
       }));
 
@@ -313,13 +296,13 @@ const Notifications = () => {
 
   // Filter notifications
   const filteredNotifications = notifications.filter((notification) => {
-    const matchesSearch = 
+    const matchesSearch =
       notification.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notification.message.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesType = typeFilter === "all" || notification.type === typeFilter;
-    
-    const matchesRead = 
+
+    const matchesRead =
       readFilter === "all" ||
       (readFilter === "read" && notification.read) ||
       (readFilter === "unread" && !notification.read);
@@ -331,7 +314,7 @@ const Notifications = () => {
   const groupedNotifications = filteredNotifications.reduce((groups, notification) => {
     const date = new Date(notification.timestamp);
     let groupKey;
-    
+
     if (isToday(date)) {
       groupKey = "Today";
     } else if (isYesterday(date)) {
@@ -405,8 +388,8 @@ const Notifications = () => {
           variants={itemVariants}
           className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 p-6 text-white shadow-2xl"
         >
-        
-          
+
+
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="space-y-2">
@@ -424,7 +407,7 @@ const Notifications = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
@@ -438,7 +421,7 @@ const Notifications = () => {
                   />
                   {refreshing ? "Refreshing..." : "Refresh"}
                 </Button>
-                
+
                 {stats.unread > 0 && (
                   <Button
                     size="sm"
@@ -606,11 +589,10 @@ const Notifications = () => {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className={`group relative flex items-start space-x-4 p-4 rounded-xl border transition-all duration-300 hover:shadow-md cursor-pointer ${
-                                  notification.read
+                                className={`group relative flex items-start space-x-4 p-4 rounded-xl border transition-all duration-300 hover:shadow-md cursor-pointer ${notification.read
                                     ? "bg-gray-50/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50"
                                     : "bg-blue-50/50 dark:bg-blue-900/20 border-blue-200/50 dark:border-blue-700/50 shadow-sm"
-                                }`}
+                                  }`}
                                 onClick={() => {
                                   setSelectedNotification(notification);
                                   setShowDetailDialog(true);
@@ -621,11 +603,10 @@ const Notifications = () => {
                               >
                                 {/* Notification Icon */}
                                 <div className="flex-shrink-0 mt-1">
-                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${
-                                    notification.read
+                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${notification.read
                                       ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                                       : "bg-blue-100 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700"
-                                  }`}>
+                                    }`}>
                                     {getNotificationIcon(notification.type, notification.priority)}
                                   </div>
                                 </div>
@@ -643,7 +624,7 @@ const Notifications = () => {
                                         {notification.message}
                                       </p>
                                     </div>
-                                    
+
                                     {!notification.read && (
                                       <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2" />
                                     )}
@@ -656,7 +637,7 @@ const Notifications = () => {
                                       </Badge>
                                       {getPriorityBadge(notification.priority)}
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                                       <Clock className="w-3 h-3" />
                                       {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}

@@ -316,7 +316,7 @@ function App() {
             />
 
             <Route
-              path="events/edit/:id"
+              path="events/:id/edit"
               element={
                 <ProtectedRoute title="Edit Event">
                   <EditEvent />

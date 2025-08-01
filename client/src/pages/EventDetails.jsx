@@ -58,9 +58,9 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import EventDetailsSkeleton from "@/components/events/EventDetailsSkeleton"
 import EventDetailsError from "@/components/events/EventDetailsError"
-import { showToast } from "@/components/CustomToast"
 import { cn } from "@/lib/utils"
 import api from "@/utils/api"
+import toast from "react-hot-toast"
 
 const EventDetails = () => {
   const { id } = useParams()
@@ -207,11 +207,11 @@ const EventDetails = () => {
     setLoadingAction(true)
     try {
       await joinEvent(id)
-      showToast.success("Successfully joined the event! 🎉")
+      toast.success("Successfully joined the event! 🎉")
       window.location.reload()
     } catch (err) {
       console.error("Error joining event:", err)
-      showToast.error("Failed to join event")
+      toast.error("Failed to join event")
     } finally {
       setLoadingAction(false)
     }
@@ -221,11 +221,11 @@ const EventDetails = () => {
     setLoadingAction(true)
     try {
       await leaveEvent(id)
-      showToast.success("You have left the event")
+      toast.success("You have left the event")
       window.location.reload()
     } catch (err) {
       console.error("Error leaving event:", err)
-      showToast.error("Failed to leave event")
+      toast.error("Failed to leave event")
     } finally {
       setLoadingAction(false)
     }
@@ -235,11 +235,11 @@ const EventDetails = () => {
     setLoadingAction(true)
     try {
       await deleteEvent(id)
-      showToast.success("Event deleted successfully")
+      toast.success("Event deleted successfully")
       navigate("/events")
     } catch (err) {
       console.error("Error deleting event:", err)
-      showToast.error("Failed to delete event")
+      toast.error("Failed to delete event")
     } finally {
       setLoadingAction(false)
       setShowConfirmDelete(false)
@@ -257,11 +257,11 @@ const EventDetails = () => {
         setRating(0)
         setReview("")
         setHasRated(true)
-        showToast.success("Review submitted successfully! ⭐")
+        toast.success("Review submitted successfully! ⭐")
       }
     } catch (err) {
       console.error("Error submitting rating:", err)
-      showToast.error("Failed to submit review")
+      toast.error("Failed to submit review")
     }
   }
 
@@ -278,10 +278,10 @@ const EventDetails = () => {
       if (response.data.success) {
         setEvent(response.data.data)
       }
-      showToast.success("Message sent! 💬")
+      toast.success("Message sent! 💬")
     } catch (err) {
       console.error("Error sending message:", err)
-      showToast.error("Failed to send message")
+      toast.error("Failed to send message")
     } finally {
       setSendingMessage(false)
     }
@@ -293,11 +293,11 @@ const EventDetails = () => {
     if (isFavorite) {
       const updatedFavorites = favorites.filter((eventId) => eventId !== id)
       localStorage.setItem("favorites", JSON.stringify(updatedFavorites))
-      showToast.success("Removed from favorites")
+      toast.success("Removed from favorites")
     } else {
       favorites.push(id)
       localStorage.setItem("favorites", JSON.stringify(favorites))
-      showToast.success("Added to favorites ❤️")
+      toast.success("Added to favorites ❤️")
     }
 
     setIsFavorite(!isFavorite)
@@ -311,10 +311,10 @@ const EventDetails = () => {
       case "copy":
         try {
           await navigator.clipboard.writeText(eventUrl)
-          showToast.success("Link copied to clipboard! 📋")
+          toast.success("Link copied to clipboard! 📋")
         } catch (err) {
           console.error("Failed to copy:", err)
-          showToast.error("Failed to copy link")
+          toast.error("Failed to copy link")
         }
         break
       case "facebook":

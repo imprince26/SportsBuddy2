@@ -140,7 +140,6 @@ export const EventProvider = ({ children }) => {
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to fetch events';
       setError(message);
-      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -166,7 +165,6 @@ export const EventProvider = ({ children }) => {
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to fetch event';
       setError(message);
-      toast.error(message);
       return null;
     } finally {
       setLoading(false);
@@ -177,7 +175,6 @@ export const EventProvider = ({ children }) => {
   const createEvent = async (eventData) => {
     setLoading(true);
     setError(null);
-    console.log('Creating event with data:', eventData);
     try {
       // Create FormData instance
       const formData = new FormData();
@@ -206,13 +203,11 @@ export const EventProvider = ({ children }) => {
       if (response.data) {
         setEvents(prev => [response.data, ...prev]);
         setUserEvents(prev => [response.data, ...prev]);
-        toast.success('Event created successfully');
-        return { success: true, event: response.data };
+        return { success: true, event: response.data.data };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to create event';
       setError(message);
-      toast.error(message);
       return { success: false, message };
     } finally {
       setLoading(false);
@@ -252,7 +247,7 @@ export const EventProvider = ({ children }) => {
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to update event';
       setError(message);
-      throw new Error(message);
+      return { success: false, message };
     } finally {
       setLoading(false);
     }
@@ -279,13 +274,11 @@ export const EventProvider = ({ children }) => {
           leaveEventRoom(eventId);
         }
 
-        toast.success('Event deleted successfully');
         return { success: true };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to delete event';
       setError(message);
-      toast.error(message);
       return { success: false, message };
     } finally {
       setLoading(false);
@@ -317,13 +310,11 @@ export const EventProvider = ({ children }) => {
           setCurrentEvent(response.data);
         }
 
-        toast.success('Successfully joined event');
         return { success: true, event: response.data };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to join event';
       setError(message);
-      toast.error(message);
       return { success: false, message };
     } finally {
       setLoading(false);
@@ -354,13 +345,11 @@ export const EventProvider = ({ children }) => {
           setCurrentEvent(response.data);
         }
 
-        toast.success('Successfully left event');
         return { success: true, event: response.data };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to leave event';
       setError(message);
-      toast.error(message);
       return { success: false, message };
     } finally {
       setLoading(false);
@@ -381,13 +370,11 @@ export const EventProvider = ({ children }) => {
           setCurrentEvent(response.data);
         }
 
-        toast.success('Team created successfully');
         return { success: true, event: response.data };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to create team';
       setError(message);
-      toast.error(message);
       return { success: false, message };
     } finally {
       setLoading(false);
@@ -408,13 +395,11 @@ export const EventProvider = ({ children }) => {
           setCurrentEvent(response.data);
         }
 
-        toast.success('Rating submitted successfully');
         return { success: true, event: response.data };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to submit rating';
       setError(message);
-      toast.error(message);
       return { success: false, message };
     } finally {
       setLoading(false);
@@ -431,7 +416,6 @@ export const EventProvider = ({ children }) => {
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to send message';
-      toast.error(message);
       return { success: false, message };
     }
   };

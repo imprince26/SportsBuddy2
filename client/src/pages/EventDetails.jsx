@@ -777,7 +777,7 @@ const EventDetails = () => {
                         } else if (!isAuthenticated) {
                           navigate("/login")
                         } else {
-                          showToast.error("Only participants can access the chat")
+                          toast.error("Only participants can access the chat")
                         }
                       }}
                     >

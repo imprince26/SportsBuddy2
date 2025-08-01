@@ -21,7 +21,6 @@ import {
   Loader2,
   ArrowLeft,
   ArrowRight,
-  DollarSign,
   Shield,
   Target,
   TrendingUp,
@@ -40,6 +39,7 @@ import {
   Smile,
   Paperclip,
   ImageIcon,
+  IndianRupee
 } from "lucide-react"
 
 import { useAuth } from "@/hooks/useAuth"
@@ -549,7 +549,7 @@ const EventDetails = () => {
                           : event.averageRating > 0
                             ? event.averageRating.toFixed(1)
                             : "N/A",
-                      icon: event.registrationFee > 0 ? DollarSign : Star,
+                      icon: event.registrationFee > 0 ? IndianRupee : Star,
                       color: "from-yellow-500 to-yellow-600",
                     },
                   ].map((stat, index) => (
@@ -853,13 +853,13 @@ const EventDetails = () => {
                               {event.registrationFee > 0 && (
                                 <div className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
                                   <div className="flex items-center gap-3">
-                                    <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                    <IndianRupee className="w-5 h-5 text-green-600 dark:text-green-400" />
                                     <span className="font-medium text-gray-700 dark:text-gray-300">
                                       Registration Fee
                                     </span>
                                   </div>
                                   <span className="text-gray-900 dark:text-white font-semibold text-lg">
-                                    ${event.registrationFee}
+                                    ₹{event.registrationFee}
                                   </span>
                                 </div>
                               )}

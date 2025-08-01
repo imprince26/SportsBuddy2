@@ -8,8 +8,8 @@ import { useEvents } from "@/hooks/useEvents"
 import {
   Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Save, Eye, Upload, Plus,
   Trash2, CheckCircle, Sparkles, Award, Target, Shield, Camera,
-  FileText, Settings, ArrowRight, Star, Trophy, DollarSign, AlertTriangle,
-  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers
+  FileText, Settings, ArrowRight, Star, Trophy, AlertTriangle,
+  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers,IndianRupee
 } from 'lucide-react'
 
 import {
@@ -685,12 +685,12 @@ const CreateEventForm = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                                    Registration Fee ($)
+                                    <IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                                    Registration Fee (₹)
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <DollarSign className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                                      <IndianRupee className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                                       <Input
                                         type="number"
                                         min={0}

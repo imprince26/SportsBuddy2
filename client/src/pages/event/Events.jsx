@@ -3,9 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Users, Star, Plus, Calendar, Grid3X3, List, ChevronLeft, ChevronRight,
-  RefreshCw, AlertTriangle, Sparkles, Trophy, Flame, Heart, Share2,
-  TrendingUp, Zap, Globe, Activity, Target, Award, Search, Filter,
-  MapPin, Clock, Eye, MoreHorizontal
+  RefreshCw, AlertTriangle, Sparkles, Trophy, Flame,Search
 } from 'lucide-react'
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"

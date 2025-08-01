@@ -13,24 +13,24 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ResetPassword from './pages/auth/ResetPassword';
 import ForgotPassword from './pages/auth/ForgotPassword';
-import Events from './pages/Events';
-import EventDetails from './pages/EventDetails';
+import Events from './pages/event/Events';
+import EventDetails from './pages/event/EventDetails';
 import PublicProfile from './pages/PublicProfile';
-import Search from './pages/Search';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Privacy from './pages/Privacy';
-import Terms from './pages/Terms';
+import Search from './pages/public/Search';
+import About from './pages/public/About';
+import Contact from './pages/public/Contact';
+import Privacy from './pages/public/Privacy';
+import Terms from './pages/public/Terms';
 import NotFound from './pages/NotFound';
 
 // Protected User Pages
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
-import CreateEvent from './pages/CreateEvent';
-import EditEvent from './pages/EditEvent';
+import CreateEvent from './pages/event/CreateEvent';
+import EditEvent from './pages/event/EditEvent';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
-import EventChat from './pages/EventChat';
+import EventChat from './pages/event/EventChat';
 import TeamManagement from './pages/TeamManagement';
 import FollowersFollowing from './pages/FollowerFollowing';
 // import Venues from './pages/Venues';
@@ -40,7 +40,7 @@ import FollowersFollowing from './pages/FollowerFollowing';
 // import Athletes from './pages/Athletes';
 // import MyEvents from './pages/MyEvents';
 // import Bookmarks from './pages/Bookmarks';
-import Help from './pages/Help';
+import Help from './pages/public/Help';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';

@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
 import {
   Mail,
   ArrowRight,
@@ -23,18 +22,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import ModernInput from "@/components/ModernInput"
-
-// Validation schema
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(100, "Password is too long"),
-})
+import { loginSchema,defaultLoginValues } from "@/schemas/authSchema"
 
 const Login = () => {
   const { user, login, loading, authError } = useAuth()
@@ -43,10 +31,7 @@ const Login = () => {
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: defaultLoginValues
   })
 
   useEffect(() => {

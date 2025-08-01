@@ -6,7 +6,13 @@ import { motion, AnimatePresence } from "framer-motion"
 import * as z from "zod"
 import { toast } from "react-hot-toast"
 import { useEvents } from "@/hooks/useEvents"
-import { Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Save, Eye, Upload, Plus, Trash2, CheckCircle, AlertCircle, Sparkles, Target, Shield, Zap, Globe, Camera, FileText, Settings } from 'lucide-react'
+import { 
+  Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Save, Eye, Upload, Plus, 
+  Trash2, CheckCircle, AlertCircle, Sparkles, Target, Shield, Zap, Globe, Camera, 
+  FileText, Settings, ArrowRight, Star, Trophy, DollarSign, Info, AlertTriangle,
+  MapPinIcon, UsersIcon, CalendarDays, Timer, Award, Play, Heart, Layers
+} from 'lucide-react'
+
 import {
   Form,
   FormControl,
@@ -96,22 +102,46 @@ const CreateEventForm = () => {
   })
 
   const steps = [
-    { id: "basic", title: "Basic Info", icon: FileText },
-    { id: "details", title: "Event Details", icon: Settings },
-    { id: "media", title: "Media & Rules", icon: Camera },
-    { id: "review", title: "Review", icon: Eye },
+    { 
+      id: "basic", 
+      title: "Basic Info", 
+      icon: FileText, 
+      description: "Event name, category & description",
+      color: "from-blue-500 to-blue-600"
+    },
+    { 
+      id: "details", 
+      title: "Event Details", 
+      icon: Settings, 
+      description: "Date, time & location",
+      color: "from-purple-500 to-purple-600"
+    },
+    { 
+      id: "media", 
+      title: "Media & Rules", 
+      icon: Camera, 
+      description: "Images, rules & equipment",
+      color: "from-green-500 to-green-600"
+    },
+    { 
+      id: "review", 
+      title: "Review", 
+      icon: Eye, 
+      description: "Final review & publish",
+      color: "from-orange-500 to-orange-600"
+    },
   ]
 
   const categories = [
-    { value: "Football", label: "Football", icon: "⚽", color: "bg-green-500" },
-    { value: "Basketball", label: "Basketball", icon: "🏀", color: "bg-orange-500" },
-    { value: "Tennis", label: "Tennis", icon: "🎾", color: "bg-yellow-500" },
-    { value: "Running", label: "Running", icon: "🏃", color: "bg-blue-500" },
-    { value: "Cycling", label: "Cycling", icon: "🚴", color: "bg-purple-500" },
-    { value: "Swimming", label: "Swimming", icon: "🏊", color: "bg-cyan-500" },
-    { value: "Volleyball", label: "Volleyball", icon: "🏐", color: "bg-pink-500" },
-    { value: "Cricket", label: "Cricket", icon: "🏏", color: "bg-red-500" },
-    { value: "Other", label: "Other", icon: "🎯", color: "bg-gray-500" },
+    { value: "Football", label: "Football", icon: "⚽", color: "from-green-400 to-green-600", participants: "50K+" },
+    { value: "Basketball", label: "Basketball", icon: "🏀", color: "from-orange-400 to-orange-600", participants: "45K+" },
+    { value: "Tennis", label: "Tennis", icon: "🎾", color: "from-yellow-400 to-yellow-600", participants: "30K+" },
+    { value: "Running", label: "Running", icon: "🏃", color: "from-blue-400 to-blue-600", participants: "60K+" },
+    { value: "Cycling", label: "Cycling", icon: "🚴", color: "from-purple-400 to-purple-600", participants: "25K+" },
+    { value: "Swimming", label: "Swimming", icon: "🏊", color: "from-cyan-400 to-cyan-600", participants: "20K+" },
+    { value: "Volleyball", label: "Volleyball", icon: "🏐", color: "from-pink-400 to-pink-600", participants: "15K+" },
+    { value: "Cricket", label: "Cricket", icon: "🏏", color: "from-red-400 to-red-600", participants: "40K+" },
+    { value: "Other", label: "Other Sports", icon: "🎯", color: "from-gray-400 to-gray-600", participants: "10K+" },
   ]
 
   // Page Title
@@ -123,16 +153,18 @@ const CreateEventForm = () => {
   const calculateProgress = useCallback(() => {
     const values = form.getValues()
     let completed = 0
-    const total = 8
+    const total = 10
 
-    if (values.name) completed++
+    if (values.name?.length >= 3) completed++
     if (values.category) completed++
-    if (values.description) completed++
+    if (values.description?.length >= 20) completed++
     if (values.date) completed++
     if (values.time) completed++
-    if (values.location.address) completed++
-    if (values.location.city) completed++
-    if (values.maxParticipants > 0) completed++
+    if (values.location.address?.length >= 5) completed++
+    if (values.location.city?.length >= 2) completed++
+    if (values.maxParticipants >= 2) completed++
+    if (values.difficulty) completed++
+    if (values.eventType) completed++
 
     setCompletionProgress((completed / total) * 100)
   }, [form])
@@ -216,13 +248,41 @@ const CreateEventForm = () => {
 
       if (result.success) {
         toast.success("Event created successfully! 🎉")
-        navigate(`/events/${result.event._id}`)
+        navigate(`/events/${result.event.id}`)
       }
     } catch (error) {
       toast.error(error.message || "Failed to create event")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const getStepIcon = (step, index) => {
+    const StepIcon = step.icon
+    const isActive = activeTab === step.id
+    const isCompleted = steps.findIndex(s => s.id === activeTab) > index
+
+    return (
+      <div
+        className={cn(
+          "relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
+          isActive 
+            ? `bg-gradient-to-br ${step.color} text-white shadow-lg scale-110` 
+            : isCompleted
+            ? "bg-gradient-to-br from-green-500 to-green-600 text-white"
+            : "bg-white dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700"
+        )}
+      >
+        {isCompleted ? (
+          <CheckCircle className="w-6 h-6" />
+        ) : (
+          <StepIcon className="w-6 h-6" />
+        )}
+        {isActive && (
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+        )}
+      </div>
+    )
   }
 
   const containerVariants = {
@@ -246,188 +306,335 @@ const CreateEventForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background-light via-background-light to-muted-light/30 dark:from-background-dark dark:via-background-dark dark:to-muted-dark/30">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+      {/* Background Effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-blue-400/10 via-transparent to-transparent rounded-full blur-3xl" />
+        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-purple-400/10 via-transparent to-transparent rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 py-8">
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
           {/* Header */}
           <motion.div variants={itemVariants} className="mb-8">
-            <div className="flex items-center gap-4 mb-6">
-              <Button variant="ghost" asChild className="p-2">
+            <div className="flex items-center gap-4 mb-8">
+              <Button variant="ghost" asChild className="p-2 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl">
                 <Link to="/events">
                   <ChevronLeft className="w-5 h-5" />
                 </Link>
               </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground-light dark:text-foreground-dark">
-                  Create New Event
-                </h1>
-                <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                  Organize an amazing sports event for your community
-                </p>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                      Create New Event
+                    </h1>
+                    <p className="text-gray-600 dark:text-gray-400 text-lg">
+                      Bring your sports community together with an amazing event
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <Card className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+            {/* Progress Section */}
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-primary-light dark:text-primary-dark" />
-                    <span className="font-medium text-foreground-light dark:text-foreground-dark">
-                      Event Creation Progress
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                      <Trophy className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-900 dark:text-white text-lg">
+                        Event Creation Progress
+                      </span>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Fill in all required fields to create your event
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-sm font-medium text-primary-light dark:text-primary-dark">
-                    {Math.round(completionProgress)}% Complete
-                  </span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {Math.round(completionProgress)}%
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Complete</p>
+                  </div>
                 </div>
-                <Progress value={completionProgress} className="h-2" />
-                <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark mt-2">
-                  Fill in all required fields to create your event
-                </p>
+                <div className="relative">
+                  <Progress value={completionProgress} className="h-3 bg-gray-200 dark:bg-gray-700" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-500 rounded-full opacity-20 blur-sm" 
+                       style={{ width: `${completionProgress}%` }} />
+                </div>
               </CardContent>
             </Card>
           </motion.div>
 
+          {/* Step Navigation */}
+          <motion.div variants={itemVariants} className="mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {steps.map((step, index) => (
+                <motion.button
+                  key={step.id}
+                  onClick={() => setActiveTab(step.id)}
+                  className={cn(
+                    "p-6 rounded-2xl border-2 transition-all duration-300 text-left group",
+                    activeTab === step.id
+                      ? "border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 shadow-xl scale-105"
+                      : "border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg"
+                  )}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="flex items-center gap-4 mb-3">
+                    {getStepIcon(step, index)}
+                    <div className="flex-1">
+                      <h3 className={cn(
+                        "font-semibold text-lg transition-colors",
+                        activeTab === step.id 
+                          ? "text-gray-900 dark:text-white" 
+                          : "text-gray-700 dark:text-gray-300"
+                      )}>
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      Step {index + 1} of {steps.length}
+                    </span>
+                    {activeTab === step.id && (
+                      <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    )}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+
           {/* Main Form */}
           <motion.div variants={itemVariants}>
-            <Card className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark shadow-xl">
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-2xl">
               <CardContent className="p-0">
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <div className="border-b border-border-light dark:border-border-dark">
-                    <TabsList className="grid w-full grid-cols-4 bg-transparent h-auto p-0">
-                      {steps.map((step, index) => (
-                        <TabsTrigger
-                          key={step.id}
-                          value={step.id}
-                          className={cn(
-                            "flex flex-col items-center gap-2 p-6 rounded-none border-b-2 border-transparent data-[state=active]:border-primary-light dark:data-[state=active]:border-primary-dark data-[state=active]:bg-primary-light/5 dark:data-[state=active]:bg-primary-dark/5",
-                            "hover:bg-muted-light/50 dark:hover:bg-muted-dark/50 transition-all duration-200",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                              activeTab === step.id
-                                ? "bg-primary-light dark:bg-primary-dark text-white"
-                                : "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark",
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    
+                    {/* Basic Info Tab */}
+                    {activeTab === "basic" && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="p-8"
+                      >
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <FileText className="w-8 h-8 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                              Basic Information
+                            </h2>
+                            <p className="text-gray-600 dark:text-gray-400 text-lg">
+                              Let's start with the essentials about your event
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-8">
+                          {/* Event Name */}
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                  <Star className="w-5 h-5 text-yellow-500" />
+                                  Event Name *
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter an exciting and descriptive event name"
+                                    {...field}
+                                    className="h-14 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200"
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-gray-600 dark:text-gray-400">
+                                  Choose a catchy name that clearly describes your event and attracts participants
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
                             )}
-                          >
-                            <step.icon className="w-5 h-5" />
-                          </div>
-                          <div className="text-center">
-                            <p className="font-medium text-sm text-foreground-light dark:text-foreground-dark">
-                              {step.title}
-                            </p>
-                            <p className="text-xs text-muted-foreground-light dark:text-muted-foreground-dark">
-                              Step {index + 1}
-                            </p>
-                          </div>
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </div>
+                          />
 
-                  <div className="p-8">
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <TabsContent value="basic" className="space-y-6 mt-0">
-                          <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                            <div className="flex items-center gap-3 mb-6">
-                              <div className="w-12 h-12 rounded-xl bg-primary-light/20 dark:bg-primary-dark/20 flex items-center justify-center">
-                                <FileText className="w-6 h-6 text-primary-light dark:text-primary-dark" />
-                              </div>
-                              <div>
-                                <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
-                                  Basic Information
-                                </h2>
-                                <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                  Tell us about your event
-                                </p>
-                              </div>
-                            </div>
+                          {/* Category Selection */}
+                          <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                  <Layers className="w-5 h-5 text-purple-500" />
+                                  Sport Category *
+                                </FormLabel>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  {categories.map((category) => (
+                                    <motion.button
+                                      key={category.value}
+                                      type="button"
+                                      onClick={() => field.onChange(category.value)}
+                                      className={cn(
+                                        "p-4 rounded-xl border-2 transition-all duration-200 text-left group",
+                                        field.value === category.value
+                                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-105"
+                                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md"
+                                      )}
+                                      whileHover={{ y: -2 }}
+                                      whileTap={{ scale: 0.98 }}
+                                    >
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <div className={cn(
+                                          "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-gradient-to-br",
+                                          category.color
+                                        )}>
+                                          {category.icon}
+                                        </div>
+                                        <div className="flex-1">
+                                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                                            {category.label}
+                                          </h3>
+                                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            {category.participants} players
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </motion.button>
+                                  ))}
+                                </div>
+                                <FormDescription className="text-gray-600 dark:text-gray-400">
+                                  Select the main sport or activity for your event
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Event Name *
-                                    </FormLabel>
-                                    <FormControl>
+                          {/* Description */}
+                          <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                  <FileText className="w-5 h-5 text-green-500" />
+                                  Event Description *
+                                </FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Describe your event in detail. What makes it special? What should participants expect? Include any special features, prizes, or unique aspects of your event..."
+                                    rows={6}
+                                    {...field}
+                                    className="text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200 resize-none"
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-gray-600 dark:text-gray-400">
+                                  Provide comprehensive details about the event, what to expect, and any special features (minimum 20 characters)
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Date and Time */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                              control={form.control}
+                              name="date"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <CalendarDays className="w-5 h-5 text-blue-500" />
+                                    Event Date *
+                                  </FormLabel>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                                       <Input
-                                        placeholder="Enter an exciting event name"
+                                        type="date"
                                         {...field}
-                                        className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors"
+                                        className="h-14 pl-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200"
                                       />
-                                    </FormControl>
-                                    <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                      Choose a catchy name that describes your event
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name="category"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Sport Category *
-                                    </FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                      <FormControl>
-                                        <SelectTrigger className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark">
-                                          <SelectValue placeholder="Select a sport category" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
-                                        {categories.map((category) => (
-                                          <SelectItem key={category.value} value={category.value}>
-                                            <div className="flex items-center gap-3">
-                                              <span className="text-lg">{category.icon}</span>
-                                              <span>{category.label}</span>
-                                            </div>
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                    <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                      What sport will this event focus on?
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
+                                    </div>
+                                  </FormControl>
+                                  <FormDescription className="text-gray-600 dark:text-gray-400">
+                                    When will your event take place?
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
                             <FormField
                               control={form.control}
-                              name="description"
+                              name="time"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                    Event Description *
+                                  <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <Timer className="w-5 h-5 text-orange-500" />
+                                    Start Time *
                                   </FormLabel>
                                   <FormControl>
-                                    <Textarea
-                                      placeholder="Describe your event in detail. What makes it special? What should participants expect?"
-                                      rows={6}
-                                      {...field}
-                                      className="bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors resize-none"
-                                    />
+                                    <div className="relative">
+                                      <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                      <Input
+                                        type="time"
+                                        {...field}
+                                        className="h-14 pl-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200"
+                                      />
+                                    </div>
                                   </FormControl>
-                                  <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                    Provide details about the event, what to expect, and any special features
+                                  <FormDescription className="text-gray-600 dark:text-gray-400">
+                                    What time does the event start?
                                   </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          {/* Location */}
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-2">
+                              <MapPinIcon className="w-6 h-6 text-red-500" />
+                              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                Location Details
+                              </h3>
+                            </div>
+                            
+                            <FormField
+                              control={form.control}
+                              name="location.address"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Address *
+                                  </FormLabel>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                      <Input
+                                        placeholder="Enter the complete venue address"
+                                        {...field}
+                                        className="h-14 pl-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200"
+                                      />
+                                    </div>
+                                  </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -436,805 +643,868 @@ const CreateEventForm = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <FormField
                                 control={form.control}
-                                name="date"
+                                name="location.city"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Event Date *
-                                    </FormLabel>
-                                    <div className="relative">
-                                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark w-5 h-5" />
-                                      <FormControl>
-                                        <Input
-                                          type="date"
-                                          {...field}
-                                          className="h-12 pl-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors"
-                                        />
-                                      </FormControl>
-                                    </div>
-                                    <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                      When will your event take place?
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name="time"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Start Time *
-                                    </FormLabel>
-                                    <div className="relative">
-                                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark w-5 h-5" />
-                                      <FormControl>
-                                        <Input
-                                          type="time"
-                                          {...field}
-                                          className="h-12 pl-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors"
-                                        />
-                                      </FormControl>
-                                    </div>
-                                    <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                      What time does the event start?
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-
-                            <div className="space-y-4">
-                              <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">
-                                Location Details
-                              </h3>
-                              <FormField
-                                control={form.control}
-                                name="location.address"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Address *
-                                    </FormLabel>
-                                    <div className="relative">
-                                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark w-5 h-5" />
-                                      <FormControl>
-                                        <Input
-                                          placeholder="Enter the full address"
-                                          {...field}
-                                          className="h-12 pl-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors"
-                                        />
-                                      </FormControl>
-                                    </div>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
-                                  control={form.control}
-                                  name="location.city"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                        City *
-                                      </FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          placeholder="Enter city"
-                                          {...field}
-                                          className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors"
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-
-                                <FormField
-                                  control={form.control}
-                                  name="location.state"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                        State/Province
-                                      </FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          placeholder="Enter state (optional)"
-                                          {...field}
-                                          className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors"
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="flex justify-end">
-                              <Button
-                                type="button"
-                                onClick={() => setActiveTab("details")}
-                                className="bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                              >
-                                Next: Event Details
-                                <ChevronLeft className="w-4 h-4 ml-2 rotate-180" />
-                              </Button>
-                            </div>
-                          </motion.div>
-                        </TabsContent>
-
-                        <TabsContent value="details" className="space-y-6 mt-0">
-                          <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                            <div className="flex items-center gap-3 mb-6">
-                              <div className="w-12 h-12 rounded-xl bg-accent-light/20 dark:bg-accent-dark/20 flex items-center justify-center">
-                                <Settings className="w-6 h-6 text-accent-light dark:text-accent-dark" />
-                              </div>
-                              <div>
-                                <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
-                                  Event Details
-                                </h2>
-                                <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                  Configure your event settings
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <FormField
-                                control={form.control}
-                                name="maxParticipants"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Maximum Participants
-                                    </FormLabel>
-                                    <div className="relative">
-                                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark w-5 h-5" />
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          min={2}
-                                          max={1000}
-                                          {...field}
-                                          onChange={(e) => field.onChange(Number(e.target.value))}
-                                          className="h-12 pl-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors"
-                                        />
-                                      </FormControl>
-                                    </div>
-                                    <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                      How many people can join this event?
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name="registrationFee"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Registration Fee ($)
+                                    <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white">
+                                      City *
                                     </FormLabel>
                                     <FormControl>
+                                      <Input
+                                        placeholder="Enter city name"
+                                        {...field}
+                                        className="h-14 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                                                <FormField
+                                control={form.control}
+                                name="location.state"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white">
+                                      State/Province
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        placeholder="Enter state (optional)"
+                                        {...field}
+                                        className="h-14 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end pt-6">
+                            <Button
+                              type="button"
+                              onClick={() => setActiveTab("details")}
+                              size="lg"
+                              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                              Next: Event Details
+                              <ArrowRight className="w-5 h-5 ml-2" />
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Event Details Tab */}
+                    {activeTab === "details" && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="p-8"
+                      >
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <Settings className="w-8 h-8 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                              Event Configuration
+                            </h2>
+                            <p className="text-gray-600 dark:text-gray-400 text-lg">
+                              Set up the important details and requirements
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <FormField
+                              control={form.control}
+                              name="maxParticipants"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <UsersIcon className="w-5 h-5 text-blue-500" />
+                                    Maximum Participants *
+                                  </FormLabel>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Users className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                      <Input
+                                        type="number"
+                                        min={2}
+                                        max={1000}
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                        className="h-14 pl-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200"
+                                      />
+                                    </div>
+                                  </FormControl>
+                                  <FormDescription className="text-gray-600 dark:text-gray-400">
+                                    How many people can participate in this event?
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="registrationFee"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <DollarSign className="w-5 h-5 text-green-500" />
+                                    Registration Fee ($)
+                                  </FormLabel>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                                       <Input
                                         type="number"
                                         min={0}
                                         step={0.01}
                                         {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
-                                        className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark focus:border-primary-light dark:focus:border-primary-dark transition-colors"
+                                        className="h-14 pl-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-sm transition-all duration-200"
                                       />
-                                    </FormControl>
-                                    <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                      Set to 0 for free events
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                                    </div>
+                                  </FormControl>
+                                  <FormDescription className="text-gray-600 dark:text-gray-400">
+                                    Set to 0 for free events. This helps cover venue and equipment costs.
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                              <FormField
-                                control={form.control}
-                                name="difficulty"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Difficulty Level
-                                    </FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                      <FormControl>
-                                        <SelectTrigger className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark">
-                                          <SelectValue placeholder="Select difficulty" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
-                                        <SelectItem value="Beginner">
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-success-light dark:bg-success-dark" />
-                                            <span>Beginner - Open to all skill levels</span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <FormField
+                              control={form.control}
+                              name="difficulty"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <Award className="w-5 h-5 text-yellow-500" />
+                                    Difficulty Level *
+                                  </FormLabel>
+                                  <div className="space-y-3">
+                                    {[
+                                      { 
+                                        value: "Beginner", 
+                                        color: "from-green-400 to-green-600", 
+                                        icon: "🌱",
+                                        description: "Open to all skill levels - perfect for newcomers"
+                                      },
+                                      { 
+                                        value: "Intermediate", 
+                                        color: "from-yellow-400 to-orange-500", 
+                                        icon: "⚡",
+                                        description: "Some experience required - moderate challenge"
+                                      },
+                                      { 
+                                        value: "Advanced", 
+                                        color: "from-red-400 to-red-600", 
+                                        icon: "🔥",
+                                        description: "High skill level required - competitive play"
+                                      }
+                                    ].map((level) => (
+                                      <motion.button
+                                        key={level.value}
+                                        type="button"
+                                        onClick={() => field.onChange(level.value)}
+                                        className={cn(
+                                          "w-full p-4 rounded-xl border-2 transition-all duration-200 text-left",
+                                          field.value === level.value
+                                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-105"
+                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                        )}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className={cn(
+                                            "w-10 h-10 rounded-lg flex items-center justify-center text-lg bg-gradient-to-br",
+                                            level.color
+                                          )}>
+                                            {level.icon}
                                           </div>
-                                        </SelectItem>
-                                        <SelectItem value="Intermediate">
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-accent-light dark:bg-accent-dark" />
-                                            <span>Intermediate - Some experience required</span>
+                                          <div className="flex-1">
+                                            <h4 className="font-semibold text-gray-900 dark:text-white">
+                                              {level.value}
+                                            </h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                              {level.description}
+                                            </p>
                                           </div>
-                                        </SelectItem>
-                                        <SelectItem value="Advanced">
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-destructive-light dark:bg-destructive-dark" />
-                                            <span>Advanced - High skill level required</span>
-                                          </div>
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                      What skill level is required for participants?
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                                        </div>
+                                      </motion.button>
+                                    ))}
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
-                              <FormField
-                                control={form.control}
-                                name="eventType"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground-light dark:text-foreground-dark font-medium">
-                                      Event Type
-                                    </FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                      <FormControl>
-                                        <SelectTrigger className="h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark">
-                                          <SelectValue placeholder="Select event type" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent className="bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
-                                        <SelectItem value="casual">
-                                          <div className="flex items-center gap-2">
-                                            <Target className="w-4 h-4" />
-                                            <span>Casual - Fun and relaxed</span>
+                            <FormField
+                              control={form.control}
+                              name="eventType"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <Target className="w-5 h-5 text-purple-500" />
+                                    Event Type *
+                                  </FormLabel>
+                                  <div className="space-y-3">
+                                    {[
+                                      { 
+                                        value: "casual", 
+                                        icon: Heart, 
+                                        color: "from-blue-400 to-blue-600",
+                                        title: "Casual",
+                                        description: "Fun and relaxed atmosphere - social play"
+                                      },
+                                      { 
+                                        value: "tournament", 
+                                        icon: Trophy, 
+                                        color: "from-yellow-400 to-orange-500",
+                                        title: "Tournament",
+                                        description: "Competitive event with rankings and prizes"
+                                      },
+                                      { 
+                                        value: "training", 
+                                        icon: Target, 
+                                        color: "from-green-400 to-green-600",
+                                        title: "Training",
+                                        description: "Skill development and coaching session"
+                                      }
+                                    ].map((type) => (
+                                      <motion.button
+                                        key={type.value}
+                                        type="button"
+                                        onClick={() => field.onChange(type.value)}
+                                        className={cn(
+                                          "w-full p-4 rounded-xl border-2 transition-all duration-200 text-left",
+                                          field.value === type.value
+                                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-105"
+                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                        )}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className={cn(
+                                            "w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br",
+                                            type.color
+                                          )}>
+                                            <type.icon className="w-5 h-5 text-white" />
                                           </div>
-                                        </SelectItem>
-                                        <SelectItem value="tournament">
-                                          <div className="flex items-center gap-2">
-                                            <Zap className="w-4 h-4" />
-                                            <span>Tournament - Competitive event</span>
+                                          <div className="flex-1">
+                                            <h4 className="font-semibold text-gray-900 dark:text-white">
+                                              {type.title}
+                                            </h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                              {type.description}
+                                            </p>
                                           </div>
-                                        </SelectItem>
-                                        <SelectItem value="training">
-                                          <div className="flex items-center gap-2">
-                                            <Shield className="w-4 h-4" />
-                                            <span>Training - Skill development</span>
-                                          </div>
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <FormDescription className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                      What type of event are you organizing?
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
+                                        </div>
+                                      </motion.button>
+                                    ))}
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                            <div className="flex justify-between">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setActiveTab("basic")}
-                                className="border-input-light dark:border-input-dark"
-                              >
-                                <ChevronLeft className="w-4 h-4 mr-2" />
-                                Previous
-                              </Button>
-                              <Button
-                                type="button"
-                                onClick={() => setActiveTab("media")}
-                                className="bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                              >
-                                Next: Media & Rules
-                                <ChevronLeft className="w-4 h-4 ml-2 rotate-180" />
-                              </Button>
-                            </div>
-                          </motion.div>
-                        </TabsContent>
+                          <div className="flex justify-between pt-6">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setActiveTab("basic")}
+                              size="lg"
+                              className="px-8 py-4 rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                              <ChevronLeft className="w-5 h-5 mr-2" />
+                              Previous
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => setActiveTab("media")}
+                              size="lg"
+                              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                              Next: Media & Rules
+                              <ArrowRight className="w-5 h-5 ml-2" />
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
 
-                        <TabsContent value="media" className="space-y-6 mt-0">
-                          <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                            <div className="flex items-center gap-3 mb-6">
-                              <div className="w-12 h-12 rounded-xl bg-success-light/20 dark:bg-success-dark/20 flex items-center justify-center">
-                                <Camera className="w-6 h-6 text-success-light dark:text-success-dark" />
-                              </div>
-                              <div>
-                                <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
-                                  Media & Rules
-                                </h2>
-                                <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                  Add images, rules, and equipment requirements
-                                </p>
-                              </div>
-                            </div>
+                    {/* Media & Rules Tab */}
+                    {activeTab === "media" && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="p-8"
+                      >
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <Camera className="w-8 h-8 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                              Media & Guidelines
+                            </h2>
+                            <p className="text-gray-600 dark:text-gray-400 text-lg">
+                              Add visual appeal and set expectations for participants
+                            </p>
+                          </div>
+                        </div>
 
-                            {/* Images Section */}
-                            <div className="space-y-4">
-                              <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">
+                        <div className="space-y-10">
+                          {/* Images Section */}
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-2">
+                              <ImagePlus className="w-6 h-6 text-blue-500" />
+                              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                                 Event Images
                               </h3>
-                              <div className="border-2 border-dashed border-input-light dark:border-input-dark rounded-xl p-8 text-center hover:border-primary-light dark:hover:border-primary-dark transition-colors">
-                                <div className="mb-4">
-                                  <div className="w-16 h-16 bg-primary-light/20 dark:bg-primary-dark/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <ImagePlus className="w-8 h-8 text-primary-light dark:text-primary-dark" />
-                                  </div>
-                                  <h4 className="text-lg font-medium text-foreground-light dark:text-foreground-dark mb-2">
-                                    Upload Event Images
-                                  </h4>
-                                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-2">
-                                    Drag and drop images here, or click to select files
-                                  </p>
-                                  <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                                    PNG, JPG, WEBP up to 5MB each (max 5 images)
-                                  </p>
+                              <Badge variant="secondary" className="ml-2">Optional</Badge>
+                            </div>
+                            
+                            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200 bg-gray-50/50 dark:bg-gray-800/50">
+                              <div className="mb-6">
+                                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                  <ImagePlus className="w-10 h-10 text-white" />
                                 </div>
-                                <input
-                                  type="file"
-                                  accept="image/jpeg,image/png,image/webp"
-                                  multiple
-                                  onChange={handleImageChange}
-                                  className="hidden"
-                                  id="image-upload"
-                                />
-                                <label
-                                  htmlFor="image-upload"
-                                  className="inline-flex items-center px-6 py-3 rounded-lg bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors cursor-pointer"
-                                >
-                                  <Upload className="w-5 h-5 mr-2" />
-                                  <span>Choose Images</span>
-                                </label>
+                                <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                                  Upload Event Images
+                                </h4>
+                                <p className="text-gray-600 dark:text-gray-400 mb-3 text-lg">
+                                  Add stunning visuals to showcase your event
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  PNG, JPG, WEBP up to 5MB each • Maximum 5 images
+                                </p>
                               </div>
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                multiple
+                                onChange={handleImageChange}
+                                className="hidden"
+                                id="image-upload"
+                              />
+                              <label
+                                htmlFor="image-upload"
+                                className="inline-flex items-center px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl"
+                              >
+                                <Upload className="w-5 h-5 mr-3" />
+                                <span className="text-lg font-medium">Choose Images</span>
+                              </label>
+                            </div>
 
+                            <AnimatePresence>
                               {imagePreview.length > 0 && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                <motion.div
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
+                                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+                                >
                                   {imagePreview.map((src, index) => (
                                     <motion.div
                                       key={index}
                                       initial={{ opacity: 0, scale: 0.8 }}
                                       animate={{ opacity: 1, scale: 1 }}
-                                      transition={{ duration: 0.3 }}
+                                      transition={{ duration: 0.3, delay: index * 0.1 }}
                                       className="relative group"
                                     >
                                       <img
                                         src={src || "/placeholder.svg"}
                                         alt={`Preview ${index}`}
-                                        className="w-full h-32 object-cover rounded-lg border border-border-light dark:border-border-dark"
+                                        className="w-full h-32 object-cover rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-md group-hover:shadow-lg transition-all duration-200"
                                       />
                                       <button
                                         type="button"
                                         onClick={() => removeImage(index)}
-                                        className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-destructive-light dark:bg-destructive-dark text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+                                        className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-lg"
                                       >
                                         <X className="w-4 h-4" />
                                       </button>
                                     </motion.div>
                                   ))}
-                                </div>
+                                </motion.div>
                               )}
-                            </div>
+                            </AnimatePresence>
+                          </div>
 
-                            {/* Rules Section */}
-                            <div className="space-y-4">
-                              <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">
-                                Event Rules (Optional)
+                          {/* Rules Section */}
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-2">
+                              <Shield className="w-6 h-6 text-green-500" />
+                              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                Event Rules & Guidelines
                               </h3>
-                              <div className="flex gap-3">
-                                <Input
-                                  value={newRule}
-                                  onChange={(e) => setNewRule(e.target.value)}
-                                  placeholder="Add a rule for your event"
-                                  className="flex-1 h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark"
-                                  onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
-                                />
-                                <Button
-                                  type="button"
-                                  onClick={addRule}
-                                  disabled={!newRule.trim()}
-                                  className="h-12 px-6 bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 disabled:opacity-50"
-                                >
-                                  <Plus className="w-4 h-4 mr-2" />
-                                  Add Rule
-                                </Button>
-                              </div>
-
-                              {form.getValues("rules")?.length > 0 ? (
-                                <div className="space-y-2">
-                                  {form.getValues("rules").map((rule, index) => (
-                                    <motion.div
-                                      key={index}
-                                      initial={{ opacity: 0, y: 10 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      className="flex items-center justify-between p-4 rounded-lg border border-border-light dark:border-border-dark bg-muted-light/30 dark:bg-muted-dark/30"
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-primary-light/20 dark:bg-primary-dark/20 flex items-center justify-center flex-shrink-0">
-                                          <span className="text-xs font-medium text-primary-light dark:text-primary-dark">
-                                            {index + 1}
-                                          </span>
-                                        </div>
-                                        <span className="text-foreground-light dark:text-foreground-dark">{rule}</span>
-                                      </div>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removeRule(index)}
-                                        className="text-muted-foreground-light dark:text-muted-foreground-dark hover:text-destructive-light dark:hover:text-destructive-dark"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </motion.div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="text-center py-8 border border-dashed border-border-light dark:border-border-dark rounded-lg">
-                                  <Shield className="w-12 h-12 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-3" />
-                                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                    No rules added yet. Add rules to help participants understand expectations.
-                                  </p>
-                                </div>
-                              )}
+                              <Badge variant="secondary" className="ml-2">Optional</Badge>
                             </div>
-
-                            {/* Equipment Section */}
-                            <div className="space-y-4">
-                              <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">
-                                Required Equipment (Optional)
-                              </h3>
-                              <div className="flex gap-3">
-                                <Input
-                                  value={newEquipment.item}
-                                  onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
-                                  placeholder="Add equipment needed for the event"
-                                  className="flex-1 h-12 bg-background-light dark:bg-background-dark border-input-light dark:border-input-dark"
-                                  onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
-                                />
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    id="equipment-required"
-                                    checked={newEquipment.required}
-                                    onChange={(e) =>
-                                      setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))
-                                    }
-                                    className="w-4 h-4 text-primary-light dark:text-primary-dark"
+                            
+                            <Card className="border-2 border-gray-200 dark:border-gray-700">
+                              <CardContent className="p-6">
+                                <div className="flex gap-3 mb-4">
+                                  <Input
+                                    value={newRule}
+                                    onChange={(e) => setNewRule(e.target.value)}
+                                    placeholder="Add a rule or guideline for participants..."
+                                    className="flex-1 h-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg"
+                                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
                                   />
-                                  <label
-                                    htmlFor="equipment-required"
-                                    className="text-sm text-foreground-light dark:text-foreground-dark whitespace-nowrap"
+                                  <Button
+                                    type="button"
+                                    onClick={addRule}
+                                    disabled={!newRule.trim()}
+                                    className="h-12 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg disabled:opacity-50"
                                   >
-                                    Required
-                                  </label>
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    Add Rule
+                                  </Button>
                                 </div>
-                                <Button
-                                  type="button"
-                                  onClick={addEquipment}
-                                  disabled={!newEquipment.item.trim()}
-                                  className="h-12 px-6 bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 disabled:opacity-50"
-                                >
-                                  <Plus className="w-4 h-4 mr-2" />
-                                  Add
-                                </Button>
-                              </div>
 
-                              {form.getValues("equipment")?.length > 0 ? (
-                                <div className="space-y-2">
-                                  {form.getValues("equipment").map((item, index) => (
-                                    <motion.div
-                                      key={index}
-                                      initial={{ opacity: 0, y: 10 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      className="flex items-center justify-between p-4 rounded-lg border border-border-light dark:border-border-dark bg-muted-light/30 dark:bg-muted-dark/30"
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <CheckCircle className="w-5 h-5 text-success-light dark:text-success-dark" />
-                                        <span className="text-foreground-light dark:text-foreground-dark">
-                                          {item.item}
-                                        </span>
-                                        {item.required && (
-                                          <Badge variant="destructive" className="text-xs">
-                                            Required
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removeEquipment(index)}
-                                        className="text-muted-foreground-light dark:text-muted-foreground-dark hover:text-destructive-light dark:hover:text-destructive-dark"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </motion.div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="text-center py-8 border border-dashed border-border-light dark:border-border-dark rounded-lg">
-                                  <Target className="w-12 h-12 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-3" />
-                                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                    No equipment added yet. List any gear participants should bring.
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex justify-between">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setActiveTab("details")}
-                                className="border-input-light dark:border-input-dark"
-                              >
-                                <ChevronLeft className="w-4 h-4 mr-2" />
-                                Previous
-                              </Button>
-                              <Button
-                                type="button"
-                                onClick={() => setActiveTab("review")}
-                                className="bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                              >
-                                Review Event
-                                <Eye className="w-4 h-4 ml-2" />
-                              </Button>
-                            </div>
-                          </motion.div>
-                        </TabsContent>
-
-                        <TabsContent value="review" className="space-y-6 mt-0">
-                          <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                            <div className="flex items-center gap-3 mb-6">
-                              <div className="w-12 h-12 rounded-xl bg-destructive-light/20 dark:bg-destructive-dark/20 flex items-center justify-center">
-                                <Eye className="w-6 h-6 text-destructive-light dark:text-destructive-dark" />
-                              </div>
-                              <div>
-                                <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark">
-                                  Review Your Event
-                                </h2>
-                                <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                  Double-check everything before creating your event
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Event Preview */}
-                            <Card className="border-border-light dark:border-border-dark">
-                              <CardHeader className="pb-4">
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <CardTitle className="text-2xl text-foreground-light dark:text-foreground-dark">
-                                      {form.getValues("name") || "Event Name"}
-                                    </CardTitle>
-                                    <div className="flex items-center gap-2 mt-2">
-                                      <Badge variant="secondary">
-                                        {categories.find((c) => c.value === form.getValues("category"))?.icon}{" "}
-                                        {form.getValues("category") || "Category"}
-                                      </Badge>
-                                      <Badge
-                                        variant={
-                                          form.getValues("difficulty") === "Beginner"
-                                            ? "default"
-                                            : form.getValues("difficulty") === "Intermediate"
-                                              ? "secondary"
-                                              : "destructive"
-                                        }
-                                      >
-                                        {form.getValues("difficulty")}
-                                      </Badge>
-                                      <Badge variant="outline">{form.getValues("eventType")}</Badge>
+                                <AnimatePresence>
+                                  {form.getValues("rules")?.length > 0 ? (
+                                    <div className="space-y-3">
+                                      {form.getValues("rules").map((rule, index) => (
+                                        <motion.div
+                                          key={index}
+                                          initial={{ opacity: 0, y: 10 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          exit={{ opacity: 0, y: -10 }}
+                                          className="flex items-start gap-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700"
+                                        >
+                                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0 mt-1">
+                                            <span className="text-sm font-bold text-white">
+                                              {index + 1}
+                                            </span>
+                                          </div>
+                                          <p className="flex-1 text-gray-900 dark:text-white text-lg leading-relaxed">
+                                            {rule}
+                                          </p>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => removeRule(index)}
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </Button>
+                                        </motion.div>
+                                      ))}
                                     </div>
-                                  </div>
-                                  {form.getValues("registrationFee") > 0 && (
-                                    <div className="text-right">
-                                      <p className="text-2xl font-bold text-success-light dark:text-success-dark">
-                                        ${form.getValues("registrationFee")}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                                        Registration Fee
+                                  ) : (
+                                    <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50">
+                                      <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                        No Rules Added Yet
+                                      </h4>
+                                      <p className="text-gray-600 dark:text-gray-400">
+                                        Add rules to help participants understand expectations and guidelines.
                                       </p>
                                     </div>
                                   )}
-                                </div>
-                              </CardHeader>
-                              <CardContent className="space-y-6">
-                                <div>
-                                  <h4 className="font-semibold text-foreground-light dark:text-foreground-dark mb-2">
-                                    Description
-                                  </h4>
-                                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark">
-                                    {form.getValues("description") || "No description provided"}
-                                  </p>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted-light/30 dark:bg-muted-dark/30">
-                                    <Calendar className="w-5 h-5 text-primary-light dark:text-primary-dark" />
-                                    <div>
-                                      <p className="font-medium text-foreground-light dark:text-foreground-dark">
-                                        {form.getValues("date") || "Date not set"}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                                        Event Date
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted-light/30 dark:bg-muted-dark/30">
-                                    <Clock className="w-5 h-5 text-primary-light dark:text-primary-dark" />
-                                    <div>
-                                      <p className="font-medium text-foreground-light dark:text-foreground-dark">
-                                        {form.getValues("time") || "Time not set"}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                                        Start Time
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted-light/30 dark:bg-muted-dark/30">
-                                    <Users className="w-5 h-5 text-primary-light dark:text-primary-dark" />
-                                    <div>
-                                      <p className="font-medium text-foreground-light dark:text-foreground-dark">
-                                        {form.getValues("maxParticipants")} people
-                                      </p>
-                                      <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                                        Max Participants
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div>
-                                  <h4 className="font-semibold text-foreground-light dark:text-foreground-dark mb-2">
-                                    Location
-                                  </h4>
-                                  <div className="flex items-start gap-2">
-                                    <MapPin className="w-5 h-5 text-primary-light dark:text-primary-dark mt-0.5" />
-                                    <div>
-                                      <p className="text-foreground-light dark:text-foreground-dark">
-                                        {form.getValues("location.address") || "Address not provided"}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                                        {form.getValues("location.city")}{" "}
-                                        {form.getValues("location.state") && `, ${form.getValues("location.state")}`}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {imagePreview.length > 0 && (
-                                  <div>
-                                    <h4 className="font-semibold text-foreground-light dark:text-foreground-dark mb-3">
-                                      Event Images ({imagePreview.length})
-                                    </h4>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                      {imagePreview.slice(0, 4).map((src, index) => (
-                                        <img
-                                          key={index}
-                                          src={src || "/placeholder.svg"}
-                                          alt={`Preview ${index}`}
-                                          className="w-full h-20 object-cover rounded-lg border border-border-light dark:border-border-dark"
-                                        />
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-
-                                {form.getValues("rules")?.length > 0 && (
-                                  <div>
-                                    <h4 className="font-semibold text-foreground-light dark:text-foreground-dark mb-3">
-                                      Event Rules ({form.getValues("rules").length})
-                                    </h4>
-                                    <ul className="space-y-2">
-                                      {form.getValues("rules").map((rule, index) => (
-                                        <li key={index} className="flex items-start gap-2">
-                                          <span className="w-5 h-5 rounded-full bg-primary-light/20 dark:bg-primary-dark/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <span className="text-xs font-medium text-primary-light dark:text-primary-dark">
-                                              {index + 1}
-                                            </span>
-                                          </span>
-                                          <span className="text-foreground-light dark:text-foreground-dark">
-                                            {rule}
-                                          </span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
-
-                                {form.getValues("equipment")?.length > 0 && (
-                                  <div>
-                                    <h4 className="font-semibold text-foreground-light dark:text-foreground-dark mb-3">
-                                      Required Equipment ({form.getValues("equipment").length})
-                                    </h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                      {form.getValues("equipment").map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-center gap-2 p-2 rounded-lg bg-muted-light/30 dark:bg-muted-dark/30"
-                                        >
-                                          <CheckCircle className="w-4 h-4 text-success-light dark:text-success-dark" />
-                                          <span className="text-foreground-light dark:text-foreground-dark">
-                                            {item.item}
-                                          </span>
-                                          {item.required && (
-                                            <Badge variant="destructive" className="text-xs">
-                                              Required
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
+                                </AnimatePresence>
                               </CardContent>
                             </Card>
+                          </div>
 
-                            <div className="flex justify-between">
+                          {/* Equipment Section */}
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-2">
+                              <Target className="w-6 h-6 text-purple-500" />
+                              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                Required Equipment
+                              </h3>
+                              <Badge variant="secondary" className="ml-2">Optional</Badge>
+                            </div>
+                            
+                            <Card className="border-2 border-gray-200 dark:border-gray-700">
+                              <CardContent className="p-6">
+                                <div className="flex gap-3 mb-4">
+                                  <Input
+                                    value={newEquipment.item}
+                                    onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
+                                    placeholder="Add equipment needed for the event..."
+                                    className="flex-1 h-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg"
+                                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
+                                  />
+                                  <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <input
+                                      type="checkbox"
+                                      id="equipment-required"
+                                      checked={newEquipment.required}
+                                      onChange={(e) =>
+                                        setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))
+                                      }
+                                      className="w-4 h-4 text-blue-600"
+                                    />
+                                    <label
+                                      htmlFor="equipment-required"
+                                      className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"
+                                    >
+                                      Required
+                                    </label>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    onClick={addEquipment}
+                                    disabled={!newEquipment.item.trim()}
+                                    className="h-12 px-6 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg disabled:opacity-50"
+                                  >
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    Add
+                                  </Button>
+                                </div>
+
+                                <AnimatePresence>
+                                  {form.getValues("equipment")?.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                      {form.getValues("equipment").map((item, index) => (
+                                        <motion.div
+                                          key={index}
+                                          initial={{ opacity: 0, y: 10 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          exit={{ opacity: 0, y: -10 }}
+                                          className="flex items-center justify-between p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700"
+                                        >
+                                          <div className="flex items-center gap-3">
+                                            <CheckCircle className="w-5 h-5 text-purple-500" />
+                                            <span className="text-gray-900 dark:text-white font-medium">
+                                              {item.item}
+                                            </span>
+                                            {item.required && (
+                                              <Badge variant="destructive" className="text-xs">
+                                                Required
+                                              </Badge>
+                                            )}
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => removeEquipment(index)}
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </Button>
+                                        </motion.div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50">
+                                      <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                        No Equipment Listed
+                                      </h4>
+                                      <p className="text-gray-600 dark:text-gray-400">
+                                        List any equipment or gear participants should bring to the event.
+                                      </p>
+                                    </div>
+                                  )}
+                                </AnimatePresence>
+                              </CardContent>
+                            </Card>
+                          </div>
+
+                          <div className="flex justify-between pt-6">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setActiveTab("details")}
+                              size="lg"
+                              className="px-8 py-4 rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                              <ChevronLeft className="w-5 h-5 mr-2" />
+                              Previous
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => setActiveTab("review")}
+                              size="lg"
+                              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                              Next: Review & Publish
+                              <ArrowRight className="w-5 h-5 ml-2" />
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Review Tab */}
+                    {activeTab === "review" && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="p-8"
+                      >
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <Eye className="w-8 h-8 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                              Review & Publish
+                            </h2>
+                            <p className="text-gray-600 dark:text-gray-400 text-lg">
+                              Review all details before publishing your event
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-8">
+                          {/* Event Summary Card */}
+                          <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-700">
+                            <CardContent className="p-8">
+                              <div className="flex items-start gap-6">
+                                {imagePreview.length > 0 ? (
+                                  <img
+                                    src={imagePreview[0]}
+                                    alt="Event preview"
+                                    className="w-32 h-32 object-cover rounded-2xl border-2 border-white dark:border-gray-700 shadow-lg"
+                                  />
+                                ) : (
+                                  <div className="w-32 h-32 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-2xl flex items-center justify-center">
+                                    <Camera className="w-12 h-12 text-gray-400" />
+                                  </div>
+                                )}
+                                <div className="flex-1 space-y-4">
+                                  <div>
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                      {form.getValues("name") || "Event Name"}
+                                    </h3>
+                                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                      <Badge variant="secondary" className="text-xs">
+                                        {form.getValues("category") || "Category"}
+                                      </Badge>
+                                      <Badge variant="outline" className="text-xs">
+                                        {form.getValues("difficulty")}
+                                      </Badge>
+                                      <Badge variant="outline" className="text-xs capitalize">
+                                        {form.getValues("eventType")}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <Calendar className="w-4 h-4 text-blue-500" />
+                                      <span className="text-gray-900 dark:text-white">
+                                        {form.getValues("date") ? new Date(form.getValues("date")).toLocaleDateString() : "Date"}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Clock className="w-4 h-4 text-orange-500" />
+                                      <span className="text-gray-900 dark:text-white">
+                                        {form.getValues("time") || "Time"}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Users className="w-4 h-4 text-green-500" />
+                                      <span className="text-gray-900 dark:text-white">
+                                        {form.getValues("maxParticipants")} participants
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <MapPin className="w-4 h-4 text-red-500" />
+                                    <span className="text-gray-900 dark:text-white">
+                                      {[
+                                        form.getValues("location.address"),
+                                        form.getValues("location.city"),
+                                        form.getValues("location.state")
+                                      ].filter(Boolean).join(", ") || "Location"}
+                                    </span>
+                                  </div>
+
+                                  {form.getValues("registrationFee") > 0 && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <DollarSign className="w-4 h-4 text-green-500" />
+                                      <span className="text-gray-900 dark:text-white font-semibold">
+                                        ${form.getValues("registrationFee")} registration fee
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {form.getValues("description") && (
+                                <div className="mt-6 pt-6 border-t border-blue-200 dark:border-blue-700">
+                                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                    {form.getValues("description")}
+                                  </p>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+
+                          {/* Additional Details */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {form.getValues("rules")?.length > 0 && (
+                              <Card>
+                                <CardHeader>
+                                  <CardTitle className="flex items-center gap-2 text-lg">
+                                    <Shield className="w-5 h-5 text-green-500" />
+                                    Event Rules ({form.getValues("rules").length})
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <ul className="space-y-2">
+                                    {form.getValues("rules").slice(0, 3).map((rule, index) => (
+                                      <li key={index} className="flex items-start gap-2 text-sm">
+                                        <span className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                                          {index + 1}
+                                        </span>
+                                        <span className="text-gray-700 dark:text-gray-300">{rule}</span>
+                                      </li>
+                                    ))}
+                                    {form.getValues("rules").length > 3 && (
+                                      <li className="text-sm text-gray-500 dark:text-gray-400 ml-7">
+                                        ... and {form.getValues("rules").length - 3} more rules
+                                      </li>
+                                    )}
+                                  </ul>
+                                </CardContent>
+                              </Card>
+                            )}
+
+                            {form.getValues("equipment")?.length > 0 && (
+                              <Card>
+                                <CardHeader>
+                                  <CardTitle className="flex items-center gap-2 text-lg">
+                                    <Target className="w-5 h-5 text-purple-500" />
+                                    Equipment ({form.getValues("equipment").length})
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <ul className="space-y-2">
+                                    {form.getValues("equipment").slice(0, 4).map((item, index) => (
+                                      <li key={index} className="flex items-center gap-2 text-sm">
+                                        <CheckCircle className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                                        <span className="text-gray-700 dark:text-gray-300">{item.item}</span>
+                                        {item.required && (
+                                          <Badge variant="destructive" className="text-xs">Required</Badge>
+                                        )}
+                                      </li>
+                                    ))}
+                                    {form.getValues("equipment").length > 4 && (
+                                      <li className="text-sm text-gray-500 dark:text-gray-400 ml-6">
+                                        ... and {form.getValues("equipment").length - 4} more items
+                                      </li>
+                                    )}
+                                  </ul>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </div>
+
+                          {/* Completion Status */}
+                          <Card className={cn(
+                            "border-2",
+                            completionProgress === 100
+                              ? "border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20"
+                              : "border-orange-300 dark:border-orange-600 bg-orange-50 dark:bg-orange-900/20"
+                          )}>
+                            <CardContent className="p-6">
+                              <div className="flex items-center gap-3 mb-4">
+                                {completionProgress === 100 ? (
+                                  <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <AlertTriangle className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+                                )}
+                                <div>
+                                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {completionProgress === 100 ? "Event Ready to Publish!" : "Complete Required Fields"}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {completionProgress === 100
+                                      ? "All required information has been provided. Your event is ready to go live."
+                                      : "Please fill in all required fields to publish your event."
+                                    }
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="relative">
+                                <Progress value={completionProgress} className="h-2" />
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-2 block">
+                                  {Math.round(completionProgress)}% Complete
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Action Buttons */}
+                          <div className="flex justify-between pt-6">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setActiveTab("media")}
+                              size="lg"
+                              className="px-8 py-4 rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                              <ChevronLeft className="w-5 h-5 mr-2" />
+                              Previous
+                            </Button>
+                            
+                            <div className="flex gap-4">
                               <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => setActiveTab("media")}
-                                className="border-input-light dark:border-input-dark"
+                                size="lg"
+                                className="px-8 py-4 rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                onClick={() => {
+                                  // Save as draft functionality
+                                  toast.success("Event saved as draft")
+                                }}
                               >
-                                <ChevronLeft className="w-4 h-4 mr-2" />
-                                Previous
+                                <Save className="w-5 h-5 mr-2" />
+                                Save Draft
                               </Button>
+                              
                               <Button
                                 type="submit"
                                 disabled={isLoading || completionProgress < 100}
-                                className="bg-success-light dark:bg-success-dark hover:bg-success-light/90 dark:hover:bg-success-dark/90 text-white px-8"
+                                size="lg"
+                                className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
                               >
                                 {isLoading ? (
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    <span>Creating Event...</span>
-                                  </div>
+                                  <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                    Creating Event...
+                                  </>
                                 ) : (
-                                  <div className="flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5" />
-                                    <span>Create Event</span>
-                                  </div>
+                                  <>
+                                    <Sparkles className="w-5 h-5 mr-2" />
+                                    Publish Event
+                                  </>
                                 )}
                               </Button>
                             </div>
-                          </motion.div>
-                        </TabsContent>
-                      </form>
-                    </Form>
-                  </div>
-                </Tabs>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </form>
+                </Form>
               </CardContent>
             </Card>
           </motion.div>

@@ -86,6 +86,19 @@ const eventSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    // Venue relationship
+    venue: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Venue",
+      default: null
+    },
+
+    // Community relationship
+    community: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Community",
+      default: null
+    },
     participants: [
       {
         user: {
@@ -101,8 +114,27 @@ const eventSchema = new mongoose.Schema(
           enum: ["confirmed", "pending", "cancelled"],
           default: "confirmed",
         },
+        checkInTime: Date,
+        checkOutTime: Date,
+        attended: { type: Boolean, default: false },
+        rating: {
+          score: { type: Number, min: 1, max: 5 },
+          comment: String,
+          createdAt: { type: Date, default: Date.now }
+        }
       },
     ],
+    waitlist: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      joinedWaitlistAt: {
+        type: Date,
+        default: Date.now,
+      },
+      position: Number
+    }],
     maxParticipants: {
       type: Number,
       default: 10,
@@ -215,6 +247,35 @@ const eventSchema = new mongoose.Schema(
       temperature: Number,
       updated: Date,
     },
+    // Social features
+    likes: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      likedAt: {
+        type: Date,
+        default: Date.now,
+      }
+    }],
+
+    // Enhanced analytics
+    analytics: {
+      views: { type: Number, default: 0 },
+      shares: { type: Number, default: 0 },
+      saves: { type: Number, default: 0 },
+      avgRating: { type: Number, default: 0 },
+      completionRate: { type: Number, default: 0 }
+    },
+
+    // Feature flags
+    features: {
+      allowWaitlist: { type: Boolean, default: true },
+      requireApproval: { type: Boolean, default: false },
+      allowRatings: { type: Boolean, default: true },
+      enableChat: { type: Boolean, default: true },
+      trackAttendance: { type: Boolean, default: false }
+    }
   },
   {
     timestamps: true,
@@ -250,10 +311,10 @@ eventSchema.methods.isParticipant = function (userId) {
 
 eventSchema.methods.notifyParticipants = async function (notification) {
   const User = mongoose.model("User");
-  
+
   if (this.participants && this.participants.length > 0) {
     const participantIds = this.participants.map(p => p.user);
-    
+
     // Add notification to each participant
     await User.updateMany(
       { _id: { $in: participantIds } },
@@ -274,6 +335,54 @@ eventSchema.methods.notifyParticipants = async function (notification) {
       }
     );
   }
+};
+
+eventSchema.methods.addToWaitlist = async function (userId) {
+  const position = this.waitlist.length + 1;
+  this.waitlist.push({
+    user: userId,
+    position: position
+  });
+  await this.save();
+  return position;
+};
+
+eventSchema.methods.promoteFromWaitlist = async function () {
+  if (this.waitlist.length > 0 && !this.isFull()) {
+    const nextUser = this.waitlist.shift();
+    this.participants.push({
+      user: nextUser.user,
+      status: "confirmed"
+    });
+
+    // Update positions for remaining waitlist
+    this.waitlist.forEach((item, index) => {
+      item.position = index + 1;
+    });
+
+    await this.save();
+    return nextUser;
+  }
+  return null;
+};
+
+eventSchema.methods.updateAnalytics = async function () {
+  // Calculate average rating
+  const ratings = this.participants
+    .filter(p => p.rating && p.rating.score)
+    .map(p => p.rating.score);
+
+  if (ratings.length > 0) {
+    this.analytics.avgRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+  }
+
+  // Calculate completion rate
+  const attendedCount = this.participants.filter(p => p.attended).length;
+  if (this.participants.length > 0) {
+    this.analytics.completionRate = (attendedCount / this.participants.length) * 100;
+  }
+
+  await this.save();
 };
 
 // Update event status based on date

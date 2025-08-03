@@ -10,6 +10,11 @@ import uploadRoute from "./routes/uploadRoute.js";
 import userRoute from "./routes/userRoute.js";
 import adminRoute from "./routes/adminRoute.js";
 import notificationRoute from './routes/notificationRoute.js';
+import athletesRoute from './routes/athletesRoute.js';
+import communityRoute from './routes/communityRoute.js';
+import leaderboardRoute from './routes/leaderboardRoute.js';
+import venueRoute from './routes/venueRoute.js';
+
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
 import { uploadImage, upload } from "./config/cloudinary.js";
@@ -56,6 +61,10 @@ app.use("/api/users", rateLimiters.api, userRoute);
 app.use('/api/admin', rateLimiters.admin, adminRoute);
 app.use('/api/notifications', rateLimiters.api, notificationRoute);
 app.use("/api/upload", rateLimiters.upload, uploadRoute);
+app.use("/api/athletes", rateLimiters.api, athletesRoute);
+app.use("/api/community", rateLimiters.api, communityRoute);
+app.use("/api/leaderboard", rateLimiters.api, leaderboardRoute);
+app.use("/api/venues", rateLimiters.api, venueRoute);
 
 app.post("/api/upload",rateLimiters.upload, upload.array("file"), async (req, res) => {
   try {

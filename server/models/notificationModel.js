@@ -94,7 +94,26 @@ const notificationSchema = new mongoose.Schema({
         },
         template: String,
         actionUrl: String,
-        imageUrl: String
+        imageUrl: String,
+        relatedCommunity: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Community'
+        },
+        relatedVenue: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Venue'
+        },
+        achievementData: {
+            title: String,
+            icon: String,
+            points: Number,
+            category: String
+        },
+        leaderboardData: {
+            rank: Number,
+            category: String,
+            points: Number
+        }
     },
     deliveryLogs: [{
         recipient: {

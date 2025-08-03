@@ -1,11 +1,11 @@
 import { Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
 import { AnimatePresence } from 'framer-motion';
 import SportsBuddyLoader from './components/Loader';
 import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/layout/Layout';
 import AdminLayout from '@/components/layout/AdminLayout';
+import ScrollToTop from '@/components/ScrollToTop';
 
 // Public Pages
 import Home from './pages/Home';
@@ -122,6 +122,7 @@ function App() {
   return (
     <ErrorBoundary>
       <AnimatePresence mode="wait">
+        <ScrollToTop />
         <Routes location={location} key={location.pathname}>
           {/* Public Routes */}
           <Route path="/" element={<Layout />}>

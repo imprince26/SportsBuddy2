@@ -154,7 +154,7 @@ export const getAllAthletes = asyncHandler(async (req, res) => {
             stats: {
                 totalAthletes: total,
                 availableSports: availableSports.map(s => s._id),
-                avgEventsPerAthlete: athletes.length > 0 
+                avgEventsPerAthlete: athletes.length > 0
                     ? Math.round(athletes.reduce((sum, a) => sum + (a.totalEvents || 0), 0) / athletes.length)
                     : 0
             }
@@ -584,9 +584,9 @@ export const searchAthletes = asyncHandler(async (req, res) => {
                 { 'sportsPreferences.sport': { $regex: q, $options: 'i' } }
             ]
         })
-        .select('name username avatar sportsPreferences location createdAt')
-        .limit(parseInt(limit))
-        .sort({ name: 1 });
+            .select('name username avatar sportsPreferences location createdAt')
+            .limit(parseInt(limit))
+            .sort({ name: 1 });
 
         res.json({
             success: true,

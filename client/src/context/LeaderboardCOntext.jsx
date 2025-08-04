@@ -37,7 +37,7 @@ export const LeaderboardProvider = ({ children }) => {
 
     const handleLeaderboardUpdate = (data) => {
       // Update leaderboard positions
-      setLeaderboard(prev => prev.map(entry => 
+      setLeaderboard(prev => prev.map(entry =>
         entry.user._id === data.userId ? {
           ...entry,
           points: data.newPoints,
@@ -65,7 +65,7 @@ export const LeaderboardProvider = ({ children }) => {
           points: data.newPoints,
           level: data.newLevel
         } : null);
-        
+
         if (data.pointsAdded > 0) {
           toast.success(`+${data.pointsAdded} points earned!`);
         }
@@ -322,7 +322,7 @@ export const LeaderboardProvider = ({ children }) => {
 
     const start = Math.max(0, userIndex - range);
     const end = Math.min(leaderboardData.length, userIndex + range + 1);
-    
+
     return leaderboardData.slice(start, end);
   };
 
@@ -349,7 +349,7 @@ export const LeaderboardProvider = ({ children }) => {
     loading,
     error,
     pagination,
-    
+
     // Actions
     getLeaderboard,
     getLeaderboardBySport,

@@ -43,6 +43,7 @@ import {
 } from "lucide-react"
 
 import { useAuth } from "@/hooks/useAuth"
+import { useSocket } from "@/hooks/useSocket"
 import { useEvents } from "@/hooks/useEvents"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -66,6 +67,7 @@ const EventDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
+  const { socket } = useSocket()
   const { deleteEvent, joinEvent, leaveEvent } = useEvents()
   const chatEndRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -265,23 +267,142 @@ const EventDetails = () => {
     }
   }
 
+  useEffect(() => {
+    if (!socket || !id || !user?.id) return
+
+    console.log('Setting up socket listeners for event chat:', id)
+
+    // Join event chat room
+    socket.emit('joinEventChat', { eventId: id, userId: user.id })
+
+    // Listen for new messages
+    const handleNewMessage = (newMessage) => {
+      console.log('New message received in modal:', newMessage)
+
+      // Update the event state with the new message
+      setEvent(prevEvent => {
+        if (!prevEvent) return prevEvent
+
+        const updatedChat = prevEvent.chat ? [...prevEvent.chat] : []
+
+        // Check if message already exists to prevent duplicates
+        if (!updatedChat.some(msg => msg._id === newMessage._id ||
+          (msg.message === newMessage.content && msg.timestamp === newMessage.timestamp))) {
+          updatedChat.push({
+            _id: newMessage._id || Date.now().toString(),
+            message: newMessage.content || newMessage.message,
+            user: newMessage.user,
+            timestamp: newMessage.timestamp
+          })
+        }
+
+        return {
+          ...prevEvent,
+          chat: updatedChat
+        }
+      })
+
+      // Show toast notification for messages from other users
+      if (newMessage.user._id !== user?.id) {
+        toast.success(`${newMessage.user.name}: ${(newMessage.content || newMessage.message).substring(0, 30)}...`)
+      }
+    }
+
+    // Listen for user join/leave events
+    const handleUserJoined = (userData) => {
+      toast.success(`${userData.name} joined the chat`)
+    }
+
+    const handleUserLeft = (userData) => {
+      toast(`${userData.name} left the chat`)
+    }
+
+    // Add event listeners
+    socket.on('newEventMessage', handleNewMessage)
+    socket.on('userJoinedChat', handleUserJoined)
+    socket.on('userLeftChat', handleUserLeft)
+
+    return () => {
+      console.log('Cleaning up socket listeners')
+      socket.emit('leaveEventChat', { eventId: id, userId: user.id })
+      socket.off('newEventMessage', handleNewMessage)
+      socket.off('userJoinedChat', handleUserJoined)
+      socket.off('userLeftChat', handleUserLeft)
+    }
+  }, [socket, id, user?.id])
+
+  // Replace the existing handleSendMessage function (around line 270)
   const handleSendMessage = async (e) => {
     e.preventDefault()
-    if (!message.trim()) return
+    if (!message.trim() || !socket) return
 
     setSendingMessage(true)
+
     try {
-      await api.post(`/events/${id}/messages`, { message })
-      setMessage("")
-      // Refresh event to get updated chat
-      const response = await api.get(`/events/${id}`)
-      if (response.data.success) {
-        setEvent(response.data.data)
+      const messageData = {
+        _id: Date.now().toString(), // Temporary ID
+        eventId: id,
+        content: message.trim(),
+        user: {
+          _id: user.id,
+          name: user.name,
+          avatar: user.avatar,
+          role: user.role
+        },
+        timestamp: new Date().toISOString()
       }
+
+      // Add message to local state immediately for instant feedback
+      setEvent(prevEvent => {
+        if (!prevEvent) return prevEvent
+
+        const updatedChat = prevEvent.chat ? [...prevEvent.chat] : []
+        updatedChat.push({
+          _id: messageData._id,
+          message: messageData.content,
+          user: messageData.user,
+          timestamp: messageData.timestamp
+        })
+
+        return {
+          ...prevEvent,
+          chat: updatedChat
+        }
+      })
+
+      // Clear input immediately
+      setMessage("")
+
+      // Emit to socket for real-time delivery to others
+      socket.emit('sendEventMessage', messageData)
+
+      // Save to database in background
+      try {
+        await api.post(`/events/${id}/messages`, {
+          message: message.trim()
+        })
+      } catch (dbError) {
+        console.error('Error saving to database:', dbError)
+        // Don't show error to user as message was sent via socket
+      }
+
       toast.success("Message sent! 💬")
     } catch (err) {
       console.error("Error sending message:", err)
       toast.error("Failed to send message")
+
+      // Remove the message from local state if it failed
+      setEvent(prevEvent => {
+        if (!prevEvent) return prevEvent
+
+        const updatedChat = prevEvent.chat ?
+          prevEvent.chat.filter(msg => msg._id !== messageData._id) : []
+
+        return {
+          ...prevEvent,
+          chat: updatedChat
+        }
+      })
     } finally {
       setSendingMessage(false)
     }
@@ -1566,7 +1687,7 @@ const EventDetails = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col h-full px-6 pb-6">
+          <div className="flex flex-col h-full overflow-hidden px-6 pb-6">
             {/* Chat Messages */}
             <ScrollArea className="flex-1 p-4 bg-gray-50/30 dark:bg-gray-800/30 rounded-xl mb-4">
               <div className="space-y-4">

@@ -1,436 +1,575 @@
-
-import { useState, useEffect, useRef } from "react"
-import { useParams, Link } from "react-router-dom"
-import { useEvents } from "@/hooks/useEvents";
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
+import { format } from 'date-fns';
+import { 
+  Send, 
+  Users, 
+  ArrowLeft,
+  Crown,
+  Shield,
+  MapPin,
+  Calendar,
+  Hash,
+  X
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import { useSocket } from "@/hooks/useSocket"
-import { format } from "date-fns"
-import { ChevronLeft, Send, User, ImageIcon, Smile, Paperclip, Loader2, AlertTriangle, Users, Info } from 'lucide-react'
-import { motion, AnimatePresence } from "framer-motion"
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSocket } from '@/hooks/useSocket';
+import { useEvents } from '@/hooks/useEvents';
+import api from '@/utils/api';
 
+// UI Components
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+
+// Message Bubble Component
+const MessageBubble = ({ message, isOwn }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        "flex gap-2 mb-3",
+        isOwn ? "flex-row-reverse" : "flex-row"
+      )}
+    >
+      {!isOwn && (
+        <Avatar className="w-7 h-7 mt-1 flex-shrink-0">
+          <AvatarImage src={message.user?.avatar} />
+          <AvatarFallback className="text-xs">
+            {message.user?.name?.charAt(0)?.toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      )}
+
+      <div className={cn("flex flex-col max-w-[75%]", isOwn ? "items-end" : "items-start")}>
+        {!isOwn && (
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              {message.user?.name}
+            </span>
+            {message.user?.role === 'admin' && (
+              <Crown className="h-3 w-3 text-yellow-500" />
+            )}
+            <span className="text-xs text-gray-500">
+              {format(new Date(message.timestamp), 'HH:mm')}
+            </span>
+          </div>
+        )}
+
+        <div
+          className={cn(
+            "rounded-xl px-3 py-2 text-sm",
+            isOwn
+              ? "bg-blue-500 text-white rounded-br-sm"
+              : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-sm"
+          )}
+        >
+          <div className="break-words">
+            {message.content || message.message}
+          </div>
+        </div>
+
+        {isOwn && (
+          <span className="text-xs text-gray-500 mt-1">
+            {format(new Date(message.timestamp), 'HH:mm')}
+          </span>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+// Participants Sidebar Component
+const ParticipantsSidebar = ({ participants, eventCreator, onlineUsers, isOpen, onClose }) => {
+  const isOnline = (userId) => onlineUsers.includes(userId);
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      {/* Mobile Overlay */}
+      <div 
+        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        onClick={onClose}
+      />
+      
+      {/* Sidebar */}
+      <div className="fixed md:relative top-0 right-0 h-full w-72 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 z-50 flex flex-col">
+        {/* Header */}
+        <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900 dark:text-white">
+            Participants ({participants?.length || 0})
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="md:hidden p-1 h-7 w-7"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Participants List */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-1">
+          {/* Event Creator */}
+          {eventCreator && (
+            <>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
+                <div className="relative">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={eventCreator.avatar} />
+                    <AvatarFallback className="text-xs">
+                      {eventCreator.name?.charAt(0)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {isOnline(eventCreator._id) && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {eventCreator.name}
+                    </p>
+                    <Crown className="h-3 w-3 text-yellow-500" />
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Organizer</p>
+                </div>
+              </div>
+              <div className="border-b border-gray-200 dark:border-gray-600 my-2"></div>
+            </>
+          )}
+
+          {/* Participants */}
+          {participants?.map((participant) => (
+            <div
+              key={participant._id}
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <div className="relative">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={participant.user?.avatar} />
+                  <AvatarFallback className="text-xs">
+                    {participant.user?.name?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {isOnline(participant.user?._id) && (
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {participant.user?.name}
+                  </p>
+                  {participant.user?.role === 'admin' && (
+                    <Shield className="h-3 w-3 text-blue-500" />
+                  )}
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {isOnline(participant.user?._id) ? 'Online' : 'Offline'}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+};
+
+// Main Event Chat Component
 const EventChat = () => {
-  const { eventId } = useParams()
-  const { getEventById, sendMessage } = useEvents()
-  const { user } = useAuth()
-  const { socket, joinEventRoom, leaveEventRoom } = useSocket()
-  const [event, setEvent] = useState(null)
-  const [message, setMessage] = useState("")
-  const [messages, setMessages] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showParticipants, setShowParticipants] = useState(false)
-  const [showEventInfo, setShowEventInfo] = useState(false)
-  const messagesEndRef = useRef(null)
-  const fileInputRef = useRef(null)
+  const { eventId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { socket } = useSocket();
+  const { getEventById } = useEvents();
 
+  // State management
+  const [event, setEvent] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [isTyping, setIsTyping] = useState([]);
+
+  // Refs
+  const messagesEndRef = useRef(null);
+  const messageInputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+
+  // Load event and messages
   useEffect(() => {
-    const fetchEventDetails = async () => {
-      try {
-        setLoading(true)
-        const eventData = await getEventById(eventId)
-        setEvent(eventData)
-        setMessages(eventData.chat || [])
-      } catch (error) {
-        console.error("Error fetching event details:", error)
-        setError("Failed to load event chat. The event may not exist or you don't have permission to view it.")
-      } finally {
-        setLoading(false)
+    loadEventData();
+  }, [eventId]);
+
+  // Socket event handlers
+  useEffect(() => {
+    if (!socket || !eventId || !user?.id) return;
+
+    console.log('Setting up socket listeners for event:', eventId);
+
+    // Join event chat room
+    socket.emit('joinEventChat', { eventId, userId: user.id });
+
+    // Listen for messages
+    const handleNewMessage = (newMessage) => {
+      console.log('New message received:', newMessage);
+      setMessages(prev => {
+        // Check if message already exists to prevent duplicates
+        if (prev.some(msg => msg._id === newMessage._id || 
+            (msg.content === newMessage.content && msg.timestamp === newMessage.timestamp))) {
+          return prev;
+        }
+        return [...prev, newMessage];
+      });
+      
+      // Only show toast for messages from other users
+      if (newMessage.user._id !== user.id) {
+        toast.success(`${newMessage.user.name}: ${newMessage.content.substring(0, 30)}...`);
       }
-    }
+    };
 
-    fetchEventDetails()
-  }, [eventId])
+    const handleUserJoined = (userData) => {
+      toast.success(`${userData.name} joined the chat`);
+    };
 
-  useEffect(() => {
-    if (event) {
-      joinEventRoom(eventId)
-    }
+    const handleUserLeft = (userData) => {
+      toast(`${userData.name} left the chat`);
+    };
+
+    const handleUserTyping = (userData) => {
+      if (userData.userId !== user.id) {
+        setIsTyping(prev => {
+          if (!prev.includes(userData.userId)) {
+            return [...prev, userData.userId];
+          }
+          return prev;
+        });
+      }
+    };
+
+    const handleUserStoppedTyping = (userData) => {
+      setIsTyping(prev => prev.filter(id => id !== userData.userId));
+    };
+
+    const handleOnlineUsersUpdate = (users) => {
+      setOnlineUsers(users);
+    };
+
+    // Add event listeners
+    socket.on('newEventMessage', handleNewMessage);
+    socket.on('userJoinedChat', handleUserJoined);
+    socket.on('userLeftChat', handleUserLeft);
+    socket.on('userTyping', handleUserTyping);
+    socket.on('userStoppedTyping', handleUserStoppedTyping);
+    socket.on('onlineUsersUpdate', handleOnlineUsersUpdate);
 
     return () => {
-      if (event) {
-        leaveEventRoom(eventId)
-      }
-    }
-  }, [event, joinEventRoom, leaveEventRoom])
+      console.log('Cleaning up socket listeners');
+      socket.emit('leaveEventChat', { eventId, userId: user.id });
+      socket.off('newEventMessage', handleNewMessage);
+      socket.off('userJoinedChat', handleUserJoined);
+      socket.off('userLeftChat', handleUserLeft);
+      socket.off('userTyping', handleUserTyping);
+      socket.off('userStoppedTyping', handleUserStoppedTyping);
+      socket.off('onlineUsersUpdate', handleOnlineUsersUpdate);
+    };
+  }, [socket, eventId, user?.id]);
 
+  // Auto scroll to bottom when new messages arrive
   useEffect(() => {
-    if (socket) {
-      const handleNewMessage = (message) => {
-        setMessages((prev) => [...prev, message])
-      }
-
-      socket.on("newMessage", handleNewMessage)
-
-      return () => {
-        socket.off("newMessage", handleNewMessage)
-      }
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [socket])
+  }, [messages]);
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  const handleSendMessage = async (e) => {
-    e.preventDefault()
-    if (!message.trim()) return
-
+  // Load event data
+  const loadEventData = async () => {
     try {
-      await sendMessage(eventId, message)
-      setMessage("")
+      setIsLoading(true);
+      const res = await getEventById(eventId);
+      const eventData = res.data;
+      
+      if (!eventData) {
+        toast.error('Event not found');
+        navigate('/events');
+        return;
+      }
+
+      // Check if user is participant or creator
+      const isParticipant = eventData.participants?.some(p => p.user._id === user.id);
+      const isCreator = eventData.createdBy._id === user.id;
+
+      if (!isParticipant && !isCreator) {
+        toast.error('You must be a participant to access the chat');
+        navigate(`/events/${eventId}`);
+        return;
+      }
+
+      setEvent(eventData);
+      
+      // Load existing messages
+      try {
+        const messagesRes = await api.get(`/events/${eventId}/messages`);
+        if (messagesRes.data.success) {
+          setMessages(messagesRes.data.data || []);
+        }
+      } catch (error) {
+        console.log('No existing messages or error loading:', error);
+        setMessages([]);
+      }
     } catch (error) {
-      console.error("Error sending message:", error)
+      console.error('Error loading event:', error);
+      toast.error('Failed to load event data');
+      navigate('/events');
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleFileUpload = () => {
-    fileInputRef.current?.click()
-  }
+  // Handle typing indicators
+  const handleTyping = () => {
+    if (socket && user?.id) {
+      socket.emit('userTyping', { eventId, userId: user.id, name: user.name });
+      
+      // Clear existing timeout
+      clearTimeout(typingTimeoutRef.current);
+      
+      // Set new timeout to stop typing
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit('userStoppedTyping', { eventId, userId: user.id });
+      }, 1000);
+    }
+  };
 
-  const handleFileChange = (e) => {
-    // This would be implemented with file upload functionality
-    console.log("File selected:", e.target.files)
-    // Reset the input
-    e.target.value = null
-  }
+  // Send message
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    if (!message.trim() || isSending || !socket) return;
 
-  if (loading) {
+    setIsSending(true);
+    
+    try {
+      const messageData = {
+        _id: Date.now().toString(), // Temporary ID
+        eventId,
+        content: message.trim(),
+        user: {
+          _id: user.id,
+          name: user.name,
+          avatar: user.avatar,
+          role: user.role
+        },
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('Sending message:', messageData);
+
+      // Add message to local state immediately for instant feedback
+      setMessages(prev => [...prev, messageData]);
+      
+      // Clear input immediately
+      setMessage('');
+      
+      // Emit to socket for real-time delivery to others
+      socket.emit('sendEventMessage', messageData);
+
+      // Save to database in background
+      try {
+        await api.post(`/events/${eventId}/messages`, {
+          message: message.trim()
+        });
+      } catch (dbError) {
+        console.error('Error saving to database:', dbError);
+        // Don't show error to user as message was sent via socket
+      }
+
+      // Stop typing indicator
+      socket.emit('userStoppedTyping', { eventId, userId: user.id });
+      
+      // Focus input for next message
+      messageInputRef.current?.focus();
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+      // Remove the message from local state if it failed
+      setMessages(prev => prev.filter(msg => msg._id !== messageData._id));
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="flex flex-col items-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary-light dark:text-primary-dark" />
-          <p className="mt-4 text-foreground-light dark:text-foreground-dark">Loading chat...</p>
+      <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading chat...</p>
         </div>
       </div>
-    )
-  }
-
-  if (error || !event) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md p-6 text-center">
-          <AlertTriangle className="w-16 h-16 text-destructive-light dark:text-destructive-dark mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground-light dark:text-foreground-dark mb-2">Chat Not Available</h2>
-          <p className="text-muted-foreground-light dark:text-muted-foreground-dark mb-6">{error}</p>
-          <Link
-            to="/events"
-            className="px-6 py-3 bg-primary-light dark:bg-primary-dark text-white font-semibold rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors"
-          >
-            Browse Events
-          </Link>
-        </div>
-      </div>
-    )
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6">
-        <Link
-          to={`/events/${eventId}`}
-          className="inline-flex items-center text-primary-light dark:text-primary-dark hover:underline"
-        >
-          <ChevronLeft size={16} className="mr-1" />
-          Back to Event
-        </Link>
-      </div>
-
-      <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col h-full min-w-0">
         {/* Chat Header */}
-        <div className="p-4 border-b border-border-light dark:border-border-dark flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-primary-light dark:bg-primary-dark flex items-center justify-center text-white mr-3">
-              <Users size={20} />
+        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/events/${eventId}`)}
+                className="p-2 flex-shrink-0"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Hash className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                    {event?.name}
+                  </h1>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <Calendar className="h-3 w-3" />
+                    {event?.date && format(new Date(event.date), 'MMM dd')}
+                    <span>•</span>
+                    <MapPin className="h-3 w-3" />
+                    {event?.location?.city}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">{event.name}</h2>
-              <p className="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">
-                {event.participants.length} participants
-              </p>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs">
+                {onlineUsers.length} online
+              </Badge>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowParticipants(!showParticipants)}
+                className="p-2"
+              >
+                <Users className="h-4 w-4" />
+              </Button>
             </div>
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setShowParticipants(!showParticipants)}
-              className="p-2 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-              aria-label="Show participants"
-            >
-              <Users size={20} className="text-foreground-light dark:text-foreground-dark" />
-            </button>
-            <button
-              onClick={() => setShowEventInfo(!showEventInfo)}
-              className="p-2 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-              aria-label="Show event info"
-            >
-              <Info size={20} className="text-foreground-light dark:text-foreground-dark" />
-            </button>
           </div>
         </div>
 
-        <div className="flex h-[calc(100vh-16rem)]">
-          {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col">
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-16 h-16 rounded-full bg-muted-light dark:bg-muted-dark flex items-center justify-center mb-4">
-                    <Send size={24} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
+        {/* Messages Area */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <div 
+            ref={messagesContainerRef}
+            className="flex-1 overflow-y-auto p-4 space-y-1"
+          >
+            {messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Hash className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-lg font-medium text-foreground-light dark:text-foreground-dark mb-2">
-                    No messages yet
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Start the conversation
                   </h3>
-                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark max-w-md">
-                    Be the first to send a message in this event chat!
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Be the first to send a message in this chat
                   </p>
                 </div>
-              ) : (
-                messages.map((msg, index) => {
-                  const isCurrentUser = msg.user._id === user?.id
-                  return (
-                    <div
-                      key={index}
-                      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-lg p-3 ${
-                          isCurrentUser
-                            ? "bg-primary-light dark:bg-primary-dark text-white"
-                            : "bg-muted-light dark:bg-muted-dark text-foreground-light dark:text-foreground-dark"
-                        }`}
-                      >
-                        <div className="flex items-center mb-1">
-                          <div className="flex items-center">
-                            {!isCurrentUser && (
-                              <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
-                                {msg.user.avatar ? (
-                                  <img
-                                    src={msg.user.avatar || "/placeholder.svg"}
-                                    alt={msg.user.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full bg-muted-light dark:bg-muted-dark flex items-center justify-center">
-                                    <User size={12} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            <span className="text-xs font-medium">{msg.user.name || "User"}</span>
-                          </div>
-                          <span className="text-xs ml-2 opacity-70">
-                            {format(new Date(msg.timestamp), "h:mm a")}
-                          </span>
-                        </div>
-                        <p className="break-words">{msg.message}</p>
-                      </div>
-                    </div>
-                  )
-                })
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+              </div>
+            ) : (
+              <AnimatePresence>
+                {messages.map((msg, index) => (
+                  <MessageBubble
+                    key={msg._id || `${msg.timestamp}-${index}`}
+                    message={msg}
+                    isOwn={msg.user?._id === user?.id}
+                  />
+                ))}
+              </AnimatePresence>
+            )}
 
-            {/* Message Input */}
-            <div className="border-t border-border-light dark:border-border-dark p-4">
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleFileUpload}
-                  className="p-2 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                >
-                  <Paperclip size={20} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="hidden"
-                  multiple
-                />
-                <button
-                  type="button"
-                  className="p-2 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                >
-                  <ImageIcon size={20} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                >
-                  <Smile size={20} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                </button>
-                <input
-                  type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 p-3 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-                />
-                <button
-                  type="submit"
-                  disabled={!message.trim()}
-                  className={`p-3 rounded-md ${
-                    !message.trim()
-                      ? "bg-muted-light dark:bg-muted-dark text-muted-foreground-light dark:text-muted-foreground-dark cursor-not-allowed"
-                      : "bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90"
-                  }`}
-                >
-                  <Send size={20} />
-                </button>
-              </form>
-            </div>
+            {/* Typing Indicators */}
+            {isTyping.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm px-2"
+              >
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+                <span>Someone is typing...</span>
+              </motion.div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Sidebar - Participants */}
-          <AnimatePresence>
-            {showParticipants && (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 300, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="border-l border-border-light dark:border-border-dark overflow-hidden"
-              >
-                <div className="p-4 border-b border-border-light dark:border-border-dark">
-                  <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">
-                    Participants ({event.participants.length})
-                  </h3>
-                </div>
-                <div className="p-4 overflow-y-auto max-h-[calc(100vh-16rem-8rem)]">
-                  <div className="space-y-4">
-                    {event.participants.map((participant) => (
-                      <Link
-                        to={`/profile/${participant.user._id}`}
-                        key={participant.user._id}
-                        className="flex items-center p-2 rounded-lg hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
-                          {participant.user.avatar ? (
-                            <img
-                              src={participant.user.avatar.url || "/placeholder.svg"}
-                              alt={participant.user.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-muted-light dark:bg-muted-dark flex items-center justify-center">
-                              <User size={16} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground-light dark:text-foreground-dark">
-                            {participant.user.name}
-                            {participant.user._id === event.createdBy._id && (
-                              <span className="ml-2 text-xs bg-primary-light/20 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark px-1.5 py-0.5 rounded">
-                                Organizer
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-muted-foreground-light dark:text-muted-foreground-dark">
-                            Joined {format(new Date(participant.joinedAt), "MMM dd, yyyy")}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Message Input */}
+          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
+            <form onSubmit={sendMessage} className="flex items-center gap-3">
+              <div className="flex-1">
+                <Input
+                  ref={messageInputRef}
+                  value={message}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    handleTyping();
+                  }}
+                  placeholder="Type your message..."
+                  className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg"
+                  disabled={isSending}
+                />
+              </div>
 
-          {/* Sidebar - Event Info */}
-          <AnimatePresence>
-            {showEventInfo && (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 300, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="border-l border-border-light dark:border-border-dark overflow-hidden"
+              <Button
+                type="submit"
+                disabled={!message.trim() || isSending}
+                className="h-10 px-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg shadow-sm"
               >
-                <div className="p-4 border-b border-border-light dark:border-border-dark">
-                  <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">Event Info</h3>
-                </div>
-                <ScrollArea className="h-[calc(100vh-16rem-8rem)]">
-                <div className="p-4  max-h-[calc(100vh-16rem-8rem)]">
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                        Date & Time
-                      </h4>
-                      <p className="text-foreground-light dark:text-foreground-dark">
-                        {format(new Date(event.date), "MMMM dd, yyyy")} at {event.time}
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                        Location
-                      </h4>
-                      <p className="text-foreground-light dark:text-foreground-dark">
-                        {event.location.address}, {event.location.city}
-                        {event.location.state && `, ${event.location.state}`}
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                        Category
-                      </h4>
-                      <p className="text-foreground-light dark:text-foreground-dark">{event.category}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                        Difficulty
-                      </h4>
-                      <p className="text-foreground-light dark:text-foreground-dark">{event.difficulty}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                        Organizer
-                      </h4>
-                      <Link
-                        to={`/profile/${event.createdBy._id}`}
-                        className="flex items-center hover:underline text-foreground-light dark:text-foreground-dark"
-                      >
-                        <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
-                          {event.createdBy.avatar ? (
-                            <img
-                              src={event.createdBy.avatar.url || "/placeholder.svg"}
-                              alt={event.createdBy.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-muted-light dark:bg-muted-dark flex items-center justify-center">
-                              <User size={12} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                            </div>
-                          )}
-                        </div>
-                        {event.createdBy.name}
-                      </Link>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark mb-1">
-                        Description
-                      </h4>
-                      <p className="text-foreground-light dark:text-foreground-dark text-sm whitespace-pre-line">
-                        {event.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                </ScrollArea>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                {isSending ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
 
-export default EventChat
+      {/* Participants Sidebar */}
+      <ParticipantsSidebar
+        participants={event?.participants}
+        eventCreator={event?.createdBy}
+        onlineUsers={onlineUsers}
+        isOpen={showParticipants}
+        onClose={() => setShowParticipants(false)}
+      />
+    </div>
+  );
+};
+
+export default EventChat;

@@ -14,7 +14,7 @@ export default function setupSocket(server) {
   io.use(async (socket, next) => {
     try {
       const userId = socket.handshake.auth.userId
-     if (!userId) return next(new Error("Authentication error"))
+      if (!userId) return next(new Error("Authentication error"))
 
       const user = await User.findById(userId).select("-password")
 
@@ -28,66 +28,60 @@ export default function setupSocket(server) {
   })
 
   io.on("connection", (socket) => {
-    console.log(`✅ Socket connected: ${socket.user.name} (${socket.user._id})`)
-
     socket.join(`user:${socket.user._id}`)
 
     socket.on("join_event", (eventId) => {
       socket.join(`event:${eventId}`)
-      console.log(`${socket.user.name} joined event:${eventId}`)
     })
 
     socket.on("leave_event", (eventId) => {
       socket.leave(`event:${eventId}`)
-      console.log(`${socket.user.name} left event:${eventId}`)
     })
 
     socket.on("joinEventChat", ({ eventId, userId }) => {
-  socket.join(`eventChat:${eventId}`)
-  console.log(`${socket.user.name} joined event chat:${eventId}`)
-  
-  // Notify other participants that user joined
-  socket.to(`eventChat:${eventId}`).emit("userJoinedChat", {
-    userId: socket.user._id,
-    name: socket.user.name,
-    avatar: socket.user.avatar
-  })
-})
+      socket.join(`eventChat:${eventId}`)
 
-socket.on("leaveEventChat", ({ eventId, userId }) => {
-  socket.leave(`eventChat:${eventId}`)
-  console.log(`${socket.user.name} left event chat:${eventId}`)
-  
-  // Notify other participants that user left
-  socket.to(`eventChat:${eventId}`).emit("userLeftChat", {
-    userId: socket.user._id,
-    name: socket.user.name
-  })
-})
+      // Notify other participants that user joined
+      socket.to(`eventChat:${eventId}`).emit("userJoinedChat", {
+        userId: socket.user._id,
+        name: socket.user.name,
+        avatar: socket.user.avatar
+      })
+    })
 
-socket.on("sendEventMessage", (messageData) => {
-  const message = {
-    ...messageData,
-    user: {
-      _id: socket.user._id,
-      name: socket.user.name,
-      avatar: socket.user.avatar,
-      role: socket.user.role
-    },
-    timestamp: new Date().toISOString()
-  }
+    socket.on("leaveEventChat", ({ eventId, userId }) => {
+      socket.leave(`eventChat:${eventId}`)
 
-  // Emit to all users in the event chat room
-  io.to(`eventChat:${messageData.eventId}`).emit("newEventMessage", message)
-})
+      // Notify other participants that user left
+      socket.to(`eventChat:${eventId}`).emit("userLeftChat", {
+        userId: socket.user._id,
+        name: socket.user.name
+      })
+    })
 
-socket.on("userTyping", ({ eventId, userId, name }) => {
-  socket.to(`eventChat:${eventId}`).emit("userTyping", { userId, name })
-})
+    socket.on("sendEventMessage", (messageData) => {
+      const message = {
+        ...messageData,
+        user: {
+          _id: socket.user._id,
+          name: socket.user.name,
+          avatar: socket.user.avatar,
+          role: socket.user.role
+        },
+        timestamp: new Date().toISOString()
+      }
 
-socket.on("userStoppedTyping", ({ eventId, userId }) => {
-  socket.to(`eventChat:${eventId}`).emit("userStoppedTyping", { userId })
-})
+      // Emit to all users in the event chat room
+      io.to(`eventChat:${messageData.eventId}`).emit("newEventMessage", message)
+    })
+
+    socket.on("userTyping", ({ eventId, userId, name }) => {
+      socket.to(`eventChat:${eventId}`).emit("userTyping", { userId, name })
+    })
+
+    socket.on("userStoppedTyping", ({ eventId, userId }) => {
+      socket.to(`eventChat:${eventId}`).emit("userStoppedTyping", { userId })
+    })
 
     socket.on("event_message", (messageData) => {
       const message = {
@@ -104,7 +98,7 @@ socket.on("userStoppedTyping", ({ eventId, userId }) => {
     })
 
     socket.on("disconnect", () => {
-      console.log(`❌ Socket disconnected: ${socket.user.name}`)
+
     })
   })
 

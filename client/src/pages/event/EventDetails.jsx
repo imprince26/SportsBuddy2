@@ -62,6 +62,9 @@ import EventDetailsError from "@/components/events/EventDetailsError"
 import { cn } from "@/lib/utils"
 import api from "@/utils/api"
 import toast from "react-hot-toast"
+import EmojiPicker from 'emoji-picker-react';
+import { isToday, isYesterday, format as formatDate, isSameDay } from 'date-fns';
+
 
 const EventDetails = () => {
   const { id } = useParams()
@@ -83,14 +86,12 @@ const EventDetails = () => {
   const [rating, setRating] = useState(0)
   const [review, setReview] = useState("")
   const [message, setMessage] = useState("")
-  const [teamName, setTeamName] = useState("")
 
   // Modal states
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
-  const [showParticipantsModal, setShowParticipantsModal] = useState(false)
   const [showLocationModal, setShowLocationModal] = useState(false)
   const [showChatModal, setShowChatModal] = useState(false)
 
@@ -99,6 +100,39 @@ const EventDetails = () => {
   const [isFavorite, setIsFavorite] = useState(false)
   const [hasRated, setHasRated] = useState(false)
   const [sendingMessage, setSendingMessage] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const groupMessagesByDate = (messages) => {
+    const groups = [];
+    let currentGroup = null;
+
+    messages.forEach((msg) => {
+      const msgDate = new Date(msg.timestamp);
+
+      if (!currentGroup || !isSameDay(new Date(currentGroup.date), msgDate)) {
+        currentGroup = {
+          date: msgDate,
+          messages: [msg]
+        };
+        groups.push(currentGroup);
+      } else {
+        currentGroup.messages.push(msg);
+      }
+    });
+
+    return groups;
+  };
+
+  const getDateLabel = (date) => {
+    if (isToday(date)) return 'Today';
+    if (isYesterday(date)) return 'Yesterday';
+    return formatDate(date, 'MMM dd, yyyy');
+  };
+
+  const onEmojiClick = (emojiObject) => {
+    setMessage(prev => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
 
   // Fetch event details
   useEffect(() => {
@@ -138,12 +172,29 @@ const EventDetails = () => {
     }
   }, [id, user])
 
-  // Auto-scroll chat to bottom
+  // useEffect(() => {
+  //   if (showChatModal && chatEndRef.current) {
+  //     // Use setTimeout to ensure DOM has rendered
+  //     setTimeout(() => {
+  //       chatEndRef.current?.scrollIntoView({ 
+  //         behavior: "smooth",
+  //         block: "end"
+  //       })
+  //     }, 100)
+  //   }
+  // }, [event?.chat, showChatModal])
+
   useEffect(() => {
-    if (showChatModal && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" })
+    if (showChatModal) {
+      // Scroll to bottom when modal opens
+      setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "end"
+        })
+      }, 300) // Longer delay for modal animation
     }
-  }, [event?.chat, showChatModal])
+  }, [showChatModal])
 
   // Helper functions
   const isParticipant = () => {
@@ -309,29 +360,27 @@ const EventDetails = () => {
     }
 
     // Listen for user join/leave events
-    const handleUserJoined = (userData) => {
-      toast.success(`${userData.name} joined the chat`)
-    }
+    // const handleUserJoined = (userData) => {
+    //   toast.success(`${userData.name} joined the chat`)
+    // }
 
-    const handleUserLeft = (userData) => {
-      toast(`${userData.name} left the chat`)
-    }
+    // const handleUserLeft = (userData) => {
+    //   toast(`${userData.name} left the chat`)
+    // }
 
     // Add event listeners
     socket.on('newEventMessage', handleNewMessage)
-    socket.on('userJoinedChat', handleUserJoined)
-    socket.on('userLeftChat', handleUserLeft)
+    // socket.on('userJoinedChat', handleUserJoined)
+    // socket.on('userLeftChat', handleUserLeft)
 
     return () => {
-      console.log('Cleaning up socket listeners')
       socket.emit('leaveEventChat', { eventId: id, userId: user.id })
       socket.off('newEventMessage', handleNewMessage)
-      socket.off('userJoinedChat', handleUserJoined)
-      socket.off('userLeftChat', handleUserLeft)
+      // socket.off('userJoinedChat', handleUserJoined)
+      // socket.off('userLeftChat', handleUserLeft)
     }
   }, [socket, id, user?.id])
 
-  // Replace the existing handleSendMessage function (around line 270)
   const handleSendMessage = async (e) => {
     e.preventDefault()
     if (!message.trim() || !socket) return
@@ -373,6 +422,13 @@ const EventDetails = () => {
       // Clear input immediately
       setMessage("")
 
+      setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "end"
+        })
+      }, 50)
+
       // Emit to socket for real-time delivery to others
       socket.emit('sendEventMessage', messageData)
 
@@ -383,12 +439,10 @@ const EventDetails = () => {
         })
       } catch (dbError) {
         console.error('Error saving to database:', dbError)
-        // Don't show error to user as message was sent via socket
+
       }
 
-      toast.success("Message sent! 💬")
     } catch (err) {
-      console.error("Error sending message:", err)
       toast.error("Failed to send message")
 
       // Remove the message from local state if it failed
@@ -1668,115 +1722,260 @@ const EventDetails = () => {
 
       {/* Chat Modal Dialog */}
       <Dialog open={showChatModal} onOpenChange={setShowChatModal}>
-        <DialogContent className="max-w-4xl h-[80vh] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 p-0">
-          <DialogHeader className="p-6 pb-0">
+        <DialogContent className="max-w-5xl h-[85vh] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 p-0 overflow-hidden">
+          <DialogHeader className="p-4 sm:p-6 pb-0 border-b border-gray-200/50 dark:border-gray-700/50">
             <DialogTitle className="flex items-center gap-3 text-gray-900 dark:text-white">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              Event Chat - {event.name}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold truncate">Event Chat</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{event.name}</p>
+              </div>
               <Badge
                 variant="secondary"
-                className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 ml-auto"
+                className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700 px-3 py-1"
               >
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                 Participants Only
               </Badge>
             </DialogTitle>
-            <DialogDescription className="text-gray-600 dark:text-gray-400">
-              Chat with other event participants in real-time
+            <DialogDescription className="text-gray-600 dark:text-gray-400 mt-2">
+              Chat with other event participants in real-time • {event.participantCount} members
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col h-full overflow-hidden px-6 pb-6">
+          <div className="flex flex-col h-full overflow-hidden">
             {/* Chat Messages */}
-            <ScrollArea className="flex-1 p-4 bg-gray-50/30 dark:bg-gray-800/30 rounded-xl mb-4">
-              <div className="space-y-4">
+            <ScrollArea className="flex-1 px-4 sm:px-6">
+              <div className="py-4 space-y-6">
                 {event.chat && event.chat.length > 0 ? (
-                  event.chat.map((msg, index) => (
-                    <motion.div
-                      key={msg._id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className={cn("flex gap-3", msg.user._id === user?.id ? "flex-row-reverse" : "")}
-                    >
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={msg.user.avatar || "/placeholder.svg"} />
-                        <AvatarFallback className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs">
-                          {msg.user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className={cn("max-w-xs lg:max-w-md", msg.user._id === user?.id ? "text-right" : "")}>
-                        <div
-                          className={cn(
-                            "inline-block px-4 py-2 rounded-2xl",
-                            msg.user._id === user?.id
-                              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                              : "bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600",
-                          )}
-                        >
-                          <p className="text-sm">{msg.message}</p>
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          <span>{msg.user.name}</span>
-                          <span>•</span>
-                          <span>{formatDistanceToNow(new Date(msg.timestamp))} ago</span>
+                  groupMessagesByDate(event.chat).map((group, groupIndex) => (
+                    <div key={groupIndex} className="space-y-4">
+                      {/* Date Separator */}
+                      <div className="flex items-center justify-center my-6">
+                        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full">
+                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {getDateLabel(group.date)}
+                          </span>
                         </div>
                       </div>
-                    </motion.div>
+
+                      {/* Messages for this date */}
+                      {group.messages.map((msg, msgIndex) => {
+                        const isOwn = msg.user._id === user?.id;
+                        const showAvatar = msgIndex === 0 || group.messages[msgIndex - 1].user._id !== msg.user._id;
+                        const isLastInGroup = msgIndex === group.messages.length - 1 ||
+                          group.messages[msgIndex + 1].user._id !== msg.user._id;
+
+                        return (
+                          <motion.div
+                            key={msg._id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: msgIndex * 0.05 }}
+                            className={cn(
+                              "flex gap-3 mb-1",
+                              isOwn ? "flex-row-reverse" : "flex-row",
+                              !showAvatar && "ml-11"
+                            )}
+                          >
+                            {/* Avatar */}
+                            {!isOwn && showAvatar ? (
+                              <Avatar className="w-8 h-8 ring-2 ring-white dark:ring-gray-800 shadow-sm">
+                                <AvatarImage src={msg.user?.avatar?.url || "/placeholder.svg"} />
+                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-semibold">
+                                  {msg.user.name?.charAt(0)?.toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                            ) : !isOwn ? (
+                              <div className="w-8 h-8" />
+                            ) : null}
+
+                            <div className={cn(
+                              "flex flex-col max-w-[70%] sm:max-w-[80%]",
+                              isOwn ? "items-end" : "items-start"
+                            )}>
+                              {/* Username (only show for first message in group) */}
+                              {!isOwn && showAvatar && (
+                                <div className="flex items-center gap-2 mb-1 px-1">
+                                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                    {msg.user.name}
+                                  </span>
+                                  {msg.user.role === 'admin' && (
+                                    <div className="w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                                      <span className="text-[8px] text-white font-bold">A</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Message Bubble */}
+                              <div
+                                className={cn(
+                                  "relative px-4 py-2 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md group",
+                                  isOwn
+                                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                                    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700",
+                                  // Rounded corners based on position
+                                  isOwn
+                                    ? showAvatar ? "rounded-tr-md" : isLastInGroup ? "rounded-br-md" : "rounded-r-md"
+                                    : showAvatar ? "rounded-tl-md" : isLastInGroup ? "rounded-bl-md" : "rounded-l-md"
+                                )}
+                              >
+                                {/* Message Content */}
+                                <div className="text-sm leading-relaxed break-words">
+                                  {msg.message}
+                                </div>
+
+                                {/* Message Time - only show on last message in group */}
+                                {isLastInGroup && (
+                                  <div className={cn(
+                                    "flex items-center gap-1 mt-1",
+                                    isOwn ? "justify-end" : "justify-start"
+                                  )}>
+                                    <span className={cn(
+                                      "text-xs opacity-70",
+                                      isOwn ? "text-white/80" : "text-gray-500 dark:text-gray-400"
+                                    )}>
+                                      {formatDate(new Date(msg.timestamp), 'HH:mm')}
+                                    </span>
+                                    {isOwn && (
+                                      <div className="flex gap-0.5">
+                                        <div className="w-1 h-1 bg-white/60 rounded-full"></div>
+                                        <div className="w-1 h-1 bg-white/60 rounded-full"></div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   ))
                 ) : (
-                  <div className="text-center py-8">
-                    <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-600 dark:text-gray-400">No messages yet. Start the conversation!</p>
+                  <div className="flex flex-col items-center justify-center h-64 text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                      <MessageSquare className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      Start the conversation
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 max-w-sm">
+                      Be the first to send a message and break the ice with other participants!
+                    </p>
                   </div>
                 )}
                 <div ref={chatEndRef} />
               </div>
             </ScrollArea>
 
+            {/* Emoji Picker */}
+            {showEmojiPicker && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute bottom-20 right-6 z-50"
+              >
+                <EmojiPicker
+                  onEmojiClick={onEmojiClick}
+                  theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                  width={350}
+                  height={400}
+                  previewConfig={{
+                    showPreview: false
+                  }}
+                  skinTonesDisabled
+                  searchDisabled={false}
+                />
+              </motion.div>
+            )}
+
             {/* Message Input */}
-            <form onSubmit={handleSendMessage} className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleFileUpload}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <Paperclip className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </button>
-              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" multiple />
-              <button
-                type="button"
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <ImageIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </button>
-              <button
-                type="button"
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <Smile className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </button>
-              <Input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 bg-white/70 dark:bg-gray-800/70 border-gray-200/50 dark:border-gray-700/50"
-              />
-              <Button
-                type="submit"
-                disabled={!message.trim() || sendingMessage}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
-              >
-                {sendingMessage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              </Button>
-            </form>
+            <div className="p-4 sm:p-6 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
+              <form onSubmit={handleSendMessage} className="flex items-end gap-3">
+                {/* Additional Actions */}
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={handleFileUpload}
+                    className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    title="Upload file"
+                  >
+                    <Paperclip className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" multiple />
+
+                  <button
+                    type="button"
+                    className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    title="Send image"
+                  >
+                    <ImageIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+
+                {/* Message Input Container */}
+                <div className="flex-1 relative">
+                  <div className="flex items-end bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                    <Input
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Type your message..."
+                      className="flex-1 border-0 bg-transparent focus:ring-0 focus-visible:ring-0 text-sm px-4 py-3 max-h-32 resize-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage(e);
+                        }
+                      }}
+                    />
+
+                    {/* Emoji Button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      title="Add emoji"
+                    >
+                      <Smile className={cn(
+                        "w-5 h-5 transition-colors",
+                        showEmojiPicker
+                          ? "text-blue-500"
+                          : "text-gray-500 dark:text-gray-400 hover:text-blue-500"
+                      )} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Send Button */}
+                <Button
+                  type="submit"
+                  disabled={!message.trim() || sendingMessage}
+                  className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {sendingMessage ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-5 h-5" />
+                  )}
+                </Button>
+              </form>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Emoji Picker Overlay to close when clicking outside */}
+      {showEmojiPicker && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowEmojiPicker(false)}
+        />
+      )}
 
       {/* Other Modals */}
       {/* Confirm Delete Modal */}

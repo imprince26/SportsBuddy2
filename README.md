@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./client/public/logo.svg" alt="SportsBuddy Logo" width="180" />
+  <!-- <img src="./client/public/logo.svg" alt="SportsBuddy Logo" width="180" /> -->
   
   # 🏆 SportsBuddy
 

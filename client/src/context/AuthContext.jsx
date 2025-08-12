@@ -183,9 +183,9 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         // Update local user state with new following list
-        setUser(prev => ({
+       setUser(prev => ({
           ...prev,
-          following: [...prev.following, userId]
+          following: [...(prev.following || []), userId]
         }));
         return { success: true };
       }
@@ -202,9 +202,9 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         // Update local user state by removing from following list
-        setUser(prev => ({
+         setUser(prev => ({
           ...prev,
-          following: prev.following.filter(id => id !== userId)
+          following: (prev.following || []).filter(id => id !== userId)
         }));
         return { success: true };
       }

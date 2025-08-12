@@ -64,7 +64,11 @@ const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
 
   const handleFollow = async (targetUserId) => {
     try {
-      await followUser(targetUserId)
+      const res = await followUser(targetUserId)
+      if (!res.success) {
+        toast.error(res.message || "Failed to follow user")
+        return
+      }
       setUsers((prev) => prev.map((u) => (u._id === targetUserId ? { ...u, isFollowedByCurrentUser: true } : u)))
     } catch (error) {
       toast.error("Failed to follow user")
@@ -73,7 +77,11 @@ const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
 
   const handleUnfollow = async (targetUserId) => {
     try {
-      await unfollowUser(targetUserId)
+      const res = await unfollowUser(targetUserId)
+      if (!res.success) {
+        toast.error(res.message || "Failed to unfollow user")
+        return
+      }
       setUsers((prev) => prev.map((u) => (u._id === targetUserId ? { ...u, isFollowedByCurrentUser: false } : u)))
     } catch (error) {
       toast.error("Failed to unfollow user")
@@ -197,12 +205,6 @@ const PublicProfile = () => {
       return;
     }
 
-    // Prevent following self
-    if (user._id === userId) {
-      toast.error("You cannot follow yourself");
-      return;
-    }
-
     setFollowLoading(true);
     try {
       if (isFollowing) {
@@ -215,7 +217,12 @@ const PublicProfile = () => {
         }));
         toast.success("Unfollowed successfully");
       } else {
-        await followUser(userId);
+        const res = await followUser(userId);
+
+        if (!res.success) {
+          toast.error(res.message || "Failed to follow user");
+          return;
+        }
         setIsFollowing(true);
         // Update followers count
         SetUserStats(prev => ({

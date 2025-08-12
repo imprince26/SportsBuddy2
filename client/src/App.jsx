@@ -21,7 +21,13 @@ import About from './pages/public/About';
 import Contact from './pages/public/Contact';
 import Privacy from './pages/public/Privacy';
 import Terms from './pages/public/Terms';
+import Help from './pages/public/Help';
 import NotFound from './pages/NotFound';
+// import Venues from './pages/venue/Venues';
+// import VenueDetails from './pages/venue/VenueDetails';
+// import Leaderboard from './pages/Leaderboard';
+// import Community from './pages/community/Community';
+// import Athletes from './pages/Athletes';
 
 // Protected User Pages
 import Dashboard from './pages/Dashboard';
@@ -33,14 +39,13 @@ import Settings from './pages/Settings';
 import EventChat from './pages/event/EventChat';
 import TeamManagement from './pages/TeamManagement';
 import FollowersFollowing from './pages/FollowerFollowing';
-// import Venues from './pages/Venues';
-// import VenueDetails from './pages/VenueDetails';
-// import Leaderboard from './pages/Leaderboard';
-// import Community from './pages/Community';
-// import Athletes from './pages/Athletes';
 // import MyEvents from './pages/MyEvents';
 // import Bookmarks from './pages/Bookmarks';
-import Help from './pages/public/Help';
+import CreateCommunity from './pages/community/CreateCommunity';
+// import CommunityDetails from './pages/community/CommunityDetails';
+// import CreateVenue from './pages/venue/CreateVenue';
+// import EditVenue from './pages/venue/EditVenue';
+// import UserProfile from './pages/UserProfile';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -126,416 +131,65 @@ function App() {
         <Routes location={location} key={location.pathname}>
           {/* Public Routes */}
           <Route path="/" element={<Layout />}>
-            <Route
-              index
-              element={
-                <PublicRoute title="Home">
-                  <Home />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="login"
-              element={
-                <PublicRoute title="Login">
-                  <Login />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="register"
-              element={
-                <PublicRoute title="Register">
-                  <Register />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="forgot-password"
-              element={
-                <PublicRoute title="Forgot-Password">
-                  <ForgotPassword/>
-                </PublicRoute>
-              }
-            />
-
-               <Route
-              path="reset-password"
-              element={
-                <PublicRoute title="Reset-Password">
-                  <ResetPassword/>
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="events"
-              element={
-                <PublicRoute title="Events">
-                  <Events />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="events/:id"
-              element={
-                <PublicRoute title="Event Details">
-                  <EventDetails />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="profile/:userId"
-              element={
-                <PublicRoute title="Profile">
-                  <PublicProfile />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="search"
-              element={
-                <PublicRoute title="Search">
-                  <Search />
-                </PublicRoute>
-              }
-            />
-
-            {/* <Route 
-              path="venues" 
-              element={
-                <PublicRoute title="Sports Venues">
-                  <Venues />
-                </PublicRoute>
-              } 
-            />
-            
-            <Route 
-              path="venues/:id" 
-              element={
-                <PublicRoute title="Venue Details">
-                  <VenueDetails />
-                </PublicRoute>
-              } 
-            />
-            
-            <Route 
-              path="athletes" 
-              element={
-                <PublicRoute title="Athletes">
-                  <Athletes />
-                </PublicRoute>
-              } 
-            />
-            
-            <Route 
-              path="leaderboard" 
-              element={
-                <PublicRoute title="Leaderboard">
-                  <Leaderboard />
-                </PublicRoute>
-              } 
-            />
-            
-            <Route 
-              path="community" 
-              element={
-                <PublicRoute title="Community">
-                  <Community />
-                </PublicRoute>
-              } 
-            /> */}
-
-            <Route
-              path="about"
-              element={
-                <PublicRoute title="About Us">
-                  <About />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="contact"
-              element={
-                <PublicRoute title="Contact Us">
-                  <Contact />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="privacy"
-              element={
-                <PublicRoute title="Privacy Policy">
-                  <Privacy />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="terms"
-              element={
-                <PublicRoute title="Terms of Service">
-                  <Terms />
-                </PublicRoute>
-              }
-            />
-
-            <Route
-              path="help"
-              element={
-                <PublicRoute title="Help Center">
-                  <Help />
-                </PublicRoute>
-              }
-            />
+            <Route index element={<PublicRoute title="Home"><Home /></PublicRoute>} />
+            <Route path="login" element={<PublicRoute title="Login"><Login /></PublicRoute>} />
+            <Route path="register" element={<PublicRoute title="Register"><Register /></PublicRoute>} />
+            <Route path="forgot-password" element={<PublicRoute title="Forgot Password"><ForgotPassword /></PublicRoute>} />
+            <Route path="reset-password" element={<PublicRoute title="Reset Password"><ResetPassword /></PublicRoute>} />
+            <Route path="events" element={<PublicRoute title="Events"><Events /></PublicRoute>} />
+            <Route path="events/:id" element={<PublicRoute title="Event Details"><EventDetails /></PublicRoute>} />
+            <Route path="profile/:userId" element={<PublicRoute title="Profile"><PublicProfile /></PublicRoute>} />
+            <Route path="search" element={<PublicRoute title="Search"><Search /></PublicRoute>} />
+            {/* <Route path="venues" element={<PublicRoute title="Sports Venues"><Venues /></PublicRoute>} />
+            <Route path="venues/:id" element={<PublicRoute title="Venue Details"><VenueDetails /></PublicRoute>} />
+            <Route path="athletes" element={<PublicRoute title="Athletes"><Athletes /></PublicRoute>} />
+            <Route path="leaderboard" element={<PublicRoute title="Leaderboard"><Leaderboard /></PublicRoute>} />
+            <Route path="community" element={<PublicRoute title="Community"><Community /></PublicRoute>} />
+            <Route path="community/:id" element={<PublicRoute title="Community Details"><CommunityDetails /></PublicRoute>} /> */}
+            <Route path="about" element={<PublicRoute title="About Us"><About /></PublicRoute>} />
+            <Route path="contact" element={<PublicRoute title="Contact Us"><Contact /></PublicRoute>} />
+            <Route path="privacy" element={<PublicRoute title="Privacy Policy"><Privacy /></PublicRoute>} />
+            <Route path="terms" element={<PublicRoute title="Terms of Service"><Terms /></PublicRoute>} />
+            <Route path="help" element={<PublicRoute title="Help Center"><Help /></PublicRoute>} />
 
             {/* Protected User Routes */}
-            <Route
-              path="dashboard"
-              element={
-                <ProtectedRoute title="Dashboard">
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="events/create"
-              element={
-                <ProtectedRoute title="Create Event">
-                  <CreateEvent />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="events/:id/edit"
-              element={
-                <ProtectedRoute title="Edit Event">
-                  <EditEvent />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* <Route
-              path="my-events"
-              element={
-                <ProtectedRoute title="My Events">
-                  <MyEvents />
-                </ProtectedRoute>
-              }
-            /> */}
-
-            <Route
-              path="profile"
-              element={
-                <ProtectedRoute title="My Profile">
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="notifications"
-              element={
-                <ProtectedRoute title="Notifications">
-                  <Notifications />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="settings"
-              element={
-                <ProtectedRoute title="Settings">
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* <Route
-              path="bookmarks"
-              element={
-                <ProtectedRoute title="Bookmarks">
-                  <Bookmarks />
-                </ProtectedRoute>
-              }
-            /> */}
-
-            <Route
-              path="chat/:eventId"
-              element={
-                <ProtectedRoute title="Event Chat">
-                  <EventChat />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="events/:eventId/teams"
-              element={
-                <ProtectedRoute title="Team Management">
-                  <TeamManagement />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="events/:eventId/teams/:teamId"
-              element={
-                <ProtectedRoute title="Team Details">
-                  <TeamManagement />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="users/:id/followers"
-              element={
-                <ProtectedRoute title="Followers">
-                  <FollowersFollowing type="followers" />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="users/:id/following"
-              element={
-                <ProtectedRoute title="Following">
-                  <FollowersFollowing type="following" />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="dashboard" element={<ProtectedRoute title="Dashboard"><Dashboard /></ProtectedRoute>} />
+            <Route path="events/create" element={<ProtectedRoute title="Create Event"><CreateEvent /></ProtectedRoute>} />
+            <Route path="events/:id/edit" element={<ProtectedRoute title="Edit Event"><EditEvent /></ProtectedRoute>} />
+            {/* <Route path="my-events" element={<ProtectedRoute title="My Events"><MyEvents /></ProtectedRoute>} /> */}
+            <Route path="profile" element={<ProtectedRoute title="My Profile"><Profile /></ProtectedRoute>} />
+            {/* <Route path="user/:id" element={<ProtectedRoute title="User Profile"><UserProfile /></ProtectedRoute>} /> */}
+            <Route path="notifications" element={<ProtectedRoute title="Notifications"><Notifications /></ProtectedRoute>} />
+            <Route path="settings" element={<ProtectedRoute title="Settings"><Settings /></ProtectedRoute>} />
+            {/* <Route path="bookmarks" element={<ProtectedRoute title="Bookmarks"><Bookmarks /></ProtectedRoute>} /> */}
+            <Route path="chat/:eventId" element={<ProtectedRoute title="Event Chat"><EventChat /></ProtectedRoute>} />
+            <Route path="events/:eventId/teams" element={<ProtectedRoute title="Team Management"><TeamManagement /></ProtectedRoute>} />
+            <Route path="events/:eventId/teams/:teamId" element={<ProtectedRoute title="Team Details"><TeamManagement /></ProtectedRoute>} />
+            <Route path="users/:id/followers" element={<ProtectedRoute title="Followers"><FollowersFollowing type="followers" /></ProtectedRoute>} />
+            <Route path="users/:id/following" element={<ProtectedRoute title="Following"><FollowersFollowing type="following" /></ProtectedRoute>} />
+            <Route path="community/create" element={<ProtectedRoute title="Create Community"><CreateCommunity /></ProtectedRoute>} />
+            {/* <Route path="venues/create" element={<ProtectedRoute title="Create Venue"><CreateVenue /></ProtectedRoute>} />
+            <Route path="venues/:id/edit" element={<ProtectedRoute title="Edit Venue"><EditVenue /></ProtectedRoute>} /> */}
           </Route>
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
-            <Route
-              path="dashboard"
-              element={
-                <ProtectedRoute adminOnly title="Admin Dashboard">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="users"
-              element={
-                <ProtectedRoute adminOnly title="Manage Users">
-                  <ManageUsers />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="events"
-              element={
-                <ProtectedRoute adminOnly title="Manage Events">
-                  <ManageEvents />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* <Route
-              path="venues"
-              element={
-                <ProtectedRoute adminOnly title="Manage Venues">
-                  <ManageVenues />
-                </ProtectedRoute>
-              }
-            /> */}
-
-            <Route
-              path="notifications"
-              element={
-                <ProtectedRoute adminOnly title="Admin Notifications">
-                  <NotificationsPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="search"
-              element={
-                <ProtectedRoute adminOnly title="Admin Search">
-                  <AdminSearch />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="messages"
-              element={
-                <ProtectedRoute adminOnly title="Admin Messages">
-                  <AdminMessages />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="analytics"
-              element={
-                <ProtectedRoute adminOnly title="Analytics">
-                  <AdminAnalytics />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* <Route
-              path="reports"
-              element={
-                <ProtectedRoute adminOnly title="Reports">
-                  <AdminReports />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="moderation"
-              element={
-                <ProtectedRoute adminOnly title="Content Moderation">
-                  <ContentModeration />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="logs"
-              element={
-                <ProtectedRoute adminOnly title="System Logs">
-                  <SystemLogs />
-                </ProtectedRoute>
-              }
-            /> */}
-
-            <Route
-              path="settings"
-              element={
-                <ProtectedRoute adminOnly title="Admin Settings">
-                  <AdminSettings />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="dashboard" element={<ProtectedRoute adminOnly title="Admin Dashboard"><AdminDashboard /></ProtectedRoute>} />
+            <Route path="users" element={<ProtectedRoute adminOnly title="Manage Users"><ManageUsers /></ProtectedRoute>} />
+            <Route path="events" element={<ProtectedRoute adminOnly title="Manage Events"><ManageEvents /></ProtectedRoute>} />
+            {/* <Route path="venues" element={<ProtectedRoute adminOnly title="Manage Venues"><ManageVenues /></ProtectedRoute>} /> */}
+            <Route path="notifications" element={<ProtectedRoute adminOnly title="Admin Notifications"><NotificationsPage /></ProtectedRoute>} />
+            <Route path="search" element={<ProtectedRoute adminOnly title="Admin Search"><AdminSearch /></ProtectedRoute>} />
+            <Route path="messages" element={<ProtectedRoute adminOnly title="Admin Messages"><AdminMessages /></ProtectedRoute>} />
+            <Route path="analytics" element={<ProtectedRoute adminOnly title="Analytics"><AdminAnalytics /></ProtectedRoute>} />
+            {/* <Route path="reports" element={<ProtectedRoute adminOnly title="Reports"><AdminReports /></ProtectedRoute>} />
+            <Route path="moderation" element={<ProtectedRoute adminOnly title="Content Moderation"><ContentModeration /></ProtectedRoute>} /> */}
+            {/* <Route path="logs" element={<ProtectedRoute adminOnly title="System Logs"><SystemLogs /></ProtectedRoute>} /> */}
+            <Route path="settings" element={<ProtectedRoute adminOnly title="Admin Settings"><AdminSettings /></ProtectedRoute>} />
           </Route>
 
           {/* Fallback Route */}
-          <Route
-            path="*"
-            element={
-              <PublicRoute title="Page Not Found">
-                <NotFound />
-              </PublicRoute>
-            }
-          />
+          <Route path="*" element={<PublicRoute title="Page Not Found"><NotFound /></PublicRoute>} />
         </Routes>
       </AnimatePresence>
     </ErrorBoundary>

@@ -69,7 +69,6 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await api.post(`/auth/login`, credentials);
-
       if (response.data.success) {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
@@ -176,6 +175,10 @@ export const AuthProvider = ({ children }) => {
   // Follow a user
   const followUser = async (userId) => {
     try {
+      // Prevent following self
+      if (user._id === userId) {
+        return { success: false, message: 'You cannot follow yourself' };
+      }
       const response = await api.post(`/users/${userId}/follow`);
 
       if (response.data.success) {
@@ -184,12 +187,10 @@ export const AuthProvider = ({ children }) => {
           ...prev,
           following: [...prev.following, userId]
         }));
-        toast.success('User followed successfully');
         return { success: true };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to follow user';
-      toast.error(message);
       return { success: false, message };
     }
   };
@@ -205,12 +206,10 @@ export const AuthProvider = ({ children }) => {
           ...prev,
           following: prev.following.filter(id => id !== userId)
         }));
-        toast.success('User unfollowed successfully');
         return { success: true };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to unfollow user';
-      toast.error(message);
       return { success: false, message };
     }
   };

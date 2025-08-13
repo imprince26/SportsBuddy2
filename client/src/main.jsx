@@ -7,11 +7,9 @@ import BackToTop from "./components/BacktoTop";
 import { BrowserRouter } from "react-router-dom";
 import ContextProvider from "./provider/ContextProvider";
 import { ThemeProvider } from "./context/ThemeProvider";
-import { HelmetProvider } from 'react-helmet-async';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <HelmetProvider>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ThemeProvider defaultTheme="dark" storageKey="SportsBuddy-theme">
           <ContextProvider>
@@ -21,6 +19,5 @@ createRoot(document.getElementById("root")).render(
           </ContextProvider>
         </ThemeProvider>
       </BrowserRouter>
-    </HelmetProvider>
   </StrictMode>
 );

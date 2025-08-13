@@ -64,8 +64,6 @@ import api from "@/utils/api"
 import toast from "react-hot-toast"
 import EmojiPicker from 'emoji-picker-react';
 import { isToday, isYesterday, format as formatDate, isSameDay } from 'date-fns';
-import SEO from "@/components/SEO/SEO"
-import { generateEventSchema } from "@/utils/schemaGenerator"
 
 const EventDetails = () => {
   const { id } = useParams()
@@ -571,23 +569,9 @@ const EventDetails = () => {
 
   if (!event) return null
 
-  const schema = generateEventSchema(event);
-
   return (
-    <>
-      {event && (
-        <SEO
-          title={event.title}
-          description={event.description}
-          image={event.image}
-          article={true}
-          keywords={`sports event, ${event.sportType}, ${event.venue?.city}, ${event.title}`}
-          ogType="article"
-          schema={schema}
-        />
-      )}
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-950">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-950">
         {/* Floating Background Elements */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
           {[...Array(15)].map((_, i) => (
@@ -2130,8 +2114,7 @@ const EventDetails = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-    </>
+    </div>
   )
 }
 

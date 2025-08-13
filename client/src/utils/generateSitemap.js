@@ -10,7 +10,7 @@ const SITE_URL = 'https://sports-buddy2.vercel.app';
 // Define your routes manually for better control
 const routes = [
   '/',
-  'login',
+  '/login',
   '/register',
   '/events',
   '/about',

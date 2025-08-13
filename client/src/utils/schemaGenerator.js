@@ -51,8 +51,8 @@ export const generateOrganizationSchema = () => {
     "@context": "https://schema.org",
     "@type": "SportsOrganization",
     "name": "SportsBuddy",
-    "url": "https://your-sportsbuddy-app.vercel.app",
-    "logo": "https://your-sportsbuddy-app.vercel.app/logo.svg",
+    "url": "https://sports-buddy2.vercel.app",
+    "logo": "https://sports-buddy2.vercel.app/logo.svg",
     "description": "SportsBuddy helps you connect with athletes, join sports events, and build your sports community."
   };
 };

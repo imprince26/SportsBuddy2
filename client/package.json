@@ -6,23 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "react-snap && node src/utils/generateSitemap.js",
+    "postbuild": "node src/utils/generateSitemap.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
-  },
-  "reactSnap": {
-    "inlineCss": true,
-    "include": [
-      "/",
-      "/auth/login",
-      "/auth/register",
-      "/events",
-      "/events/:id"
-    ],
-    "puppeteerArgs": [
-      "--no-sandbox",
-      "--disable-setuid-sandbox"
-    ]
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -63,6 +49,7 @@
     "react-router-dom": "^6.20.1",
     "react-snap": "^1.23.0",
     "recharts": "^2.15.0",
+    "schema-dts": "^1.1.5",
     "socket.io-client": "^4.7.2",
     "sonner": "^2.0.6",
     "tailwind-merge": "^2.1.0",

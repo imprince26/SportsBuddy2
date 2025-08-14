@@ -236,8 +236,8 @@ const CategoriesSection = () => {
           variants={containerVariants}
           className="text-center mb-16"
         >
-          <motion.div
-            variants={itemVariants}
+          <div
+            // variants={itemVariants}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 dark:bg-gray-800/20 backdrop-blur-xl rounded-full border border-gray-200/30 dark:border-gray-700/30 mb-6"
           >
             <Sparkles className="w-4 h-4 text-blue-500" />
@@ -251,7 +251,7 @@ const CategoriesSection = () => {
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
 
           <motion.h2 
             variants={itemVariants}

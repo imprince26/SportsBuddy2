@@ -258,17 +258,17 @@ const FeaturesSection = () => {
                     </motion.p>
 
                     {/* Highlights Stats */}
-                    <motion.div
-                        variants={itemVariants}
+                    <div
+                        // variants={itemVariants}
                         className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto"
                     >
                         {highlights.map((highlight, index) => (
-                            <motion.div
+                            <div
                                 key={index}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.1, duration: 0.5 }}
-                                whileHover={{ scale: 1.05, y: -5 }}
+                                // initial={{ opacity: 0, scale: 0.8 }}
+                                // whileInView={{ opacity: 1, scale: 1 }}
+                                // transition={{ delay: index * 0.1, duration: 0.5 }}
+                                // whileHover={{ scale: 1.05, y: -5 }}
                                 className="group relative p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-xl border border-gray-200/50 dark:border-gray-700/50"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -279,9 +279,9 @@ const FeaturesSection = () => {
                                     <div className="text-xl font-bold text-gray-900 dark:text-white">{highlight.value}</div>
                                     <div className="text-xs text-gray-600 dark:text-gray-400">{highlight.label}</div>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
-                    </motion.div>
+                    </div>
                 </motion.div>
 
                 {/* Features Grid */}
@@ -442,11 +442,11 @@ const FeaturesSection = () => {
                 </motion.div>
 
                 {/* Additional Features Preview */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                    viewport={{ once: true }}
+                <div
+                    // initial={{ opacity: 0, y: 30 }}
+                    // whileInView={{ opacity: 1, y: 0 }}
+                    // transition={{ duration: 0.6, delay: 0.5 }}
+                    // viewport={{ once: true }}
                     className="mt-20 p-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50"
                 >
                     <div className="text-center mb-8">
@@ -465,22 +465,22 @@ const FeaturesSection = () => {
                             { icon: MapPin, label: "AR Venues", color: "text-blue-500" },
                             { icon: Shield, label: "Safety Features", color: "text-red-500" },
                         ].map((item, index) => (
-                            <motion.div
+                            <div
                                 key={index}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.7 + index * 0.1 }}
-                                whileHover={{ scale: 1.05 }}
+                                // initial={{ opacity: 0, scale: 0.8 }}
+                                // whileInView={{ opacity: 1, scale: 1 }}
+                                // transition={{ delay: 0.7 + index * 0.1 }}
+                                // whileHover={{ scale: 1.05 }}
                                 className="text-center p-4 rounded-xl bg-gray-50/50 dark:bg-gray-700/50 backdrop-blur-sm"
                             >
                                 <div className="w-12 h-12 mx-auto mb-3 bg-gray-100/50 dark:bg-gray-600/50 rounded-xl flex items-center justify-center">
                                     <item.icon className={`w-6 h-6 ${item.color}`} />
                                 </div>
                                 <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
-                </motion.div>
+                </div>
             </div>
 
             {/* Additional Floating Elements */}

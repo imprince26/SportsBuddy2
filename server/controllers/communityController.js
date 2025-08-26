@@ -233,9 +233,9 @@ export const createCommunity = async (req, res) => {
     let uploadedImage = null;
 
     // Handle image upload
-    if (req.file) {
+    if (req.files) {
       try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
+        const result = await cloudinary.uploader.upload(req.files[0].path, {
           folder: "communities",
           transformation: [
             { width: 800, height: 600, crop: "fill", quality: "auto" },
@@ -285,6 +285,493 @@ export const createCommunity = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error creating community",
+      error: error.message
+    });
+  }
+};
+
+// Update community
+export const updateCommunity = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      description,
+      category,
+      location,
+      rules,
+      isPrivate,
+      settings,
+      removeImage
+    } = req.body;
+
+    const community = await Community.findById(id);
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Community not found"
+      });
+    }
+
+    // Check permissions
+    const isAdmin = community.admins.includes(req.user.id) || 
+                   community.creator.toString() === req.user.id;
+
+    if (!isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Only community admins can update community details"
+      });
+    }
+
+    // Check if new name conflicts with existing communities
+    if (name && name !== community.name) {
+      const existingCommunity = await Community.findOne({
+        name: { $regex: new RegExp(`^${name}$`, 'i') },
+        _id: { $ne: id }
+      });
+
+      if (existingCommunity) {
+        return res.status(400).json({
+          success: false,
+          message: "A community with this name already exists"
+        });
+      }
+    }
+
+    // Handle image removal
+    if (removeImage === "true" && community.image?.public_id) {
+      try {
+        await cloudinary.uploader.destroy(community.image.public_id);
+        community.image = null;
+      } catch (deleteError) {
+        console.error("Error deleting old image:", deleteError);
+      }
+    }
+
+    // Handle new image upload
+    if (req.files && req.files.length > 0) {
+      try {
+        // Delete old image if exists
+        if (community.image?.public_id) {
+          try {
+            await cloudinary.uploader.destroy(community.image.public_id);
+          } catch (deleteError) {
+            console.error("Error deleting old image:", deleteError);
+          }
+        }
+
+        const file = req.files[0];
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: "communities",
+          transformation: [
+            { width: 800, height: 600, crop: "fill", quality: "auto" },
+            { fetch_format: "auto" }
+          ],
+          resource_type: "auto"
+        });
+
+        community.image = {
+          url: result.secure_url,
+          public_id: result.public_id
+        };
+
+        // Delete temporary file
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      } catch (uploadError) {
+        console.error("Image upload error:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Image upload failed: " + uploadError.message
+        });
+      }
+    }
+
+    // Update fields
+    if (name) community.name = name.trim();
+    if (description) community.description = description.trim();
+    if (category) community.category = category;
+    if (location) {
+      community.location = typeof location === "string" ? JSON.parse(location) : location;
+    }
+    if (rules) {
+      community.rules = Array.isArray(rules) ? rules : JSON.parse(rules);
+    }
+    if (isPrivate !== undefined) {
+      community.isPrivate = isPrivate === "true" || isPrivate === true;
+    }
+    if (settings) {
+      const parsedSettings = typeof settings === "string" ? JSON.parse(settings) : settings;
+      community.settings = { ...community.settings, ...parsedSettings };
+    }
+
+    community.updatedAt = new Date();
+
+    await community.save();
+
+    // Populate updated community
+    const updatedCommunity = await Community.findById(id)
+      .populate("creator", "name avatar username")
+      .populate("admins", "name avatar username")
+      .populate("moderators", "name avatar username")
+      .select("-joinRequests -posts");
+
+    res.json({
+      success: true,
+      message: "Community updated successfully",
+      data: updatedCommunity
+    });
+
+  } catch (error) {
+    console.error("Error updating community:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating community",
+      error: error.message
+    });
+  }
+};
+
+// Delete community
+export const deleteCommunity = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { confirmDelete } = req.body;
+
+    if (!confirmDelete) {
+      return res.status(400).json({
+        success: false,
+        message: "Confirmation required to delete community"
+      });
+    }
+
+    const community = await Community.findById(id);
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Community not found"
+      });
+    }
+
+    // Check permissions - only creator can delete
+    if (community.creator.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the community creator can delete the community"
+      });
+    }
+
+    // Delete community image from cloudinary
+    if (community.image?.public_id) {
+      try {
+        await cloudinary.uploader.destroy(community.image.public_id);
+      } catch (deleteError) {
+        console.error("Error deleting community image:", deleteError);
+      }
+    }
+
+    // Delete all post images
+    if (community.posts && community.posts.length > 0) {
+      try {
+        const imageDeletePromises = [];
+        
+        community.posts.forEach(post => {
+          if (post.images && post.images.length > 0) {
+            post.images.forEach(img => {
+              if (img.public_id) {
+                imageDeletePromises.push(
+                  cloudinary.uploader.destroy(img.public_id)
+                );
+              }
+            });
+          }
+        });
+
+        if (imageDeletePromises.length > 0) {
+          await Promise.all(imageDeletePromises);
+        }
+      } catch (deleteError) {
+        console.error("Error deleting post images:", deleteError);
+      }
+    }
+
+    // Soft delete - mark as inactive instead of actual deletion
+    community.isActive = false;
+    community.deletedAt = new Date();
+    community.deletedBy = req.user.id;
+    await community.save();
+
+    // For hard delete, uncomment below:
+    // await Community.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: "Community deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error deleting community:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting community",
+      error: error.message
+    });
+  }
+};
+
+// Get user's communities
+export const getUserCommunities = async (req, res) => {
+  try {
+    const { role = "all", page = 1, limit = 12 } = req.query;
+    const userId = req.params.userId || req.user.id;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    let matchQuery = {
+      "members.user": userId,
+      "members.isActive": true,
+      isActive: true
+    };
+
+    // Filter by role
+    if (role !== "all") {
+      matchQuery["members.role"] = role;
+    }
+
+    const pipeline = [
+      {
+        $match: matchQuery
+      },
+      {
+        $addFields: {
+          memberCount: {
+            $size: {
+              $filter: {
+                input: "$members",
+                cond: { $eq: ["$$this.isActive", true] }
+              }
+            }
+          },
+          userRole: {
+            $arrayElemAt: [
+              {
+                $filter: {
+                  input: "$members",
+                  cond: {
+                    $and: [
+                      { $eq: ["$$this.user", userId] },
+                      { $eq: ["$$this.isActive", true] }
+                    ]
+                  }
+                }
+              },
+              0
+            ]
+          }
+        }
+      },
+      { $sort: { "userRole.joinedAt": -1 } },
+      { $skip: skip },
+      { $limit: parseInt(limit) },
+      {
+        $lookup: {
+          from: "users",
+          localField: "creator",
+          foreignField: "_id",
+          as: "creator",
+          pipeline: [{ $project: { name: 1, avatar: 1, username: 1 } }]
+        }
+      },
+      { $unwind: "$creator" },
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          category: 1,
+          location: 1,
+          image: 1,
+          isPrivate: 1,
+          creator: 1,
+          memberCount: 1,
+          userRole: "$userRole.role",
+          joinedAt: "$userRole.joinedAt",
+          createdAt: 1,
+          stats: 1
+        }
+      }
+    ];
+
+    const communities = await Community.aggregate(pipeline);
+
+    // Get total count
+    const totalPipeline = [
+      { $match: matchQuery },
+      { $count: "total" }
+    ];
+
+    const totalResult = await Community.aggregate(totalPipeline);
+    const total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+    res.json({
+      success: true,
+      data: communities,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / parseInt(limit)),
+        total,
+        hasNext: parseInt(page) < Math.ceil(total / parseInt(limit)),
+        hasPrev: parseInt(page) > 1,
+        limit: parseInt(limit)
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching user communities:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user communities",
+      error: error.message
+    });
+  }
+};
+
+// Get featured communities
+export const getFeaturedCommunities = async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+
+    const featuredCommunities = await Community.aggregate([
+      { $match: { isActive: true } },
+      {
+        $addFields: {
+          memberCount: {
+            $size: {
+              $filter: {
+                input: "$members",
+                cond: { $eq: ["$$this.isActive", true] }
+              }
+            }
+          },
+          recentActivityCount: {
+            $size: {
+              $filter: {
+                input: "$posts",
+                cond: {
+                  $gte: [
+                    "$$this.createdAt",
+                    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          featuredScore: {
+            $add: [
+              { $multiply: ["$memberCount", 2] },
+              { $multiply: ["$recentActivityCount", 5] },
+              { $multiply: ["$stats.totalPosts", 1] }
+            ]
+          }
+        }
+      },
+      { $sort: { featuredScore: -1, createdAt: -1 } },
+      { $limit: parseInt(limit) },
+      {
+        $lookup: {
+          from: "users",
+          localField: "creator",
+          foreignField: "_id",
+          as: "creator",
+          pipeline: [{ $project: { name: 1, avatar: 1, username: 1 } }]
+        }
+      },
+      { $unwind: "$creator" },
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          category: 1,
+          location: 1,
+          image: 1,
+          isPrivate: 1,
+          creator: 1,
+          memberCount: 1,
+          createdAt: 1,
+          stats: 1
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: featuredCommunities
+    });
+
+  } catch (error) {
+    console.error("Error fetching featured communities:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching featured communities",
+      error: error.message
+    });
+  }
+};
+
+// Search communities
+export const searchCommunities = async (req, res) => {
+  try {
+    const { q: query, limit = 10 } = req.query;
+
+    if (!query || query.trim().length < 2) {
+      return res.json({
+        success: true,
+        data: [],
+        message: "Search query must be at least 2 characters"
+      });
+    }
+
+    const searchRegex = new RegExp(query.trim(), 'i');
+
+    const communities = await Community.find({
+      isActive: true,
+      $or: [
+        { name: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex },
+        { "location.city": searchRegex },
+        { "location.state": searchRegex }
+      ]
+    })
+      .populate("creator", "name username avatar")
+      .select("name description category location image isPrivate creator stats")
+      .limit(parseInt(limit))
+      .lean();
+
+    // Add member count
+    const communitiesWithCount = communities.map(community => ({
+      ...community,
+      memberCount: community.members ? community.members.filter(m => m.isActive).length : 0
+    }));
+
+    res.json({
+      success: true,
+      data: communitiesWithCount,
+      total: communities.length
+    });
+
+  } catch (error) {
+    console.error("Error searching communities:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error searching communities",
       error: error.message
     });
   }
@@ -510,85 +997,6 @@ export const createPost = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error creating post",
-      error: error.message
-    });
-  }
-};
-
-// Get featured communities
-export const getFeaturedCommunities = async (req, res) => {
-  try {
-    const { limit = 6 } = req.query;
-
-    const featuredCommunities = await Community.aggregate([
-      { $match: { isActive: true } },
-      {
-        $addFields: {
-          memberCount: {
-            $size: {
-              $filter: {
-                input: "$members",
-                cond: { $eq: ["$$this.isActive", true] }
-              }
-            }
-          },
-          recentActivityCount: {
-            $size: {
-              $filter: {
-                input: "$posts",
-                cond: {
-                  $gte: [
-                    "$$this.createdAt",
-                    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      {
-        $addFields: {
-          featuredScore: {
-            $add: [
-              { $multiply: ["$memberCount", 2] },
-              { $multiply: ["$recentActivityCount", 5] },
-              { $multiply: ["$stats.totalPosts", 1] }
-            ]
-          }
-        }
-      },
-      { $sort: { featuredScore: -1, createdAt: -1 } },
-      { $limit: parseInt(limit) },
-      {
-        $lookup: {
-          from: "users",
-          localField: "creator",
-          foreignField: "_id",
-          as: "creator",
-          pipeline: [{ $project: { name: 1, avatar: 1, username: 1 } }]
-        }
-      },
-      { $unwind: "$creator" },
-      {
-        $project: {
-          featuredScore: 0,
-          recentActivityCount: 0,
-          posts: 0,
-          members: 0,
-          joinRequests: 0
-        }
-      }
-    ]);
-
-    res.json({
-      success: true,
-      data: featuredCommunities
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching featured communities",
       error: error.message
     });
   }

@@ -15,6 +15,7 @@ export const CommunityProvider = ({ children }) => {
   const [trendingPosts, setTrendingPosts] = useState([]);
   const [followingPosts, setFollowingPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
+  const [currentCommunity, setCurrentCommunity] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
@@ -393,6 +394,19 @@ export const CommunityProvider = ({ children }) => {
     }
   };
 
+  const fetchCommunity = async (communityId) => {
+    try {
+      const response = await api.get(`/community/${communityId}`);
+      if (response.data.success) {
+        setCurrentCommunity(response.data.data);
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error('Error fetching community:', error);
+      return null;
+    }
+  }
+
   // Clear current post
   const clearCurrentPost = () => {
     setCurrentPost(null);
@@ -418,6 +432,7 @@ export const CommunityProvider = ({ children }) => {
     error,
     pagination,
     filters,
+    currentCommunity,
     
     // Actions
     getCommunityPosts,
@@ -432,7 +447,8 @@ export const CommunityProvider = ({ children }) => {
     getCommunityStats,
     clearCurrentPost,
     resetFilters,
-    setFilters
+    setFilters,
+    fetchCommunity
   };
 
   return (

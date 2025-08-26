@@ -124,18 +124,18 @@ const CreateCommunity = () => {
 
   // Categories
   const categories = [
-    { value: 'football', label: 'Football', icon: '⚽' },
-    { value: 'cricket', label: 'Cricket', icon: '🏏' },
-    { value: 'basketball', label: 'Basketball', icon: '🏀' },
-    { value: 'badminton', label: 'Badminton', icon: '🏸' },
-    { value: 'tennis', label: 'Tennis', icon: '🎾' },
-    { value: 'volleyball', label: 'Volleyball', icon: '🏐' },
-    { value: 'swimming', label: 'Swimming', icon: '🏊‍♂️' },
-    { value: 'running', label: 'Running', icon: '🏃‍♂️' },
-    { value: 'cycling', label: 'Cycling', icon: '🚴‍♂️' },
-    { value: 'gym', label: 'Gym & Fitness', icon: '💪' },
-    { value: 'yoga', label: 'Yoga', icon: '🧘‍♀️' },
-    { value: 'other', label: 'Other Sports', icon: '🏆' }
+    { value: 'Football', label: 'Football', icon: '⚽' },
+    { value: 'Cricket', label: 'Cricket', icon: '🏏' },
+    { value: 'Basketball', label: 'Basketball', icon: '🏀' },
+    { value: 'Badminton', label: 'Badminton', icon: '🏸' },
+    { value: 'Tennis', label: 'Tennis', icon: '🎾' },
+    { value: 'Volleyball', label: 'Volleyball', icon: '🏐' },
+    { value: 'Swimming', label: 'Swimming', icon: '🏊‍♂️' },
+    { value: 'Running', label: 'Running', icon: '🏃‍♂️' },
+    { value: 'Cycling', label: 'Cycling', icon: '🚴‍♂️' },
+    { value: 'Gym', label: 'Gym & Fitness', icon: '💪' },
+    { value: 'Yoga', label: 'Yoga', icon: '🧘‍♀️' },
+    { value: 'Other', label: 'Other Sports', icon: '🏆' }
   ];
 
   // Steps configuration

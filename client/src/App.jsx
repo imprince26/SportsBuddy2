@@ -41,8 +41,9 @@ import TeamManagement from './pages/TeamManagement';
 import FollowersFollowing from './pages/FollowerFollowing';
 // import MyEvents from './pages/MyEvents';
 // import Bookmarks from './pages/Bookmarks';
+import Community from './pages/community/Community';
 import CreateCommunity from './pages/community/CreateCommunity';
-// import CommunityDetails from './pages/community/CommunityDetails';
+import CommunityDetails from './pages/community/CommunityDetails';
 // import CreateVenue from './pages/venue/CreateVenue';
 // import EditVenue from './pages/venue/EditVenue';
 // import UserProfile from './pages/UserProfile';
@@ -167,7 +168,9 @@ function App() {
             <Route path="events/:eventId/teams/:teamId" element={<ProtectedRoute title="Team Details"><TeamManagement /></ProtectedRoute>} />
             <Route path="users/:id/followers" element={<ProtectedRoute title="Followers"><FollowersFollowing type="followers" /></ProtectedRoute>} />
             <Route path="users/:id/following" element={<ProtectedRoute title="Following"><FollowersFollowing type="following" /></ProtectedRoute>} />
+            <Route path="community" element={<PublicRoute title="Community"><Community /></PublicRoute>} />
             <Route path="community/create" element={<ProtectedRoute title="Create Community"><CreateCommunity /></ProtectedRoute>} />
+            <Route path="community/:id" element={<PublicRoute title="Community Details"><CommunityDetails /></PublicRoute>} />
             {/* <Route path="venues/create" element={<ProtectedRoute title="Create Venue"><CreateVenue /></ProtectedRoute>} />
             <Route path="venues/:id/edit" element={<ProtectedRoute title="Edit Venue"><EditVenue /></ProtectedRoute>} /> */}
           </Route>

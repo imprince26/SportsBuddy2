@@ -1,0 +1,254 @@
+# Frontend Components Labels
+frontend:
+  - changed-files:
+    - any-glob-to-any-file: 'client/**/*'
+
+backend:
+  - changed-files:
+    - any-glob-to-any-file: 'server/**/*'
+
+# Specific Component Areas
+authentication:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/pages/auth/**/*'
+    - any-glob-to-any-file: 'client/src/context/AuthContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useAuth.js'
+    - any-glob-to-any-file: 'server/controllers/authController.js'
+    - any-glob-to-any-file: 'server/routes/authRoute.js'
+    - any-glob-to-any-file: 'server/middleware/authMiddleware.js'
+
+events:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/events/**/*'
+    - any-glob-to-any-file: 'client/src/pages/event/**/*'
+    - any-glob-to-any-file: 'client/src/context/EventContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useEvents.js'
+    - any-glob-to-any-file: 'server/controllers/eventController.js'
+    - any-glob-to-any-file: 'server/routes/eventRoute.js'
+    - any-glob-to-any-file: 'server/models/eventModel.js'
+
+athletes:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/athletes/**/*'
+    - any-glob-to-any-file: 'client/src/pages/athletes/**/*'
+    - any-glob-to-any-file: 'client/src/context/AthletesContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useAthletes.js'
+    - any-glob-to-any-file: 'server/controllers/athletesController.js'
+    - any-glob-to-any-file: 'server/routes/athletesRoute.js'
+
+community:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/community/**/*'
+    - any-glob-to-any-file: 'client/src/pages/community/**/*'
+    - any-glob-to-any-file: 'client/src/context/CommunityContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useCommunity.js'
+    - any-glob-to-any-file: 'server/controllers/communityController.js'
+    - any-glob-to-any-file: 'server/routes/communityRoute.js'
+    - any-glob-to-any-file: 'server/models/communityModel.js'
+
+venues:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/venues/**/*'
+    - any-glob-to-any-file: 'client/src/pages/venue/**/*'
+    - any-glob-to-any-file: 'client/src/context/VenueContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useVenue.js'
+    - any-glob-to-any-file: 'server/controllers/venueController.js'
+    - any-glob-to-any-file: 'server/routes/venueRoute.js'
+    - any-glob-to-any-file: 'server/models/venueModel.js'
+
+leaderboard:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/leaderboard/**/*'
+    - any-glob-to-any-file: 'client/src/pages/leaderboard/**/*'
+    - any-glob-to-any-file: 'client/src/context/LeaderboardContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useLeaderboard.js'
+    - any-glob-to-any-file: 'server/controllers/leaderboardController.js'
+    - any-glob-to-any-file: 'server/routes/leaderboardRoute.js'
+    - any-glob-to-any-file: 'server/models/leaderboardModel.js'
+
+admin:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/pages/admin/**/*'
+    - any-glob-to-any-file: 'client/src/components/layout/AdminLayout.jsx'
+    - any-glob-to-any-file: 'server/controllers/adminController.js'
+    - any-glob-to-any-file: 'server/routes/adminRoute.js'
+
+real-time:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/context/SocketContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useSocket.js'
+    - any-glob-to-any-file: 'client/src/components/events/EventChat.jsx'
+    - any-glob-to-any-file: 'server/config/socket.js'
+    - any-glob-to-any-file: 'server/controllers/notificationController.js'
+    - any-glob-to-any-file: 'server/routes/notificationRoute.js'
+    - any-glob-to-any-file: 'server/models/notificationModel.js'
+
+# UI/UX and Styling
+ui/ux:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/ui/**/*'
+    - any-glob-to-any-file: 'client/src/components/home/**/*'
+    - any-glob-to-any-file: 'client/src/components/layout/**/*'
+    - any-glob-to-any-file: 'client/src/components/Header.jsx'
+    - any-glob-to-any-file: 'client/src/components/Footer.jsx'
+    - any-glob-to-any-file: 'client/tailwind.config.js'
+    - any-glob-to-any-file: 'client/src/index.css'
+
+responsive:
+  - changed-files:
+    - any-glob-to-any-file: 'client/tailwind.config.js'
+    - any-glob-to-any-file: 'client/src/hooks/useMediaQuery.js'
+    - any-glob-to-any-file: 'client/src/index.css'
+
+# Database and Models
+database:
+  - changed-files:
+    - any-glob-to-any-file: 'server/models/**/*'
+    - any-glob-to-any-file: 'server/config/db.js'
+
+api:
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/**/*'
+    - any-glob-to-any-file: 'server/routes/**/*'
+    - any-glob-to-any-file: 'client/src/utils/api.js'
+
+# Configuration and Setup
+configuration:
+  - changed-files:
+    - any-glob-to-any-file: 'server/config/**/*'
+    - any-glob-to-any-file: 'client/vite.config.js'
+    - any-glob-to-any-file: 'client/vercel.json'
+    - any-glob-to-any-file: 'server/.env.example'
+    - any-glob-to-any-file: 'client/.env.example'
+    - any-glob-to-any-file: '**/package.json'
+
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file: 'package.json'
+    - any-glob-to-any-file: 'package-lock.json'
+    - any-glob-to-any-file: 'yarn.lock'
+    - any-glob-to-any-file: '**/package.json'
+
+# Documentation
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: 'README.md'
+    - any-glob-to-any-file: '*.md'
+    - any-glob-to-any-file: 'docs/**/*'
+
+# Testing
+testing:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.test.js'
+    - any-glob-to-any-file: '**/*.test.jsx'
+    - any-glob-to-any-file: '**/*.spec.js'
+    - any-glob-to-any-file: '**/*.spec.jsx'
+    - any-glob-to-any-file: '__tests__/**/*'
+    - any-glob-to-any-file: 'cypress/**/*'
+
+# Security and Validation
+security:
+  - changed-files:
+    - any-glob-to-any-file: 'server/middleware/authMiddleware.js'
+    - any-glob-to-any-file: 'server/utils/validation.js'
+    - any-glob-to-any-file: 'server/utils/rateLimitingUtils.js'
+    - any-glob-to-any-file: 'client/src/schemas/**/*'
+
+validation:
+  - changed-files:
+    - any-glob-to-any-file: 'server/utils/validation.js'
+    - any-glob-to-any-file: 'client/src/schemas/**/*'
+
+# File Upload and Media
+media:
+  - changed-files:
+    - any-glob-to-any-file: 'server/config/cloudinary.js'
+    - any-glob-to-any-file: 'server/routes/uploadRoute.js'
+    - any-glob-to-any-file: 'client/src/components/ui/image-upload.jsx'
+    - any-glob-to-any-file: 'client/src/utils/fileUpload.js'
+    - any-glob-to-any-file: 'client/src/utils/uploadUtils.js'
+
+# Email and Notifications
+email:
+  - changed-files:
+    - any-glob-to-any-file: 'server/config/sendEmail.js'
+    - any-glob-to-any-file: 'server/utils/emailTemplate.js'
+
+notifications:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/pages/Notifications.jsx'
+    - any-glob-to-any-file: 'server/controllers/notificationController.js'
+    - any-glob-to-any-file: 'server/routes/notificationRoute.js'
+    - any-glob-to-any-file: 'server/models/notificationModel.js'
+
+# Performance and Optimization
+performance:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/hooks/useDebounce.js'
+    - any-glob-to-any-file: 'server/utils/cron.js'
+    - any-glob-to-any-file: 'client/vite.config.js'
+    - any-glob-to-any-file: 'client/src/components/**/*Skeleton.jsx'
+    - any-glob-to-any-file: 'client/src/components/Loader.jsx'
+
+# GitHub and CI/CD
+github:
+  - changed-files:
+    - any-glob-to-any-file: '.github/**/*'
+
+ci/cd:
+  - changed-files:
+    - any-glob-to-any-file: '.github/workflows/**/*'
+    - any-glob-to-any-file: 'client/vercel.json'
+
+# Profile and User Management
+profile:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/profile/**/*'
+    - any-glob-to-any-file: 'client/src/pages/Profile.jsx'
+    - any-glob-to-any-file: 'client/src/pages/PublicProfile.jsx'
+    - any-glob-to-any-file: 'client/src/pages/Settings.jsx'
+    - any-glob-to-any-file: 'server/controllers/userController.js'
+    - any-glob-to-any-file: 'server/routes/userRoute.js'
+    - any-glob-to-any-file: 'server/models/userModel.js'
+
+# Error Handling
+error-handling:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/ErrorBoundary.jsx'
+    - any-glob-to-any-file: 'client/src/components/**/*Error.jsx'
+    - any-glob-to-any-file: 'client/src/pages/NotFound.jsx'
+
+# Utilities and Helpers
+utilities:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/utils/**/*'
+    - any-glob-to-any-file: 'client/src/lib/**/*'
+    - any-glob-to-any-file: 'server/utils/**/*'
+
+# Middleware
+middleware:
+  - changed-files:
+    - any-glob-to-any-file: 'server/middleware/**/*'
+
+# Context and State Management
+state-management:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/context/**/*'
+    - any-glob-to-any-file: 'client/src/provider/**/*'
+
+hooks:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/hooks/**/*'
+
+# Home Page Features
+homepage:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/home/**/*'
+    - any-glob-to-any-file: 'client/src/pages/Home.jsx'
+    - any-glob-to-any-file: 'client/src/pages/Dashboard.jsx'
+
+# Follow System
+social-features:
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/pages/FollowerFollowing.jsx'
+    - any-glob-to-any-file: 'client/src/pages/TeamManagement.jsx'

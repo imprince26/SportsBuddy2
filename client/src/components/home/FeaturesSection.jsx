@@ -22,6 +22,8 @@ import {
     MapPin,
     Clock
 } from 'lucide-react'
+import BgElements from '../BgElements'
+
 
 const FeaturesSection = () => {
     const [hoveredIndex, setHoveredIndex] = useState(null)
@@ -134,78 +136,8 @@ const FeaturesSection = () => {
 
     return (
         <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
-            {/* Background Elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-blue-950/20" />
-                
-                {/* Animated Particles */}
-                {[...Array(25)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className="absolute w-2 h-2 bg-blue-400/30 rounded-full"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                        }}
-                        animate={{
-                            y: [0, -40, 0],
-                            x: [0, Math.random() * 30 - 15, 0],
-                            opacity: [0.3, 0.8, 0.3],
-                            scale: [1, 1.5, 1],
-                        }}
-                        transition={{
-                            duration: 5 + Math.random() * 3,
-                            repeat: Infinity,
-                            delay: Math.random() * 3,
-                            ease: "easeInOut"
-                        }}
-                    />
-                ))}
-
-                {/* Floating Geometric Shapes */}
-                {[...Array(12)].map((_, i) => (
-                    <motion.div
-                        key={`shape-${i}`}
-                        className="absolute opacity-10"
-                        style={{
-                            left: `${10 + (i * 8) % 80}%`,
-                            top: `${5 + (i * 12) % 90}%`,
-                            width: `${25 + (i % 4) * 15}px`,
-                            height: `${25 + (i % 4) * 15}px`,
-                            background: `linear-gradient(135deg, ${
-                                ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'][i % 6]
-                            }, transparent)`,
-                            borderRadius: i % 3 === 0 ? '50%' : i % 3 === 1 ? '20%' : '10px',
-                        }}
-                        animate={{
-                            y: [0, -30, 0],
-                            rotate: [0, 180, 360],
-                            scale: [1, 1.3, 1],
-                        }}
-                        transition={{
-                            duration: 7 + (i % 4),
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            delay: i * 0.5,
-                        }}
-                    />
-                ))}
-
-                {/* Grid Pattern */}
-                <div className="absolute inset-0 opacity-5">
-                    <div 
-                        className="w-full h-full"
-                        style={{
-                            backgroundImage: `
-                                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-                                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
-                            `,
-                            backgroundSize: '60px 60px',
-                        }}
-                    />
-                </div>
-            </div>
+            
+            <BgElements />
 
             <div className="container mx-auto px-4 relative z-10">
                 {/* Header Section */}

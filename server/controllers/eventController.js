@@ -21,40 +21,16 @@ export const createEvent = async (req, res) => {
       equipment
     } = req.body;
 
-    // Handle image uploads
+    // Handle image uploads - files are already uploaded to Cloudinary by multer
     let uploadedImages = [];
     if (req.files && req.files.length > 0) {
-      try {
-        const uploadPromises = req.files.map(async (file) => {
-          const result = await cloudinary.uploader.upload(file.path, {
-            folder: "SportsBuddy/events",
-            resource_type: "auto",
-            allowed_formats: ["jpg", "png", "jpeg", "gif", "webp"],
-            transformation: [
-              { width: 800, height: 600, crop: "limit" },
-              { quality: "auto" },
-              { fetch_format: "auto" }
-            ]
-          });
-
-          return {
-            url: result.secure_url,
-            public_id: result.public_id,
-            width: result.width,
-            height: result.height,
-            format: result.format
-          };
-        });
-
-        uploadedImages = await Promise.all(uploadPromises);
-      } catch (uploadError) {
-        for (const image of uploadedImages) {
-          if (image.public_id) {
-            await cloudinary.uploader.destroy(image.public_id);
-          }
-        }
-        throw new Error("Image upload failed: " + uploadError.message);
-      }
+      uploadedImages = req.files.map(file => ({
+        url: file.path, // Cloudinary URL from multer
+        public_id: file.filename, // Cloudinary public_id from multer
+        width: file.width || 800,
+        height: file.height || 600,
+        format: file.format || 'jpg'
+      }));
     }
 
     // Create new event
@@ -97,6 +73,15 @@ export const createEvent = async (req, res) => {
       data: populatedEvent
     });
   } catch (error) {
+    // Clean up uploaded images if event creation fails
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        await deleteImage(file.filename).catch((err) => 
+          console.error("Failed to cleanup image:", err)
+        );
+      }
+    }
+
     res.status(400).json({
       success: false,
       message: "Failed to create event",
@@ -466,8 +451,9 @@ export const getEventById = async (req, res) => {
   }
 };
 
-// Update Event Controller
 export const updateEvent = async (req, res) => {
+  let newlyUploadedImages = [];
+
   try {
     const event = await Event.findById(req.params.id);
 
@@ -481,41 +467,36 @@ export const updateEvent = async (req, res) => {
 
     let updatedImages = [];
 
+    // Handle existing images
     if (req.body.existingImages) {
       const existingImages = JSON.parse(req.body.existingImages);
       updatedImages = [...existingImages];
     }
 
+    // Handle deleted images
     if (req.body.deletedImages) {
       const deletedImages = JSON.parse(req.body.deletedImages);
       for (const publicId of deletedImages) {
-        await cloudinary.uploader.destroy(publicId);
+        await deleteImage(publicId).catch((err) => 
+          console.error("Failed to delete image:", err)
+        );
       }
     }
 
+    // Handle new image uploads - files are already uploaded to Cloudinary by multer
     if (req.files && req.files.length > 0) {
-      const uploadPromises = req.files.map(async (file) => {
-        const result = await cloudinary.uploader.upload(file.path, {
-          folder: "SportsBuddy/events",
-          resource_type: "auto",
-          allowed_formats: ["jpg", "png", "jpeg", "webp"],
-          transformation: [
-            { width: 800, height: 600, crop: "limit" },
-            { quality: "auto" },
-            { fetch_format: "auto" }
-          ]
-        });
-
-        return {
-          url: result.secure_url,
-          public_id: result.public_id,
-          width: result.width,
-          height: result.height,
-          format: result.format
+      const newImages = req.files.map(file => {
+        const imageData = {
+          url: file.path, // Cloudinary URL from multer
+          public_id: file.filename, // Cloudinary public_id from multer
+          width: file.width || 800,
+          height: file.height || 600,
+          format: file.format || 'jpg'
         };
+        newlyUploadedImages.push(file.filename); // Track for cleanup if update fails
+        return imageData;
       });
 
-      const newImages = await Promise.all(uploadPromises);
       updatedImages = [...updatedImages, ...newImages];
     }
 
@@ -553,6 +534,14 @@ export const updateEvent = async (req, res) => {
     });
   } catch (error) {
     console.error("Update event error:", error);
+
+    // Clean up newly uploaded images if update fails
+    for (const publicId of newlyUploadedImages) {
+      await deleteImage(publicId).catch((err) => 
+        console.error("Failed to cleanup uploaded image:", err)
+      );
+    }
+
     res.status(400).json({
       success: false,
       message: "Failed to update event",

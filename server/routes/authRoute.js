@@ -38,7 +38,7 @@ router.post("/reset-password", resetPassword);
 router.use(isAuthenticated);
 router.get("/me", getCurrentUser);
 router.get("/profile", getProfile);
-router.put("/profile",upload.single("avatar"), updateProfile);
+router.put("/profile",upload.fields([{ name: "avatar", maxCount: 1 }, { name: "coverImage", maxCount: 1 }]), updateProfile);
 router.put("/password", updatePassword);
 router.get("/notifications", getNotifications);
 router.put("/notifications/:notificationId/read", markNotificationRead);

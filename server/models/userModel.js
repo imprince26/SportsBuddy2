@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { type } from "os";
 
 const notificationSchema = new mongoose.Schema({
   type: {
@@ -113,7 +114,14 @@ const userSchema = new mongoose.Schema(
         type: String,
       },
     },
-
+    coverImage: {
+      url:{
+        type:String,
+      },
+      public_id:{
+        type: String
+      },
+    },
     sportsPreferences: [
       {
         sport: {

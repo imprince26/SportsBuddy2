@@ -5,7 +5,7 @@ import { uploadImage, deleteImage } from "../config/cloudinary.js";
 import fs from "fs/promises";
 import validator from "validator";
 import sendEmail from "../config/sendEmail.js";
-import { welcomeEmailHtml,resetPasswordEmailHtml,passwordResetSuccessEmailHtml } from "../utils/emailTemplate.js";
+import { welcomeEmailHtml, resetPasswordEmailHtml, passwordResetSuccessEmailHtml } from "../utils/emailTemplate.js";
 import crypto from "crypto";
 
 const generateToken = (user) => {
@@ -307,15 +307,30 @@ export const updateProfile = async (req, res) => {
 
     // Handle avatar upload
     let tempAvatar = null;
-    if (req.file) {
+    if (req.files) {
       try {
-        const { secure_url, public_id } = await uploadImage(req.file.path);
+        const { secure_url, public_id } = await uploadImage(req.files.avatar[0].path);
         tempAvatar = { url: secure_url, public_id };
         // Delete temporary file
-        await fs.unlink(req.file.path).catch((err) => console.error("Failed to delete temp file:", err));
+        await fs.unlink(req.files.avatar[0].path).catch((err) => console.error("Failed to delete temp file:", err));
       } catch (error) {
         // Clean up temp file on upload failure
-        if (req.file.path) await fs.unlink(req.file.path).catch((err) => console.error("Failed to delete temp file:", err));
+        if (req.files.avatar[0].path) await fs.unlink(req.files.avatar[0].path).catch((err) => console.error("Failed to delete temp file:", err));
+        return res.status(500).json({ message: "Error uploading avatar", error: error.message });
+      }
+    }
+
+    //handle cover image upload
+    let tempCoverImage = null;
+    if (req.files) {
+      try {
+        const { secure_url, public_id } = await uploadImage(req.files.coverImage[0].path);
+        tempCoverImage = { url: secure_url, public_id };
+        // Delete temporary file
+        await fs.unlink(req.files.coverImage[0].path).catch((err) => console.error("Failed to delete temp file:", err));
+      } catch (error) {
+        // Clean up temp file on upload failure
+        if (req.files.coverImage[0].path) await fs.unlink(req.files.coverImage[0].path).catch((err) => console.error("Failed to delete temp file:", err));
         return res.status(500).json({ message: "Error uploading avatar", error: error.message });
       }
     }
@@ -332,6 +347,16 @@ export const updateProfile = async (req, res) => {
       // Delete old avatar after setting new one
       if (oldPublicId) {
         await deleteImage(oldPublicId).catch((err) => console.error("Failed to delete old avatar:", err));
+      }
+    }
+
+    // Update cover image only if upload was successful
+    if (tempCoverImage) {
+      const oldPublicId = user.coverImage?.public_id;
+      user.coverImage = tempCoverImage;
+      // Delete old cover image after setting new one
+      if (oldPublicId) {
+        await deleteImage(oldPublicId).catch((err) => console.error("Failed to delete old cover image:", err));
       }
     }
 
@@ -441,7 +466,7 @@ export const forgotPassword = async (req, res) => {
 
     } catch (emailError) {
       console.error('Email sending error:', emailError);
-      
+
       // Clear reset fields if email fails
       user.clearResetPassword();
       await user.save({ validateBeforeSave: false });
@@ -486,16 +511,16 @@ export const verifyResetCode = async (req, res) => {
     try {
       // Verify the reset code
       user.verifyResetCode(resetCode);
-      
+
       // Generate a temporary token for password reset
       const resetToken = jwt.sign(
-        { 
-          userId: user._id, 
+        {
+          userId: user._id,
           email: user.email,
           purpose: 'password-reset',
           codeVerified: true
-        }, 
-        process.env.JWT_SECRET, 
+        },
+        process.env.JWT_SECRET,
         { expiresIn: '15m' }
       );
 
@@ -511,7 +536,7 @@ export const verifyResetCode = async (req, res) => {
     } catch (verificationError) {
       // Save any changes to attempts/blocking
       await user.save({ validateBeforeSave: false });
-      
+
       return res.status(400).json({
         success: false,
         message: verificationError.message
@@ -551,7 +576,7 @@ export const resetPassword = async (req, res) => {
     let decoded;
     try {
       decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
-      
+
       if (decoded.purpose !== 'password-reset' || !decoded.codeVerified) {
         throw new Error('Invalid token purpose');
       }
@@ -562,9 +587,9 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ 
-      _id: decoded.userId, 
-      email: decoded.email 
+    const user = await User.findOne({
+      _id: decoded.userId,
+      email: decoded.email
     });
 
     if (!user) {

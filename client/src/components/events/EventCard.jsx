@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
@@ -258,7 +259,8 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      // animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
       className="group h-full"
       onHoverStart={() => setIsHovered(true)}
@@ -266,8 +268,8 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
     >
       <Link to={`/events/${event._id}`} className="block h-full">
         <Card className={cn(
-          "h-full overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all duration-300",
-          featured && "ring-1 ring-amber-200 dark:ring-amber-800 bg-gradient-to-b from-amber-50/50 to-orange-50/50 dark:from-amber-900/10 dark:to-orange-900/10"
+          "h-full overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800  hover:shadow-lg transition-all duration-300",
+          featured && " bg-gradient-to-b from-amber-50/50 to-orange-50/50 dark:from-amber-900/10 dark:to-orange-900/10"
         )}>
           {/* Image Section */}
           <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
@@ -291,11 +293,11 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
             {/* Top Badges */}
             <div className="absolute top-3 left-3 right-3 flex justify-between">
               <div className="flex gap-2">
-                <Badge className={cn("text-xs font-medium", getStatusBadge(event.status).className)}>
+                <Badge className={cn("text-xs font-medium border-none rounded-xl", getStatusBadge(event.status).className)}>
                   {getStatusBadge(event.status).label}
                 </Badge>
                 {isAlmostFull && (
-                  <Badge className="bg-orange-100/90 text-orange-800 border-orange-200 dark:bg-orange-900/50 dark:text-orange-300 text-xs backdrop-blur-sm">
+                  <Badge className="bg-orange-100/90 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 text-xs backdrop-blur-sm rounded-xl">
                     <AlertCircle className="w-3 h-3 mr-1" />
                     Almost Full
                   </Badge>
@@ -303,7 +305,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
               </div>
               
               {featured && (
-                <Badge className="bg-amber-100/90 text-amber-800 border-amber-200 dark:bg-amber-900/50 dark:text-amber-300 text-xs backdrop-blur-sm">
+                <Badge className="bg-amber-100/90 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs backdrop-blur-sm rounded-xl">
                   Featured
                 </Badge>
               )}
@@ -312,8 +314,8 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
             {/* Free Badge - Bottom Right */}
             {isFreeEvent && (
               <div className="absolute bottom-3 right-3">
-                <Badge className="bg-green-100/90 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 text-xs backdrop-blur-sm">
-                  🆓 Free
+                <Badge className="bg-green-100/90 text-green-800 rounded-xl dark:bg-green-900/50 dark:text-green-300 text-xs backdrop-blur-sm">
+                  Free
                 </Badge>
               </div>
             )}
@@ -361,15 +363,15 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
               </div>
               
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge className={cn("text-xs", getDifficultyBadge(event.difficulty).className)}>
+                <Badge className={cn("text-xs border-none rounded-xl", getDifficultyBadge(event.difficulty).className)}>
                   {getDifficultyBadge(event.difficulty).label}
                 </Badge>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="rounded-xl text-xs">
                   {getCategoryInfo(event.category).label}
                 </Badge>
                 {isFreeEvent && (
-                  <Badge className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 text-xs">
-                    🆓 Free
+                  <Badge className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 text-xs rounded-xl">
+                    Free
                   </Badge>
                 )}
               </div>
@@ -402,11 +404,11 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
             {/* Footer Stats */}
             <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-800">
               <div className="flex items-center gap-3">
-                {event.averageRating > 0 && (
+                {event.analytics.avgRating > 0 && (
                   <div className="flex items-center text-sm">
                     <Star className="w-4 h-4 mr-1 text-yellow-500 fill-current" />
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {event.averageRating.toFixed(1)}
+                      {event.analytics.avgRating.toFixed(1)}
                     </span>
                   </div>
                 )}
@@ -417,8 +419,8 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                   </div>
                 )}
 
-                {event.averageRating > 4.5 && (
-                  <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs">
+                {event.analytics.avgRating > 4.5 && (
+                  <Badge className="bg-yellow-100 text-yellow-800 rounded-xl dark:bg-yellow-900/30 dark:text-yellow-300 text-xs">
                     <Award className="w-3 h-3 mr-1" />
                     Top Rated
                   </Badge>
@@ -449,9 +451,9 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
             </div>
             
             {/* Quick Info */}
-            {spotsLeft <= 5 && spotsLeft > 0 && (
+            {spotsLeft <= event.maxParticipants * 0.2 && spotsLeft > 0 && (
               <div className="mt-3 text-center">
-                <Badge className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 text-xs">
+                <Badge className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 text-xs">
                   Only {spotsLeft} spots left!
                 </Badge>
               </div>

@@ -418,8 +418,8 @@ const Events = () => {
               <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                 Featured Events
               </h2>
-              <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 text-xs sm:text-sm">
-                Hot 🔥
+              <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 text-xs sm:text-sm rounded-xl">
+                Hot
               </Badge>
             </div>
 

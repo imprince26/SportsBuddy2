@@ -195,6 +195,7 @@ export const getCurrentUser = async (req, res) => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,
+        coverImage: user.coverImage,
         sportsPreferences: user.sportsPreferences,
         location: user.location,
         socialLinks: user.socialLinks,

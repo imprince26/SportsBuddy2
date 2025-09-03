@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { format } from "date-fns"
@@ -5,7 +6,7 @@ import { toast } from "react-hot-toast"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import {
   MapPin,
   Award,
@@ -30,25 +31,15 @@ import {
   Crown,
   Medal,
   Sparkles,
-  Star,
   ChevronRight,
   Shield,
   Zap,
-  Timer,
   Share2,
   MessageCircle,
-  Eye,
-  ChevronDown,
   Check,
   Flame,
   Globe,
-  BookOpen,
-  Coffee,
-  Music,
-  Camera as CameraIcon,
   Image as ImageIcon,
-  Video,
-  Mic,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -79,7 +70,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
 import api from "@/utils/api"
 
 const profileSchema = z.object({
@@ -551,7 +541,18 @@ const Profile = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="h-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600" />
+                    (
+                      user.coverImage?.url ? (
+                        <img
+                          src={user.coverImage.url}
+                          alt="Cover"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600" />
+                      )
+                    )
+
                   )}
 
                   {/* Overlay pattern */}
@@ -981,7 +982,7 @@ const Profile = () => {
                                     {achievement.title}
                                   </p>
                                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    {format(new Date(achievement.date), "MMM dd, yyyy")}
+                                    {format(new Date(achievement.earnedAt), "MMMM dd, yyyy")}
                                   </p>
                                 </div>
                               </motion.div>
@@ -1236,7 +1237,7 @@ const Profile = () => {
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-xl mb-2 text-gray-900 dark:text-white">{achievement.title}</h3>
                                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                    {format(new Date(achievement.date), "MMMM dd, yyyy")}
+                                    {format(new Date(achievement.earnedAt), "MMMM dd, yyyy")}
                                   </p>
                                   {achievement.description && (
                                     <p className="text-gray-800 dark:text-gray-200 leading-relaxed">{achievement.description}</p>

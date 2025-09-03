@@ -115,10 +115,10 @@ const userSchema = new mongoose.Schema(
       },
     },
     coverImage: {
-      url:{
-        type:String,
+      url: {
+        type: String,
       },
-      public_id:{
+      public_id: {
         type: String
       },
     },

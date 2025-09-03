@@ -488,7 +488,6 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// Verify Reset Code
 export const verifyResetCode = async (req, res) => {
   try {
     const { email, resetCode } = req.body;

@@ -242,6 +242,9 @@ const Profile = () => {
   const [hoveredCard, setHoveredCard] = useState(null)
   const [coverImage, setCoverImage] = useState(null)
   const [coverImagePreview, setCoverImagePreview] = useState("")
+  const [selectedSport, setSelectedSport] = useState("")
+  const [selectedSkillLevel, setSelectedSkillLevel] = useState("")
+
 
   const {
     register,
@@ -385,6 +388,16 @@ const Profile = () => {
       toast.success("Achievement added successfully")
     } catch (error) {
       toast.error("Failed to add achievement")
+    }
+  }
+
+  const handleAddSportPreference = () => {
+    if (selectedSport && selectedSkillLevel) {
+      const newSport = { sport: selectedSport, skillLevel: selectedSkillLevel }
+      appendSport(newSport)
+      setSelectedSport("")
+      setSelectedSkillLevel("")
+      setOpenSportDialog(false)
     }
   }
 
@@ -1054,19 +1067,19 @@ const Profile = () => {
                           <Dumbbell className="w-6 h-6 text-blue-500" />
                           Sports Preferences
                         </CardTitle>
-                        {editing && (
-                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setOpenSportDialog(true)}
-                              className="bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700"
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              Add Sport
-                            </Button>
-                          </motion.div>
-                        )}
+
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setOpenSportDialog(true)}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700"
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Sport
+                          </Button>
+                        </motion.div>
+
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -1479,16 +1492,12 @@ const Profile = () => {
             <DialogHeader>
               <DialogTitle className="text-gray-900 dark:text-white">Add Sport Preference</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="sport" className="text-sm font-medium text-gray-700 dark:text-gray-300">Sport</Label>
-                <Select
-                  onValueChange={(value) => {
-                    const newSport = { sport: value, skillLevel: "Beginner" }
-                    appendSport(newSport)
-                    setOpenSportDialog(false)
-                  }}
-                >
+                <Label htmlFor="sport" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Sport
+                </Label>
+                <Select value={selectedSport} onValueChange={setSelectedSport}>
                   <SelectTrigger className="mt-2 bg-white/50 dark:bg-gray-800/50 border-gray-300/50 dark:border-gray-600/50">
                     <SelectValue placeholder="Select a sport" />
                   </SelectTrigger>
@@ -1506,7 +1515,53 @@ const Profile = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div>
+                <Label htmlFor="skillLevel" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Skill Level
+                </Label>
+                <Select value={selectedSkillLevel} onValueChange={setSelectedSkillLevel}>
+                  <SelectTrigger className="mt-2 bg-white/50 dark:bg-gray-800/50 border-gray-300/50 dark:border-gray-600/50">
+                    <SelectValue placeholder="Select skill level" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+                    {["Beginner", "Intermediate", "Advanced"].map((level) => (
+                      <SelectItem key={level} value={level}>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="secondary"
+                            className={`${getSkillLevelColor(level)} border-0 text-xs`}
+                          >
+                            {level}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            <DialogFooter className="mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setOpenSportDialog(false)
+                  setSelectedSport("")
+                  setSelectedSkillLevel("")
+                }}
+                className="bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 dark:border-gray-600"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddSportPreference}
+                disabled={!selectedSport || !selectedSkillLevel}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add Sport
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 

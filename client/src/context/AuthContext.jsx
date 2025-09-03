@@ -289,12 +289,10 @@ export const AuthProvider = ({ children }) => {
           ...prev,
           achievements: response.data.data
         }));
-        toast.success('Achievement added successfully');
         return { success: true };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to add achievement';
-      toast.error(message);
       return { success: false, message };
     }
   };

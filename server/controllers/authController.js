@@ -6,7 +6,6 @@ import fs from "fs/promises";
 import validator from "validator";
 import sendEmail from "../config/sendEmail.js";
 import { welcomeEmailHtml, resetPasswordEmailHtml, passwordResetSuccessEmailHtml } from "../utils/emailTemplate.js";
-import crypto from "crypto";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -235,6 +234,11 @@ export const getProfile = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
+  let oldAvatarPublicId = null;
+  let oldCoverImagePublicId = null;
+  let newAvatarPublicId = null;
+  let newCoverImagePublicId = null;
+
   try {
     // Extract data from FormData
     const updates = {};
@@ -264,7 +268,7 @@ export const updateProfile = async (req, res) => {
     ];
 
     const updateFields = Object.keys(updates).filter((key) => allowedUpdates.includes(key));
-    if (updateFields.length === 0 && !req.file) {
+    if (updateFields.length === 0 && !req.files?.avatar && !req.files?.coverImage) {
       return res.status(400).json({ message: "No valid fields provided for update" });
     }
 
@@ -273,6 +277,10 @@ export const updateProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    // Store old image public IDs for cleanup
+    oldAvatarPublicId = user.avatar?.public_id;
+    oldCoverImagePublicId = user.coverImage?.public_id;
 
     // Validate fields
     if (updates.username) {
@@ -306,74 +314,59 @@ export const updateProfile = async (req, res) => {
       }
     }
 
-    // Handle avatar upload
-    let tempAvatar = null;
-    if (req.files) {
-      try {
-        const { secure_url, public_id } = await uploadImage(req.files.avatar[0].path);
-        tempAvatar = { url: secure_url, public_id };
-        // Delete temporary file
-        await fs.unlink(req.files.avatar[0].path).catch((err) => console.error("Failed to delete temp file:", err));
-      } catch (error) {
-        // Clean up temp file on upload failure
-        if (req.files.avatar[0].path) await fs.unlink(req.files.avatar[0].path).catch((err) => console.error("Failed to delete temp file:", err));
-        return res.status(500).json({ message: "Error uploading avatar", error: error.message });
-      }
+    // Handle avatar - file is already uploaded to Cloudinary by multer
+    if (req.files?.avatar && req.files.avatar[0]) {
+      const avatarFile = req.files.avatar[0];
+      newAvatarPublicId = avatarFile.filename; // Store for cleanup if save fails
+      user.avatar = {
+        url: avatarFile.path,
+        public_id: avatarFile.filename
+      };
     }
 
-    //handle cover image upload
-    let tempCoverImage = null;
-    if (req.files) {
-      try {
-        const { secure_url, public_id } = await uploadImage(req.files.coverImage[0].path);
-        tempCoverImage = { url: secure_url, public_id };
-        // Delete temporary file
-        await fs.unlink(req.files.coverImage[0].path).catch((err) => console.error("Failed to delete temp file:", err));
-      } catch (error) {
-        // Clean up temp file on upload failure
-        if (req.files.coverImage[0].path) await fs.unlink(req.files.coverImage[0].path).catch((err) => console.error("Failed to delete temp file:", err));
-        return res.status(500).json({ message: "Error uploading avatar", error: error.message });
-      }
+    // Handle cover image - file is already uploaded to Cloudinary by multer
+    if (req.files?.coverImage && req.files.coverImage[0]) {
+      const coverImageFile = req.files.coverImage[0];
+      newCoverImagePublicId = coverImageFile.filename; // Store for cleanup if save fails
+      user.coverImage = {
+        url: coverImageFile.path,
+        public_id: coverImageFile.filename
+      };
     }
 
-    // Apply updates
+    // Apply field updates
     updateFields.forEach((field) => {
       user[field] = updates[field];
     });
 
-    // Update avatar only if upload was successful
-    if (tempAvatar) {
-      const oldPublicId = user.avatar?.public_id;
-      user.avatar = tempAvatar;
-      // Delete old avatar after setting new one
-      if (oldPublicId) {
-        await deleteImage(oldPublicId).catch((err) => console.error("Failed to delete old avatar:", err));
-      }
-    }
-
-    // Update cover image only if upload was successful
-    if (tempCoverImage) {
-      const oldPublicId = user.coverImage?.public_id;
-      user.coverImage = tempCoverImage;
-      // Delete old cover image after setting new one
-      if (oldPublicId) {
-        await deleteImage(oldPublicId).catch((err) => console.error("Failed to delete old cover image:", err));
-      }
-    }
-
-    // Save user
+    // Save user (this is where it might fail)
     await user.save();
+
+    // Only delete old images after successful save
+    if (req.files?.avatar && oldAvatarPublicId) {
+      await deleteImage(oldAvatarPublicId).catch((err) => console.error("Failed to delete old avatar:", err));
+    }
+
+    if (req.files?.coverImage && oldCoverImagePublicId) {
+      await deleteImage(oldCoverImagePublicId).catch((err) => console.error("Failed to delete old cover image:", err));
+    }
 
     res.json({
       success: true,
-      data: user.getProfile(), // Assuming getProfile() returns a sanitized user object
+      data: user.getProfile(),
     });
+
   } catch (error) {
-    // Clean up temp file on general error
-    if (req.file?.path) {
-      await fs.unlink(req.file.path).catch((err) => console.error("Failed to delete temp file:", err));
-    }
     console.error("Update profile error:", error);
+
+    // Clean up newly uploaded images on Cloudinary if save failed
+    if (newAvatarPublicId) {
+      await deleteImage(newAvatarPublicId).catch((err) => console.error("Failed to cleanup uploaded avatar:", err));
+    }
+    if (newCoverImagePublicId) {
+      await deleteImage(newCoverImagePublicId).catch((err) => console.error("Failed to cleanup uploaded cover image:", err));
+    }
+
     res.status(500).json({
       message: "Error updating profile",
       error: error.message,

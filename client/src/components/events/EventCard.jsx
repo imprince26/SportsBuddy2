@@ -2,8 +2,8 @@
 import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
-import { 
-  CalendarDays, MapPin, Users, Star, Clock, Heart, Share2, 
+import {
+  CalendarDays, MapPin, Users, Star, Clock, Heart, Share2,
   Award, TrendingUp, Eye, ChevronRight, AlertCircle
 } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
@@ -20,27 +20,27 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
   const getStatusBadge = (status) => {
     switch (status) {
       case "Upcoming":
-        return { 
+        return {
           className: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800",
           label: "Upcoming"
         }
       case "Ongoing":
-        return { 
+        return {
           className: "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800",
           label: "Live"
         }
       case "Completed":
-        return { 
+        return {
           className: "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:border-gray-700",
           label: "Completed"
         }
       case "Cancelled":
-        return { 
+        return {
           className: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800",
           label: "Cancelled"
         }
       default:
-        return { 
+        return {
           className: "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:border-gray-700",
           label: status
         }
@@ -51,22 +51,22 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
   const getDifficultyBadge = (difficulty) => {
     switch (difficulty) {
       case "Beginner":
-        return { 
+        return {
           className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300",
           label: "Beginner"
         }
       case "Intermediate":
-        return { 
+        return {
           className: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300",
           label: "Intermediate"
         }
       case "Advanced":
-        return { 
+        return {
           className: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300",
           label: "Advanced"
         }
       default:
-        return { 
+        return {
           className: "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/50 dark:text-gray-300",
           label: difficulty
         }
@@ -100,12 +100,12 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
         <Link to={`/events/${event._id}`}>
           <Card className={cn(
             "overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all duration-300",
-            featured && "ring-1 ring-amber-200 dark:ring-amber-800 bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-900/10 dark:to-orange-900/10"
+            featured && " bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-900/10 dark:to-orange-900/10"
           )}>
             <CardContent className="p-0">
               <div className="flex flex-col sm:flex-row">
                 {/* Image Section */}
-                <div className="relative h-48 sm:h-32 sm:w-48 flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <div className="relative h-48 rounded-br-3xl sm:w-48 flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800">
                   {event.images && event.images.length > 0 ? (
                     <img
                       src={event.images[0].url || "/placeholder.svg"}
@@ -119,10 +119,10 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Status Badge */}
                   <div className="absolute top-3 left-3">
-                    <Badge className={cn("text-xs font-medium", getStatusBadge(event.status).className)}>
+                    <Badge className={cn("text-xs font-medium rounded-xl", getStatusBadge(event.status).className)}>
                       {getStatusBadge(event.status).label}
                     </Badge>
                   </div>
@@ -130,7 +130,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                   {/* Featured Badge */}
                   {featured && (
                     <div className="absolute top-3 right-3">
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 text-xs font-medium">
+                      <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-xs font-medium">
                         Featured
                       </Badge>
                     </div>
@@ -139,8 +139,8 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                   {/* Free Badge */}
                   {isFreeEvent && (
                     <div className="absolute bottom-3 right-3">
-                      <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 text-xs font-medium">
-                        🆓 Free
+                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 text-xs font-medium rounded-xl">
+                        Free
                       </Badge>
                     </div>
                   )}
@@ -156,23 +156,23 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                           {event.name}
                         </h3>
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-2 mb-3">
-                        <Badge className={cn("text-xs", getDifficultyBadge(event.difficulty).className)}>
+                        <Badge className={cn("text-xs border-none rounded-xl", getDifficultyBadge(event.difficulty).className)}>
                           {getDifficultyBadge(event.difficulty).label}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs rounded-xl">
                           {getCategoryInfo(event.category).icon} {getCategoryInfo(event.category).label}
                         </Badge>
                         {isAlmostFull && (
-                          <Badge className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 text-xs">
+                          <Badge className="bg-orange-50 text-orange-700  dark:bg-orange-900/20 dark:text-orange-300 text-xs rounded-xl">
                             <AlertCircle className="w-3 h-3 mr-1" />
                             Almost Full
                           </Badge>
                         )}
                         {isFreeEvent && (
-                          <Badge className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 text-xs">
-                            🆓 Free
+                          <Badge className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 text-xs rounded-xl">
+                            Free
                           </Badge>
                         )}
                       </div>
@@ -206,15 +206,15 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                     {/* Footer */}
                     <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800 mt-auto">
                       <div className="flex items-center gap-4">
-                        {event.averageRating > 0 && (
+                        {event.analytics?.avgRating > 0 && (
                           <div className="flex items-center text-sm">
                             <Star className="w-4 h-4 mr-1 text-yellow-500 fill-current" />
                             <span className="font-medium text-gray-900 dark:text-white">
-                              {event.averageRating.toFixed(1)}
+                              {event.analytics?.avgRating.toFixed(1)}
                             </span>
                           </div>
                         )}
-                        
+
                         {!isFreeEvent && (
                           <div className="text-sm font-semibold text-green-600 dark:text-green-400">
                             ₹{event.registrationFee}
@@ -286,10 +286,10 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                 </div>
               </div>
             )}
-            
+
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            
+
             {/* Top Badges */}
             <div className="absolute top-3 left-3 right-3 flex justify-between">
               <div className="flex gap-2">
@@ -303,7 +303,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                   </Badge>
                 )}
               </div>
-              
+
               {featured && (
                 <Badge className="bg-amber-100/90 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs backdrop-blur-sm rounded-xl">
                   Featured
@@ -319,7 +319,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                 </Badge>
               </div>
             )}
-            
+
             {/* Title Overlay */}
             <div className="absolute bottom-3 left-3 right-3">
               <h3 className="text-white text-lg font-semibold line-clamp-2 mb-1 drop-shadow-lg">
@@ -347,7 +347,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
               )}
             </AnimatePresence>
           </div>
-          
+
           <CardContent className="p-4">
             {/* Event Meta */}
             <div className="space-y-3 mb-4">
@@ -361,7 +361,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                   <span>{event.time}</span>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className={cn("text-xs border-none rounded-xl", getDifficultyBadge(event.difficulty).className)}>
                   {getDifficultyBadge(event.difficulty).label}
@@ -376,12 +376,12 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                 )}
               </div>
             </div>
-            
+
             {/* Description */}
             <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-4 leading-relaxed">
               {event.description}
             </p>
-            
+
             {/* Participants Progress */}
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
@@ -393,14 +393,14 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                   className={cn(
                     "h-full rounded-full transition-all duration-300",
                     fillPercentage > 85 ? "bg-orange-500" :
-                    fillPercentage > 60 ? "bg-blue-500" :
-                    "bg-green-500"
+                      fillPercentage > 60 ? "bg-blue-500" :
+                        "bg-green-500"
                   )}
                   style={{ width: `${Math.min(fillPercentage, 100)}%` }}
                 />
               </div>
             </div>
-            
+
             {/* Footer Stats */}
             <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-800">
               <div className="flex items-center gap-3">
@@ -412,7 +412,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                     </span>
                   </div>
                 )}
-                
+
                 {!isFreeEvent && (
                   <div className="text-sm font-semibold text-green-600 dark:text-green-400">
                     ₹{event.registrationFee}
@@ -426,7 +426,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                   </Badge>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
@@ -449,7 +449,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                 </Button>
               </div>
             </div>
-            
+
             {/* Quick Info */}
             {spotsLeft <= event.maxParticipants * 0.2 && spotsLeft > 0 && (
               <div className="mt-3 text-center">

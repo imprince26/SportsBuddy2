@@ -143,13 +143,12 @@ export const login = async (req, res) => {
 
 export const logout = (req, res) => {
   try {
-    const cookieOptionsLogout = {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-    };
 
-    res.clearCookie("SportsBuddyToken");
+    res.clearCookie("SportsBuddyToken",{
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    });
 
     res.status(200).json({
       success: true,
@@ -202,6 +201,7 @@ export const getCurrentUser = async (req, res) => {
         achievements: user.achievements,
         stats: user.stats,
         preferences: user.preferences,
+        activityLog: user.activityLog
       },
     });
   } catch (error) {

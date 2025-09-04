@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect,useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
 
@@ -11,31 +11,35 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
   // Check if user is logged in on initial load
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      if (!token) {
-        setLoading(false);
-        return;
-      }
+  const checkAuthStatus = useCallback(async () => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
-      try {
-        const response = await api.get(`/auth/me`);
-        if (response.data.success) {
-          setUser(response.data.data);
-        } else {
-          // Token is invalid or expired
-          logout();
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
+    try {
+      const response = await api.get(`/auth/me`);
+      if (response.data.success) {
+        setUser(response.data.data);
+      } else {
+        // Token is invalid or expired
         logout();
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      
+      // Only logout if it's an auth error, not a network error
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        logout();
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
+  useEffect(() => {
     checkAuthStatus();
-  }, []);
+  }, [checkAuthStatus]);
 
   // Register new user
   const register = async (userData) => {

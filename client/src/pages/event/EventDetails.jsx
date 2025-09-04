@@ -258,15 +258,26 @@ const EventDetails = () => {
 
     setLoadingAction(true)
     try {
-      await joinEvent(id)
+       const result = await joinEvent(id)
+    
+    if (result.success) {
       toast.success("Successfully joined the event! 🎉")
-      window.location.reload()
-    } catch (err) {
-      console.error("Error joining event:", err)
-      toast.error("Failed to join event")
-    } finally {
-      setLoadingAction(false)
+      setEvent(result.event)
+    } else {
+      throw new Error(result.message || 'Failed to join event')
+     }
+    }catch (err) {
+    console.error("Error joining event:", err)
+    
+    if (err.response?.status === 401) {
+      toast.error("Please login to join events")
+      navigate("/login")
+    } else {
+      toast.error(err.message || "Failed to join event")
     }
+  } finally {
+    setLoadingAction(false)
+  }
   }
 
   const handleLeaveEvent = async () => {

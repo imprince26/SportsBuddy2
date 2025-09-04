@@ -151,7 +151,6 @@ export const EventProvider = ({ children }) => {
 
     try {
       const response = await api.get('/users/events');
-console.log(response);
       if (response.data.success) {
         setUserEvents(response.data.data);
         return {
@@ -340,9 +339,20 @@ console.log(response);
         return { success: true, event: response.data };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to join event';
-      setError(message);
-      return { success: false, message };
+       console.error('Join event error:', error);
+    
+    let message = 'Failed to join event';
+    
+    if (error.response?.status === 401) {
+      message = 'Please login to join events';
+    } else if (error.response?.status === 400) {
+      message = error.response.data.message || 'Unable to join event';
+    } else if (error.response?.data?.message) {
+      message = error.response.data.message;
+    }
+    
+    setError(message);
+    return { success: false, message };
     } finally {
       setLoading(false);
     }

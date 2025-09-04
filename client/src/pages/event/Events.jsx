@@ -255,128 +255,156 @@ const Events = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-950">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <HeroBg/>
+    <div className="relative overflow-hidden">
+  <HeroBg/>
 
-        <div className="relative container mx-auto px-4 py-12 sm:py-16 lg:py-20">
+  <div className="relative container mx-auto px-4 py-10">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      className="text-center max-w-4xl mx-auto"
+    >
+      {/* Welcome Badge */}
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="inline-block mb-4 sm:mb-6"
+      >
+      <div className="group relative">
+  {/* Enhanced Animated Background Glow */}
+  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/60 via-purple-500/60 to-indigo-500/60 dark:from-blue-400/80 dark:via-purple-400/80 dark:to-indigo-400/80 rounded-full blur-xl opacity-70 group-hover:opacity-100 transition-all duration-500 animate-pulse" />
+  
+  {/* Secondary Glow Effect */}
+  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/30 via-blue-400/30 to-purple-400/30 dark:from-cyan-300/40 dark:via-blue-300/40 dark:to-purple-300/40 rounded-full blur-lg opacity-50 group-hover:opacity-80 transition-all duration-300 scale-110" />
+  
+  {/* Main Badge Container */}
+  <div className="relative px-4 sm:px-6 py-2 sm:py-3 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-full border border-blue-200/40 dark:border-blue-400/30 flex items-center gap-2 sm:gap-3 shadow-lg dark:shadow-xl group-hover:shadow-2xl transition-all duration-300">
+    
+    {/* Icon with Enhanced Animation */}
+    <div className="relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-sm opacity-60 animate-pulse" />
+      <Sparkles className="relative w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-300 animate-bounce" style={{ animationDuration: '2s' }} />
+    </div>
+    
+    {/* Enhanced Text */}
+    <span className="bg-gradient-to-r from-blue-700 via-purple-600 to-indigo-700 dark:from-blue-200 dark:via-purple-200 dark:to-indigo-200 bg-clip-text text-transparent font-semibold text-sm sm:text-base tracking-wide">
+      Discover Amazing Events
+    </span>
+    
+    {/* Enhanced Animated Dots */}
+    <div className="flex gap-1">
+      {[...Array(3)].map((_, i) => (
+        <div 
+          key={i} 
+          className="w-1.5 h-1.5 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-300 dark:to-purple-300 rounded-full animate-pulse shadow-sm" 
+          style={{ 
+            animationDelay: `${i * 0.3}s`,
+            animationDuration: '1.5s'
+          }} 
+        />
+      ))}
+    </div>
+    
+    {/* Subtle Inner Highlight */}
+    <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-white/10 to-white/5 dark:from-white/5 dark:via-white/15 dark:to-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    
+  </div>
+</div>
+      </motion.div>
+
+      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 leading-tight">
+        Find Your Perfect
+        <motion.span
+          className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-yellow-300 dark:via-yellow-400 dark:to-orange-400 bg-clip-text text-transparent"
+          animate={{
+            backgroundPosition: ['0%', '100%', '0%'],
+            scale: [1, 1.02, 1]
+          }}
+          transition={{ duration: 4, repeat: Infinity }}
+        >
+          Sports Event
+        </motion.span>
+      </h1>
+
+      <p className="text-lg md:text-xl lg:text-2xl text-gray-700 dark:text-white/90 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-4">
+        Join thousands of athletes and sports enthusiasts. Discover events, make connections, and level up your game.
+      </p>
+
+      {/* Platform Stats Grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8"
+      >
+        {[
+          { label: "Events", value: `${stats.totalEvents || 250}+`, icon: Trophy, color: "from-blue-500 to-blue-600" },
+          { label: "Active", value: `${stats.activeEvents || 120}+`, icon: Flame, color: "from-red-500 to-red-600" },
+          { label: "Athletes", value: `${stats.totalParticipants || 15000}+`, icon: Users, color: "from-green-500 to-green-600" },
+          { label: "Rating", value: `${stats.avgRating?.toFixed(1) || '4.9'}`, icon: Star, color: "from-yellow-500 to-yellow-600" },
+        ].map((stat, index) => (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center max-w-4xl mx-auto"
+            key={index}
+            initial={{ opacity: 0, rotateY: -90 }}
+            animate={{ opacity: 1, rotateY: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 + index * 0.1 }}
+            whileHover={{ scale: 1.05, rotateY: 5 }}
+            className="group relative"
+            style={{ transformStyle: 'preserve-3d' }}
           >
-            {/* Welcome Badge */}
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="inline-block mb-4 sm:mb-6"
-            >
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative px-4 sm:px-6 py-2 sm:py-3 bg-white/20 backdrop-blur-xl rounded-full border border-white/30 flex items-center gap-2 sm:gap-3">
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 animate-pulse" />
-                  <span className="text-white font-medium text-sm sm:text-base">Discover Amazing Events</span>
-                  <div className="flex gap-1">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="w-1 h-1 bg-white/60 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
-                    ))}
-                  </div>
-                </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 dark:from-black/20 dark:to-black/5 rounded-xl blur-lg group-hover:blur-md transition-all duration-300" />
+            <div className="relative p-3 sm:p-4 lg:p-6 bg-white/20 dark:bg-white/10 backdrop-blur-xl rounded-xl border border-white/30 dark:border-white/20 text-center shadow-lg dark:shadow-xl">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto mb-2 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
               </div>
-            </motion.div>
-
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-              Find Your Perfect
-              <motion.span
-                className="block bg-gradient-to-r from-yellow-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent"
-                animate={{
-                  backgroundPosition: ['0%', '100%', '0%'],
-                  scale: [1, 1.02, 1]
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-              >
-                Sports Event
-              </motion.span>
-            </h1>
-
-            <p className="text-lg sm:text-xl lg:text-2xl text-white/90 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-4">
-              Join thousands of athletes and sports enthusiasts. Discover events, make connections, and level up your game.
-            </p>
-
-            {/* Platform Stats Grid */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8"
-            >
-              {[
-                { label: "Events", value: `${stats.totalEvents || 250}+`, icon: Trophy, color: "from-blue-500 to-blue-600" },
-                { label: "Active", value: `${stats.activeEvents || 120}+`, icon: Flame, color: "from-red-500 to-red-600" },
-                { label: "Athletes", value: `${stats.totalParticipants || 15000}+`, icon: Users, color: "from-green-500 to-green-600" },
-                { label: "Rating", value: `${stats.avgRating?.toFixed(1) || '4.9'}`, icon: Star, color: "from-yellow-500 to-yellow-600" },
-              ].map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, rotateY: -90 }}
-                  animate={{ opacity: 1, rotateY: 0 }}
-                  transition={{ duration: 0.8, delay: 0.6 + index * 0.1 }}
-                  whileHover={{ scale: 1.05, rotateY: 5 }}
-                  className="group relative"
-                  style={{ transformStyle: 'preserve-3d' }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-white/5 rounded-xl blur-lg group-hover:blur-md transition-all duration-300" />
-                  <div className="relative p-3 sm:p-4 lg:p-6 bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 text-center">
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto mb-2 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300`}>
-                      <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
-                    </div>
-                    <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-1">{stat.value}</div>
-                    <div className="text-xs sm:text-sm text-white/80">{stat.label}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center"
-            >
-              {isAuthenticated && (
-                <Link to="/events/create" className="w-full sm:w-auto">
-                  <motion.button
-                    whileHover={{ scale: 1.05, rotateY: 5 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-blue-600 font-bold rounded-2xl shadow-2xl overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white to-blue-50 transform transition-transform group-hover:scale-110" />
-                    <div className="relative flex items-center justify-center gap-3">
-                      <Plus className="w-5 h-5 transform group-hover:scale-110 transition-transform" />
-                      <span>Create Event</span>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                  </motion.button>
-                </Link>
-              )}
-
-              <motion.button
-                whileHover={{ scale: 1.05, rotateY: -5 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => document.getElementById('events-section')?.scrollIntoView({ behavior: 'smooth' })}
-                className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-xl border-2 border-white/30 text-white font-bold rounded-2xl hover:bg-white/20 transition-all duration-300"
-              >
-                <div className="flex items-center justify-center gap-3">
-                  <Search className="w-5 h-5" />
-                  <span>Browse Events</span>
-                </div>
-              </motion.button>
-            </motion.div>
+              <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-white/80">{stat.label}</div>
+            </div>
           </motion.div>
-        </div>
-      </div>
+        ))}
+      </motion.div>
+
+      {/* Action Buttons */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 1 }}
+        className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center"
+      >
+        {isAuthenticated && (
+          <Link to="/events/create" className="w-full md:w-auto">
+            <motion.button
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-gray-600/40 text-blue-600 dark:text-blue-400 font-bold rounded-2xl shadow-2xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-white to-blue-50 dark:from-gray-800 dark:to-blue-950/50 transform transition-transform group-hover:scale-110" />
+              <div className="relative flex items-center justify-center gap-3">
+                <Plus className="w-5 h-5 transform group-hover:scale-110 transition-transform" />
+                <span>Create Event</span>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-blue-400/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            </motion.button>
+          </Link>
+        )}
+
+        <motion.button
+          whileHover={{ scale: 1.05, rotateY: -5 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => document.getElementById('events-section')?.scrollIntoView({ behavior: 'smooth' })}
+          className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/20 dark:bg-gray-900/40 backdrop-blur-xl border-2 border-white/40 dark:border-white/10 text-gray-900 dark:text-white font-bold rounded-2xl hover:bg-white/30 dark:hover:bg-gray-900/60 transition-all duration-300 shadow-lg"
+        >
+          <div className="flex items-center justify-center gap-3">
+            <Search className="w-5 h-5" />
+            <span>Browse Events</span>
+          </div>
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  </div>
+    </div>
 
       <div id="events-section" className="container mx-auto px-4 py-6 sm:py-8 lg:py-12">
         {/* Search and Filter Bar */}

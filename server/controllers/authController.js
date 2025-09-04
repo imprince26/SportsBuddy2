@@ -200,6 +200,8 @@ export const getCurrentUser = async (req, res) => {
         socialLinks: user.socialLinks,
         notifications: user.notifications,
         achievements: user.achievements,
+        stats: user.stats,
+        preferences: user.preferences,
       },
     });
   } catch (error) {

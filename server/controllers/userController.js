@@ -1,4 +1,5 @@
 import User from "../models/userModel.js";
+import Event from "../models/eventModel.js";
 
 // Get user profile
 export const getUserProfile = async (req, res) => {
@@ -132,6 +133,65 @@ export const unfollowUser = async (req, res) => {
       success: false,
       message: "Error unfollowing user",
       error: error.message
+    });
+  }
+};
+
+export const getUserEvents = async (req, res) => {
+  try {
+        const userId = req.user.id || req.user._id;
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated"
+      });
+    }
+
+    console.log("Fetching events for userId:", userId);
+
+
+    // Get events created by user
+    const createdEvents = await Event.find({ createdBy: userId })
+      .populate('participants.user', 'name username avatar')
+      .populate('createdBy', 'name username avatar')
+      .sort({ createdAt: -1 });
+
+    // Get events user is participating in
+    const participatingEvents = await Event.find({
+      'participants.user': userId,
+      createdBy: { $ne: userId } // Exclude events created by user to avoid duplicates
+    })
+      .populate('participants.user', 'name username avatar')
+      .populate('createdBy', 'name username avatar')
+      .sort({ createdAt: -1 });
+
+    // Combine all events
+    const allUserEvents = [...createdEvents, ...participatingEvents];
+
+    // Remove duplicates based on event ID
+    const uniqueEvents = allUserEvents.filter((event, index, self) =>
+      index === self.findIndex(e => e._id.toString() === event._id.toString())
+    );
+
+    // Sort by date
+    uniqueEvents.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({
+      success: true,
+      data: uniqueEvents,
+      count: uniqueEvents.length,
+      breakdown: {
+        created: createdEvents.length,
+        participating: participatingEvents.length,
+        total: uniqueEvents.length
+      }
+    });
+  } catch (error) {
+    console.error('Get user events error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error fetching user events"
     });
   }
 };

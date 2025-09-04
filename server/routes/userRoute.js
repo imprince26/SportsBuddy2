@@ -8,22 +8,23 @@ import {
   getUserFollowing,
   searchUsers,
   updatePreferences,
-  userStats
+  userStats,
+  getUserEvents
 } from "../controllers/userController.js";
 
 const router = express.Router();
 
 // Public routes
-router.get("/:userId", getUserProfile);
 router.get("/search", searchUsers);
 
-// Protected routes
-router.use(isAuthenticated);
-router.post("/:userId/follow", followUser);
-router.delete("/:userId/follow", unfollowUser);
-router.get("/:userId/followers", getUserFollowers);
-router.get("/:userId/following", getUserFollowing);
-router.put("/preferences", updatePreferences);
-router.get("/stats/:userId", userStats);
+router.get("/events",isAuthenticated, getUserEvents);
+router.put("/preferences",isAuthenticated, updatePreferences);
+
+router.get("/:userId", getUserProfile);
+router.post("/:userId/follow",isAuthenticated, followUser);
+router.delete("/:userId/follow",isAuthenticated, unfollowUser);
+router.get("/:userId/followers",isAuthenticated, getUserFollowers);
+router.get("/:userId/following",isAuthenticated, getUserFollowing);
+router.get("/stats/:userId", isAuthenticated,userStats);
 
 export default router;

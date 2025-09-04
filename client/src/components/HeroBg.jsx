@@ -2,86 +2,109 @@ import { motion } from "framer-motion"
 
 const HeroBg = () => {
   return (
-     <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-purple-600/90 to-blue-800/90" />
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Main Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950" />
+      
+      {/* Animated Gradient Orbs */}
+      <div className="absolute inset-0">
+        {/* Primary Orb */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 dark:opacity-10"
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          style={{
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%)',
+          }}
+        />
+        
+        {/* Secondary Orb */}
+        <motion.div
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-15 dark:opacity-8"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            x: [0, -40, 0],
+            y: [0, 40, 0],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+          style={{
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%)',
+          }}
+        />
+        
+        {/* Accent Orb */}
+        <motion.div
+          className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full opacity-10 dark:opacity-5"
+          animate={{
+            scale: [1, 1.3, 1],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 4
+          }}
+          style={{
+            background: 'radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%)',
+          }}
+        />
+      </div>
 
-          {/* 3D Floating Orbs */}
-          <div className="absolute inset-0">
-            {[...Array(12)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full"
-                style={{
-                  width: `${15 + (i % 4) * 8}px`,
-                  height: `${15 + (i % 4) * 8}px`,
-                  background: `linear-gradient(135deg, ${
-                    ['rgba(59, 130, 246, 0.3)', 'rgba(139, 92, 246, 0.3)', 'rgba(34, 197, 94, 0.3)', 'rgba(251, 191, 36, 0.3)'][i % 4]
-                  }, transparent)`,
-                  backdropFilter: 'blur(10px)',
-                  left: `${10 + (i * 7) % 80}%`,
-                  top: `${20 + (i * 6) % 60}%`,
-                }}
-                animate={{
-                  y: [0, -25, 0],
-                  x: [0, 15, 0],
-                  rotateX: [0, 360],
-                  rotateY: [0, 180],
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{
-                  duration: 4 + (i % 3),
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 0.2,
-                }}
-              />
-            ))}
-          </div>
+      {/* Flowing Lines */}
+      <div className="absolute inset-0">
+        <motion.div
+          className="absolute inset-0"
+          animate={{
+            backgroundPosition: ['0% 0%', '100% 100%'],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          style={{
+            background: `linear-gradient(45deg, 
+              transparent 0%, 
+              rgba(59, 130, 246, 0.05) 25%, 
+              transparent 50%, 
+              rgba(139, 92, 246, 0.05) 75%, 
+              transparent 100%)`,
+            backgroundSize: '200% 200%',
+          }}
+        />
+      </div>
 
-          {/* 3D Grid Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundImage: `
-                  linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                  linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-                `,
-                backgroundSize: '40px 40px',
-                transform: 'perspective(800px) rotateX(15deg)',
-              }}
-            />
-          </div>
+      {/* Subtle Grid */}
+      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(59, 130, 246, 0.5) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(59, 130, 246, 0.5) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+          }}
+        />
+      </div>
 
-          {/* Large 3D Geometric Shapes */}
-          <motion.div
-            className="absolute top-16 left-8 w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-2xl opacity-20"
-            style={{
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              transform: 'perspective(1000px) rotateX(10deg) rotateY(10deg)',
-            }}
-            animate={{
-              rotateX: [10, 20, 10],
-              rotateY: [10, 20, 10],
-              y: [0, -15, 0],
-            }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          <motion.div
-            className="absolute bottom-16 right-8 w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full opacity-20"
-            style={{
-              background: 'linear-gradient(135deg, #10b981, #3b82f6)',
-              transform: 'perspective(1000px) rotateX(-10deg) rotateY(-10deg)',
-            }}
-            animate={{
-              rotateX: [-10, -20, -10],
-              rotateY: [-10, -20, -10],
-              y: [0, 15, 0],
-            }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          />
-        </div>
+      {/* Gentle Vignette */}
+      <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-white/20 dark:to-slate-950/30" />
+    </div>
   )
 }
 

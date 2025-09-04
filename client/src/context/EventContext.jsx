@@ -30,7 +30,6 @@ export const EventProvider = ({ children }) => {
 
   const { socket, joinEventRoom, leaveEventRoom } = useSocket();
 
-
   // Listen for socket events
   useEffect(() => {
     if (!socket) return;
@@ -130,7 +129,7 @@ export const EventProvider = ({ children }) => {
       queryParams.append('page', newPage);
       queryParams.append('limit', pagination.limit);
 
-      const response = await api.get(`/events`);
+      const response = await api.get(`/events?${queryParams.toString()}`);
 
       if (response.data.success) {
         setEvents(response.data.data);
@@ -145,6 +144,34 @@ export const EventProvider = ({ children }) => {
     }
   };
 
+  // Get user events (created and participating)
+  const getUserEvents = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.get('/users/events');
+console.log(response);
+      if (response.data.success) {
+        setUserEvents(response.data.data);
+        return {
+          success: true,
+          data: response.data.data,
+          breakdown: response.data.breakdown
+        };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch user events';
+      setError(message);
+      return {
+        success: false,
+        message,
+        data: []
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Get event by ID
   const getEventById = async (eventId) => {
@@ -451,6 +478,7 @@ export const EventProvider = ({ children }) => {
     loading,
     error,
     getEvents,
+    getUserEvents, // Added this function
     getEventById,
     createEvent,
     updateEvent,

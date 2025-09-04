@@ -107,13 +107,14 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
-});
+app.get("/",(req,res) => {
+  res.status(200).json({
+    message:"Welcome to SportsBuddy",
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  })
+})
 
 // Health check route
 app.get("/health", (req, res) => {
@@ -121,6 +122,14 @@ app.get("/health", (req, res) => {
     status: "OK",
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
   });
 });
 

@@ -18,6 +18,7 @@ const cookieOptions = {
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,
+  domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : "localhost"
 };
 
 export const register = async (req, res) => {
@@ -110,6 +111,7 @@ export const login = async (req, res) => {
       });
     }
 
+
     // Generate token
     const token = generateToken(user);
 
@@ -148,6 +150,7 @@ export const logout = (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : "localhost"
     });
 
     res.status(200).json({

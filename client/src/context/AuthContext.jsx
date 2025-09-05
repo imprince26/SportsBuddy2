@@ -18,11 +18,8 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await api.get(`/auth/me`);
-      if (response.data.success) {
-        setUser(response.data.data);
-      } else {
-        logout();
-      }
+      setUser(response.data.data);
+      
     } catch (error) {
       console.error('Auth check failed:', error);
       

@@ -51,8 +51,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-console.log(process.env.CLIENT_URL)
-
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/events", rateLimiters.api, eventRoute);

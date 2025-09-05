@@ -73,3 +73,17 @@ export const isAdmin = async (req, res, next) => {
     });
   }
 };
+
+export const checkAuth = async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      data: req.user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error checking authentication",
+    });
+  }
+};

@@ -11,10 +11,6 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
   const checkAuthStatus = useCallback(async () => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
 
     try {
       const response = await api.get(`/auth/me`);
@@ -29,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     checkAuthStatus();

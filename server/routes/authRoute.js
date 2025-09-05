@@ -35,7 +35,7 @@ router.post("/reset-password", resetPassword);
 
 
 // Protected routes
-router.get("/me",isAuthenticated, checkAuth);
+router.get("/me",isAuthenticated, getCurrentUser);
 router.use(isAuthenticated);
 router.get("/profile", getProfile);
 router.put("/profile", upload.fields([{ name: "avatar", maxCount: 1 }, { name: "coverImage", maxCount: 1 }]), updateProfile);

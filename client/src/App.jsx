@@ -120,7 +120,6 @@ function App() {
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
 
-  // Show initial loader while auth is being checked
   if (authLoading) {
     return <PageLoader message="Initializing SportsBuddy..." />;
   }

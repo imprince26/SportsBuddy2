@@ -15,9 +15,9 @@ const generateToken = (user) => {
 
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days,  
 };
 
 export const register = async (req, res) => {
@@ -145,10 +145,10 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   try {
 
-    res.clearCookie("SportsBuddyToken",{
+    res.clearCookie("SportsBuddyToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
 
     res.status(200).json({
@@ -172,7 +172,6 @@ export const getCurrentUser = async (req, res) => {
         message: "Not authenticated",
       });
     }
-
     const user = await User.findById(req.user._id).select({
       password: 0,
       __v: 0,

@@ -11,7 +11,11 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
   // Check if user is logged in on initial load
-  const checkAuthStatus = useCallback(async () => {
+
+
+  useEffect(() => {
+
+  const checkAuthStatus = async () => {
     if (!token) {
       setLoading(false);
       return;
@@ -27,11 +31,10 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  };
 
-  useEffect(() => {
     checkAuthStatus();
-  }, [checkAuthStatus]);
+  },[token]);
 
   // Register new user
   const register = async (userData) => {

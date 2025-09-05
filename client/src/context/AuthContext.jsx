@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect,useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
 
@@ -7,29 +7,32 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
-  const checkAuthStatus = useCallback(async () => {
-
-    try {
-      const response = await api.get(`/auth/me`);
-      setUser(response.data.data);
-      
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        logout();
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    const checkAuthStatus = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get('/auth/me');
+        if (response.data.success) {
+
+          setUser(response.data.user);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+
+        setLoading(false);
+      }
+    }
+
     checkAuthStatus();
-  }, [checkAuthStatus]);
+  }, []);
 
   // Register new user
   const register = async (userData) => {
@@ -97,7 +100,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (profileData) => {
     setLoading(true);
     const toastId = toast.loading("Updating profile...")
-    
+
     try {
       const response = await api.put(`/auth/profile`, profileData, {
         headers: {
@@ -177,7 +180,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         // Update local user state with new following list
-       setUser(prev => ({
+        setUser(prev => ({
           ...prev,
           following: [...(prev.following || []), userId]
         }));
@@ -196,7 +199,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         // Update local user state by removing from following list
-         setUser(prev => ({
+        setUser(prev => ({
           ...prev,
           following: (prev.following || []).filter(id => id !== userId)
         }));
@@ -305,14 +308,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-    const getCurrentUser = async () => {
+  const getCurrentUser = async () => {
     if (!token) {
       return { success: false, message: 'No authentication token found' };
     }
 
     try {
       const response = await api.get(`/auth/me`);
-      
+
       if (response.data.success) {
         setUser(response.data.data);
         return { success: true, data: response.data.data };
@@ -323,12 +326,12 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Get current user failed:', error);
       const message = error.response?.data?.message || 'Failed to fetch user data';
-      
+
       // If token is invalid, logout user
       if (error.response?.status === 401) {
         logout();
       }
-      
+
       return { success: false, message };
     }
   };
@@ -358,4 +361,4 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export {AuthContext}
+export { AuthContext }

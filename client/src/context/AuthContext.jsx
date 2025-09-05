@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
-  // Check if user is logged in on initial load
   const checkAuthStatus = useCallback(async () => {
     if (!token) {
       setLoading(false);
@@ -22,13 +21,11 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         setUser(response.data.data);
       } else {
-        // Token is invalid or expired
         logout();
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       
-      // Only logout if it's an auth error, not a network error
       if (error.response?.status === 401 || error.response?.status === 403) {
         logout();
       }

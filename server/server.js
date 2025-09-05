@@ -32,11 +32,8 @@ const httpServer = createServer(app);
 const io = setupSocket(httpServer);
 app.set("io", io);
 
-// Trust proxy if behind a reverse proxy (for accurate IP detection)
-app.set('trust proxy', 1);
-
 // Middleware
-app.use(express.json({ limit: '10mb' })); // Limit JSON payload size
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(morgan("dev"));

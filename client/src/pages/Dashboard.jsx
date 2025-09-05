@@ -61,7 +61,7 @@ const Dashboard = () => {
     return cachedData &&
       lastFetchTime &&
       (now - lastFetchTime) < CACHE_DURATION
-  }, [])
+  }, [CACHE_DURATION])
 
   const getCachedData = useCallback((userId) => {
     return dashboardCacheRef.current.get(userId)
@@ -122,7 +122,7 @@ const Dashboard = () => {
     } finally {
       setLoadingData(false)
     }
-  }, [getCurrentUser, isCacheValid, getCachedData, setCacheData, user?.activityLog])
+  },[isCacheValid, getCachedData, setCacheData, getCurrentUser, user?.activityLog])
 
   useEffect(() => {
     if (!user?.id) {
@@ -173,7 +173,6 @@ const Dashboard = () => {
   }, [processedDashboardStats, dashboardStats])
 
   // Process recent activity only when user activityLog changes
-  console.log(user)
   useEffect(() => {
     if (user?.activityLog && recentActivity.length === 0) {
       setRecentActivity(user.activityLog.slice(0, 6))
@@ -192,7 +191,6 @@ const Dashboard = () => {
   // Clear cache when component unmounts
   useEffect(() => {
     return () => {
-      dashboardCacheRef.current.clear()
       lastFetchTimeRef.current = null
     }
   }, [])
@@ -436,8 +434,8 @@ const Dashboard = () => {
                               <div
                                 className={`flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r ${levelInfo.color} text-white shadow-lg`}
                               >
-                                {React.createElement(levelInfo.icon, { className: "w-4 h-4 sm:w-5 sm:h-5" })}
-                                <span className="font-bold text-sm sm:text-base">{levelInfo.level}</span>
+                                {React.createElement(levelInfo.icon, { className: "w-3 h-3 sm:w-5 sm:h-5" })}
+                                <span className="font-bold text-[.75rem] sm:text-base">{levelInfo.level}</span>
                                 <span className="text-white/80 text-xs sm:text-sm">{dashboardStats.totalPoints} pts</span>
                               </div>
                             )
@@ -445,7 +443,7 @@ const Dashboard = () => {
 
                           <Badge
                             variant="secondary"
-                            className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs sm:text-sm rounded-xl"
+                            className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs sm:text-sm rounded-xl  "
                           >
                             @{user?.username}
                           </Badge>
@@ -455,20 +453,19 @@ const Dashboard = () => {
                   </div>
 
                   {/* Action Buttons - Better positioning */}
-                  <div className="flex flex-row sm:flex-col lg:flex-row gap-2 sm:gap-3 sm:ml-auto">
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1 sm:flex-none">
+                  <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 sm:ml-auto">
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1 sm:flex-none ">
                       <Button
                         asChild
                         variant="outline"
                         size="sm"
-                        className="w-full sm:w-auto bg-white/80 hover:bg-white text-gray-900 border-gray-200/50 backdrop-blur-sm shadow-lg text-xs sm:text-sm"
+                        className="w-full bg-white/80 hover:bg-white text-gray-900 border-gray-200/50 rounded-full backdrop-blur-sm shadow-lg text-xs sm:text-sm"
                       >
                         <Link to="/notifications" className="flex items-center justify-center gap-1.5 sm:gap-2">
                           <Bell className="w-4 h-4" />
-                          <span className="hidden xs:inline">Notifications</span>
-                          <span className="xs:hidden">Notify</span>
+                          <span className="">Notifications</span>
                           {user?.notifications?.filter((n) => !n.read).length > 0 && (
-                            <Badge className="bg-red-500 text-white border-0 ml-1 text-xs">
+                            <Badge className="bg-red-500 text-white border-0 rounded-xl ml-1 text-xs">
                               {user.notifications.filter((n) => !n.read).length}
                             </Badge>
                           )}
@@ -480,12 +477,11 @@ const Dashboard = () => {
                       <Button
                         asChild
                         size="sm"
-                        className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg text-xs sm:text-sm"
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg text-xs sm:text-sm rounded-full"
                       >
                         <Link to="/events/create" className="flex items-center justify-center gap-1.5 sm:gap-2">
                           <Plus className="w-4 h-4" />
-                          <span className="hidden xs:inline">Create Event</span>
-                          <span className="xs:hidden">Create</span>
+                          <span className="">Create Event</span>
                         </Link>
                       </Button>
                     </motion.div>

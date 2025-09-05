@@ -3,19 +3,9 @@ import User from "../models/userModel.js";
 
 export const isAuthenticated = async (req, res, next) => {
   try {
-        let token = null;
 
-    if (req.cookies && req.cookies.SportsBuddyToken) {
-      token = req.cookies.SportsBuddyToken;
-    }
-    
-    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-      token = req.headers.authorization.split(' ')[1];
-    }
+    const token = req.cookies.SportsBuddyToken;
 
-    if (!token && req.headers['x-auth-token']) {
-      token = req.headers['x-auth-token'];
-    }
     if (!token) {
       return res.status(401).json({
         success: false,

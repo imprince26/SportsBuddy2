@@ -18,7 +18,6 @@ const cookieOptions = {
   secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days,
-  domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
 };
 
 export const register = async (req, res) => {
@@ -150,8 +149,6 @@ export const logout = (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
-
     });
 
     res.status(200).json({
@@ -168,7 +165,7 @@ export const logout = (req, res) => {
 };
 
 export const getCurrentUser = async (req, res) => {
-  try {
+  try {    
     if (!req.user) {
       return res.status(401).json({
         success: false,
@@ -213,6 +210,7 @@ export const getCurrentUser = async (req, res) => {
       message: "Error fetching user details",
       error: error.message,
     });
+    console.log(error);
   }
 };
 

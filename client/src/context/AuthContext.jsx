@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const [isAuthenticated,setIsAuthenticated] = useState(false)
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
   // Check if user is logged in on initial load
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.get(`/auth/me`);
       if (response.data.success) {
         setUser(response.data.data);
+        setIsAuthenticated(true)
       }
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -48,6 +50,7 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
+        setIsAuthenticated(true)
         toast.success('Registration successful! Redirecting to dashboard...');
         return { success: true };
       }
@@ -72,6 +75,7 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
+        setIsAuthenticated(true);
         toast.success('Login successful! Redirecting to dashboard...');
         return { success: true };
       }
@@ -88,13 +92,15 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await api.post(`/auth/logout`);
+      setIsAuthenticated(false)
+      toast.success('Logged out successfully');
+
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
       setToken(null);
       setUser(null);
-      toast.success('Logged out successfully');
     }
   };
 
@@ -342,7 +348,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     authError,
-    isAuthenticated: !!user,
+    isAuthenticated,
     register,
     login,
     logout,

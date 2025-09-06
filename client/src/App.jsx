@@ -101,7 +101,6 @@ const ProtectedRoute = ({ children, adminOnly = false, title = "" }) => {
   );
 };
 
-// Public Route wrapper with loading
 const PublicRoute = ({ children, title = "" }) => {
   useEffect(() => {
     if (title) {

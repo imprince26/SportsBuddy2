@@ -263,18 +263,11 @@ const EventDetails = () => {
     if (result.success) {
       toast.success("Successfully joined the event! 🎉")
       setEvent(result.event)
-    } else {
-      throw new Error(result.message || 'Failed to join event')
-     }
+      window.location.reload()
+    }
     }catch (err) {
     console.error("Error joining event:", err)
-    
-    if (err.response?.status === 401) {
-      toast.error("Please login to join events")
-      navigate("/login")
-    } else {
       toast.error(err.message || "Failed to join event")
-    }
   } finally {
     setLoadingAction(false)
   }
@@ -721,7 +714,7 @@ const EventDetails = () => {
                       },
                       {
                         label: "Date",
-                        value: format(new Date(event.date), "MMM dd"),
+                        value: format(new Date(event.date), "MMM dd yyyy"),
                         icon: Calendar,
                         color: "from-green-500 to-green-600",
                       },

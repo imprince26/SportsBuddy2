@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';

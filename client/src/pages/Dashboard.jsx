@@ -56,7 +56,6 @@ const Dashboard = () => {
       try {
         // Fetch user events
         const eventsData = await api.get('/users/events')
-
         if (eventsData.data.success) {
           const now = new Date()
           const events = eventsData.data.data

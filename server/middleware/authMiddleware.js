@@ -3,18 +3,27 @@ import User from "../models/userModel.js";
 
 export const isAuthenticated = async (req, res, next) => {
   try {
-    const token = req.cookies.SportsBuddyToken;
+      let SportsBuddyToken;
+        
+        // Get SportsBuddyToken from cookies or authorization header
+        if (req.cookies.SportsBuddyToken) {
+            SportsBuddyToken = req.cookies.SportsBuddyToken;
+        } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            SportsBuddyToken = req.headers.authorization.split(' ')[1];
+        }
+        
+        // If no SportsBuddyToken, return error
+        if (!SportsBuddyToken) {
+            return res.status(401).json({
+                success: false,
+                message: 'Not authorized to access this route'
+            });
+        }
 
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Please login to access this resource",
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(SportsBuddyToken, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.id).select("-password");
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -25,25 +34,10 @@ export const isAuthenticated = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    if (error.name === "JsonWebTokenError") {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid token. Please login again",
-      });
-    }
-
-    if (error.name === "TokenExpiredError") {
-      return res.status(401).json({
-        success: false,
-        message: "Token expired. Please login again",
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Authentication failed",
-      error: error.message,
-    });
+    return res.status(401).json({
+            success: false,
+            message: 'Not authorized to access this route'
+        });
   }
 };
 

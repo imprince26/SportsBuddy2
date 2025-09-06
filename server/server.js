@@ -46,13 +46,12 @@ app.use(rateLimiters.global);
 
 if (process.env.NODE_ENV === "production") job.start();
 
-const corsOptions = {
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization","Access-Control-Allow-Origin"],
-};
-app.use(cors(corsOptions));
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Routes
 app.use("/api/auth", authRoute);

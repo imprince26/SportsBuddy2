@@ -139,7 +139,7 @@ export const unfollowUser = async (req, res) => {
 
 export const getUserEvents = async (req, res) => {
   try {
-        const userId = req.user.id || req.user._id;
+    const userId = req.user._id;
     
     if (!userId) {
       return res.status(401).json({

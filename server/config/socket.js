@@ -2,13 +2,14 @@ import { Server } from "socket.io"
 import User from "../models/userModel.js"
 
 export default function setupSocket(server) {
+  const allowedOrigins = [process.env.CLIENT_URL, "https://sports-buddy2.vercel.app", "http://localhost:5173"].filter(Boolean);
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
+      origin: allowedOrigins,
       methods: ["GET", "POST"],
       credentials: true,
     },
-  })
+  });
 
   // Socket authentication middleware
   io.use(async (socket, next) => {

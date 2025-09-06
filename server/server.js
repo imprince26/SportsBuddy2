@@ -46,11 +46,18 @@ app.use(rateLimiters.global);
 
 if (process.env.NODE_ENV === "production") job.start();
 
+const allowedOrigins = [process.env.CLIENT_URL, 'https://sports-buddy2.vercel.app', 'http://localhost:5173'].filter(Boolean);
+
 app.use(cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+app.options('*', cors({
+  origin: allowedOrigins,
+  credentials: true,
 }));
 
 // Routes

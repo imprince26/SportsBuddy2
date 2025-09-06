@@ -1,27 +1,25 @@
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
+function getAuthToken(req) {
+  const auth = req.headers.authorization || req.headers.Authorization;
+  if (auth && auth.startsWith('Bearer ')) {
+    return auth.split(' ')[1];
+  }
+  if (req.cookies?.SportsBuddyToken) {
+    return req.cookies.SportsBuddyToken;
+  }
+  return null;
+}
+
 export const isAuthenticated = async (req, res, next) => {
   try {
-      let SportsBuddyToken;
-        
-        // Get SportsBuddyToken from cookies or authorization header
-        if (req.cookies.SportsBuddyToken) {
-            SportsBuddyToken = req.cookies.SportsBuddyToken;
-        } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-            SportsBuddyToken = req.headers.authorization.split(' ')[1];
-        }
-        
-        // If no SportsBuddyToken, return error
-        if (!SportsBuddyToken) {
-            return res.status(401).json({
-                success: false,
-                message: 'Not authorized to access this route'
-            });
-        }
+    const token = getAuthToken(req);
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Not authorized, no token' });
+    }
 
-    const decoded = jwt.verify(SportsBuddyToken, process.env.JWT_SECRET);
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {

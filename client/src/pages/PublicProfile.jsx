@@ -721,7 +721,7 @@ const PublicProfile = () => {
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{achievement.title}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {format(new Date(achievement.date), "MMM dd, yyyy")}
+                              {format(new Date(achievement.earnedAt), "MMM dd, yyyy")}
                             </p>
                           </div>
                         </div>
@@ -818,7 +818,7 @@ const PublicProfile = () => {
                               {achievement.title}
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                              {format(new Date(achievement.date), "MMMM dd, yyyy")}
+                              {format(new Date(achievement.earnedAt), "MMMM dd, yyyy")}
                             </p>
                             {achievement.description && (
                               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{achievement.description}</p>

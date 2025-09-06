@@ -190,10 +190,10 @@ const Testimonials = () => {
       <div className="container mx-auto px-4 relative z-10">
         {/* Header Section */}
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
+          // initial="hidden"
+          // whileInView="visible"
+          // viewport={{ once: true }}
+          // variants={containerVariants}
           className="text-center mb-16"
         >
           <motion.div
@@ -239,7 +239,7 @@ const Testimonials = () => {
 
           {/* Stats */}
           <motion.div
-            variants={itemVariants}
+            // variants={itemVariants}
             className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto"
           >
             {stats.map((stat, index) => (

@@ -150,10 +150,6 @@ const CategoriesSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         {/* Header Section */}
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
           className="text-center mb-16"
         >
           <div
@@ -205,10 +201,10 @@ const CategoriesSection = () => {
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-                whileHover={{ scale: 1.05, y: -5 }}
+                // initial={{ opacity: 0, scale: 0.8 }}
+                // whileInView={{ opacity: 1, scale: 1 }}
+                // transition={{ delay: index * 0.1, duration: 0.5 }}
+                // whileHover={{ scale: 1.05, y: -5 }}
                 className="group relative p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-xl border border-gray-200/50 dark:border-gray-700/50"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -226,10 +222,10 @@ const CategoriesSection = () => {
 
         {/* Categories Grid */}
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
+          // initial="hidden"
+          // whileInView="visible"
+          // viewport={{ once: true }}
+          // variants={containerVariants}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
         >
           {categories.map((category, index) => (
@@ -368,10 +364,10 @@ const CategoriesSection = () => {
 
         {/* Call to Action */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          viewport={{ once: true }}
+          // initial={{ opacity: 0, y: 30 }}
+          // whileInView={{ opacity: 1, y: 0 }}
+          // transition={{ duration: 0.6, delay: 0.3 }}
+          // viewport={{ once: true }}
           className="text-center mt-16"
         >
           <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-2xl text-white shadow-2xl">

@@ -258,19 +258,15 @@ const EventDetails = () => {
 
     setLoadingAction(true)
     try {
-       const result = await joinEvent(id)
-    
-    if (result.success) {
+      await joinEvent(id)
       toast.success("Successfully joined the event! 🎉")
-      setEvent(result.event)
       window.location.reload()
+    } catch (err) {
+      console.error("Error joining event:", err)
+      toast.error("Failed to join event")
+    } finally {
+      setLoadingAction(false)
     }
-    }catch (err) {
-    console.error("Error joining event:", err)
-      toast.error(err.message || "Failed to join event")
-  } finally {
-    setLoadingAction(false)
-  }
   }
 
   const handleLeaveEvent = async () => {
@@ -324,12 +320,14 @@ const EventDetails = () => {
   useEffect(() => {
     if (!socket || !id || !user?.id) return
 
+    console.log('Setting up socket listeners for event chat:', id)
 
     // Join event chat room
     socket.emit('joinEventChat', { eventId: id, userId: user.id })
 
     // Listen for new messages
     const handleNewMessage = (newMessage) => {
+      console.log('New message received in modal:', newMessage)
 
       // Update the event state with the new message
       setEvent(prevEvent => {
@@ -523,6 +521,9 @@ const EventDetails = () => {
   }
 
   const handleFileChange = (e) => {
+    // This would be implemented with file upload functionality
+    console.log("File selected:", e.target.files)
+    // Reset the input
     e.target.value = null
   }
 
@@ -693,12 +694,7 @@ const EventDetails = () => {
                     <div className="flex items-center gap-3 text-white/90 mb-6">
                       <MapPin className="w-5 h-5 flex-shrink-0" />
                       <span className="text-lg">
-                        {event.location ? (
-                          <>{event.location.address}, {event.location.city}, {event.location.state}</>
-                        ) : (
-                          "Location not specified"
-                        )}
-                        {/* {event.location.address}, {event.location.city} */}
+                        {event.location.address}, {event.location.city}
                       </span>
                     </div>
                   </div>
@@ -714,7 +710,7 @@ const EventDetails = () => {
                       },
                       {
                         label: "Date",
-                        value: format(new Date(event.date), "MMM dd yyyy"),
+                        value: format(new Date(event.date), "MMM dd"),
                         icon: Calendar,
                         color: "from-green-500 to-green-600",
                       },

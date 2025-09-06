@@ -1,5 +1,5 @@
 import express from "express";
-import { isAuthenticated, checkAuth } from "../middleware/authMiddleware.js";
+import { isAuthenticated } from "../middleware/authMiddleware.js";
 import {
   register,
   login,
@@ -35,8 +35,8 @@ router.post("/reset-password", resetPassword);
 
 
 // Protected routes
-router.get("/me",isAuthenticated, getCurrentUser);
 router.use(isAuthenticated);
+router.get("/me", getCurrentUser);
 router.get("/profile", getProfile);
 router.put("/profile", upload.fields([{ name: "avatar", maxCount: 1 }, { name: "coverImage", maxCount: 1 }]), updateProfile);
 router.put("/password", updatePassword);

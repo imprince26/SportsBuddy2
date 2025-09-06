@@ -32,8 +32,11 @@ const httpServer = createServer(app);
 const io = setupSocket(httpServer);
 app.set("io", io);
 
+// Trust proxy if behind a reverse proxy (for accurate IP detection)
+app.set('trust proxy', 1);
+
 // Middleware
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb' })); // Limit JSON payload size
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(morgan("dev"));
@@ -47,7 +50,7 @@ const corsOptions = {
   origin: process.env.CLIENT_URL || "http://localhost:5173",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization","Access-Control-Allow-Origin"],
 };
 app.use(cors(corsOptions));
 
@@ -104,14 +107,13 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.get("/",(req,res) => {
-  res.status(200).json({
-    message:"Welcome to SportsBuddy",
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  })
-})
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
 
 // Health check route
 app.get("/health", (req, res) => {
@@ -119,14 +121,6 @@ app.get("/health", (req, res) => {
     status: "OK",
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
-  });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
   });
 });
 

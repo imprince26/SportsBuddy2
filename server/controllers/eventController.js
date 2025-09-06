@@ -609,8 +609,6 @@ export const joinEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
 
-    console.log(req.user)
-
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
@@ -670,7 +668,6 @@ export const joinEvent = async (req, res) => {
       message: "Error joining event",
       error: error.message,
     });
-    console.log(error.message)
   }
 };
 

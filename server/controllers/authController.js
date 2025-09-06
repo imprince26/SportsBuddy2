@@ -15,9 +15,9 @@ const generateToken = (user) => {
 
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
 export const register = async (req, res) => {
@@ -110,7 +110,6 @@ export const login = async (req, res) => {
       });
     }
 
-
     // Generate token
     const token = generateToken(user);
 
@@ -144,12 +143,13 @@ export const login = async (req, res) => {
 
 export const logout = (req, res) => {
   try {
-
-    res.clearCookie("SportsBuddyToken", {
+    const cookieOptionsLogout = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    });
+      secure: true,
+      sameSite: "None",
+    };
+
+    res.clearCookie("SportsBuddyToken");
 
     res.status(200).json({
       success: true,
@@ -165,13 +165,14 @@ export const logout = (req, res) => {
 };
 
 export const getCurrentUser = async (req, res) => {
-  try {    
+  try {
     if (!req.user) {
       return res.status(401).json({
         success: false,
         message: "Not authenticated",
       });
     }
+
     const user = await User.findById(req.user._id).select({
       password: 0,
       __v: 0,
@@ -201,7 +202,6 @@ export const getCurrentUser = async (req, res) => {
         achievements: user.achievements,
         stats: user.stats,
         preferences: user.preferences,
-        activityLog: user.activityLog
       },
     });
   } catch (error) {
@@ -210,7 +210,6 @@ export const getCurrentUser = async (req, res) => {
       message: "Error fetching user details",
       error: error.message,
     });
-    console.log(error);
   }
 };
 

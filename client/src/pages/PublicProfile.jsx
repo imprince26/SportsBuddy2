@@ -408,7 +408,9 @@ const PublicProfile = () => {
         <Card className="overflow-hidden border-0 shadow-2xl bg-white dark:bg-gray-900 rounded-2xl animate-in slide-in-from-bottom-5 duration-500">
           <div className="relative">
             <div className="h-64 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 relative overflow-hidden">
- 
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=60 height=60 viewBox=0 0 60 60 xmlns=http://www.w3.org/2000/svg%3E%3Cg fill=none fillRule=evenodd%3E%3Cg fill=%23ffffff fillOpacity=0.1%3E%3Ccircle cx=30 cy=30 r=4/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+
               <div className="absolute top-4 left-4">
                 <div className="flex items-center gap-2 px-3 py-2 bg-black/20 backdrop-blur-sm rounded-full text-white text-sm">
                   <Eye className="w-4 h-4" />
@@ -719,7 +721,7 @@ const PublicProfile = () => {
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{achievement.title}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {format(new Date(achievement.earnedAt), "MMM dd, yyyy")}
+                              {format(new Date(achievement.date), "MMM dd, yyyy")}
                             </p>
                           </div>
                         </div>
@@ -816,7 +818,7 @@ const PublicProfile = () => {
                               {achievement.title}
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                              {format(new Date(achievement.earnedAt), "MMMM dd, yyyy")}
+                              {format(new Date(achievement.date), "MMMM dd, yyyy")}
                             </p>
                             {achievement.description && (
                               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{achievement.description}</p>

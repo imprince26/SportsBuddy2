@@ -3,23 +3,16 @@ import User from "../models/userModel.js";
 
 export const isAuthenticated = async (req, res, next) => {
   try {
+    const token = req.cookies.SportsBuddyToken;
 
-    let SportsBuddyToken;
-
-    if (req.cookies.SportsBuddyToken) {
-      SportsBuddyToken = req.cookies.SportsBuddyToken;
-    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      SportsBuddyToken = req.headers.authorization.split(' ')[1];
-    }
-
-    if (!SportsBuddyToken) {
+    if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized to access this route'
+        message: "Please login to access this resource",
       });
     }
 
-    const decoded = jwt.verify(SportsBuddyToken, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.id).select("-password");
     if (!user) {
@@ -32,9 +25,24 @@ export const isAuthenticated = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    return res.status(401).json({
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token. Please login again",
+      });
+    }
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired. Please login again",
+      });
+    }
+
+    return res.status(500).json({
       success: false,
-      message: 'Not authorized to access this route'
+      message: "Authentication failed",
+      error: error.message,
     });
   }
 };
@@ -61,20 +69,6 @@ export const isAdmin = async (req, res, next) => {
       success: false,
       message: "Admin verification failed",
       error: error.message,
-    });
-  }
-};
-
-export const checkAuth = async (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      data: req.user,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error checking authentication",
     });
   }
 };

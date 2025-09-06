@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect,useCallback } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
 
@@ -8,35 +8,34 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
-  const [isAuthenticated,setIsAuthenticated] = useState(false)
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
   // Check if user is logged in on initial load
-
-
   useEffect(() => {
-
-  const checkAuthStatus = async () => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await api.get(`/auth/me`);
-      if (response.data.success) {
-        setUser(response.data.data);
-        setIsAuthenticated(true)
+    const checkAuthStatus = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+      try {
+        const response = await api.get(`/auth/me`);
+        if (response.data.success) {
+          setUser(response.data.data);
+        } else {
+          // Token is invalid or expired
+          logout();
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        logout();
+      } finally {
+        setLoading(false);
+      }
+    };
 
     checkAuthStatus();
-  },[token]);
+  }, []);
 
   // Register new user
   const register = async (userData) => {
@@ -50,7 +49,6 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
-        setIsAuthenticated(true)
         toast.success('Registration successful! Redirecting to dashboard...');
         return { success: true };
       }
@@ -75,7 +73,6 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
-        setIsAuthenticated(true);
         toast.success('Login successful! Redirecting to dashboard...');
         return { success: true };
       }
@@ -92,15 +89,13 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await api.post(`/auth/logout`);
-      setIsAuthenticated(false)
-      toast.success('Logged out successfully');
-
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
       setToken(null);
       setUser(null);
+      toast.success('Logged out successfully');
     }
   };
 
@@ -317,7 +312,7 @@ export const AuthProvider = ({ children }) => {
   };
 
     const getCurrentUser = async () => {
-    if (!token || !user) {
+    if (!token) {
       return { success: false, message: 'No authentication token found' };
     }
 
@@ -327,6 +322,9 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         setUser(response.data.data);
         return { success: true, data: response.data.data };
+      } else {
+        logout();
+        return { success: false, message: 'Failed to get user data' };
       }
     } catch (error) {
       console.error('Get current user failed:', error);
@@ -345,7 +343,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     authError,
-    isAuthenticated,
+    isAuthenticated: !!user,
     register,
     login,
     logout,

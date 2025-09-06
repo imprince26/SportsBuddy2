@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react"
+import React,{ useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
@@ -6,11 +6,11 @@ import { useEvents } from "@/hooks/useEvents"
 import { format, formatDistanceToNow } from "date-fns"
 import {
   Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell,
-  BarChart3, TrendingUp, CheckCircle, User, Dumbbell, Target, Zap, Trophy,
-  Settings, ArrowUp, Crown, Medal,
-  Coffee, Sunrise, Moon, Sun, UserPlus, MessageCircle, Sparkles,
-  CalendarDays, Users2, ShieldCheck,
-  Rocket
+   BarChart3, TrendingUp, CheckCircle, User, Dumbbell, Target, Zap, Trophy, 
+   Settings, ArrowUp, Crown, Medal,
+  Coffee, Sunrise, Moon, Sun, UserPlus, MessageCircle,  Sparkles,
+   CalendarDays, Users2, ShieldCheck,
+   Rocket
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -37,13 +37,7 @@ const Dashboard = () => {
   const [hoveredCard, setHoveredCard] = useState(null)
   const [recentActivity, setRecentActivity] = useState([])
 
-  const prevUserIdRef = useRef(null)
-  const dashboardCacheRef = useRef(new Map())
-  const lastFetchTimeRef = useRef(null)
-
-  // Cache duration (5 minutes)
-  const CACHE_DURATION = 5 * 60 * 1000
-
+  // Enhanced greeting system
   useEffect(() => {
     const hour = new Date().getHours()
     if (hour < 6) setTimeOfDay("night")
@@ -53,152 +47,77 @@ const Dashboard = () => {
     else setTimeOfDay("night")
   }, [])
 
-  const isCacheValid = useCallback((userId) => {
-    const now = Date.now()
-    const cachedData = dashboardCacheRef.current.get(userId)
-    const lastFetchTime = lastFetchTimeRef.current
+  // Fetch real user data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user) return
+      
+      setLoadingData(true)
+      try {
+        // Fetch user events
+        const eventsData = await api.get('/users/events')
 
-    return cachedData &&
-      lastFetchTime &&
-      (now - lastFetchTime) < CACHE_DURATION
-  }, [CACHE_DURATION])
-
-  const getCachedData = useCallback((userId) => {
-    return dashboardCacheRef.current.get(userId)
-  }, [])
-
-  const setCacheData = useCallback((userId, data) => {
-    dashboardCacheRef.current.set(userId, data)
-    lastFetchTimeRef.current = Date.now()
-  }, [])
-
-  const fetchDashboardData = useCallback(async (userId, forceRefresh = false) => {
-    if (!userId) return
-
-    if (!forceRefresh && isCacheValid(userId)) {
-      const cachedData = getCachedData(userId)
-      if (cachedData) {
-        setUserEvents(cachedData.userEvents)
-        setRecentActivity(cachedData.recentActivity)
-        setLoadingData(false)
-        return
-      }
-    }
-
-    setLoadingData(true)
-    try {
-      const eventsData = await api.get('/users/events')
-
-      if (eventsData.data.success) {
-        const now = new Date()
-        const events = eventsData.data.data
-        const processedEvents = {
-          participating: events.filter(event =>
-            event.participants?.some(p => p.user._id === userId || p.user === userId)
-          ),
-          created: events.filter(event =>
-            event.createdBy._id === userId || event.createdBy === userId
-          ),
-          upcoming: events.filter(event =>
-            new Date(event.date) > now && event.status === "Upcoming"
-          ),
-          completed: events.filter(event =>
-            event.status === "Completed"
-          )
+        if (eventsData.data.success) {
+          const now = new Date()
+          const events = eventsData.data.data
+          setUserEvents({
+            participating: events.filter(event => 
+              event.participants?.some(p => p.user._id === user.id || p.user === user.id)
+            ),
+            created: events.filter(event => 
+              event.createdBy._id === user.id || event.createdBy === user.id
+            ),
+            upcoming: events.filter(event => 
+              new Date(event.date) > now && event.status === "Upcoming"
+            ),
+            completed: events.filter(event => 
+              event.status === "Completed"
+            )
+          })
         }
 
-        setUserEvents(processedEvents)
-
+        // Get current user data with stats
         await getCurrentUser()
-
-        const cacheData = {
-          userEvents: processedEvents,
-          recentActivity: user?.activityLog?.slice(0, 6) || []
-        }
-        setCacheData(userId, cacheData)
-      }
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error)
-    } finally {
-      setLoadingData(false)
-    }
-  },[isCacheValid, getCachedData, setCacheData, getCurrentUser, user?.activityLog])
-
-  useEffect(() => {
-    if (!user?.id) {
-      setLoadingData(false)
-      return
-    }
-
-    const currentUserId = user.id
-
-    if (prevUserIdRef.current !== currentUserId) {
-      prevUserIdRef.current = currentUserId
-      fetchDashboardData(currentUserId)
-    } else if (!dashboardStats) {
-      const cachedData = getCachedData(currentUserId)
-      if (cachedData) {
-        setUserEvents(cachedData.userEvents)
-        setRecentActivity(cachedData.recentActivity)
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error)
+      } finally {
         setLoadingData(false)
       }
     }
-  }, [user?.id, fetchDashboardData, dashboardStats, getCachedData])
 
-  const processedDashboardStats = React.useMemo(() => {
-    if (!user) return null
-
-    return {
-      totalEvents: user.stats?.eventsParticipated || 0,
-      eventsCreated: user.stats?.eventsCreated || 0,
-      eventsParticipated: user.stats?.eventsParticipated || 0,
-      upcomingEvents: userEvents.upcoming.length,
-      completedEvents: userEvents.completed.length,
-      achievements: user.stats?.achievementsCount || user.achievements?.length || 0,
-      totalPoints: user.stats?.totalPoints || 0,
-      currentRank: user.stats?.currentRank || 0,
-      followers: user.followers?.length || 0,
-      following: user.following?.length || 0,
-      communitiesJoined: user.stats?.communitiesJoined || 0
-    }
-  }, [user, userEvents.upcoming.length, userEvents.completed.length])
-
-  useEffect(() => {
-    if (processedDashboardStats && !dashboardStats) {
-      setDashboardStats(processedDashboardStats)
-    } else if (processedDashboardStats &&
-      JSON.stringify(processedDashboardStats) !== JSON.stringify(dashboardStats)) {
-      setDashboardStats(processedDashboardStats)
-    }
-  }, [processedDashboardStats, dashboardStats])
-
-  // Process recent activity only when user activityLog changes
-  useEffect(() => {
-    if (user?.activityLog && recentActivity.length === 0) {
-      setRecentActivity(user.activityLog.slice(0, 6))
-    }
-  }, [user?.activityLog, recentActivity.length])
-
-  // Function to manually refresh data
-  const refreshDashboard = useCallback(() => {
-    if (user?.id) {
-      // Clear cache for current user
-      dashboardCacheRef.current.delete(user.id)
-      fetchDashboardData(user.id, true)
-    }
-  }, [user?.id, fetchDashboardData])
-
-  // Clear cache when component unmounts
-  useEffect(() => {
-    return () => {
-      lastFetchTimeRef.current = null
-    }
+    fetchDashboardData()
   }, [])
+
+  // Process real user stats
+  useEffect(() => {
+    if (user) {
+      const stats = {
+        totalEvents:  user.stats?.eventsParticipated || 0,
+        eventsCreated: user.stats?.eventsCreated || 0,
+        eventsParticipated: user.stats?.eventsParticipated || 0,
+        upcomingEvents: userEvents.upcoming.length,
+        completedEvents: userEvents.completed.length,
+        achievements: user.stats?.achievementsCount || user.achievements?.length || 0,
+        totalPoints: user.stats?.totalPoints || 0,
+        currentRank: user.stats?.currentRank || 0,
+        followers: user.followers?.length || 0,
+        following: user.following?.length || 0,
+        communitiesJoined: user.stats?.communitiesJoined || 0
+      }
+
+      setDashboardStats(stats)
+
+      // Process recent activity
+      if (user.activityLog) {
+        setRecentActivity(user.activityLog.slice(0, 6))
+      }
+    }
+  }, [user, userEvents])
 
   const getGreeting = () => {
     const greetings = {
       night: user?.name ? `Good night, ${user.name.split(" ")[0]}` : "Good night",
-      morning: user?.name ? `Good morning, ${user.name.split(" ")[0]}` : "Good morning",
+      morning: user?.name ? `Good morning, ${user.name.split(" ")[0]}` : "Good morning", 
       afternoon: user?.name ? `Good afternoon, ${user.name.split(" ")[0]}` : "Good afternoon",
       evening: user?.name ? `Good evening, ${user.name.split(" ")[0]}` : "Good evening"
     }
@@ -229,7 +148,7 @@ const Dashboard = () => {
   const getActivityColor = (action) => {
     const colors = {
       event_join: "text-green-600 bg-green-100 dark:bg-green-900/20",
-      event_create: "text-blue-600 bg-blue-100 dark:bg-blue-900/20",
+      event_create: "text-blue-600 bg-blue-100 dark:bg-blue-900/20", 
       venue_review: "text-purple-600 bg-purple-100 dark:bg-purple-900/20",
       achievement_earned: "text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20",
       post_create: "text-indigo-600 bg-indigo-100 dark:bg-indigo-900/20"
@@ -372,152 +291,132 @@ const Dashboard = () => {
 
       <div className="container mx-auto max-w-7xl px-4 py-6 relative z-10">
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
-
-          {/* Hero Header */}
+          {/* Enhanced Hero Header */}
           <motion.div variants={itemVariants} className="mb-8">
-            <div className="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 border border-white/50 dark:border-slate-700/50 shadow-2xl">
+            <div className="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl p-8 border border-white/50 dark:border-slate-700/50 shadow-2xl">
               {/* Header Background Pattern */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
-
-              <div className="relative z-10 space-y-6">
-                {/* User Info Section */}
-                <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
-                  <div className="flex items-center gap-4 sm:flex-shrink-0">
+              
+              <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-6">
                     <div className="relative">
-                      <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-white shadow-xl">
-                        <AvatarImage src={user?.avatar?.url || "/placeholder.svg"} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl sm:text-2xl font-bold">
+                      <Avatar className="w-20 h-20 border-4 border-white shadow-xl">
+                        <AvatarImage src={user?.avatar?.url} />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold">
                           {user?.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
                       {/* Online Status */}
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
-                        <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full animate-pulse" />
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
+                        <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
                       </div>
                     </div>
-
-                    <div className="flex-1 min-w-0">
+                    
+                    <div className="flex-1">
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className="flex items-center gap-2 mb-2"
                       >
-                        {React.createElement(getGreetingIcon(), {
-                          className: "w-5 h-5 sm:w-6 sm:h-6 text-amber-500 flex-shrink-0",
-                        })}
-                        <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-white truncate">
+                        {React.createElement(getGreetingIcon(), { className: "w-6 h-6 text-amber-500" })}
+                        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
                           {getGreeting()}!
                         </h1>
                         <motion.span
                           animate={{ rotate: [0, 20, -20, 0] }}
-                          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 1 }}
-                          className="text-lg sm:text-xl lg:text-2xl flex-shrink-0"
+                          transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                          className="text-2xl"
                         >
                           👋
                         </motion.span>
                       </motion.div>
 
-                      <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg mb-3 sm:mb-4">
+                      <p className="text-gray-600 dark:text-gray-400 text-lg mb-4">
                         Ready to elevate your sports journey today?
                       </p>
 
-                      {/* User Level Badge - Better mobile layout */}
+                      {/* User Level Badge */}
                       {dashboardStats && (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4"
+                          className="flex items-center gap-3 mb-4"
                         >
                           {(() => {
                             const levelInfo = getUserLevel(dashboardStats.totalPoints)
                             return (
-                              <div
-                                className={`flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r ${levelInfo.color} text-white shadow-lg`}
-                              >
-                                {React.createElement(levelInfo.icon, { className: "w-3 h-3 sm:w-5 sm:h-5" })}
-                                <span className="font-bold text-[.75rem] sm:text-base">{levelInfo.level}</span>
-                                <span className="text-white/80 text-xs sm:text-sm">{dashboardStats.totalPoints} pts</span>
+                              <div className={`flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${levelInfo.color} text-white shadow-lg`}>
+                                <levelInfo.icon className="w-5 h-5" />
+                                <span className="font-bold">{levelInfo.level}</span>
+                                <span className="text-white/80">{dashboardStats.totalPoints} pts</span>
                               </div>
                             )
                           })()}
-
-                          <Badge
-                            variant="secondary"
-                            className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs sm:text-sm rounded-xl  "
-                          >
+                          
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                             @{user?.username}
                           </Badge>
                         </motion.div>
                       )}
+
+                      {/* Quick Stats */}
+                      <div className="flex flex-wrap gap-3">
+                        {dashboardStats && [
+                          { icon: Calendar, label: "Events", value: dashboardStats.totalEvents, color: "blue" },
+                          { icon: Trophy, label: "Achievements", value: dashboardStats.achievements, color: "yellow" },
+                          { icon: Users, label: "Followers", value: dashboardStats.followers, color: "green" },
+                          { icon: Target, label: "Level", value: Math.floor(dashboardStats.totalPoints / 100) + 1, color: "purple" }
+                        ].map((stat, index) => (
+                          <motion.div
+                            key={stat.label}
+                            whileHover={{ scale: 1.05 }}
+                            className={`flex items-center gap-2 bg-${stat.color}-50 dark:bg-${stat.color}-900/20 rounded-full px-4 py-2 border border-${stat.color}-200/50 dark:border-${stat.color}-700/50`}
+                          >
+                            <stat.icon className={`w-4 h-4 text-${stat.color}-600`} />
+                            <span className="font-semibold text-gray-900 dark:text-white">{stat.value}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</span>
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Action Buttons - Better positioning */}
-                  <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 sm:ml-auto">
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1 sm:flex-none ">
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="w-full bg-white/80 hover:bg-white text-gray-900 border-gray-200/50 rounded-full backdrop-blur-sm shadow-lg text-xs sm:text-sm"
-                      >
-                        <Link to="/notifications" className="flex items-center justify-center gap-1.5 sm:gap-2">
-                          <Bell className="w-4 h-4" />
-                          <span className="">Notifications</span>
-                          {user?.notifications?.filter((n) => !n.read).length > 0 && (
-                            <Badge className="bg-red-500 text-white border-0 rounded-xl ml-1 text-xs">
-                              {user.notifications.filter((n) => !n.read).length}
-                            </Badge>
-                          )}
-                        </Link>
-                      </Button>
-                    </motion.div>
-
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1 sm:flex-none">
-                      <Button
-                        asChild
-                        size="sm"
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg text-xs sm:text-sm rounded-full"
-                      >
-                        <Link to="/events/create" className="flex items-center justify-center gap-1.5 sm:gap-2">
-                          <Plus className="w-4 h-4" />
-                          <span className="">Create Event</span>
-                        </Link>
-                      </Button>
-                    </motion.div>
                   </div>
                 </div>
 
-                {/* Quick Stats - Responsive grid layout */}
-                {dashboardStats && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
-                    {[
-                      { icon: Calendar, label: "Events", value: dashboardStats.totalEvents, color: "blue" },
-                      { icon: Trophy, label: "Achievements", value: dashboardStats.achievements, color: "yellow" },
-                      { icon: Users, label: "Followers", value: dashboardStats.followers, color: "green" },
-                      {
-                        icon: Target,
-                        label: "Level",
-                        value: Math.floor(dashboardStats.totalPoints / 100) + 1,
-                        color: "purple",
-                      },
-                    ].map((stat, index) => (
-                      <motion.div
-                        key={stat.label}
-                        whileHover={{ scale: 1.02 }}
-                        className={`flex flex-col sm:flex-row items-center gap-1 sm:gap-2 bg-${stat.color}-50 dark:bg-${stat.color}-900/20 rounded-lg sm:rounded-full px-2 py-2 sm:px-3 sm:py-2 border border-${stat.color}-200/50 dark:border-${stat.color}-700/50 text-center sm:text-left`}
-                      >
-                        {React.createElement(stat.icon, { className: `w-4 h-4 text-${stat.color}-600 flex-shrink-0` })}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-1">
-                          <span className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">
-                            {stat.value}
-                          </span>
-                          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{stat.label}</span>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
+                {/* Quick Actions */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="lg"
+                      className="bg-white/80 hover:bg-white text-gray-900 border-gray-200/50 backdrop-blur-sm shadow-lg"
+                    >
+                      <Link to="/notifications" className="flex items-center gap-2">
+                        <Bell className="w-5 h-5" />
+                        <span>Notifications</span>
+                        {user?.notifications?.filter(n => !n.read).length > 0 && (
+                          <Badge className="bg-red-500 text-white border-0 ml-1">
+                            {user.notifications.filter(n => !n.read).length}
+                          </Badge>
+                        )}
+                      </Link>
+                    </Button>
+                  </motion.div>
+                  
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      asChild
+                      size="lg"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+                    >
+                      <Link to="/events/create" className="flex items-center gap-2">
+                        <Plus className="w-5 h-5" />
+                        <span>Create Event</span>
+                      </Link>
+                    </Button>
+                  </motion.div>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -591,7 +490,7 @@ const Dashboard = () => {
                     >
                       <Card className="relative overflow-hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-500">
                         <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-
+                        
                         <CardContent className="relative p-6">
                           <div className="flex items-center justify-between mb-4">
                             <motion.div
@@ -606,7 +505,7 @@ const Dashboard = () => {
                               <span>{stat.trend}</span>
                             </div>
                           </div>
-
+                          
                           <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                             {stat.title}
                           </h3>
@@ -677,7 +576,7 @@ const Dashboard = () => {
                             <Trophy className="w-5 h-5 text-yellow-500" />
                             Recent Achievements
                           </CardTitle>
-                          <Button asChild className="bg-transparent" variant="outline" size="sm">
+                          <Button asChild variant="outline" size="sm">
                             <Link to="/profile" className="flex items-center gap-2">
                               View All
                               <ChevronRight className="w-4 h-4" />

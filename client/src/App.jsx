@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -102,6 +101,7 @@ const ProtectedRoute = ({ children, adminOnly = false, title = "" }) => {
   );
 };
 
+// Public Route wrapper with loading
 const PublicRoute = ({ children, title = "" }) => {
   useEffect(() => {
     if (title) {
@@ -120,6 +120,7 @@ function App() {
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
 
+  // Show initial loader while auth is being checked
   if (authLoading) {
     return <PageLoader message="Initializing SportsBuddy..." />;
   }

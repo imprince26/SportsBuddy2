@@ -291,135 +291,161 @@ const Dashboard = () => {
 
       <div className="container mx-auto max-w-7xl px-4 py-6 relative z-10">
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
-          {/* Enhanced Hero Header */}
-          <motion.div variants={itemVariants} className="mb-8">
-            <div className="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl p-8 border border-white/50 dark:border-slate-700/50 shadow-2xl">
-              {/* Header Background Pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
-              
-              <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative">
-                      <Avatar className="w-20 h-20 border-4 border-white shadow-xl">
-                        <AvatarImage src={user?.avatar?.url} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold">
-                          {user?.name?.charAt(0) || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                      {/* Online Status */}
-                      <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1">
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-2 mb-2"
-                      >
-                        {React.createElement(getGreetingIcon(), { className: "w-6 h-6 text-amber-500" })}
-                        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                          {getGreeting()}!
-                        </h1>
-                        <motion.span
-                          animate={{ rotate: [0, 20, -20, 0] }}
-                          transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                          className="text-2xl"
-                        >
-                          👋
-                        </motion.span>
-                      </motion.div>
 
-                      <p className="text-gray-600 dark:text-gray-400 text-lg mb-4">
-                        Ready to elevate your sports journey today?
-                      </p>
 
-                      {/* User Level Badge */}
-                      {dashboardStats && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="flex items-center gap-3 mb-4"
-                        >
-                          {(() => {
-                            const levelInfo = getUserLevel(dashboardStats.totalPoints)
-                            return (
-                              <div className={`flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${levelInfo.color} text-white shadow-lg`}>
-                                <levelInfo.icon className="w-5 h-5" />
-                                <span className="font-bold">{levelInfo.level}</span>
-                                <span className="text-white/80">{dashboardStats.totalPoints} pts</span>
-                              </div>
-                            )
-                          })()}
-                          
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            @{user?.username}
-                          </Badge>
-                        </motion.div>
-                      )}
+<motion.div variants={itemVariants} className="mb-8">
+  <div className="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 border border-white/50 dark:border-slate-700/50 shadow-2xl">
+    {/* Header Background Pattern */}
+    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
 
-                      {/* Quick Stats */}
-                      <div className="flex flex-wrap gap-3">
-                        {dashboardStats && [
-                          { icon: Calendar, label: "Events", value: dashboardStats.totalEvents, color: "blue" },
-                          { icon: Trophy, label: "Achievements", value: dashboardStats.achievements, color: "yellow" },
-                          { icon: Users, label: "Followers", value: dashboardStats.followers, color: "green" },
-                          { icon: Target, label: "Level", value: Math.floor(dashboardStats.totalPoints / 100) + 1, color: "purple" }
-                        ].map((stat, index) => (
-                          <motion.div
-                            key={stat.label}
-                            whileHover={{ scale: 1.05 }}
-                            className={`flex items-center gap-2 bg-${stat.color}-50 dark:bg-${stat.color}-900/20 rounded-full px-4 py-2 border border-${stat.color}-200/50 dark:border-${stat.color}-700/50`}
-                          >
-                            <stat.icon className={`w-4 h-4 text-${stat.color}-600`} />
-                            <span className="font-semibold text-gray-900 dark:text-white">{stat.value}</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="lg"
-                      className="bg-white/80 hover:bg-white text-gray-900 border-gray-200/50 backdrop-blur-sm shadow-lg"
-                    >
-                      <Link to="/notifications" className="flex items-center gap-2">
-                        <Bell className="w-5 h-5" />
-                        <span>Notifications</span>
-                        {user?.notifications?.filter(n => !n.read).length > 0 && (
-                          <Badge className="bg-red-500 text-white border-0 ml-1">
-                            {user.notifications.filter(n => !n.read).length}
-                          </Badge>
-                        )}
-                      </Link>
-                    </Button>
-                  </motion.div>
-                  
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      asChild
-                      size="lg"
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
-                    >
-                      <Link to="/events/create" className="flex items-center gap-2">
-                        <Plus className="w-5 h-5" />
-                        <span>Create Event</span>
-                      </Link>
-                    </Button>
-                  </motion.div>
-                </div>
+    <div className="relative z-10">
+      {/* Main User Info Section */}
+      <div className="flex flex-col lg:flex-row lg:items-start gap-6 mb-6">
+        {/* Left Section: Avatar + Basic Info */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+          <div className="flex items-center gap-4">
+            {/* Avatar with Online Status */}
+            <div className="relative flex-shrink-0">
+              <Avatar className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border-4 border-white shadow-xl">
+                <AvatarImage src={user?.avatar?.url || "/placeholder.svg"} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl sm:text-2xl lg:text-3xl font-bold">
+                  {user?.name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              {/* Online Status Indicator */}
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full animate-pulse" />
               </div>
             </div>
+
+            {/* Greeting and User Info */}
+            <div className="flex-1 min-w-0">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex flex-wrap items-center gap-2 mb-2"
+              >
+                {/* {React.createElement(getGreetingIcon(), {
+                  className: "w-5 h-5 sm:w-6 sm:h-6 text-amber-500 flex-shrink-0",
+                })} */}
+                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-white">
+                  {getGreeting()}!
+                </h1>
+                {/* <motion.span
+                  animate={{ rotate: [0, 20, -20, 0] }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 1 }}
+                  className="text-lg sm:text-xl lg:text-2xl flex-shrink-0"
+                >
+                  👋
+                </motion.span> */}
+              </motion.div>
+
+              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg mb-3">
+                Ready to elevate your sports journey today?
+              </p>
+
+              {/* User Level Badge and Username */}
+              {dashboardStats && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-wrap items-center gap-2 sm:gap-3"
+                >
+                  {(() => {
+                    const levelInfo = getUserLevel(dashboardStats.totalPoints)
+                    return (
+                      <div
+                        className={`flex items-center gap-2 px-3 py-1 sm:px-4 rounded-full bg-gradient-to-r ${levelInfo.color} text-white shadow-lg`}
+                      >
+                        <span className="font-bold text-[.75rem] sm:text-base">{levelInfo.level}</span>
+                        <span className="text-white/80 text-xs sm:text-sm">{dashboardStats.totalPoints} pts</span>
+                      </div>
+                    )
+                  })()}
+
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs sm:text-sm rounded-xl"
+                  >
+                    @{user?.username}
+                  </Badge>
+                </motion.div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section: Quick Actions - Better positioning on large screens */}
+        <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-3 lg:min-w-fit">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="w-full bg-white/80 hover:bg-white text-gray-900 border-gray-200/50 backdrop-blur-sm shadow-lg rounded-xl"
+            >
+              <Link to="/notifications" className="flex items-center justify-center gap-2">
+                <Bell className="w-5 h-5" />
+                <span>Notifications</span>
+                {user?.notifications?.filter(n => !n.read).length > 0 && (
+                  <Badge className="bg-red-500 rounded-full text-white border-0 ml-1">
+                    {user.notifications.filter(n => !n.read).length}
+                  </Badge>
+                )}
+              </Link>
+            </Button>
           </motion.div>
+          
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+            <Button
+              asChild
+              size="lg"
+              className="w-full  bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg rounded-xl"
+            >
+              <Link to="/events/create" className="flex items-center justify-center gap-2">
+                <Plus className="w-5 h-5" />
+                <span>Create Event</span>
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Bottom Section: Quick Stats */}
+      <div className="border-t border-gray-200/50 dark:border-gray-700/50 pt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          {dashboardStats && [
+            { icon: Calendar, label: "Events", value: dashboardStats.totalEvents, color: "blue" },
+            { icon: Trophy, label: "Achievements", value: dashboardStats.achievements, color: "yellow" },
+            { icon: Users, label: "Followers", value: dashboardStats.followers, color: "green" },
+            { icon: Target, label: "Level", value: Math.floor(dashboardStats.totalPoints / 100) + 1, color: "purple" }
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 bg-${stat.color}-50 dark:bg-${stat.color}-900/20 rounded-2xl px-3 py-3 sm:px-4 sm:py-4 border border-${stat.color}-200/50 dark:border-${stat.color}-700/50 text-center sm:text-left group hover:shadow-lg transition-all duration-300`}
+            >
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 mx-auto sm:mx-0 rounded-xl bg-gradient-to-r from-${stat.color}-500 to-${stat.color}-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                  {stat.value}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                  {stat.label}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</motion.div>
 
           <motion.div variants={itemVariants} className="mb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab}>

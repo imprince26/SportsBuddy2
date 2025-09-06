@@ -378,7 +378,7 @@ const Events = () => {
             <motion.button
               whileHover={{ scale: 1.05, rotateY: 5 }}
               whileTap={{ scale: 0.95 }}
-              className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-gray-600/40 text-blue-600 dark:text-blue-400 font-bold rounded-2xl shadow-2xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50"
+              className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-gray-600/40 text-blue-600 dark:text-blue-400 font-bold rounded-2xl shadow-xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white to-blue-50 dark:from-gray-800 dark:to-blue-950/50 transform transition-transform group-hover:scale-110" />
               <div className="relative flex items-center justify-center gap-3">

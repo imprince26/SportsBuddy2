@@ -181,7 +181,7 @@ const HeroSection = () => {
                       >
                         <div className="relative flex items-center justify-center gap-3">
                           <Play className="w-5 h-5 transform group-hover:scale-110 transition-transform" />
-                          <span>Host New Event</span>
+                          <span className='text-white'>Host New Event</span>
                           <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-600/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -219,7 +219,7 @@ const HeroSection = () => {
                         className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20"
                       >
                         <feature.icon className={`w-4 h-4 ${feature.color}`} />
-                        <span className="text-white/90 text-sm font-medium">{feature.text}</span>
+                        <span className="dark:text-white/80 text-gray-900 text-sm font-medium">{feature.text}</span>
                       </motion.div>
                     ))}
                   </motion.div>
@@ -395,7 +395,7 @@ const HeroSection = () => {
                     transition={{ duration: 0.6, delay: 1.6 }}
                     className="flex flex-wrap justify-center items-center gap-8 pt-6 pb-20"
                   >
-                    <div className="flex items-center gap-2 text-white/80">
+                    <div className="flex items-center gap-2 dark:text-white/80 text-gray-900">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
                           <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -403,11 +403,11 @@ const HeroSection = () => {
                       </div>
                       <span className="text-sm font-medium">4.9/5 Rating</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white/80">
+                    <div className="flex items-center gap-2 dark:text-white/80 text-gray-900">
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                       <span className="text-sm font-medium">1,250+ Active Today</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white/80">
+                    <div className="flex items-center gap-2 dark:text-white/80 text-gray-900">
                       <Activity className="w-4 h-4 text-blue-400" />
                       <span className="text-sm font-medium">Real-time Matching</span>
                     </div>

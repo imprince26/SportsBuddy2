@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -74,7 +75,7 @@ const PageLoader = ({ message = "Loading amazing sports events..." }) => (
 
 // Enhanced Protected Route with loading states
 const ProtectedRoute = ({ children, adminOnly = false, title = "" }) => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     if (title) {
@@ -86,7 +87,7 @@ const ProtectedRoute = ({ children, adminOnly = false, title = "" }) => {
     return <PageLoader message={`Loading ${title || 'page'}...`} />;
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 

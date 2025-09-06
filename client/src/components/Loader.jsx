@@ -240,11 +240,11 @@ const SportsBuddyLoader = () => {
           transition={{ duration: 0.8, delay: 1 }}
           className="mt-8 flex items-center gap-3"
         >
-          <motion.div
+          {/* <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full"
-          />
+          /> */}
           <span className="text-gray-700 dark:text-gray-300 font-medium">
             Loading amazing sports events
           </span>

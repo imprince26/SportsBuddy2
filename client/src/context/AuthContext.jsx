@@ -22,9 +22,6 @@ export const AuthProvider = ({ children }) => {
         const response = await api.get(`/auth/me`);
         if (response.data.success) {
           setUser(response.data.data);
-        } else {
-          // Token is invalid or expired
-          logout();
         }
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -322,18 +319,10 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         setUser(response.data.data);
         return { success: true, data: response.data.data };
-      } else {
-        logout();
-        return { success: false, message: 'Failed to get user data' };
       }
     } catch (error) {
       console.error('Get current user failed:', error);
       const message = error.response?.data?.message || 'Failed to fetch user data';
-      
-      // If token is invalid, logout user
-      if (error.response?.status === 401) {
-        logout();
-      }
       
       return { success: false, message };
     }

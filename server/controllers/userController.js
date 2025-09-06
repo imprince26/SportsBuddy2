@@ -148,9 +148,6 @@ export const getUserEvents = async (req, res) => {
       });
     }
 
-    console.log("Fetching events for userId:", userId);
-
-
     // Get events created by user
     const createdEvents = await Event.find({ createdBy: userId })
       .populate('participants.user', 'name username avatar')

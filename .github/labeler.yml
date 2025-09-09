@@ -1,189 +1,201 @@
-# Configuration for actions/labeler to auto-label PRs based on changed files
 
 # Frontend/Client changes
 frontend:
-  - client/**/*
-  - "client/**"
+  - changed-files:
+    - any-glob-to-any-file: 'client/**/*'
 
 ui/ux:
-  - client/src/components/**/*
-  - client/src/pages/**/*
-  - "*.css"
-  - "*.scss"
-  - "tailwind.config.js"
-  - "postcss.config.js"
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/**/*'
+    - any-glob-to-any-file: 'client/src/pages/**/*'
+    - any-glob-to-any-file: '*.css'
+    - any-glob-to-any-file: '*.scss'
+    - any-glob-to-any-file: 'tailwind.config.js'
+    - any-glob-to-any-file: 'postcss.config.js'
 
 # Backend/Server changes  
 backend:
-  - server/**/*
-  - "server/**"
+  - changed-files:
+    - any-glob-to-any-file: 'server/**/*'
 
 api:
-  - server/routes/**/*
-  - server/controllers/**/*
-  - "server/routes/**"
-  - "server/controllers/**"
+  - changed-files:
+    - any-glob-to-any-file: 'server/routes/**/*'
+    - any-glob-to-any-file: 'server/controllers/**/*'
 
 # Database related
 database:
-  - server/models/**/*
-  - server/config/db.js
-  - "server/models/**"
+  - changed-files:
+    - any-glob-to-any-file: 'server/models/**/*'
+    - any-glob-to-any-file: 'server/config/db.js'
 
 # Authentication
 authentication:
-  - server/controllers/authController.js
-  - server/routes/authRoute.js
-  - server/middleware/authMiddleware.js
-  - client/src/pages/auth/**/*
-  - client/src/context/AuthContext.jsx
-  - client/src/hooks/useAuth.js
-  - client/src/schemas/authSchema.js
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/authController.js'
+    - any-glob-to-any-file: 'server/routes/authRoute.js'
+    - any-glob-to-any-file: 'server/middleware/authMiddleware.js'
+    - any-glob-to-any-file: 'client/src/pages/auth/**/*'
+    - any-glob-to-any-file: 'client/src/context/AuthContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useAuth.js'
+    - any-glob-to-any-file: 'client/src/schemas/authSchema.js'
 
 # Events functionality
 events:
-  - server/controllers/eventController.js
-  - server/routes/eventRoute.js
-  - server/models/eventModel.js
-  - client/src/pages/event/**/*
-  - client/src/components/events/**/*
-  - client/src/context/EventContext.jsx
-  - client/src/hooks/useEvents.js
-  - client/src/schemas/eventSchema.js
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/eventController.js'
+    - any-glob-to-any-file: 'server/routes/eventRoute.js'
+    - any-glob-to-any-file: 'server/models/eventModel.js'
+    - any-glob-to-any-file: 'client/src/pages/event/**/*'
+    - any-glob-to-any-file: 'client/src/components/events/**/*'
+    - any-glob-to-any-file: 'client/src/context/EventContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useEvents.js'
+    - any-glob-to-any-file: 'client/src/schemas/eventSchema.js'
 
 # Athletes functionality
 athletes:
-  - server/controllers/athletesController.js
-  - server/routes/athletesRoute.js
-  - client/src/pages/athletes/**/*
-  - client/src/components/athletes/**/*
-  - client/src/context/AthletesContext.jsx
-  - client/src/hooks/useAthletes.js
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/athletesController.js'
+    - any-glob-to-any-file: 'server/routes/athletesRoute.js'
+    - any-glob-to-any-file: 'client/src/pages/athletes/**/*'
+    - any-glob-to-any-file: 'client/src/components/athletes/**/*'
+    - any-glob-to-any-file: 'client/src/context/AthletesContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useAthletes.js'
 
 # Community features
 community:
-  - server/controllers/communityController.js
-  - server/routes/communityRoute.js
-  - server/models/communityModel.js
-  - client/src/pages/community/**/*
-  - client/src/context/CommunityContext.jsx
-  - client/src/hooks/useCommunity.js
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/communityController.js'
+    - any-glob-to-any-file: 'server/routes/communityRoute.js'
+    - any-glob-to-any-file: 'server/models/communityModel.js'
+    - any-glob-to-any-file: 'client/src/pages/community/**/*'
+    - any-glob-to-any-file: 'client/src/context/CommunityContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useCommunity.js'
 
 # Venues functionality
 venues:
-  - server/controllers/venueController.js
-  - server/routes/venueRoute.js
-  - server/models/venueModel.js
-  - client/src/pages/venue/**/*
-  - client/src/components/venues/**/*
-  - client/src/context/VenueContext.jsx
-  - client/src/hooks/useVenue.js
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/venueController.js'
+    - any-glob-to-any-file: 'server/routes/venueRoute.js'
+    - any-glob-to-any-file: 'server/models/venueModel.js'
+    - any-glob-to-any-file: 'client/src/pages/venue/**/*'
+    - any-glob-to-any-file: 'client/src/components/venues/**/*'
+    - any-glob-to-any-file: 'client/src/context/VenueContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useVenue.js'
 
 # Leaderboard features
 leaderboard:
-  - server/controllers/leaderboardController.js
-  - server/routes/leaderboardRoute.js
-  - server/models/leaderboardModel.js
-  - client/src/pages/leaderboard/**/*
-  - client/src/components/leaderboard/**/*
-  - client/src/context/LeaderboardContext.jsx
-  - client/src/hooks/useLeaderboard.js
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/leaderboardController.js'
+    - any-glob-to-any-file: 'server/routes/leaderboardRoute.js'
+    - any-glob-to-any-file: 'server/models/leaderboardModel.js'
+    - any-glob-to-any-file: 'client/src/pages/leaderboard/**/*'
+    - any-glob-to-any-file: 'client/src/components/leaderboard/**/*'
+    - any-glob-to-any-file: 'client/src/context/LeaderboardContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useLeaderboard.js'
 
 # Notifications system
 notifications:
-  - server/controllers/notificationController.js
-  - server/routes/notificationRoute.js
-  - server/models/notificationModel.js
-  - client/src/pages/Notifications.jsx
-  - server/config/sendEmail.js
-  - server/utils/emailTemplate.js
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/notificationController.js'
+    - any-glob-to-any-file: 'server/routes/notificationRoute.js'
+    - any-glob-to-any-file: 'server/models/notificationModel.js'
+    - any-glob-to-any-file: 'client/src/pages/Notifications.jsx'
+    - any-glob-to-any-file: 'server/config/sendEmail.js'
+    - any-glob-to-any-file: 'server/utils/emailTemplate.js'
 
 # Admin functionality
 admin:
-  - server/controllers/adminController.js
-  - server/routes/adminRoute.js
-  - client/src/pages/admin/**/*
-  - client/src/components/layout/AdminLayout.jsx
+  - changed-files:
+    - any-glob-to-any-file: 'server/controllers/adminController.js'
+    - any-glob-to-any-file: 'server/routes/adminRoute.js'
+    - any-glob-to-any-file: 'client/src/pages/admin/**/*'
+    - any-glob-to-any-file: 'client/src/components/layout/AdminLayout.jsx'
 
 # Documentation
 documentation:
-  - "*.md"
-  - "**/*.md"
-  - docs/**/*
-  - README.md
-  - CHANGELOG.md
-  - CONTRIBUTING.md
+  - changed-files:
+    - any-glob-to-any-file: '**/*.md'
+    - any-glob-to-any-file: 'docs/**/*'
 
 # Configuration files
 config:
-  - "*.config.js"
-  - "*.config.json"
-  - "package.json"
-  - "package-lock.json"
-  - ".env*"
-  - "vite.config.js"
-  - "tailwind.config.js"
-  - "postcss.config.js"
-  - "eslint.config.js"
-  - "jsconfig.json"
-  - "vercel.json"
-  - server/config/**/*
+  - changed-files:
+    - any-glob-to-any-file: '*.config.js'
+    - any-glob-to-any-file: '*.config.json'
+    - any-glob-to-any-file: 'package.json'
+    - any-glob-to-any-file: 'package-lock.json'
+    - any-glob-to-any-file: '.env*'
+    - any-glob-to-any-file: 'vite.config.js'
+    - any-glob-to-any-file: 'tailwind.config.js'
+    - any-glob-to-any-file: 'postcss.config.js'
+    - any-glob-to-any-file: 'eslint.config.js'
+    - any-glob-to-any-file: 'jsconfig.json'
+    - any-glob-to-any-file: 'vercel.json'
+    - any-glob-to-any-file: 'server/config/**/*'
 
 # Testing
 testing:
-  - "**/*.test.js"
-  - "**/*.spec.js"
-  - "**/__tests__/**"
-  - "**/tests/**"
-  - "jest.config.js"
-  - "vitest.config.js"
-  - "cypress.config.js"
+  - changed-files:
+    - any-glob-to-any-file: '**/*.test.js'
+    - any-glob-to-any-file: '**/*.spec.js'
+    - any-glob-to-any-file: '**/__tests__/**'
+    - any-glob-to-any-file: '**/tests/**'
+    - any-glob-to-any-file: 'jest.config.js'
+    - any-glob-to-any-file: 'vitest.config.js'
+    - any-glob-to-any-file: 'cypress.config.js'
 
 # CI/CD and GitHub workflows
 ci/cd:
-  - ".github/**/*"
-  - ".github/workflows/**/*"
-  - "Dockerfile*"
-  - "docker-compose*"
-  - ".dockerignore"
+  - changed-files:
+    - any-glob-to-any-file: '.github/**/*'
+    - any-glob-to-any-file: 'Dockerfile*'
+    - any-glob-to-any-file: 'docker-compose*'
+    - any-glob-to-any-file: '.dockerignore'
 
 # Security related
 security:
-  - server/middleware/authMiddleware.js
-  - server/utils/rateLimitingUtils.js
-  - server/utils/validation.js
+  - changed-files:
+    - any-glob-to-any-file: 'server/middleware/authMiddleware.js'
+    - any-glob-to-any-file: 'server/utils/rateLimitingUtils.js'
+    - any-glob-to-any-file: 'server/utils/validation.js'
 
 # Performance related  
 performance:
-  - server/utils/cron.js
-  - client/src/hooks/useDebounce.js
-  - "**/*cache*"
-  - "**/*optimize*"
+  - changed-files:
+    - any-glob-to-any-file: 'server/utils/cron.js'
+    - any-glob-to-any-file: 'client/src/hooks/useDebounce.js'
+    - any-glob-to-any-file: '**/*cache*'
+    - any-glob-to-any-file: '**/*optimize*'
 
 # Socket/Real-time features
 socket:
-  - server/config/socket.js
-  - client/src/context/SocketContext.jsx
-  - client/src/hooks/useSocket.js
-  - client/src/components/events/EventChat.jsx
+  - changed-files:
+    - any-glob-to-any-file: 'server/config/socket.js'
+    - any-glob-to-any-file: 'client/src/context/SocketContext.jsx'
+    - any-glob-to-any-file: 'client/src/hooks/useSocket.js'
+    - any-glob-to-any-file: 'client/src/components/events/EventChat.jsx'
 
 # File uploads
 uploads:
-  - server/routes/uploadRoute.js
-  - server/config/cloudinary.js
-  - client/src/utils/fileUpload.js
-  - client/src/utils/uploadUtils.js
-  - client/src/components/ui/image-upload.jsx
+  - changed-files:
+    - any-glob-to-any-file: 'server/routes/uploadRoute.js'
+    - any-glob-to-any-file: 'server/config/cloudinary.js'
+    - any-glob-to-any-file: 'client/src/utils/fileUpload.js'
+    - any-glob-to-any-file: 'client/src/utils/uploadUtils.js'
+    - any-glob-to-any-file: 'client/src/components/ui/image-upload.jsx'
 
 # Utilities and helpers
 utils:
-  - server/utils/**/*
-  - client/src/utils/**/*
-  - client/src/lib/**/*
-  - server/scripts/**/*
+  - changed-files:
+    - any-glob-to-any-file: 'server/utils/**/*'
+    - any-glob-to-any-file: 'client/src/utils/**/*'
+    - any-glob-to-any-file: 'client/src/lib/**/*'
+    - any-glob-to-any-file: 'server/scripts/**/*'
 
 # Styling and UI components
 ui-components:
-  - client/src/components/ui/**/*
-  - "client/src/index.css"
-  - "client/src/**/*.css"
+  - changed-files:
+    - any-glob-to-any-file: 'client/src/components/ui/**/*'
+    - any-glob-to-any-file: 'client/src/index.css'
+    - any-glob-to-any-file: 'client/src/**/*.css'

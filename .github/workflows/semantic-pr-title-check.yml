@@ -1,7 +1,7 @@
 name: Semantic PR Title Check
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, edited, synchronize, reopened]
 
 permissions:
@@ -45,9 +45,15 @@ jobs:
             config
             docs
             ci-cd
+            github
+            workflow
+            labels
           requireScope: false
           subjectPattern: ^(?![A-Z]).+$
           subjectPatternError: |
             The subject "{subject}" found in the pull request title "{title}" 
             didn't match the configured pattern. Please ensure that the subject 
             doesn't start with an uppercase character.
+          ignoreLabels: |
+            bot
+            ignore-semantic-pull-request

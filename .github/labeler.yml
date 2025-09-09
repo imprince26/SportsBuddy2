@@ -20,3 +20,6 @@ authentication:
   - "client/src/context/AuthContext.jsx"
   - "client/src/hooks/useAuth.js"
   - "client/src/schemas/authSchema.js"
+
+config:
+  - ".github/**/*"

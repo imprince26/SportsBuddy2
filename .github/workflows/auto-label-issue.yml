@@ -1,0 +1,64 @@
+name: Auto Label Issues
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  label-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label issue by title and body keywords
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const title = (issue.title || '').toLowerCase();
+            const body = (issue.body || '').toLowerCase();
+            
+            const labelRules = [
+              { label: 'bug', patterns: [/bug/, /error/, /exception/, /crash/, /fail/, /broken/, /not working/] },
+              { label: 'feature', patterns: [/feature/, /enhancement/, /improve/, /add/, /new/] },
+              { label: 'documentation', patterns: [/doc/, /readme/, /documentation/, /guide/] },
+              { label: 'frontend', patterns: [/ui/, /ux/, /react/, /component/, /css/, /tailwind/, /vite/, /client/] },
+              { label: 'backend', patterns: [/api/, /server/, /express/, /route/, /controller/, /endpoint/] },
+              { label: 'database', patterns: [/database/, /schema/, /model/, /mongodb/, /mongoose/] },
+              { label: 'authentication', patterns: [/auth/, /login/, /register/, /token/, /jwt/, /password/] },
+              { label: 'events', patterns: [/event/, /calendar/, /booking/, /schedule/] },
+              { label: 'athletes', patterns: [/athlete/, /player/, /sport/] },
+              { label: 'community', patterns: [/community/, /forum/, /discussion/] },
+              { label: 'venues', patterns: [/venue/, /location/, /place/] },
+              { label: 'leaderboard', patterns: [/leaderboard/, /ranking/, /score/] },
+              { label: 'notifications', patterns: [/notification/, /alert/, /email/] },
+              { label: 'security', patterns: [/security/, /vulnerability/, /xss/, /csrf/, /injection/] },
+              { label: 'performance', patterns: [/performance/, /slow/, /lag/, /optimize/, /cache/] },
+              { label: 'testing', patterns: [/test/, /jest/, /vitest/, /cypress/, /coverage/] },
+              { label: 'ci/cd', patterns: [/github actions/, /workflow/, /ci/, /cd/, /pipeline/, /deploy/] }
+            ];
+            
+            const labelsToAdd = [];
+            
+            for (const rule of labelRules) {
+              const hasMatch = rule.patterns.some(pattern => 
+                pattern.test(title) || pattern.test(body)
+              );
+              if (hasMatch) {
+                labelsToAdd.push(rule.label);
+              }
+            }
+            
+            if (labelsToAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: labelsToAdd
+              });
+              
+              console.log(`Added labels: ${labelsToAdd.join(', ')}`);
+            } else {
+              console.log('No matching labels found');
+            }

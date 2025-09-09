@@ -1,0 +1,89 @@
+name: PR Size Labeler
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  size-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create size labels if they don't exist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [
+              { name: 'size/XS', color: 'ededed', description: 'Extra Small: ≤ 10 lines changed' },
+              { name: 'size/S', color: 'c5def5', description: 'Small: ≤ 50 lines changed' },
+              { name: 'size/M', color: 'bfdadc', description: 'Medium: ≤ 150 lines changed' },
+              { name: 'size/L', color: 'f9d0c4', description: 'Large: ≤ 300 lines changed' },
+              { name: 'size/XL', color: 'f7c6c7', description: 'Extra Large: > 300 lines changed' }
+            ];
+            
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name
+                });
+              } catch (error) {
+                if (error.status === 404) {
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log(`Created label: ${label.name}`);
+                }
+              }
+            }
+
+      - name: Add size label based on changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const totalChanges = (pr.additions || 0) + (pr.deletions || 0);
+            
+            let sizeLabel = 'size/XS';
+            if (totalChanges > 300) {
+              sizeLabel = 'size/XL';
+            } else if (totalChanges > 150) {
+              sizeLabel = 'size/L';
+            } else if (totalChanges > 50) {
+              sizeLabel = 'size/M';
+            } else if (totalChanges > 10) {
+              sizeLabel = 'size/S';
+            }
+            
+            // Remove existing size labels
+            const existingSizeLabels = ['size/XS', 'size/S', 'size/M', 'size/L', 'size/XL'];
+            for (const label of existingSizeLabels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  name: label
+                });
+              } catch (error) {
+                // Label doesn't exist, ignore
+              }
+            }
+            
+            // Add the appropriate size label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: [sizeLabel]
+            });
+            
+            console.log(`Added ${sizeLabel} label (${totalChanges} lines changed)`);

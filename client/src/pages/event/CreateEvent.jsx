@@ -1220,7 +1220,7 @@ const CreateEventForm = () => {
                                   </div>
                                   {form.getValues("registrationFee") > 0 && (
                                     <div className="flex items-center gap-2 text-xs sm:text-sm">
-                                      <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                                      <IndianRupee className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
                                       <span className="text-gray-900 dark:text-white font-semibold">
                                         ${form.getValues("registrationFee")} registration fee
                                       </span>

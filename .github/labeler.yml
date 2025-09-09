@@ -1,200 +1,22 @@
-# Frontend/Client changes
 frontend:
-  - files:
-      - 'client/**/*'
+  - "client/**/*"
 
-ui/ux:
-  - files:
-      - 'client/src/components/**/*'
-      - 'client/src/pages/**/*'
-      - '*.css'
-      - '*.scss'
-      - 'tailwind.config.js'
-      - 'postcss.config.js'
-
-# Backend/Server changes
 backend:
-  - files:
-      - 'server/**/*'
+  - "server/**/*"
 
 api:
-  - files:
-      - 'server/routes/**/*'
-      - 'server/controllers/**/*'
+  - "server/routes/**/*"
+  - "server/controllers/**/*"
 
-# Database related
 database:
-  - files:
-      - 'server/models/**/*'
-      - 'server/config/db.js'
+  - "server/models/**/*"
+  - "server/config/db.js"
 
-# Authentication
 authentication:
-  - files:
-      - 'server/controllers/authController.js'
-      - 'server/routes/authRoute.js'
-      - 'server/middleware/authMiddleware.js'
-      - 'client/src/pages/auth/**/*'
-      - 'client/src/context/AuthContext.jsx'
-      - 'client/src/hooks/useAuth.js'
-      - 'client/src/schemas/authSchema.js'
-
-# Events functionality
-events:
-  - files:
-      - 'server/controllers/eventController.js'
-      - 'server/routes/eventRoute.js'
-      - 'server/models/eventModel.js'
-      - 'client/src/pages/event/**/*'
-      - 'client/src/components/events/**/*'
-      - 'client/src/context/EventContext.jsx'
-      - 'client/src/hooks/useEvents.js'
-      - 'client/src/schemas/eventSchema.js'
-
-# Athletes functionality
-athletes:
-  - files:
-      - 'server/controllers/athletesController.js'
-      - 'server/routes/athletesRoute.js'
-      - 'client/src/pages/athletes/**/*'
-      - 'client/src/components/athletes/**/*'
-      - 'client/src/context/AthletesContext.jsx'
-      - 'client/src/hooks/useAthletes.js'
-
-# Community features
-community:
-  - files:
-      - 'server/controllers/communityController.js'
-      - 'server/routes/communityRoute.js'
-      - 'server/models/communityModel.js'
-      - 'client/src/pages/community/**/*'
-      - 'client/src/context/CommunityContext.jsx'
-      - 'client/src/hooks/useCommunity.js'
-
-# Venues functionality
-venues:
-  - files:
-      - 'server/controllers/venueController.js'
-      - 'server/routes/venueRoute.js'
-      - 'server/models/venueModel.js'
-      - 'client/src/pages/venue/**/*'
-      - 'client/src/components/venues/**/*'
-      - 'client/src/context/VenueContext.jsx'
-      - 'client/src/hooks/useVenue.js'
-
-# Leaderboard features
-leaderboard:
-  - files:
-      - 'server/controllers/leaderboardController.js'
-      - 'server/routes/leaderboardRoute.js'
-      - 'server/models/leaderboardModel.js'
-      - 'client/src/pages/leaderboard/**/*'
-      - 'client/src/components/leaderboard/**/*'
-      - 'client/src/context/LeaderboardContext.jsx'
-      - 'client/src/hooks/useLeaderboard.js'
-
-# Notifications system
-notifications:
-  - files:
-      - 'server/controllers/notificationController.js'
-      - 'server/routes/notificationRoute.js'
-      - 'server/models/notificationModel.js'
-      - 'client/src/pages/Notifications.jsx'
-      - 'server/config/sendEmail.js'
-      - 'server/utils/emailTemplate.js'
-
-# Admin functionality
-admin:
-  - files:
-      - 'server/controllers/adminController.js'
-      - 'server/routes/adminRoute.js'
-      - 'client/src/pages/admin/**/*'
-      - 'client/src/components/layout/AdminLayout.jsx'
-
-# Documentation
-documentation:
-  - files:
-      - '**/*.md'
-      - 'docs/**/*'
-
-# Configuration files
-config:
-  - files:
-      - '*.config.js'
-      - '*.config.json'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.env*'
-      - 'vite.config.js'
-      - 'tailwind.config.js'
-      - 'postcss.config.js'
-      - 'eslint.config.js'
-      - 'jsconfig.json'
-      - 'vercel.json'
-      - 'server/config/**/*'
-
-# Testing
-testing:
-  - files:
-      - '**/*.test.js'
-      - '**/*.spec.js'
-      - '**/__tests__/**'
-      - '**/tests/**'
-      - 'jest.config.js'
-      - 'vitest.config.js'
-      - 'cypress.config.js'
-
-# CI/CD and GitHub workflows
-ci/cd:
-  - files:
-      - '.github/**/*'
-      - 'Dockerfile*'
-      - 'docker-compose*'
-      - '.dockerignore'
-
-# Security related
-security:
-  - files:
-      - 'server/middleware/authMiddleware.js'
-      - 'server/utils/rateLimitingUtils.js'
-      - 'server/utils/validation.js'
-
-# Performance related
-performance:
-  - files:
-      - 'server/utils/cron.js'
-      - 'client/src/hooks/useDebounce.js'
-      - '**/*cache*'
-      - '**/*optimize*'
-
-# Socket/Real-time features
-socket:
-  - files:
-      - 'server/config/socket.js'
-      - 'client/src/context/SocketContext.jsx'
-      - 'client/src/hooks/useSocket.js'
-      - 'client/src/components/events/EventChat.jsx'
-
-# File uploads
-uploads:
-  - files:
-      - 'server/routes/uploadRoute.js'
-      - 'server/config/cloudinary.js'
-      - 'client/src/utils/fileUpload.js'
-      - 'client/src/utils/uploadUtils.js'
-      - 'client/src/components/ui/image-upload.jsx'
-
-# Utilities and helpers
-utils:
-  - files:
-      - 'server/utils/**/*'
-      - 'client/src/utils/**/*'
-      - 'client/src/lib/**/*'
-      - 'server/scripts/**/*'
-
-# Styling and UI components
-ui-components:
-  - files:
-      - 'client/src/components/ui/**/*'
-      - 'client/src/index.css'
-      - 'client/src/**/*.css'
+  - "server/controllers/authController.js"
+  - "server/routes/authRoute.js"
+  - "server/middleware/authMiddleware.js"
+  - "client/src/pages/auth/**/*"
+  - "client/src/context/AuthContext.jsx"
+  - "client/src/hooks/useAuth.js"
+  - "client/src/schemas/authSchema.js"

@@ -48,6 +48,11 @@ jobs:
             github
             workflow
             labels
+            deps
+            dependencies
+            dev-deps
+            ci
+            cd
           requireScope: false
           subjectPattern: ^(?![A-Z]).+$
           subjectPatternError: |
@@ -57,3 +62,5 @@ jobs:
           ignoreLabels: |
             bot
             ignore-semantic-pull-request
+            dependencies
+            dependabot

@@ -13,8 +13,12 @@ updates:
     reviewers:
       - imprince26
     commit-message:
-      prefix: "chore(client):"
+      prefix: "chore(deps)"
+      prefix-development: "chore(dev-deps)"
       include: "scope"
+    labels:
+      - "dependencies"
+      - "client"
 
   # Server dependencies  
   - package-ecosystem: npm
@@ -27,8 +31,12 @@ updates:
     reviewers:
       - imprince26
     commit-message:
-      prefix: "chore(server):"
+      prefix: "chore(deps)"
+      prefix-development: "chore(dev-deps)"
       include: "scope"
+    labels:
+      - "dependencies"
+      - "backend"
 
   # GitHub Actions
   - package-ecosystem: github-actions
@@ -41,5 +49,8 @@ updates:
     reviewers:
       - imprince26
     commit-message:
-      prefix: "chore(ci):"
+      prefix: "chore(ci)"
       include: "scope"
+    labels:
+      - "dependencies"
+      - "ci/cd"

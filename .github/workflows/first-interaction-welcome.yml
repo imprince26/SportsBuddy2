@@ -1,0 +1,43 @@
+name: First Interaction Welcome
+
+on:
+  pull_request_target:
+    types: [opened]
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            🎉 **Welcome to SportsBuddy!** 
+            
+            Thank you for opening your first issue! We're excited to have you as part of our community.
+            
+            **To help us assist you better, please ensure:**
+            - ✅ Provide clear steps to reproduce the issue
+            - ✅ Include expected vs actual behavior
+            - ✅ Add screenshots if applicable
+            - ✅ Mention your environment (browser, OS, etc.)
+            
+            Our team will review this shortly. Thanks for helping make SportsBuddy better! 🚀
+          pr-message: |
+            🎉 **Welcome to SportsBuddy!** 
+            
+            Thank you for your first contribution! We're thrilled to have you join our community of contributors.
+            
+            **Please make sure:**
+            - ✅ Your PR title follows Conventional Commits format
+            - ✅ You've linked any related issues
+            - ✅ Your code follows our project structure
+            - ✅ You've tested your changes locally
+            
+            A maintainer will review your PR soon. Welcome aboard! 🚀

@@ -1,0 +1,22 @@
+# Auto assign configuration for pull requests
+addReviewers: true
+addAssignees: author
+
+# List of reviewers to automatically assign
+reviewers:
+  - imprince26
+  # Add more maintainers here as needed
+
+# Number of reviewers to assign
+numberOfReviewers: 1
+
+# Skip assignment if PR contains these keywords in title
+skipKeywords:
+  - WIP
+  - DO NOT MERGE
+  - DRAFT
+  - "[WIP]"
+  - "[DRAFT]"
+
+# Skip assignment if PR is in draft mode
+skipDraft: true

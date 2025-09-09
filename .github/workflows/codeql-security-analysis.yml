@@ -32,7 +32,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          queries: security-extended,security-and-quality
+          queries: +security-extended,security-and-quality
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
@@ -41,3 +41,4 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{matrix.language}}"
+          upload: true

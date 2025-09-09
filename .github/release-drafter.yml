@@ -1,12 +1,11 @@
-# Release Drafter configuration
 name-template: 'v$RESOLVED_VERSION 🚀'
 tag-template: 'v$RESOLVED_VERSION'
 
 categories:
   - title: '🚀 New Features'
     labels:
-      - 'feat'
       - 'feature'
+      - 'feat'
       - 'enhancement'
   - title: '🐛 Bug Fixes'
     labels:
@@ -23,13 +22,6 @@ categories:
     labels:
       - 'docs'
       - 'documentation'
-  - title: '🔒 Security'
-    labels:
-      - 'security'
-  - title: '⚡ Performance'
-    labels:
-      - 'performance'
-      - 'perf'
 
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&'
@@ -57,7 +49,3 @@ template: |
   $CHANGES
   
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
-  
-  ## Contributors 🙏
-  
-  Thanks to all contributors who made this release possible!

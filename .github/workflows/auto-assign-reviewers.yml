@@ -11,7 +11,8 @@ jobs:
   auto-assign:
     runs-on: ubuntu-latest
     steps:
-      - uses: kentaro-m/auto-assign-action@v1.2.6
+      - name: Auto assign reviewers
+        uses: kentaro-m/auto-assign-action@v2.0.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/auto_assign.yml

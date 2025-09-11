@@ -20,45 +20,46 @@ jobs:
             const body = (issue.body || '').toLowerCase();
             
             const labelRules = [
-              { label: 'bug', patterns: [/bug/, /error/, /exception/, /crash/, /fail/, /broken/, /not working/] },
-              { label: 'feature', patterns: [/feature/, /enhancement/, /improve/, /add/, /new/] },
-              { label: 'documentation', patterns: [/doc/, /readme/, /documentation/, /guide/] },
-              { label: 'frontend', patterns: [/ui/, /ux/, /react/, /component/, /css/, /tailwind/, /vite/, /client/] },
-              { label: 'backend', patterns: [/api/, /server/, /express/, /route/, /controller/, /endpoint/] },
-              { label: 'database', patterns: [/database/, /schema/, /model/, /mongodb/, /mongoose/] },
-              { label: 'authentication', patterns: [/auth/, /login/, /register/, /token/, /jwt/, /password/] },
-              { label: 'events', patterns: [/event/, /calendar/, /booking/, /schedule/] },
-              { label: 'athletes', patterns: [/athlete/, /player/, /sport/] },
-              { label: 'community', patterns: [/community/, /forum/, /discussion/] },
-              { label: 'venues', patterns: [/venue/, /location/, /place/] },
-              { label: 'leaderboard', patterns: [/leaderboard/, /ranking/, /score/] },
-              { label: 'notifications', patterns: [/notification/, /alert/, /email/] },
-              { label: 'security', patterns: [/security/, /vulnerability/, /xss/, /csrf/, /injection/] },
-              { label: 'performance', patterns: [/performance/, /slow/, /lag/, /optimize/, /cache/] },
-              { label: 'testing', patterns: [/test/, /jest/, /vitest/, /cypress/, /coverage/] },
-              { label: 'ci/cd', patterns: [/github actions/, /workflow/, /ci/, /cd/, /pipeline/, /deploy/] }
+              { label: 'bug', patterns: [/\bbug\b/, /\berror\b/, /\bexception\b/, /\bcrash\b/, /\bfail\b/, /\bbroken\b/, /not working/] },
+              { label: 'feature', patterns: [/\bfeature\b/, /\benhancement\b/, /\bimprove\b/, /\badd\b/, /\bnew\b/] },
+              { label: 'documentation', patterns: [/\bdoc\b/, /readme/, /documentation/, /guide/] },
+              { label: 'frontend', patterns: [/\bui\b/, /\bux\b/, /\breact\b/, /component/, /\bcss\b/, /tailwind/, /vite/, /client/] },
+              { label: 'backend', patterns: [/\bapi\b/, /\bserver\b/, /\bexpress\b/, /route/, /controller/, /endpoint/] },
+              { label: 'database', patterns: [/\bdatabase\b/, /schema/, /model/, /mongodb/, /mongoose/] },
+              { label: 'authentication', patterns: [/\bauth\b/, /login/, /register/, /token/, /\bjwt\b/, /password/] },
+              { label: 'events', patterns: [/\bevent\b/, /calendar/, /booking/, /schedule/] },
+              { label: 'athletes', patterns: [/\bathlete\b/, /\bplayer\b/, /sport/] },
+              { label: 'community', patterns: [/\bcommunity\b/, /forum/, /discussion/] },
+              { label: 'venues', patterns: [/\bvenue\b/, /location/, /place/] },
+              { label: 'leaderboard', patterns: [/\bleaderboard\b/, /ranking/, /score/] },
+              { label: 'notifications', patterns: [/\bnotification\b/, /alert/, /email/] },
+              { label: 'security', patterns: [/\bsecurity\b/, /vulnerability/, /\bxss\b/, /\bcsrf\b/, /injection/] },
+              { label: 'performance', patterns: [/\bperformance\b/, /slow/, /lag/, /optimize/, /cache/] },
+              { label: 'testing', patterns: [/\btest\b/, /jest/, /vitest/, /cypress/, /coverage/] },
+              { label: 'ci/cd', patterns: [/github actions/, /workflow/, /\bci\b/, /\bcd\b/, /pipeline/, /deploy/] }
             ];
             
-            const labelsToAdd = [];
-            
+            const labelsToAdd = new Set();
+
             for (const rule of labelRules) {
-              const hasMatch = rule.patterns.some(pattern => 
-                pattern.test(title) || pattern.test(body)
-              );
-              if (hasMatch) {
-                labelsToAdd.push(rule.label);
+              for (const pattern of rule.patterns) {
+                if (pattern.test(title) || pattern.test(body)) {
+                  labelsToAdd.add(rule.label);
+                  console.log(`Matched label "${rule.label}" with pattern: ${pattern}`);
+                  break;
+                }
               }
             }
             
-            if (labelsToAdd.length > 0) {
+            if (labelsToAdd.size > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                labels: labelsToAdd
+                labels: [...labelsToAdd]
               });
               
-              console.log(`Added labels: ${labelsToAdd.join(', ')}`);
+              console.log(`Added labels: ${[...labelsToAdd].join(', ')}`);
             } else {
               console.log('No matching labels found');
             }

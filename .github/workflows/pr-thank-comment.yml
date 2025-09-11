@@ -16,15 +16,15 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            🎉 **Thank you for your contribution to SportsBuddy!** 
-            
-            Your pull request has been received and will be reviewed by our team soon.
-            
-            **Before we review:**
-            - ✅ Make sure your PR title follows [Conventional Commits](https://www.conventionalcommits.org/) format (e.g., `feat: add new feature`)
-            - ✅ Link any related issues using "Closes #123" or "Fixes #123"
-            - ✅ Add screenshots for UI changes
-            - ✅ Test your changes locally
-            
-            We appreciate your time and effort in making SportsBuddy better! 🚀
+          body: >
+            Thank you for your contribution to SportsBuddy.  
+
+            Your pull request has been received and will be reviewed by our team soon.  
+
+            Before we review, please check:  
+            - Your PR title follows [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat: add new feature`)  
+            - Any related issues are linked (e.g., `Closes #123`)  
+            - Screenshots are added for UI changes  
+            - Changes are tested locally  
+
+            We appreciate your time and effort in making SportsBuddy better.

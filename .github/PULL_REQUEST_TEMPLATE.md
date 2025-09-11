@@ -1,142 +1,100 @@
-# 🏆 SportsBuddy Pull Request
+## Pull Request Title
+Brief description of changes made
 
-## 📋 Summary
-<!-- Provide a brief description of your changes -->
+## Description
+Provide a detailed description of the changes made in this PR.
 
-## 🔗 Related Issues
-<!-- Link to the issue this PR addresses -->
-Closes #
+## Type of Change
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+- [ ] Performance improvement
+- [ ] Code refactoring
+- [ ] Test improvements
+- [ ] CI/CD improvements
 
-Fixes #
+## Components Modified
+- [ ] Authentication system (JWT, login, register)
+- [ ] Events management (create, join, manage)
+- [ ] Athletes profiles and management
+- [ ] Community features (forums, discussions)
+- [ ] Venue management and booking
+- [ ] Leaderboard and rankings
+- [ ] Notification system (email, push)
+- [ ] Admin dashboard and controls
+- [ ] File upload system (Cloudinary)
+- [ ] Real-time features (Socket.io)
+- [ ] Database models and operations
+- [ ] API endpoints and controllers
+- [ ] Frontend UI components
+- [ ] Middleware and utilities
 
-Related to #
+## Related Issue(s)
+Fixes #(issue number)
+Closes #(issue number)
+Related to #(issue number)
 
-## 🚀 Type of Change
-<!-- Mark the relevant option with an "x" -->
-- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
-- [ ] ✨ New feature (non-breaking change which adds functionality)
-- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] 📚 Documentation update
-- [ ] 🔧 Refactoring (no functional changes)
-- [ ] ⚡ Performance improvement
-- [ ] 🎨 UI/UX enhancement
-- [ ] 🧪 Tests
-- [ ] 🔒 Security fix
+## Testing
+- [ ] I have tested this change locally
+- [ ] I have added/updated unit tests
+- [ ] I have tested on multiple browsers
+- [ ] I have tested on mobile devices
+- [ ] I have tested the database operations
+- [ ] I have tested API endpoints
+- [ ] I have verified socket connections work
 
-## 🏗️ Changes Made
-<!-- Describe the changes in detail -->
+## Screenshots/Videos
+If applicable, add screenshots or videos demonstrating the changes.
 
-### Frontend Changes
-- [ ] Updated React components
-- [ ] Modified styling/UI
-- [ ] Added new pages/routes
-- [ ] Updated state management
-- [ ] Other: ___________
+## Database Changes
+- [ ] No database changes
+- [ ] Schema modifications (describe below)
+- [ ] New collections/models added
+- [ ] Data migration required
 
-### Backend Changes
-- [ ] Updated API endpoints
-- [ ] Modified database models
-- [ ] Added middleware
-- [ ] Updated authentication
-- [ ] Socket.io changes
-- [ ] Other: ___________
+If database changes are made, describe them here:
 
-### Database Changes
-- [ ] New collections/models
-- [ ] Schema updates
-- [ ] Migration scripts
-- [ ] Indexes added/modified
+## API Changes
+- [ ] No API changes
+- [ ] New endpoints added
+- [ ] Existing endpoints modified
+- [ ] Breaking API changes
 
-## 🧪 Testing
-<!-- Describe how you tested your changes -->
+If API changes are made, list them here:
 
-### Manual Testing
-- [ ] Tested on desktop browser
-- [ ] Tested on mobile browser
-- [ ] Tested user authentication flow
-- [ ] Tested real-time features (chat/notifications)
-- [ ] Tested with different user roles
-
-### Automated Testing
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] All existing tests pass
-- [ ] New tests cover edge cases
-
-## 📱 Tested On
-<!-- Mark all that apply -->
-- [ ] Chrome (Desktop)
-- [ ] Firefox (Desktop) 
-- [ ] Safari (Desktop)
-- [ ] Chrome (Mobile)
-- [ ] Safari (Mobile)
-- [ ] Edge
-
-## 📸 Screenshots/Demo
-<!-- If applicable, add screenshots or GIFs of your changes -->
-
-### Before
-<!-- Screenshot/description of before state -->
-
-### After
-<!-- Screenshot/description of after state -->
-
-## 🔍 Code Quality Checklist
-- [ ] Code follows project style guidelines
-- [ ] Self-review completed
-- [ ] Code is well-commented
-- [ ] No console.log statements left in production code
-- [ ] Error handling implemented
-- [ ] Performance considerations addressed
-- [ ] Security best practices followed
-
-## 📚 Documentation
-- [ ] README updated (if needed)
-- [ ] API documentation updated (if needed)
-- [ ] Comments added to complex code
-- [ ] Environment variables documented (if new ones added)
-
-## 🔒 Security Considerations
-- [ ] No sensitive data exposed
-- [ ] Input validation implemented
-- [ ] Authentication/authorization checks added
-- [ ] SQL injection prevention (if applicable)
-- [ ] XSS prevention measures
-
-## ⚡ Performance Impact
-- [ ] No significant performance degradation
-- [ ] Database queries optimized
-- [ ] Bundle size impact minimal
-- [ ] Image optimization (if applicable)
-- [ ] Caching strategy considered
-
-## 🚀 Deployment Notes
-<!-- Any special instructions for deployment -->
-- [ ] Environment variables need to be set
+## Deployment Notes
+- [ ] No special deployment steps required
+- [ ] Environment variables need to be updated
 - [ ] Database migration required
 - [ ] Third-party service configuration needed
-- [ ] Cache clearing required
 
-## 📝 Additional Notes
-<!-- Any additional information that reviewers should know -->
+Special deployment instructions:
 
-## 🙏 Reviewer Guidelines
-<!-- Help reviewers focus on important areas -->
-**Please pay special attention to:**
-- [ ] Error handling in [specific area]
-- [ ] Performance in [specific component]
-- [ ] Security in [specific feature]
-- [ ] UX flow for [specific user journey]
+## Performance Impact
+- [ ] No performance impact expected
+- [ ] Performance improvements made
+- [ ] Potential performance concerns (explain below)
 
----
+## Security Considerations
+- [ ] No security implications
+- [ ] Security improvements made
+- [ ] Potential security concerns reviewed
 
-### 📋 Pre-merge Checklist (for maintainers)
-- [ ] Code review completed
-- [ ] All tests passing
-- [ ] Documentation updated
-- [ ] Performance tested
-- [ ] Security reviewed
-- [ ] Ready for deployment
+## Documentation Updated
+- [ ] README updated
+- [ ] Code comments added/updated
+- [ ] API documentation updated
+- [ ] No documentation changes needed
 
-**Estimated Review Time**: [Small: < 30min | Medium: 30min-2hr | Large: > 2hr]
-**Urgency**: [Low | Medium | High | Critical]
+## Checklist
+- [ ] My code follows the project's coding standards
+- [ ] I have performed a self-review of my code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] My changes generate no new warnings or errors
+- [ ] I have updated the documentation accordingly
+- [ ] My changes are responsive and work on mobile devices
+- [ ] I have tested error handling and edge cases
+
+## Additional Notes
+Add any additional notes for reviewers here.

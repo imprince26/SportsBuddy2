@@ -1,65 +1,57 @@
 ---
-name: ✨ Feature Request
-about: Suggest a new feature or enhancement for SportsBuddy
-title: "[FEATURE] "
-labels: ["enhancement", "needs-discussion"]
-assignees: ""
+name: Feature Request
+about: Suggest an idea for SportsBuddy
+title: '[FEATURE] '
+labels: ['feature']
+assignees: ''
 ---
 
-## 🚀 Feature Overview
+**Feature Summary**
 A clear and concise description of the feature you'd like to see implemented.
 
-## 💡 Motivation
-**Is your feature request related to a problem? Please describe.**
-A clear description of what the problem is. Ex. I'm always frustrated when [...]
+**Problem Statement**
+Describe the problem this feature would solve. What user need does this address?
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Proposed Solution**
+Describe the solution you'd like to see implemented in detail.
 
-## 🎯 User Story
-As a [type of user], I want [goal] so that [benefit/value].
+**Component/Area** (Select the most relevant)
+- [ ] Authentication & User Management
+- [ ] Events Management
+- [ ] Athletes Profile System
+- [ ] Community Features
+- [ ] Venue Management
+- [ ] Leaderboard System
+- [ ] Notification System
+- [ ] Admin Dashboard
+- [ ] File Upload System
+- [ ] Real-time Communication
+- [ ] API & Backend
+- [ ] Frontend UI/UX
+- [ ] Mobile Responsiveness
 
-## 📋 Acceptance Criteria
-- [ ] Criteria 1
-- [ ] Criteria 2  
-- [ ] Criteria 3
+**User Stories**
+As a [type of user], I want [feature] so that [benefit/value].
 
-## 🎨 Design/Mockups
-If you have design ideas, mockups, or wireframes, please attach them here.
+**Acceptance Criteria**
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
 
-## 🔧 Technical Considerations
-- Which part of the system would this affect? (Frontend/Backend/Database)
-- Any specific technologies or libraries needed?
-- Performance implications?
-- Security considerations?
+**Technical Considerations**
+- Database schema changes required: Yes/No
+- API endpoints needed: Yes/No
+- UI components required: Yes/No
+- Third-party integrations: Yes/No
 
-## 📱 Platform Support
-- [ ] Web (Desktop)
-- [ ] Web (Mobile)
-- [ ] Future Mobile App
+**Priority**
+- [ ] Critical (blocking other work)
+- [ ] High (important for next release)
+- [ ] Medium (would be nice to have)
+- [ ] Low (future consideration)
 
-## 🏆 Impact & Priority
-**Who would benefit from this feature?**
-- [ ] Athletes looking for events
-- [ ] Event organizers
-- [ ] Community managers
-- [ ] Venue owners
-- [ ] Admin users
-- [ ] All users
+**Additional Context**
+Add any other context, mockups, or examples about the feature request here.
 
-**Priority Level**: Low | Medium | High | Critical
-
-## 🔗 Related Features
-- Link to related issues/features
-- Dependencies on other features
-- Similar features in other platforms
-
-## 📈 Success Metrics
-How would we measure the success of this feature?
-- User engagement metrics
-- Feature adoption rate
-- User feedback
-- Performance metrics
-
----
-**Category**: Events | Athletes | Community | Venues | Chat | Authentication | Admin | UI/UX
+**Related Issues**
+Link any related issues or discussions.

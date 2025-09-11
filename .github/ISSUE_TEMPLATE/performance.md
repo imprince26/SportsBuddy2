@@ -1,53 +1,58 @@
 ---
-name: ⚡ Performance Issue
-about: Report performance problems or optimization opportunities
-title: "[PERFORMANCE] "
-labels: ["performance", "optimization"]
-assignees: ""
+name: Performance Issue
+about: Report performance problems in SportsBuddy
+title: '[PERFORMANCE] '
+labels: ['performance']
+assignees: ''
 ---
 
-## ⚡ Performance Issue
+**Performance Issue Type**
+- [ ] Slow page load times
+- [ ] High memory usage
+- [ ] Slow database queries
+- [ ] API response delays
+- [ ] Bundle size issues
+- [ ] Real-time communication lag
+- [ ] Image/file upload slowness
 
-**Describe the performance problem**
-A clear description of the performance issue you're experiencing.
+**Affected Component**
+- [ ] Frontend React components
+- [ ] Backend API endpoints
+- [ ] Database operations (MongoDB)
+- [ ] Authentication flow
+- [ ] Events system
+- [ ] Athletes management
+- [ ] Community features
+- [ ] Venue operations
+- [ ] Leaderboard calculations
+- [ ] Notification system
+- [ ] File upload (Cloudinary)
+- [ ] Socket.io real-time features
 
-## 📊 Current Performance
-- **Load Time**: [e.g., 5 seconds]
-- **Page/Feature Affected**: [e.g., Events listing, User profile]
-- **Device/Browser**: [e.g., Chrome on Windows]
-- **Network Condition**: [e.g., 4G, WiFi, Slow 3G]
+**Current Performance**
+Describe the current performance metrics (load times, response times, etc.)
 
-## 🎯 Expected Performance
+**Expected Performance**
 What performance level do you expect?
-- **Target Load Time**: [e.g., under 2 seconds]
-- **Specific Metrics**: [e.g., LCP, FID, CLS scores]
 
-## 🔍 Steps to Reproduce
-1. Navigate to...
-2. Perform action...
-3. Observe slow performance...
+**Steps to Reproduce**
+1. Go to '...'
+2. Perform action '...'
+3. Observe performance issue
 
-## 📈 Performance Data
+**Environment**
+- Browser: [e.g. Chrome, Safari, Firefox]
+- Device: [e.g. Desktop, Mobile, Tablet]
+- Network: [e.g. Fast 3G, Slow 3G, WiFi]
+- Location: [if relevant for venue/events features]
+
+**Performance Data**
 If available, include:
-- Browser DevTools Performance tab results
 - Network tab screenshots
-- Console warnings/errors
 - Lighthouse scores
+- Performance profiler data
+- Database query times
+- API response times
 
-## 💡 Potential Solutions
-Any ideas for optimization:
-- [ ] Code splitting
-- [ ] Image optimization
-- [ ] Caching improvements
-- [ ] Database query optimization
-- [ ] Bundle size reduction
-- [ ] Other: ___________
-
-## 🔧 Technical Details
-- **Component/Feature**: 
-- **Technology Stack**: React/Node.js/MongoDB
-- **Third-party Services**: Cloudinary/Socket.io
-
----
-**Impact Level**: Low | Medium | High | Critical
-**Area**: Frontend | Backend | Database | Network | Images/Media
+**Additional Context**
+Add any other context about the performance issue.

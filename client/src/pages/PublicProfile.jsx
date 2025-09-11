@@ -215,7 +215,6 @@ const PublicProfile = () => {
   const [followersDialogOpen, setFollowersDialogOpen] = useState(false)
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false)
   const [userStats, setUserStats] = useState({})
-  const [profileViews, setProfileViews] = useState(0)
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -251,7 +250,6 @@ const PublicProfile = () => {
       try {
         const res = await api.get(`/users/stats/${userId}`)
         setUserStats(res.data.data)
-        setProfileViews(res.data.data.profileViews || 0)
       } catch (error) {
         console.error("Error fetching user stats:", error)
       }
@@ -337,6 +335,8 @@ const PublicProfile = () => {
     })
   }
 
+  const coverImage = profile?.coverImage?.url
+
   useEffect(() => {
     if (profile) {
       document.title = `${profile.name} (@${profile.username}) | SportsBuddy`
@@ -407,16 +407,26 @@ const PublicProfile = () => {
 
         <Card className="overflow-hidden border-0 shadow-2xl bg-white dark:bg-gray-900 rounded-2xl animate-in slide-in-from-bottom-5 duration-500">
           <div className="relative">
-            <div className="h-64 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 relative overflow-hidden">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=60 height=60 viewBox=0 0 60 60 xmlns=http://www.w3.org/2000/svg%3E%3Cg fill=none fillRule=evenodd%3E%3Cg fill=%23ffffff fillOpacity=0.1%3E%3Ccircle cx=30 cy=30 r=4/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-
-              <div className="absolute top-4 left-4">
-                <div className="flex items-center gap-2 px-3 py-2 bg-black/20 backdrop-blur-sm rounded-full text-white text-sm">
-                  <Eye className="w-4 h-4" />
-                  <span>{profileViews} views</span>
+       <div className="h-64 relative overflow-hidden">
+              {/* If a cover image exists render it, otherwise keep gradient background */}
+              {coverImage ? (
+                <>
+                  <img
+                    src={coverImage}
+                    alt={`${profile.name} cover`}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                  />
+                  {/* Dark overlay for readability */}
+                  <div className="absolute inset-0 bg-black/30" />
+                </>
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800">
+                  {/* Decorative pattern only for gradient fallback */}
+                  <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=60 height=60 viewBox=0 0 60 60 xmlns=http://www.w3.org/2000/svg%3E%3Cg fill=none fillRule=evenodd%3E%3Cg fill=%23ffffff fillOpacity=0.1%3E%3Ccircle cx=30 cy=30 r=4/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </div>
-              </div>
+              )}
 
               <div className="absolute top-4 right-4 flex gap-3">
                 {user && user._id !== profile._id && (

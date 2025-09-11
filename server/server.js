@@ -46,18 +46,11 @@ app.use(rateLimiters.global);
 
 if (process.env.NODE_ENV === "production") job.start();
 
-const allowedOrigins = [process.env.CLIENT_URL, 'https://sports-buddy2.vercel.app', 'http://localhost:5173'].filter(Boolean);
-
 app.use(cors({
-  origin: allowedOrigins,
+  origin: process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.CLIENT_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
-app.options('*', cors({
-  origin: allowedOrigins,
-  credentials: true,
 }));
 
 // Routes
@@ -72,36 +65,6 @@ app.use("/api/community", rateLimiters.api, communityRoute);
 app.use("/api/leaderboard", rateLimiters.api, leaderboardRoute);
 app.use("/api/venues", rateLimiters.api, venueRoute);
 
-app.post("/api/upload",rateLimiters.upload, upload.array("file"), async (req, res) => {
-  try {
-    const files = req.files;
-    if (!files || files.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No files uploaded",
-      });
-    }
-
-    const imageUrls = await Promise.all(
-      files.map(async (file) => {
-        const result = await uploadImage(file);
-        return result.secure_url;
-      })
-    );
-
-    res.status(200).json({
-      success: true,
-      urls: imageUrls,
-    });
-  } catch (error) {
-    console.error("Error uploading images:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error uploading images",
-    });
-  }
-});
-
 // Error handling middleware for rate limiting
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
@@ -114,10 +77,18 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use((req, res,next) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'
+  });
+});
+
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
   });
 });
 

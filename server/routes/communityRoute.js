@@ -45,7 +45,7 @@ router.put('/:id', upload.array('image', 1), updateCommunity);
 router.delete('/:id', deleteCommunity);
 
 // User communities
-router.get('/user/:userId?', getUserCommunities);
+router.get('/user/:userId', getUserCommunities);
 
 // Community membership
 router.post('/:id/join', joinCommunity);

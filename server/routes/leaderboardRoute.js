@@ -20,7 +20,7 @@ router.get('/', getLeaderboard);
 router.get('/categories', getCategories);
 router.get('/sport/:sport', getLeaderboardBySport);
 router.get('/stats', getLeaderboardStats);
-router.get('/achievements/:userId?', getAchievements);
+router.get('/achievements/:userId', getAchievements);
 router.get('/trophies', getTrophies);
 
 // Protected routes (require authentication)

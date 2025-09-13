@@ -47,7 +47,7 @@ app.use(rateLimiters.global);
 if (process.env.NODE_ENV === "production") job.start();
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.CLIENT_URL,
+  origin: process.env.CLIENT_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

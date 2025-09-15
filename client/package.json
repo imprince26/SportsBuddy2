@@ -35,7 +35,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.13.2",
-    "framer-motion": "^10.16.15",
+    "framer-motion": "^12.23.12",
     "globby": "^14.1.0",
     "lucide-react": "^0.294.0",
     "prettier": "^3.6.2",

@@ -18,7 +18,7 @@ updates:
       include: "scope"
     labels:
       - "dependencies"
-      - "client"
+      - "frontend"
 
   # Server dependencies  
   - package-ecosystem: npm

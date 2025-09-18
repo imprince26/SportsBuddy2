@@ -17,7 +17,7 @@
   "description": "SportsBuddy Backend Server",
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "cloudinary": "^1.41.3",
+    "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cron": "^4.3.3",

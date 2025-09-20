@@ -1,4 +1,4 @@
-import React,{ useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
@@ -6,11 +6,11 @@ import { useEvents } from "@/hooks/useEvents"
 import { format, formatDistanceToNow } from "date-fns"
 import {
   Calendar, Users, Award, Activity, MapPin, Clock, ChevronRight, Plus, Star, Bell,
-   BarChart3, TrendingUp, CheckCircle, User, Dumbbell, Target, Zap, Trophy, 
-   Settings, ArrowUp, Crown, Medal,
-  Coffee, Sunrise, Moon, Sun, UserPlus, MessageCircle,  Sparkles,
-   CalendarDays, Users2, ShieldCheck,
-   Rocket
+  BarChart3, TrendingUp, CheckCircle, User, Dumbbell, Target, Zap, Trophy,
+  Settings, ArrowUp, Crown, Medal,
+  Coffee, Sunrise, Moon, Sun, UserPlus, MessageCircle, Sparkles,
+  CalendarDays, Users2, ShieldCheck,
+  Rocket
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -51,7 +51,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return
-      
+
       setLoadingData(true)
       try {
         // Fetch user events
@@ -60,16 +60,16 @@ const Dashboard = () => {
           const now = new Date()
           const events = eventsData.data.data
           setUserEvents({
-            participating: events.filter(event => 
+            participating: events.filter(event =>
               event.participants?.some(p => p.user._id === user.id || p.user === user.id)
             ),
-            created: events.filter(event => 
+            created: events.filter(event =>
               event.createdBy._id === user.id || event.createdBy === user.id
             ),
-            upcoming: events.filter(event => 
+            upcoming: events.filter(event =>
               new Date(event.date) > now && event.status === "Upcoming"
             ),
-            completed: events.filter(event => 
+            completed: events.filter(event =>
               event.status === "Completed"
             )
           })
@@ -91,7 +91,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       const stats = {
-        totalEvents:  user.stats?.eventsParticipated || 0,
+        totalEvents: user.stats?.eventsParticipated || 0,
         eventsCreated: user.stats?.eventsCreated || 0,
         eventsParticipated: user.stats?.eventsParticipated || 0,
         upcomingEvents: userEvents.upcoming.length,
@@ -116,7 +116,7 @@ const Dashboard = () => {
   const getGreeting = () => {
     const greetings = {
       night: user?.name ? `Good night, ${user.name.split(" ")[0]}` : "Good night",
-      morning: user?.name ? `Good morning, ${user.name.split(" ")[0]}` : "Good morning", 
+      morning: user?.name ? `Good morning, ${user.name.split(" ")[0]}` : "Good morning",
       afternoon: user?.name ? `Good afternoon, ${user.name.split(" ")[0]}` : "Good afternoon",
       evening: user?.name ? `Good evening, ${user.name.split(" ")[0]}` : "Good evening"
     }
@@ -147,7 +147,7 @@ const Dashboard = () => {
   const getActivityColor = (action) => {
     const colors = {
       event_join: "text-green-600 bg-green-100 dark:bg-green-900/20",
-      event_create: "text-blue-600 bg-blue-100 dark:bg-blue-900/20", 
+      event_create: "text-blue-600 bg-blue-100 dark:bg-blue-900/20",
       venue_review: "text-purple-600 bg-purple-100 dark:bg-purple-900/20",
       achievement_earned: "text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20",
       post_create: "text-indigo-600 bg-indigo-100 dark:bg-indigo-900/20"
@@ -254,197 +254,165 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950 overflow-hidden relative">
-      {/* Enhanced Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Animated Mesh Background */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-        </div>
-
-        {/* Floating Elements */}
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-blue-400/40 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -40, 0],
-              x: [0, Math.random() * 20 - 10, 0],
-              opacity: [0.4, 0.8, 0.4],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: 6 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 4,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-blue-950/90 dark:via-gray-900 dark:to-indigo-950 overflow-hidden relative">
 
       <div className="container mx-auto max-w-7xl px-4 py-6 relative z-10">
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
 
 
-<motion.div variants={itemVariants} className="mb-8">
-  <div className="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 border border-white/50 dark:border-slate-700/50 shadow-2xl">
-    {/* Header Background Pattern */}
-    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
+          <motion.div variants={itemVariants} className="mb-8">
+            <div className="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 border border-white/50 dark:border-slate-700/50 shadow-2xl">
+              {/* Header Background Pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-indigo-500/5 to-purple-500/5" />
 
-    <div className="relative z-10">
-      {/* Main User Info Section */}
-      <div className="flex flex-col lg:flex-row lg:items-start gap-6 mb-6">
-        {/* Left Section: Avatar + Basic Info */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-          <div className="flex items-center gap-4">
-            {/* Avatar with Online Status */}
-            <div className="relative flex-shrink-0">
-              <Avatar className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border-4 border-white shadow-xl">
-                <AvatarImage src={user?.avatar?.url || "/placeholder.svg"} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl sm:text-2xl lg:text-3xl font-bold">
-                  {user?.name?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              {/* Online Status Indicator */}
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
-                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full animate-pulse" />
-              </div>
-            </div>
+              <div className="relative z-10">
+                {/* Main User Info Section */}
+                <div className="flex flex-col lg:flex-row lg:items-start gap-6 mb-6">
+                  {/* Left Section: Avatar + Basic Info */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                    <div className="flex items-center gap-4">
+                      {/* Avatar with Online Status */}
+                      <div className="relative flex-shrink-0">
+                        <Avatar className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border-4 border-white shadow-xl">
+                          <AvatarImage src={user?.avatar?.url || "/placeholder.svg"} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xl sm:text-2xl lg:text-3xl font-bold">
+                            {user?.name?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        {/* Online Status Indicator */}
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
+                          <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full animate-pulse" />
+                        </div>
+                      </div>
 
-            {/* Greeting and User Info */}
-            <div className="flex-1 min-w-0">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex flex-wrap items-center gap-2 mb-2"
-              >
-                {/* {React.createElement(getGreetingIcon(), {
+                      {/* Greeting and User Info */}
+                      <div className="flex-1 min-w-0">
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex flex-wrap items-center gap-2 mb-2"
+                        >
+                          {/* {React.createElement(getGreetingIcon(), {
                   className: "w-5 h-5 sm:w-6 sm:h-6 text-amber-500 flex-shrink-0",
                 })} */}
-                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-white">
-                  {getGreeting()}!
-                </h1>
-                {/* <motion.span
+                          <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-white">
+                            {getGreeting()}!
+                          </h1>
+                          {/* <motion.span
                   animate={{ rotate: [0, 20, -20, 0] }}
                   transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 1 }}
                   className="text-lg sm:text-xl lg:text-2xl flex-shrink-0"
                 >
                   👋
                 </motion.span> */}
-              </motion.div>
+                        </motion.div>
 
-              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg mb-3">
-                Ready to elevate your sports journey today?
-              </p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg mb-3">
+                          Ready to elevate your sports journey today?
+                        </p>
 
-              {/* User Level Badge and Username */}
-              {dashboardStats && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-wrap items-center gap-2 sm:gap-3"
-                >
-                  {(() => {
-                    const levelInfo = getUserLevel(dashboardStats.totalPoints)
-                    return (
-                      <div
-                        className={`flex items-center gap-2 px-3 py-1 sm:px-4 rounded-full bg-gradient-to-r ${levelInfo.color} text-white shadow-lg`}
-                      >
-                        <span className="font-bold text-[.75rem] sm:text-base">{levelInfo.level}</span>
-                        <span className="text-white/80 text-xs sm:text-sm">{dashboardStats.totalPoints} pts</span>
+                        {/* User Level Badge and Username */}
+                        {dashboardStats && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex flex-wrap items-center gap-2 sm:gap-3"
+                          >
+                            {(() => {
+                              const levelInfo = getUserLevel(dashboardStats.totalPoints)
+                              return (
+                                <div
+                                  className={`flex items-center gap-2 px-3 py-1 sm:px-4 rounded-full bg-gradient-to-r ${levelInfo.color} text-white shadow-lg`}
+                                >
+                                  <span className="font-bold text-[.75rem] sm:text-base">{levelInfo.level}</span>
+                                  <span className="text-white/80 text-xs sm:text-sm">{dashboardStats.totalPoints} pts</span>
+                                </div>
+                              )
+                            })()}
+
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs sm:text-sm rounded-xl"
+                            >
+                              @{user?.username}
+                            </Badge>
+                          </motion.div>
+                        )}
                       </div>
-                    )
-                  })()}
+                    </div>
+                  </div>
 
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs sm:text-sm rounded-xl"
-                  >
-                    @{user?.username}
-                  </Badge>
-                </motion.div>
-              )}
+                  {/* Right Section: Quick Actions - Better positioning on large screens */}
+                  <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-3 lg:min-w-fit">
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="lg"
+                        className="w-full bg-white/80 hover:bg-white text-gray-900 border-gray-200/50 backdrop-blur-sm shadow-lg rounded-xl"
+                      >
+                        <Link to="/notifications" className="flex items-center justify-center gap-2">
+                          <Bell className="w-5 h-5" />
+                          <span>Notifications</span>
+                          {user?.notifications?.filter(n => !n.read).length > 0 && (
+                            <Badge className="bg-red-500 rounded-full text-white border-0 ml-1">
+                              {user.notifications.filter(n => !n.read).length}
+                            </Badge>
+                          )}
+                        </Link>
+                      </Button>
+                    </motion.div>
+
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+                      <Button
+                        asChild
+                        size="lg"
+                        className="w-full  bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg rounded-xl"
+                      >
+                        <Link to="/events/create" className="flex items-center justify-center gap-2">
+                          <Plus className="w-5 h-5" />
+                          <span>Create Event</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Bottom Section: Quick Stats */}
+                <div className="border-t border-gray-200/50 dark:border-gray-700/50 pt-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                    {dashboardStats && [
+                      { icon: Calendar, label: "Events", value: dashboardStats.totalEvents, color: "blue" },
+                      { icon: Trophy, label: "Achievements", value: dashboardStats.achievements, color: "yellow" },
+                      { icon: Users, label: "Followers", value: dashboardStats.followers, color: "green" },
+                      { icon: Target, label: "Level", value: Math.floor(dashboardStats.totalPoints / 100) + 1, color: "purple" }
+                    ].map((stat, index) => (
+                      <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 bg-${stat.color}-50 dark:bg-${stat.color}-900/20 rounded-2xl px-3 py-3 sm:px-4 sm:py-4 border border-${stat.color}-200/50 dark:border-${stat.color}-700/50 text-center sm:text-left group hover:shadow-lg transition-all duration-300`}
+                      >
+                        <div className={`w-10 h-10 sm:w-12 sm:h-12 mx-auto sm:mx-0 rounded-xl bg-gradient-to-r from-${stat.color}-500 to-${stat.color}-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                          <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                            {stat.value}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                            {stat.label}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Right Section: Quick Actions - Better positioning on large screens */}
-        <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-3 lg:min-w-fit">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="w-full bg-white/80 hover:bg-white text-gray-900 border-gray-200/50 backdrop-blur-sm shadow-lg rounded-xl"
-            >
-              <Link to="/notifications" className="flex items-center justify-center gap-2">
-                <Bell className="w-5 h-5" />
-                <span>Notifications</span>
-                {user?.notifications?.filter(n => !n.read).length > 0 && (
-                  <Badge className="bg-red-500 rounded-full text-white border-0 ml-1">
-                    {user.notifications.filter(n => !n.read).length}
-                  </Badge>
-                )}
-              </Link>
-            </Button>
           </motion.div>
-          
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-            <Button
-              asChild
-              size="lg"
-              className="w-full  bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg rounded-xl"
-            >
-              <Link to="/events/create" className="flex items-center justify-center gap-2">
-                <Plus className="w-5 h-5" />
-                <span>Create Event</span>
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Bottom Section: Quick Stats */}
-      <div className="border-t border-gray-200/50 dark:border-gray-700/50 pt-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          {dashboardStats && [
-            { icon: Calendar, label: "Events", value: dashboardStats.totalEvents, color: "blue" },
-            { icon: Trophy, label: "Achievements", value: dashboardStats.achievements, color: "yellow" },
-            { icon: Users, label: "Followers", value: dashboardStats.followers, color: "green" },
-            { icon: Target, label: "Level", value: Math.floor(dashboardStats.totalPoints / 100) + 1, color: "purple" }
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 bg-${stat.color}-50 dark:bg-${stat.color}-900/20 rounded-2xl px-3 py-3 sm:px-4 sm:py-4 border border-${stat.color}-200/50 dark:border-${stat.color}-700/50 text-center sm:text-left group hover:shadow-lg transition-all duration-300`}
-            >
-              <div className={`w-10 h-10 sm:w-12 sm:h-12 mx-auto sm:mx-0 rounded-xl bg-gradient-to-r from-${stat.color}-500 to-${stat.color}-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-                  {stat.value}
-                </div>
-                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                  {stat.label}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-</motion.div>
 
           <motion.div variants={itemVariants} className="mb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -458,7 +426,7 @@ const Dashboard = () => {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl transition-all duration-300 flex items-center gap-2"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-xl transition-all duration-300 flex items-center gap-2"
                   >
                     <tab.icon className="w-4 h-4" />
                     <span className="hidden sm:inline">{tab.label}</span>
@@ -515,7 +483,7 @@ const Dashboard = () => {
                     >
                       <Card className="relative overflow-hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-500">
                         <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                        
+
                         <CardContent className="relative p-6">
                           <div className="flex items-center justify-between mb-4">
                             <motion.div
@@ -530,7 +498,7 @@ const Dashboard = () => {
                               <span>{stat.trend}</span>
                             </div>
                           </div>
-                          
+
                           <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                             {stat.title}
                           </h3>
@@ -601,7 +569,7 @@ const Dashboard = () => {
                             <Trophy className="w-5 h-5 text-yellow-500" />
                             Recent Achievements
                           </CardTitle>
-                          <Button asChild variant="outline" size="sm">
+                          <Button asChild variant="outline" className="bg-transparent hover:bg-blue-900/20 rounded-xl" size="sm">
                             <Link to="/profile" className="flex items-center gap-2">
                               View All
                               <ChevronRight className="w-4 h-4" />
@@ -690,7 +658,7 @@ const Dashboard = () => {
                           <Calendar className="w-5 h-5" />
                           Upcoming Events
                         </span>
-                        <Button asChild variant="outline" size="sm">
+                        <Button asChild variant="outline" className="bg-transparent border border-gray-600/30 rounded-xl" size="sm">
                           <Link to="/events">View All</Link>
                         </Button>
                       </CardTitle>
@@ -707,7 +675,7 @@ const Dashboard = () => {
                               className="flex items-center justify-between p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-md transition-shadow"
                             >
                               <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                                   <Calendar className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
@@ -723,7 +691,7 @@ const Dashboard = () => {
                                   </div>
                                 </div>
                               </div>
-                              <Button asChild size="sm" variant="outline">
+                              <Button asChild size="sm" className="bg-transparent border border-gray-600/30 rounded-xl" variant="outline">
                                 <Link to={`/events/${event._id}`}>View</Link>
                               </Button>
                             </motion.div>

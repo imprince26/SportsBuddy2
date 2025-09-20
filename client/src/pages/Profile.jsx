@@ -812,7 +812,7 @@ const Profile = () => {
                                 <Crown className="w-8 h-8 text-yellow-500" />
                               </motion.div>
                             )}
-                            <Badge className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0">
+                            <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 rounded-xl">
                               Level {Math.floor((userStats?.eventsCreated || 0) / 5) + 1}
                             </Badge>
                           </h1>
@@ -894,7 +894,7 @@ const Profile = () => {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl transition-all duration-300 font-medium"
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-xl transition-all duration-300 font-medium"
                   >
                     <tab.icon className="w-4 h-4" />
                     {tab.label}
@@ -946,7 +946,7 @@ const Profile = () => {
                               <span className="font-medium text-gray-700 dark:text-gray-300">Profile Completion</span>
                               <span className="text-blue-600 dark:text-blue-400 font-bold">87%</span>
                             </div>
-                            <Progress value={87} className="h-3 bg-gray-200 dark:bg-gray-700" />
+                            <Progress value={87} className="h-3 bg-gray-200  dark:bg-gray-700" />
                           </div>
                           <div>
                             <div className="flex justify-between text-sm mb-2">

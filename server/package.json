@@ -33,7 +33,7 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.6",
     "pdfkit": "^0.17.2",
-    "recharts": "^3.2.0",
+    "recharts": "^3.2.1",
     "socket.io": "^4.7.2",
     "uuid": "^13.0.0",
     "zod": "^4.1.11"

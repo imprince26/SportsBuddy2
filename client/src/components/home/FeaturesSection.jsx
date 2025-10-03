@@ -136,8 +136,6 @@ const FeaturesSection = () => {
 
     return (
         <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
-            
-            <BgElements />
 
             <div className="container mx-auto px-4 relative z-10">
                 {/* Header Section */}
@@ -156,23 +154,23 @@ const FeaturesSection = () => {
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Platform Features</span>
                         <div className="flex gap-1">
                             {[...Array(3)].map((_, i) => (
-                                <div 
-                                    key={i} 
-                                    className="w-1 h-1 bg-blue-500/60 rounded-full animate-pulse" 
-                                    style={{ animationDelay: `${i * 0.2}s` }} 
+                                <div
+                                    key={i}
+                                    className="w-1 h-1 bg-blue-500/60 rounded-full animate-pulse"
+                                    style={{ animationDelay: `${i * 0.2}s` }}
                                 />
                             ))}
                         </div>
                     </motion.div>
 
-                    <motion.h2 
+                    <motion.h2
                         variants={itemVariants}
                         className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"
                     >
                         Why Choose
-                        <motion.span 
+                        <motion.span
                             className="block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent"
-                            animate={{ 
+                            animate={{
                                 backgroundPosition: ['0%', '100%', '0%'],
                             }}
                             transition={{ duration: 5, repeat: Infinity }}
@@ -180,12 +178,12 @@ const FeaturesSection = () => {
                             SportsBuddy?
                         </motion.span>
                     </motion.h2>
-                    
-                    <motion.p 
+
+                    <motion.p
                         variants={itemVariants}
                         className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-relaxed mb-8"
                     >
-                        Our platform combines cutting-edge technology with community-driven features to deliver 
+                        Our platform combines cutting-edge technology with community-driven features to deliver
                         the ultimate sports networking experience. Discover what makes us different.
                     </motion.p>
 
@@ -228,8 +226,8 @@ const FeaturesSection = () => {
                         <motion.div
                             key={index}
                             variants={cardVariants}
-                            whileHover={{ 
-                                scale: 1.05, 
+                            whileHover={{
+                                scale: 1.05,
                                 rotateY: 5,
                                 z: 50
                             }}
@@ -241,7 +239,7 @@ const FeaturesSection = () => {
                             <div className="h-full p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 transition-all duration-500 overflow-hidden shadow-lg hover:shadow-2xl">
                                 {/* Background Gradient */}
                                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                                
+
                                 {/* Animated Background Pattern */}
                                 <div className="absolute inset-0 opacity-5">
                                     <motion.div
@@ -266,7 +264,7 @@ const FeaturesSection = () => {
                                                     top: `${20 + Math.random() * 60}%`,
                                                 }}
                                                 initial={{ opacity: 0, scale: 0 }}
-                                                animate={{ 
+                                                animate={{
                                                     opacity: [0, 1, 0],
                                                     scale: [0, 1.5, 0],
                                                     y: [0, -20, -40],
@@ -293,7 +291,7 @@ const FeaturesSection = () => {
                                     </div>
 
                                     {/* Icon */}
-                                    <motion.div 
+                                    <motion.div
                                         className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}
                                         animate={{
                                             rotate: hoveredIndex === index ? [0, 10, -10, 0] : 0,
@@ -307,7 +305,7 @@ const FeaturesSection = () => {
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300">
                                         {feature.title}
                                     </h3>
-                                    
+
                                     <p className="text-gray-600 dark:text-gray-400 leading-relaxed flex-grow mb-6">
                                         {feature.description}
                                     </p>
@@ -351,7 +349,7 @@ const FeaturesSection = () => {
                     viewport={{ once: true }}
                     className="text-center mt-16"
                 >
-                    <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-2xl text-white shadow-2xl">
+                    <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white shadow-2xl">
                         <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                                 <Zap className="w-6 h-6 text-yellow-300" />
@@ -373,69 +371,8 @@ const FeaturesSection = () => {
                     </div>
                 </motion.div>
 
-                {/* Additional Features Preview */}
-                <div
-                    // initial={{ opacity: 0, y: 30 }}
-                    // whileInView={{ opacity: 1, y: 0 }}
-                    // transition={{ duration: 0.6, delay: 0.5 }}
-                    // viewport={{ once: true }}
-                    className="mt-20 p-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50"
-                >
-                    <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                            Coming Soon
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            We're constantly evolving to bring you more amazing features
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {[
-                            { icon: Activity, label: "Fitness Tracking", color: "text-green-500" },
-                            { icon: Trophy, label: "Tournaments", color: "text-yellow-500" },
-                            { icon: MapPin, label: "AR Venues", color: "text-blue-500" },
-                            { icon: Shield, label: "Safety Features", color: "text-red-500" },
-                        ].map((item, index) => (
-                            <div
-                                key={index}
-                                // initial={{ opacity: 0, scale: 0.8 }}
-                                // whileInView={{ opacity: 1, scale: 1 }}
-                                // transition={{ delay: 0.7 + index * 0.1 }}
-                                // whileHover={{ scale: 1.05 }}
-                                className="text-center p-4 rounded-xl bg-gray-50/50 dark:bg-gray-700/50 backdrop-blur-sm"
-                            >
-                                <div className="w-12 h-12 mx-auto mb-3 bg-gray-100/50 dark:bg-gray-600/50 rounded-xl flex items-center justify-center">
-                                    <item.icon className={`w-6 h-6 ${item.color}`} />
-                                </div>
-                                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
 
-            {/* Additional Floating Elements */}
-            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-50 to-transparent dark:from-gray-900 dark:to-transparent pointer-events-none" />
-            
-            {/* Corner Decorative Elements */}
-            <motion.div
-                className="absolute top-10 right-10 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl"
-                animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-            />
-            
-            <motion.div
-                className="absolute bottom-10 left-10 w-16 h-16 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-xl"
-                animate={{
-                    scale: [1, 1.3, 1],
-                    opacity: [0.2, 0.5, 0.2],
-                }}
-                transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-            />
         </section>
     )
 }

@@ -66,11 +66,11 @@ const Footer = () => {
   ]
 
   const socialLinks = [
-    { name: 'Facebook', icon: Facebook, url: 'https://facebook.com/sportsbuddy', color: '#1877F2', description: 'Join our community' },
-    { name: 'Twitter', icon: Twitter, url: 'https://twitter.com/sportsbuddy', color: '#111111', description: 'Latest updates' },
-    { name: 'Instagram', icon: Instagram, url: 'https://instagram.com/sportsbuddy', color: '#E4405F', description: 'Behind the scenes' },
-    { name: 'LinkedIn', icon: Linkedin, url: 'https://linkedin.com/company/sportsbuddy', color: '#0A66C2', description: 'Professional network' },
-    { name: 'YouTube', icon: Youtube, url: 'https://youtube.com/sportsbuddy', color: '#FF0000', description: 'Video content' },
+    { name: 'Facebook', icon: Facebook, url: 'https://facebook.com/', color: '#1877F2', description: 'Join our community' },
+    { name: 'Twitter', icon: Twitter, url: 'https://twitter.com/', color: '#111111', description: 'Latest updates' },
+    { name: 'Instagram', icon: Instagram, url: 'https://instagram.com/', color: '#E4405F', description: 'Behind the scenes' },
+    { name: 'LinkedIn', icon: Linkedin, url: 'https://linkedin.com/company/', color: '#0A66C2', description: 'Professional network' },
+    { name: 'YouTube', icon: Youtube, url: 'https://youtube.com/', color: '#FF0000', description: 'Video content' },
   ]
 
   const stats = [
@@ -108,141 +108,9 @@ const Footer = () => {
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-blue-950/20" />
 
-        {/* Floating Orbs */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-32 h-32 rounded-full opacity-10"
-            style={{
-              background: `linear-gradient(135deg, ${['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'][i % 4]
-                }, transparent)`,
-              left: `${20 + (i * 15) % 60}%`,
-              top: `${10 + (i * 20) % 80}%`,
-            }}
-            animate={{
-              y: [0, -20, 0],
-              scale: [1, 1.1, 1],
-              rotate: [0, 180, 360],
-            }}
-            transition={{
-              duration: 8 + (i % 3),
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.5,
-            }}
-          />
-        ))}
       </div>
 
       <div className="relative z-10">
-        {/* Newsletter Section */}
-        {/* <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
-          className="container mx-auto px-4 pt-16 pb-12"
-        >
-          <motion.div
-            variants={itemVariants}
-            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-8 md:p-12 text-white shadow-2xl"
-          >
-            <div className="absolute inset-0 opacity-10">
-              <svg viewBox="0 0 100 100" className="w-full h-full">
-                <defs>
-                  <pattern id="footerGrid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                  </pattern>
-                </defs>
-                <rect width="100" height="100" fill="url(#footerGrid)" />
-              </svg>
-            </div>
-
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-              <div className="text-center lg:text-left max-w-2xl">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-xl rounded-full border border-white/30 mb-6"
-                >
-                  <Sparkles className="w-4 h-4 text-yellow-300" />
-                  <span className="text-sm font-medium">Join the SportsBuddy Community</span>
-                </motion.div>
-
-                <h3 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-                  Never Miss a Game Again
-                </h3>
-                <p className="text-lg text-white/90 mb-6 leading-relaxed">
-                  Get exclusive access to premium events, early-bird discounts, and personalized 
-                  sports recommendations delivered straight to your inbox.
-                </p>
-
-                <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-8">
-                  {stats.map((stat, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="text-center"
-                    >
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                      <div className="text-sm text-white/80">{stat.label}</div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="w-full lg:w-auto lg:min-w-[400px]">
-                <form onSubmit={handleSubscribe} className="space-y-4">
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <Input
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-12 h-14 bg-white/10 backdrop-blur-xl border-white/30 text-white placeholder:text-white/60 rounded-xl text-lg"
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={isSubscribed || isSubscribing}
-                    className="w-full h-14 bg-white text-blue-600 hover:bg-white/90 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    {isSubscribing ? (
-                      <>
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mr-2"
-                        />
-                        Subscribing...
-                      </>
-                    ) : isSubscribed ? (
-                      <>
-                        <Check className="h-5 w-5 mr-2" />
-                        Subscribed Successfully!
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-5 w-5 mr-2" />
-                        Subscribe to Newsletter
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-
-                <p className="text-xs text-white/70 mt-3 text-center">
-                  Join 10,000+ athletes already in our community. Unsubscribe anytime.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div> */}
 
         {/* Main Footer Content */}
         <motion.div
@@ -299,7 +167,7 @@ const Footer = () => {
                   <MapPin className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     123 Sports Avenue<br />
-                    Athleticville, ST 12345
+                    India 12345
                   </span>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -308,7 +176,7 @@ const Footer = () => {
                     href="tel:+11234567890"
                     className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
-                    +1 (123) 456-7890
+                    +91 1234567890
                   </a>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -317,7 +185,7 @@ const Footer = () => {
                     href="mailto:support@sportsbuddy.com"
                     className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
-                    support@sportsbuddy.com
+                    support@example.com
                   </a>
                 </div>
               </div>

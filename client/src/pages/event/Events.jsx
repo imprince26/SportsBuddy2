@@ -56,16 +56,16 @@ const Events = () => {
 
   // Categories and options
   const categories = [
-    { value: "all", label: "All Sports", icon: "🏆" },
-    { value: "Football", label: "Football", icon: "⚽" },
-    { value: "Basketball", label: "Basketball", icon: "🏀" },
-    { value: "Tennis", label: "Tennis", icon: "🎾" },
-    { value: "Running", label: "Running", icon: "🏃" },
-    { value: "Cycling", label: "Cycling", icon: "🚴" },
-    { value: "Swimming", label: "Swimming", icon: "🏊" },
-    { value: "Volleyball", label: "Volleyball", icon: "🏐" },
-    { value: "Cricket", label: "Cricket", icon: "🏏" },
-    { value: "Other", label: "Other", icon: "🎯" }
+    { value: "all", label: "All Sports", icon: "" },
+    { value: "Football", label: "Football", icon: "" },
+    { value: "Basketball", label: "Basketball", icon: "" },
+    { value: "Tennis", label: "Tennis", icon: "" },
+    { value: "Running", label: "Running", icon: "" },
+    { value: "Cycling", label: "Cycling", icon: "" },
+    { value: "Swimming", label: "Swimming", icon: "" },
+    { value: "Volleyball", label: "Volleyball", icon: "" },
+    { value: "Cricket", label: "Cricket", icon: "" },
+    { value: "Other", label: "Other", icon: "" }
   ]
 
   // Parse URL parameters on component mount
@@ -436,13 +436,6 @@ const Events = () => {
             className="mb-8 sm:mb-12"
           >
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-2"
-              >
-                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </motion.div>
               <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                 Featured Events
               </h2>

@@ -86,8 +86,6 @@ const CallToAction = () => {
     return (
       <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
         
-        <BgElements />
-
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
@@ -313,7 +311,7 @@ const CallToAction = () => {
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-purple-600/90 to-blue-800/90" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90  to-indigo-800/90" />
         
         {/* Animated Particles */}
         {[...Array(25)].map((_, i) => (

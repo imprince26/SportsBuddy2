@@ -144,8 +144,6 @@ const CategoriesSection = () => {
 
   return (
     <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
-      {/* Background Elements */}
-      <BgElements />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Header Section */}
@@ -292,7 +290,7 @@ const CategoriesSection = () => {
 
                   <div className="relative z-10 h-full flex flex-col text-center">
                     {/* Icon */}
-                    <motion.div 
+                    {/* <motion.div 
                       className="text-6xl lg:text-7xl mb-4 transform group-hover:scale-110 transition-transform duration-500"
                       animate={{
                         rotate: hoveredIndex === index ? [0, 10, -10, 0] : 0,
@@ -300,7 +298,7 @@ const CategoriesSection = () => {
                       transition={{ duration: 0.6 }}
                     >
                       {category.icon}
-                    </motion.div>
+                    </motion.div> */}
 
                     {/* Category Name */}
                     <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300">
@@ -370,7 +368,7 @@ const CategoriesSection = () => {
           // viewport={{ once: true }}
           className="text-center mt-16"
         >
-          <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-2xl text-white shadow-2xl">
+          <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white shadow-2xl">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                 <Zap className="w-6 h-6 text-yellow-300" />

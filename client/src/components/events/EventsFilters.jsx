@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -36,34 +34,34 @@ const EventsFilters = ({
   const [isSearchFocused, setIsSearchFocused] = useState(false)
 
   const difficulties = [
-    { value: "all", label: "All Levels", icon: "🎯", color: "text-gray-600" },
-    { value: "Beginner", label: "Beginner", icon: "🌱", color: "text-green-600" },
-    { value: "Intermediate", label: "Intermediate", icon: "⚡", color: "text-yellow-600" },
-    { value: "Advanced", label: "Advanced", icon: "🔥", color: "text-red-600" },
+    { value: "all", label: "All Levels", icon: "", color: "text-gray-600" },
+    { value: "Beginner", label: "Beginner", icon: "", color: "text-green-600" },
+    { value: "Intermediate", label: "Intermediate", icon: "", color: "text-yellow-600" },
+    { value: "Advanced", label: "Advanced", icon: "", color: "text-red-600" },
   ]
 
   const dateRanges = [
-    { value: "all", label: "All Dates", icon: "📅", color: "text-gray-600" },
-    { value: "today", label: "Today", icon: "📍", color: "text-blue-600" },
-    { value: "tomorrow", label: "Tomorrow", icon: "🌅", color: "text-purple-600" },
-    { value: "thisWeek", label: "This Week", icon: "📊", color: "text-green-600" },
-    { value: "thisMonth", label: "This Month", icon: "📆", color: "text-orange-600" },
-    { value: "upcoming", label: "Upcoming", icon: "🚀", color: "text-indigo-600" },
+    { value: "all", label: "All Dates", icon: "", color: "text-gray-600" },
+    { value: "today", label: "Today", icon: "", color: "text-blue-600" },
+    { value: "tomorrow", label: "Tomorrow", icon: "", color: "text-purple-600" },
+    { value: "thisWeek", label: "This Week", icon: "", color: "text-green-600" },
+    { value: "thisMonth", label: "This Month", icon: "", color: "text-orange-600" },
+    { value: "upcoming", label: "Upcoming", icon: "", color: "text-indigo-600" },
   ]
 
   const sortOptions = [
-    { value: "date:asc", label: "Date (Earliest First)", icon: "⏰", color: "text-blue-600" },
-    { value: "date:desc", label: "Date (Latest First)", icon: "🕐", color: "text-blue-600" },
-    { value: "created:desc", label: "Recently Added", icon: "✨", color: "text-purple-600" },
-    { value: "participants:desc", label: "Most Popular", icon: "👥", color: "text-green-600" },
-    { value: "name:asc", label: "Name (A-Z)", icon: "🔤", color: "text-gray-600" },
+    { value: "date:asc", label: "Date (Earliest First)", icon: "", color: "text-blue-600" },
+    { value: "date:desc", label: "Date (Latest First)", icon: "", color: "text-blue-600" },
+    { value: "created:desc", label: "Recently Added", icon: "", color: "text-purple-600" },
+    { value: "participants:desc", label: "Most Popular", icon: "", color: "text-green-600" },
+    { value: "name:asc", label: "Name (A-Z)", icon: "", color: "text-gray-600" },
   ]
 
   const statusOptions = [
-    { value: "all", label: "All Statuses", icon: "📋", color: "text-gray-600" },
-    { value: "Upcoming", label: "Upcoming", icon: "🚀", color: "text-blue-600" },
-    { value: "Ongoing", label: "Live Now", icon: "🔴", color: "text-red-600" },
-    { value: "Completed", label: "Completed", icon: "✅", color: "text-green-600" },
+    { value: "all", label: "All Statuses", icon: "", color: "text-gray-600" },
+    { value: "Upcoming", label: "Upcoming", icon: "", color: "text-blue-600" },
+    { value: "Ongoing", label: "Live Now", icon: "", color: "text-red-600" },
+    { value: "Completed", label: "Completed", icon: "", color: "text-green-600" },
   ]
 
   // Quick filter shortcuts
@@ -175,8 +173,9 @@ const EventsFilters = ({
 
             {/* Filter Controls Row */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              {/* Main Filters - Stack on mobile, row on desktop */}
-              <div className="flex flex-col xs:flex-row xs:flex-wrap sm:flex-nowrap items-stretch xs:items-center gap-2 sm:gap-3 flex-1">
+
+              {/* Main Filters */}
+              <div className="flex flex-col lg:flex-row flex-wrap lg:flex-nowrap items-stretch xs:items-center gap-2 sm:gap-3 flex-1">
                 {/* Category Filter */}
                 <Select value={filters.category} onValueChange={(value) => handleFilterChange("category", value)}>
                   <SelectTrigger className="w-full xs:w-auto xs:min-w-[140px] sm:min-w-[160px] h-10 sm:h-11 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -426,19 +425,19 @@ const EventsFilters = ({
                         <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl shadow-xl">
                           <SelectItem value="all" className="rounded-lg py-2 sm:py-3">
                             <div className="flex items-center gap-2 sm:gap-3">
-                              <span className="text-base sm:text-lg">💰</span>
+                              {/* <span className="text-base sm:text-lg">💰</span> */}
                               <span className="font-medium text-sm sm:text-base">All Events</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="free" className="rounded-lg py-2 sm:py-3">
                             <div className="flex items-center gap-2 sm:gap-3">
-                              <span className="text-base sm:text-lg">🆓</span>
+                              {/* <span className="text-base sm:text-lg">🆓</span> */}
                               <span className="font-medium text-sm sm:text-base">Free Events</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="paid" className="rounded-lg py-2 sm:py-3">
                             <div className="flex items-center gap-2 sm:gap-3">
-                              <span className="text-base sm:text-lg">💵</span>
+                              {/* <span className="text-base sm:text-lg">💵</span> */}
                               <span className="font-medium text-sm sm:text-base">Paid Events</span>
                             </div>
                           </SelectItem>
@@ -480,7 +479,7 @@ const EventsFilters = ({
                           }}
                           className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
                         >
-                          🌱 <span className="hidden xs:inline ml-1">Beginner This Week</span>
+                          <span className="hidden xs:inline ml-1">Beginner This Week</span>
                           <span className="xs:hidden ml-1">Beginner</span>
                         </Button>
                         <Button
@@ -492,7 +491,7 @@ const EventsFilters = ({
                           }}
                           className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
                         >
-                          🚀 <span className="hidden xs:inline ml-1">Popular Upcoming</span>
+                          <span className="hidden xs:inline ml-1">Popular Upcoming</span>
                           <span className="xs:hidden ml-1">Popular</span>
                         </Button>
                         <Button
@@ -504,7 +503,7 @@ const EventsFilters = ({
                           }}
                           className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
                         >
-                          🔴 <span className="hidden xs:inline ml-1">Live Now</span>
+                          <span className="hidden xs:inline ml-1">Live Now</span>
                           <span className="xs:hidden ml-1">Live</span>
                         </Button>
                         <Button
@@ -515,7 +514,7 @@ const EventsFilters = ({
                           }}
                           className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 rounded-lg text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
                         >
-                          🆓 <span className="hidden xs:inline ml-1">Free Events</span>
+                          <span className="hidden xs:inline ml-1">Free Events</span>
                           <span className="xs:hidden ml-1">Free</span>
                         </Button>
                       </div>

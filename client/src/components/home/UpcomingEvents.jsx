@@ -116,8 +116,6 @@ const UpcomingEvents = () => {
 
   return (
     <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
-      {/* Background Elements */}
-      <BgElements />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Header Section */}
@@ -206,7 +204,7 @@ const UpcomingEvents = () => {
         >
           <Link
             to="/events"
-            className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+            className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             <Eye className="w-5 h-5 mr-2" />
             View All Events
@@ -466,7 +464,7 @@ const UpcomingEvents = () => {
               </p>
               <Link
                 to="/events/create"
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <Play className="w-5 h-5 mr-2" />
                 Create First Event
@@ -484,7 +482,7 @@ const UpcomingEvents = () => {
             viewport={{ once: true }}
             className="text-center mt-16"
           >
-            <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-2xl text-white shadow-2xl">
+            <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white shadow-2xl">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                   <Zap className="w-6 h-6 text-yellow-300" />
@@ -507,28 +505,6 @@ const UpcomingEvents = () => {
           </motion.div>
         )}
       </div>
-
-      {/* Additional Floating Elements */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-50 to-transparent dark:from-gray-900 dark:to-transparent pointer-events-none" />
-      
-      {/* Corner Decorative Elements */}
-      <motion.div
-        className="absolute top-10 right-10 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.6, 0.3],
-        }}
-        transition={{ duration: 4, repeat: Infinity }}
-      />
-      
-      <motion.div
-        className="absolute bottom-10 left-10 w-16 h-16 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.2, 0.5, 0.2],
-        }}
-        transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-      />
     </section>
   )
 }

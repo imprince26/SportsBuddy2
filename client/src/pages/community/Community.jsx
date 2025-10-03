@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Search, 
@@ -40,18 +40,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
 // Hooks and Context
 import { useAuth } from '@/hooks/useAuth';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import useDebounce from '@/hooks/useDebounce';
 
 // Utils
@@ -100,18 +92,18 @@ const Community = () => {
 
   // Categories
   const categories = [
-    { value: 'all', label: 'All Sports', icon: '🏆', color: 'from-blue-500 to-cyan-500' },
-    { value: 'Football', label: 'Football', icon: '⚽', color: 'from-green-500 to-emerald-500' },
-    { value: 'Cricket', label: 'Cricket', icon: '🏏', color: 'from-orange-500 to-red-500' },
-    { value: 'Basketball', label: 'Basketball', icon: '🏀', color: 'from-orange-600 to-yellow-500' },
-    { value: 'Badminton', label: 'Badminton', icon: '🏸', color: 'from-purple-500 to-pink-500' },
-    { value: 'Tennis', label: 'Tennis', icon: '🎾', color: 'from-yellow-500 to-lime-500' },
-    { value: 'Volleyball', label: 'Volleyball', icon: '🏐', color: 'from-blue-600 to-indigo-500' },
-    { value: 'Swimming', label: 'Swimming', icon: '🏊‍♂️', color: 'from-cyan-500 to-blue-500' },
-    { value: 'Running', label: 'Running', icon: '🏃‍♂️', color: 'from-red-500 to-pink-500' },
-    { value: 'Cycling', label: 'Cycling', icon: '🚴‍♂️', color: 'from-indigo-500 to-purple-500' },
-    { value: 'Gym', label: 'Gym & Fitness', icon: '💪', color: 'from-gray-600 to-gray-800' },
-    { value: 'Yoga', label: 'Yoga', icon: '🧘‍♀️', color: 'from-teal-500 to-green-500' }
+    { value: 'all', label: 'All Sports', icon: '', color: 'from-blue-500 to-cyan-500' },
+    { value: 'Football', label: 'Football', icon: '', color: 'from-green-500 to-emerald-500' },
+    { value: 'Cricket', label: 'Cricket', icon: '', color: 'from-orange-500 to-red-500' },
+    { value: 'Basketball', label: 'Basketball', icon: '', color: 'from-orange-600 to-yellow-500' },
+    { value: 'Badminton', label: 'Badminton', icon: '', color: 'from-purple-500 to-pink-500' },
+    { value: 'Tennis', label: 'Tennis', icon: '', color: 'from-yellow-500 to-lime-500' },
+    { value: 'Volleyball', label: 'Volleyball', icon: '', color: 'from-blue-600 to-indigo-500' },
+    { value: 'Swimming', label: 'Swimming', icon: '', color: 'from-cyan-500 to-blue-500' },
+    { value: 'Running', label: 'Running', icon: '', color: 'from-red-500 to-pink-500' },
+    { value: 'Cycling', label: 'Cycling', icon: '', color: 'from-indigo-500 to-purple-500' },
+    { value: 'Gym', label: 'Gym & Fitness', icon: '', color: 'from-gray-600 to-gray-800' },
+    { value: 'Yoga', label: 'Yoga', icon: '', color: 'from-teal-500 to-green-500' }
   ];
 
   // Animation variants

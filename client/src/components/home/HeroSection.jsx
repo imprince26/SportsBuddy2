@@ -412,7 +412,8 @@ const HeroSection = () => {
                       <span className="text-sm font-medium">Real-time Matching</span>
                     </div>
                   </motion.div>
-                </div>
+
+                </div>       
               )}
             </motion.div>
           </AnimatePresence>

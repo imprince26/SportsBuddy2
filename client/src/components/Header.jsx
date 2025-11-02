@@ -202,26 +202,10 @@ const Header = () => {
             >
               <Link to="/" className="flex items-center space-x-3 group">
                 <div className="relative">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-6 h-6 lg:w-7 lg:h-7 text-white"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m4.93 4.93 4.24 4.24" />
-                      <path d="m14.83 9.17 4.24-4.24" />
-                      <path d="m14.83 14.83 4.24 4.24" />
-                      <path d="m9.17 14.83-4.24 4.24" />
-                      <circle cx="12" cy="12" r="4" />
-                    </svg>
+                  <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl border border-blue-100/60 dark:border-slate-700/60 bg-white/90 dark:bg-slate-900/80 flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl group-hover:ring-2 group-hover:ring-blue-400/40">
+                    <SportsBuddyLogo isDarkMode={isDarkMode} className="w-7 h-7 lg:w-8 lg:h-8" />
                   </div>
-                  <div className="absolute inset-0 w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-xl blur-lg group-hover:blur-xl transition-all duration-300" />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/15 via-transparent to-purple-500/15 blur-lg group-hover:blur-xl transition-all duration-300 pointer-events-none" />
                 </div>
                 <div className="hidden sm:block">
                   <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
@@ -754,6 +738,52 @@ const Header = () => {
         )}
       </AnimatePresence>
     </>
+  )
+}
+
+const SportsBuddyLogo = ({ isDarkMode, className }) => {
+  const palette = isDarkMode
+    ? {
+      ring: "#E2E8F0",
+      orbit: "#38BDF8",
+      connector: "#FACC15",
+      support: "#38BDF8",
+      hub: "#0EA5E9",
+      core: "#F8FAFC",
+      anchor: "#FACC15"
+    }
+    : {
+      ring: "#1E293B",
+      orbit: "#2563EB",
+      connector: "#F59E0B",
+      support: "#38BDF8",
+      hub: "#2563EB",
+      core: "#ffffff",
+      anchor: "#F59E0B"
+    }
+
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 64 64"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="SportsBuddy logo"
+    >
+      <title>SportsBuddy logo</title>
+      <circle cx="32" cy="32" r="28" fill="none" stroke={palette.ring} strokeWidth="3" opacity="0.85" />
+      <circle cx="32" cy="32" r="20" fill="none" stroke={palette.orbit} strokeWidth="4" opacity="0.8" />
+      <path d="M16 44C22 50 42 50 48 44" stroke={palette.support} strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.8" />
+      <path d="M16 24C10 24 10 40 16 40" stroke={palette.connector} strokeWidth="5" strokeLinecap="round" fill="none" />
+      <path d="M48 24C54 24 54 40 48 40" stroke={palette.connector} strokeWidth="5" strokeLinecap="round" fill="none" />
+      <circle cx="32" cy="32" r="8" fill={palette.core} stroke={palette.hub} strokeWidth="4" />
+      <circle cx="32" cy="14" r="5" fill={palette.anchor} />
+      <circle cx="32" cy="50" r="5" fill={palette.anchor} />
+      <circle cx="16" cy="24" r="6" fill={palette.orbit} opacity="0.9" />
+      <circle cx="48" cy="24" r="6" fill={palette.orbit} opacity="0.9" />
+      <circle cx="16" cy="40" r="6" fill={palette.orbit} opacity="0.9" />
+      <circle cx="48" cy="40" r="6" fill={palette.orbit} opacity="0.9" />
+    </svg>
   )
 }
 

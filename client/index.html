@@ -7,6 +7,26 @@
     <title>SportsBuddy - Connect with Athletes and Sports Events</title>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Theme initialization script to prevent flash -->
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+    <style>
+      /* Prevent flash of wrong background */
+      html, body {
+        background-color: #ffffff;
+      }
+      html.dark, html.dark body {
+        background-color: #111827;
+      }
+    </style>
     </head>
   <body>
     <div id="root"></div>

@@ -28,6 +28,12 @@ connectDB();
 const app = express();
 const httpServer = createServer(app);
 
+const rawOrigins = process.env.CLIENT_URLS || process.env.CLIENT_URL || "";
+const allowedOrigins = rawOrigins
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 // Configure Socket.io
 const io = setupSocket(httpServer);
 app.set("io", io);
@@ -47,7 +53,12 @@ app.use(rateLimiters.global);
 if (process.env.NODE_ENV === "production") job.start();
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

@@ -28,11 +28,11 @@ connectDB();
 const app = express();
 const httpServer = createServer(app);
 
-const rawOrigins = process.env.CLIENT_URLS || process.env.CLIENT_URL || "";
-const allowedOrigins = rawOrigins
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://sports-buddy2.vercel.app",
+  "https://sportsbuddy.princepatel.me"
+];
 
 // Configure Socket.io
 const io = setupSocket(httpServer);
@@ -54,10 +54,11 @@ if (process.env.NODE_ENV === "production") job.start();
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS policy: This origin is not allowed"));
     }
-    callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

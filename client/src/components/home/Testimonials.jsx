@@ -13,7 +13,7 @@ import {
   CheckCircle,
   Award,
 } from 'lucide-react'
-import BgElements from '../BgElements'
+// Background elements handled by `BgElements` (now static)
 
 
 const Testimonials = () => {
@@ -185,8 +185,6 @@ const Testimonials = () => {
   return (
     <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
       
-      <BgElements />
-
       <div className="container mx-auto px-4 relative z-10">
         {/* Header Section */}
         <motion.div
@@ -196,37 +194,17 @@ const Testimonials = () => {
           // variants={containerVariants}
           className="text-center mb-16"
         >
-          <motion.div
-            variants={itemVariants}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 dark:bg-gray-800/20 backdrop-blur-xl rounded-full border border-gray-200/30 dark:border-gray-700/30 mb-6"
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 dark:bg-gray-800/20 rounded-full border border-gray-200/30 dark:border-gray-700/30 mb-6">
             <Sparkles className="w-4 h-4 text-blue-500" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Success Stories</span>
-            <div className="flex gap-1">
-              {[...Array(3)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="w-1 h-1 bg-yellow-500/60 rounded-full animate-pulse" 
-                  style={{ animationDelay: `${i * 0.2}s` }} 
-                />
-              ))}
-            </div>
-          </motion.div>
+          </div>
 
           <motion.h2 
             variants={itemVariants}
             className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"
           >
             What Our
-            <motion.span 
-              className="block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent"
-              animate={{ 
-                backgroundPosition: ['0%', '100%', '0%'],
-              }}
-              transition={{ duration: 5, repeat: Infinity }}
-            >
-              Community Says
-            </motion.span>
+            <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">Community Says</span>
           </motion.h2>
           
           <motion.p 
@@ -337,44 +315,10 @@ const Testimonials = () => {
                     {/* Background Gradient */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${testimonial.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                     
-                    {/* Animated Background Pattern */}
+                    {/* Static Background Pattern */}
                     <div className="absolute inset-0 opacity-5">
-                      <motion.div
-                        className={`w-full h-full bg-gradient-to-br ${testimonial.gradient}`}
-                        animate={{
-                          scale: hoveredIndex === index ? [1, 1.1, 1] : 1,
-                          rotate: hoveredIndex === index ? [0, 5, 0] : 0,
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      />
+                      <div className={`w-full h-full bg-gradient-to-br ${testimonial.gradient}`} />
                     </div>
-
-                    {/* Floating Particles for Each Card */}
-                    {hoveredIndex === index && (
-                      <div className="absolute inset-0 pointer-events-none">
-                        {[...Array(6)].map((_, i) => (
-                          <motion.div
-                            key={i}
-                            className={`absolute w-1 h-1 bg-gradient-to-r ${testimonial.gradient} rounded-full`}
-                            style={{
-                              left: `${20 + Math.random() * 60}%`,
-                              top: `${20 + Math.random() * 60}%`,
-                            }}
-                            initial={{ opacity: 0, scale: 0 }}
-                            animate={{ 
-                              opacity: [0, 1, 0],
-                              scale: [0, 1.5, 0],
-                              y: [0, -20, -40],
-                            }}
-                            transition={{
-                              duration: 1.5,
-                              repeat: Infinity,
-                              delay: i * 0.2,
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
 
                     <div className="relative z-10 h-full flex flex-col">
                       {/* Header with Sport Badge */}
@@ -394,15 +338,9 @@ const Testimonials = () => {
                       </div>
 
                       {/* Quote Icon */}
-                      <motion.div
-                        animate={{
-                          rotate: hoveredIndex === index ? [0, 10, -10, 0] : 0,
-                        }}
-                        transition={{ duration: 0.6 }}
-                        className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mb-6"
-                      >
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mb-6">
                         <Quote className="w-6 h-6 text-blue-500" />
-                      </motion.div>
+                      </div>
 
                       {/* Rating Stars */}
                       <div className="flex items-center mb-6">
@@ -525,24 +463,7 @@ const Testimonials = () => {
       {/* Additional Floating Elements */}
       <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-50 to-transparent dark:from-gray-900 dark:to-transparent pointer-events-none" />
       
-      {/* Corner Decorative Elements */}
-      <motion.div
-        className="absolute top-10 right-10 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.6, 0.3],
-        }}
-        transition={{ duration: 4, repeat: Infinity }}
-      />
-      
-      <motion.div
-        className="absolute bottom-10 left-10 w-16 h-16 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.2, 0.5, 0.2],
-        }}
-        transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-      />
+      {/* Decorative corners removed to lower animation overhead */}
     </section>
   )
 }

@@ -350,13 +350,12 @@ const Events = () => {
             initial={{ opacity: 0, rotateY: -90 }}
             animate={{ opacity: 1, rotateY: 0 }}
             transition={{ duration: 0.8, delay: 0.6 + index * 0.1 }}
-            whileHover={{ scale: 1.05, rotateY: 5 }}
+            whileHover={{ y: -4 }}
             className="group relative"
-            style={{ transformStyle: 'preserve-3d' }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 dark:from-black/20 dark:to-black/5 rounded-xl blur-lg group-hover:blur-md transition-all duration-300" />
-            <div className="relative p-3 sm:p-4 lg:p-6 bg-white/20 dark:bg-white/10 backdrop-blur-xl rounded-xl border border-white/30 dark:border-white/20 text-center shadow-lg dark:shadow-xl">
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto mb-2 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+            <div className="relative p-3 sm:p-4 lg:p-6 bg-white/20 dark:bg-white/10 backdrop-blur-xl rounded-xl border border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/15 text-center shadow-lg dark:shadow-xl transition-all duration-300">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto mb-2 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300 shadow-lg`}>
                 <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
               </div>
               <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</div>
@@ -376,13 +375,13 @@ const Events = () => {
         {isAuthenticated && (
           <Link to="/events/create" className="w-full md:w-auto">
             <motion.button
-              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileHover={{ y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-gray-600/40 text-blue-600 dark:text-blue-400 font-bold rounded-2xl shadow-xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50"
+              className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-gray-600/40 text-blue-600 dark:text-blue-400 font-bold rounded-2xl shadow-xl hover:shadow-2xl overflow-hidden border border-blue-500/30 dark:border-blue-400/30 hover:bg-blue-50 dark:hover:bg-gray-700/60 transition-all duration-300"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white to-blue-50 dark:from-gray-800 dark:to-blue-950/50 transform transition-transform group-hover:scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white to-blue-50 dark:from-gray-800 dark:to-blue-950/50" />
               <div className="relative flex items-center justify-center gap-3">
-                <Plus className="w-5 h-5 transform group-hover:scale-110 transition-transform" />
+                <Plus className="w-5 h-5" />
                 <span>Create Event</span>
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-blue-400/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -391,10 +390,10 @@ const Events = () => {
         )}
 
         <motion.button
-          whileHover={{ scale: 1.05, rotateY: -5 }}
+          whileHover={{ y: -2 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => document.getElementById('events-section')?.scrollIntoView({ behavior: 'smooth' })}
-          className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/20 dark:bg-gray-900/40 backdrop-blur-xl border-2 border-white/40 dark:border-white/10 text-gray-900 dark:text-white font-bold rounded-2xl hover:bg-white/30 dark:hover:bg-gray-900/60 transition-all duration-300 shadow-lg"
+          className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/20 dark:bg-gray-900/40 backdrop-blur-xl border border-white/30 dark:border-white/10 text-gray-900 dark:text-white font-bold rounded-xl hover:bg-white/30 dark:hover:bg-gray-900/60 transition-all duration-300 shadow-lg hover:shadow-xl"
         >
           <div className="flex items-center justify-center gap-3">
             <Search className="w-5 h-5" />
@@ -700,7 +699,7 @@ const Events = () => {
                     {/* First Page Button */}
                     {pagination.page > 3 && pagination.pages > 5 && (
                       <>
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
                           <Button
                             variant="outline"
                             onClick={() => handlePageChange(1)}
@@ -717,7 +716,7 @@ const Events = () => {
 
                     {/* Previous Button */}
                     <motion.div
-                      whileHover={{ scale: 1.05, x: -2 }}
+                      whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <Button
@@ -755,7 +754,7 @@ const Events = () => {
                         return (
                           <motion.div
                             key={pageNum}
-                            whileHover={{ scale: 1.1, rotateY: 5 }}
+                            whileHover={{ y: -2 }}
                             whileTap={{ scale: 0.9 }}
                             className="relative"
                           >
@@ -785,7 +784,7 @@ const Events = () => {
 
                     {/* Next Button */}
                     <motion.div
-                      whileHover={{ scale: 1.05, x: 2 }}
+                      whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <Button
@@ -810,7 +809,7 @@ const Events = () => {
                         {pagination.page < pagination.pages - 3 && (
                           <div className="text-gray-400 dark:text-gray-500 px-2">...</div>
                         )}
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
                           <Button
                             variant="outline"
                             onClick={() => handlePageChange(pagination.pages)}

@@ -72,7 +72,7 @@ const NotFound = () => {
       description: "Discover amazing sports events",
       icon: Calendar,
       href: "/events",
-      gradient: "from-blue-500 to-blue-600",
+      gradient: "from-primary to-primary",
       color: "blue"
     },
     {
@@ -88,7 +88,7 @@ const NotFound = () => {
       description: "Check your activity",
       icon: Trophy,
       href: "/dashboard",
-      gradient: "from-purple-500 to-purple-600",
+      gradient: "from-secondary to-secondary",
       color: "purple"
     },
     {
@@ -102,7 +102,7 @@ const NotFound = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden relative">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden relative">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Gradient Overlay */}
@@ -187,7 +187,7 @@ const NotFound = () => {
             {/* Animated 404 Number */}
             <div className="relative mb-8">
               <motion.div
-                className="text-[12rem] md:text-[16rem] lg:text-[20rem] font-black text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text leading-none"
+                className="text-[12rem] md:text-[16rem] lg:text-[20rem] font-black text-transparent bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text leading-none"
                 animate={{
                   backgroundPosition: ['0%', '100%', '0%'],
                 }}
@@ -198,7 +198,7 @@ const NotFound = () => {
 
               {/* Floating Sports Icons */}
               <motion.div
-                className="absolute top-1/4 left-1/4 w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-2xl"
+                className="absolute top-1/4 left-1/4 w-16 h-16 bg-gradient-to-br from-primary to-primary rounded-full flex items-center justify-center shadow-2xl"
                 variants={bounceVariants}
                 animate="animate"
               >
@@ -215,7 +215,7 @@ const NotFound = () => {
               </motion.div>
 
               <motion.div
-                className="absolute bottom-1/4 left-1/3 w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-xl"
+                className="absolute bottom-1/4 left-1/3 w-14 h-14 bg-gradient-to-br from-secondary to-secondary rounded-full flex items-center justify-center shadow-xl"
                 variants={rotateVariants}
                 animate="animate"
               >
@@ -255,15 +255,15 @@ const NotFound = () => {
                 transition={{ delay: 0.3 }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-full border border-gray-200/50 dark:border-gray-700/50 mb-6 shadow-lg"
               >
-                <Zap className="w-4 h-4 text-blue-500" />
+                <Zap className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Oops! Page Lost in the Game</span>
               </motion.div>
 
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-gray-900 dark:text-white leading-tight">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-neutral-900 dark:text-white leading-tight">
                 Page Not Found
               </h1>
 
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed mb-8">
+              <p className="text-lg md:text-xl text-neutral-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed mb-8">
                 Looks like this page decided to take a timeout! Don't worry, there are plenty of
                 other exciting sports adventures waiting for you.
               </p>
@@ -272,24 +272,24 @@ const NotFound = () => {
               <div className="flex flex-wrap justify-center gap-4 mb-8">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-2 bg-blue-500/10 rounded-full px-4 py-2 border border-blue-500/20"
+                  className="flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 border border-blue-500/20"
                 >
-                  <Calendar className="w-4 h-4 text-blue-500" />
-                  <span className="font-medium text-gray-900 dark:text-white">1000+ Events</span>
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-neutral-900 dark:text-white">1000+ Events</span>
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center gap-2 bg-green-500/10 rounded-full px-4 py-2 border border-green-500/20"
                 >
                   <Users className="w-4 h-4 text-green-500" />
-                  <span className="font-medium text-gray-900 dark:text-white">50K+ Athletes</span>
+                  <span className="font-medium text-neutral-900 dark:text-white">50K+ Athletes</span>
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-2 bg-purple-500/10 rounded-full px-4 py-2 border border-purple-500/20"
+                  className="flex items-center gap-2 bg-secondary/10 rounded-full px-4 py-2 border border-purple-500/20"
                 >
-                  <Trophy className="w-4 h-4 text-purple-500" />
-                  <span className="font-medium text-gray-900 dark:text-white">25+ Sports</span>
+                  <Trophy className="w-4 h-4 text-secondary" />
+                  <span className="font-medium text-neutral-900 dark:text-white">25+ Sports</span>
                 </motion.div>
               </div>
             </motion.div>
@@ -299,7 +299,7 @@ const NotFound = () => {
           <motion.div variants={itemVariants} className="mb-16">
             <div className="flex flex-wrap justify-center gap-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl text-white shadow-lg h-14 px-8">
+                <Button asChild size="lg" className="bg-gradient-to-r from-primary to-secondary hover:from-blue-700 hover:to-purple-700 rounded-xl text-white shadow-lg h-14 px-8">
                   <Link to="/" className="flex items-center gap-3">
                     <Home className="w-5 h-5" />
                     <span className="font-medium">Back to Home</span>
@@ -334,10 +334,10 @@ const NotFound = () => {
           <motion.div variants={itemVariants}>
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-3xl p-8 shadow-2xl">
               <div className="mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white mb-4">
                   Popular Destinations
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                <p className="text-neutral-600 dark:text-gray-400 max-w-2xl mx-auto">
                   While you're here, check out these popular sections of SportsBuddy
                 </p>
               </div>
@@ -354,7 +354,7 @@ const NotFound = () => {
                   >
                     <Link
                       to={action.href}
-                      className="block p-6 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-gray-50/50 to-gray-100/50 dark:from-gray-700/50 dark:to-gray-800/50 backdrop-blur-sm"
+                      className="block p-6 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-neutral-50/50 to-gray-100/50 dark:from-gray-700/50 dark:to-gray-800/50 backdrop-blur-sm"
                     >
                       <div className="relative mb-4">
                         <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${action.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
@@ -369,14 +369,14 @@ const NotFound = () => {
                         </div>
                       </div>
 
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2 group-hover:text-primary dark:group-hover:text-primary transition-colors">
                         {action.title}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <p className="text-sm text-neutral-600 dark:text-gray-400 mb-4">
                         {action.description}
                       </p>
 
-                      <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium group-hover:gap-2 transition-all">
+                      <div className="flex items-center text-primary dark:text-primary text-sm font-medium group-hover:gap-2 transition-all">
                         <span>Explore</span>
                         <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                       </div>
@@ -392,12 +392,12 @@ const NotFound = () => {
             variants={itemVariants}
             className="mt-12 text-center"
           >
-            <div className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
+            <div className="inline-flex items-center gap-2 text-neutral-600 dark:text-gray-400 text-sm">
               <span>Still need help?</span>
               <motion.div whileHover={{ scale: 1.05 }}>
                 <Link
                   to="/contact"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium inline-flex items-center gap-1 transition-colors"
+                  className="text-primary dark:text-primary hover:text-blue-700 dark:hover:text-blue-300 font-medium inline-flex items-center gap-1 transition-colors"
                 >
                   Contact Support
                   <ArrowRight className="w-3 h-3" />
@@ -429,7 +429,7 @@ const NotFound = () => {
 
       {/* Refresh Button - Hidden but functional */}
       <motion.button
-        className="fixed bottom-6 right-6 w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
+        className="fixed bottom-6 right-6 w-12 h-12 bg-gradient-to-r from-primary to-secondary text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => window.location.reload()}

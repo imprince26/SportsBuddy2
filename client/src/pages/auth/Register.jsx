@@ -226,10 +226,10 @@ const Register = () => {
                       <UserPlus className="w-5 h-5 text-white" />
                     </motion.div>
                   </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                  <CardTitle className="text-xl font-bold text-neutral-900 dark:text-white mb-1">
                     Join SportsBuddy
                   </CardTitle>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs">
+                  <p className="text-neutral-600 dark:text-gray-400 text-xs">
                     Create your account and start your sports journey
                   </p>
                 </motion.div>
@@ -387,14 +387,14 @@ const Register = () => {
                       />
                       <label
                         htmlFor="terms"
-                        className="text-xs text-gray-600 dark:text-gray-400 cursor-pointer leading-relaxed"
+                        className="text-xs text-neutral-600 dark:text-gray-400 cursor-pointer leading-relaxed"
                       >
                         I agree to the{" "}
-                        <Link to="/terms" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                        <Link to="/terms" className="text-primary dark:text-primary hover:underline font-medium">
                           Terms of Service
                         </Link>{" "}
                         and{" "}
-                        <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                        <Link to="/privacy" className="text-primary dark:text-primary hover:underline font-medium">
                           Privacy Policy
                         </Link>
                       </label>
@@ -432,11 +432,11 @@ const Register = () => {
                   variants={itemVariants}
                   className="text-center pt-2 border-t border-gray-200 dark:border-gray-700"
                 >
-                  <p className="text-gray-600 dark:text-gray-400 text-xs">
+                  <p className="text-neutral-600 dark:text-gray-400 text-xs">
                     Already have an account?{" "}
                     <Link
                       to="/login"
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold hover:underline transition-colors"
+                      className="text-primary dark:text-primary hover:text-primary/90 dark:hover:text-blue-300 font-semibold hover:underline transition-colors"
                     >
                       Sign in here
                     </Link>
@@ -477,8 +477,8 @@ const Register = () => {
             >
               <div className="flex items-center justify-center space-x-1">
                 <Trophy className="w-4 h-4 text-purple-600" />
-                <span className="font-bold text-base text-gray-900 dark:text-white">SportsBuddy</span>
-                <Zap className="w-4 h-4 text-blue-600" />
+                <span className="font-bold text-base text-neutral-900 dark:text-white">SportsBuddy</span>
+                <Zap className="w-4 h-4 text-primary" />
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Your sports community awaits

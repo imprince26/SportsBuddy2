@@ -53,7 +53,7 @@ const CallToAction = () => {
         icon: Play, 
         label: 'Host Events', 
         desc: 'Create and manage sports events',
-        color: 'from-yellow-400 to-orange-500',
+        color: 'from-primary to-primary/80',
         path: '/events/create',
         stats: '2.5K+ Created'
       },
@@ -61,7 +61,7 @@ const CallToAction = () => {
         icon: Users, 
         label: 'Build Teams', 
         desc: 'Connect with like-minded athletes',
-        color: 'from-blue-400 to-purple-500',
+        color: 'from-secondary to-secondary/80',
         path: '/community',
         stats: '8K+ Teams'
       },
@@ -69,7 +69,7 @@ const CallToAction = () => {
         icon: Calendar, 
         label: 'Track Progress', 
         desc: 'Monitor your sports journey',
-        color: 'from-green-400 to-teal-500',
+        color: 'from-primary/80 to-primary/60',
         path: '/dashboard',
         stats: '15K+ Activities'
       },
@@ -77,7 +77,7 @@ const CallToAction = () => {
         icon: Trophy, 
         label: 'Join Tournaments', 
         desc: 'Compete and win amazing prizes',
-        color: 'from-pink-400 to-red-500',
+        color: 'from-secondary/80 to-secondary/60',
         path: '/events?type=tournament',
         stats: '500+ Tournaments'
       }
@@ -92,29 +92,23 @@ const CallToAction = () => {
             whileInView="visible"
             viewport={{ once: true }}
             variants={containerVariants}
-            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-2xl"
+            className="bg-white dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-gray-200 dark:border-gray-700 shadow-xl"
           >
             {/* Header */}
             <motion.div variants={itemVariants} className="text-center mb-12">
               <motion.div
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-xl rounded-full border border-blue-200/30 dark:border-blue-700/30 mb-6"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 backdrop-blur-xl rounded-full border border-blue-300 dark:border-blue-700 mb-6"
               >
-                <Crown className="w-4 h-4 text-yellow-500" />
+                <Crown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Welcome back, {user.name?.split(' ')[0]}!</span>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-pulse" />
               </motion.div>
 
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-                Ready to Level Up
-                <motion.span 
-                  className="block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent"
-                  animate={{ 
-                    backgroundPosition: ['0%', '100%', '0%'],
-                  }}
-                  transition={{ duration: 5, repeat: Infinity }}
-                >
+                Ready to Level Up{' '}
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
                   Your Game?
-                </motion.span>
+                </span>
               </h2>
               
               <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
@@ -126,26 +120,26 @@ const CallToAction = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Main CTA */}
               <motion.div variants={itemVariants}>
-                <div className="space-y-8">
-                  <div className="p-6 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl border border-blue-200/20 dark:border-blue-700/20">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-                        <Rocket className="w-6 h-6 text-white" />
+                  <div className="space-y-8">
+                    <div className="p-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-gray-800/50 dark:to-gray-700/50 rounded-2xl border border-blue-200/50 dark:border-gray-700">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                          <Rocket className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Quick Actions</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">What would you like to do today?</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Quick Actions</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">What would you like to do today?</p>
-                      </div>
-                    </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <Link to="/events/create">
                         <motion.button
                           whileHover={{ scale: 1.05, y: -2 }}
                           whileTap={{ scale: 0.95 }}
-                          className="w-full p-4 bg-white dark:bg-gray-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border border-gray-200/50 dark:border-gray-600/50"
+                          className="w-full p-4 bg-white dark:bg-gray-700/80 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group border border-gray-200 dark:border-gray-600"
                         >
-                          <Play className="w-8 h-8 text-blue-500 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                          <Play className="w-8 h-8 text-blue-600 dark:text-blue-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
                           <div className="text-sm font-semibold text-gray-900 dark:text-white">Create Event</div>
                         </motion.button>
                       </Link>
@@ -154,9 +148,9 @@ const CallToAction = () => {
                         <motion.button
                           whileHover={{ scale: 1.05, y: -2 }}
                           whileTap={{ scale: 0.95 }}
-                          className="w-full p-4 bg-white dark:bg-gray-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border border-gray-200/50 dark:border-gray-600/50"
+                          className="w-full p-4 bg-white dark:bg-gray-700/80 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group border border-gray-200 dark:border-gray-600"
                         >
-                          <Target className="w-8 h-8 text-green-500 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                          <Target className="w-8 h-8 text-purple-600 dark:text-purple-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
                           <div className="text-sm font-semibold text-gray-900 dark:text-white">Find Events</div>
                         </motion.button>
                       </Link>
@@ -166,10 +160,10 @@ const CallToAction = () => {
                   {/* Achievement Badge */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
-                    className="p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-2xl border border-yellow-200/20 dark:border-yellow-700/20"
+                    className="p-4 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800/50 dark:to-gray-700/50 rounded-2xl border border-blue-200/50 dark:border-gray-700"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                         <Flame className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -188,60 +182,20 @@ const CallToAction = () => {
                     <motion.div
                       key={action.label}
                       variants={itemVariants}
-                      whileHover={{ 
-                        scale: 1.05, 
-                        rotateY: 5,
-                        z: 50
-                      }}
-                      onHoverStart={() => setHoveredIndex(index)}
-                      onHoverEnd={() => setHoveredIndex(null)}
+                      whileHover={{ y: -4 }}
                       className="group relative"
-                      style={{ transformStyle: 'preserve-3d' }}
                     >
                       <Link to={action.path}>
-                        <div className="h-full p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 transition-all duration-500 overflow-hidden shadow-lg hover:shadow-2xl text-center">
-                          {/* Background Gradient */}
-                          <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                          
-                          {/* Floating Particles for Each Card */}
-                          {hoveredIndex === index && (
-                            <div className="absolute inset-0 pointer-events-none">
-                              {[...Array(4)].map((_, i) => (
-                                <motion.div
-                                  key={i}
-                                  className={`absolute w-1 h-1 bg-gradient-to-r ${action.color} rounded-full`}
-                                  style={{
-                                    left: `${20 + Math.random() * 60}%`,
-                                    top: `${20 + Math.random() * 60}%`,
-                                  }}
-                                  initial={{ opacity: 0, scale: 0 }}
-                                  animate={{ 
-                                    opacity: [0, 1, 0],
-                                    scale: [0, 1.5, 0],
-                                    y: [0, -20, -40],
-                                  }}
-                                  transition={{
-                                    duration: 1.5,
-                                    repeat: Infinity,
-                                    delay: i * 0.2,
-                                  }}
-                                />
-                              ))}
-                            </div>
-                          )}
+                        <div className="h-full p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300 shadow-md hover:shadow-lg text-center">
 
                           <div className="relative z-10">
                             <motion.div
-                              animate={{
-                                rotate: hoveredIndex === index ? [0, 10, -10, 0] : 0,
-                              }}
-                              transition={{ duration: 0.6 }}
-                              className={`w-12 h-12 rounded-xl bg-gradient-to-r ${action.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}
+                              className={`w-12 h-12 rounded-xl bg-gradient-to-r ${action.color} flex items-center justify-center mx-auto mb-3 transition-transform shadow-lg`}
                             >
                               <action.icon className="w-6 h-6 text-white" />
                             </motion.div>
                             
-                            <div className="text-sm font-bold text-gray-900 dark:text-white mb-1 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300">
+                            <div className="text-sm font-bold text-gray-900 dark:text-white mb-1">
                               {action.label}
                             </div>
                             
@@ -252,11 +206,6 @@ const CallToAction = () => {
                             <div className="text-xs font-medium text-blue-600 dark:text-blue-400">
                               {action.stats}
                             </div>
-                          </div>
-
-                          {/* Hover Glow Effect */}
-                          <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${action.color} opacity-20 blur-xl`} />
                           </div>
                         </div>
                       </Link>
@@ -277,25 +226,25 @@ const CallToAction = () => {
       icon: Users, 
       label: 'Find Athletes', 
       desc: 'Connect with local players',
-      color: 'from-blue-400 to-blue-600'
+      color: 'from-primary to-primary/80'
     },
     { 
       icon: Calendar, 
       label: 'Join Events', 
       desc: 'Discover exciting games',
-      color: 'from-green-400 to-green-600'
+      color: 'from-secondary to-secondary/80'
     },
     { 
       icon: Trophy, 
       label: 'Win Prizes', 
       desc: 'Compete in tournaments',
-      color: 'from-yellow-400 to-yellow-600'
+      color: 'from-primary/70 to-primary/90'
     },
     { 
       icon: Shield, 
       label: 'Safe & Secure', 
       desc: 'Verified community',
-      color: 'from-purple-400 to-purple-600'
+      color: 'from-secondary/70 to-secondary/90'
     }
   ]
 
@@ -308,62 +257,6 @@ const CallToAction = () => {
 
   return (
     <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90  to-indigo-800/90" />
-        
-        {/* Animated Particles */}
-        {[...Array(25)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-white/30 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -50, 0],
-              x: [0, Math.random() * 40 - 20, 0],
-              opacity: [0.3, 0.8, 0.3],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: 8 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 4,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-
-        {/* Floating Geometric Shapes */}
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={`shape-${i}`}
-            className="absolute opacity-10"
-            style={{
-              left: `${10 + (i * 10) % 80}%`,
-              top: `${5 + (i * 12) % 90}%`,
-              width: `${40 + (i % 4) * 20}px`,
-              height: `${40 + (i % 4) * 20}px`,
-              background: `linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent)`,
-              borderRadius: i % 2 === 0 ? '50%' : '20%',
-            }}
-            animate={{
-              y: [0, -40, 0],
-              rotate: [0, 180, 360],
-              scale: [1, 1.4, 1],
-            }}
-            transition={{
-              duration: 10 + (i % 4),
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.6,
-            }}
-          />
-        ))}
-      </div>
 
       <div className="container mx-auto px-4 text-center relative z-10">
         <motion.div
@@ -375,41 +268,24 @@ const CallToAction = () => {
           {/* Header */}
           <motion.div variants={itemVariants} className="mb-16">
             <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-xl rounded-full border border-white/30 mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 mb-6"
             >
-              <Sparkles className="w-4 h-4 text-yellow-300" />
-              <span className="text-sm font-medium text-white">Join the Community</span>
-              <div className="flex gap-1">
-                {[...Array(3)].map((_, i) => (
-                  <div 
-                    key={i} 
-                    className="w-1 h-1 bg-white/60 rounded-full animate-pulse" 
-                    style={{ animationDelay: `${i * 0.2}s` }} 
-                  />
-                ))}
-              </div>
+              <Sparkles className="w-4 h-4 text-blue-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Join the Community</span>
             </motion.div>
 
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
-              Ready to Find Your
-              <motion.span 
-                className="block bg-gradient-to-r from-yellow-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent"
-                animate={{ 
-                  backgroundPosition: ['0%', '100%', '0%'],
-                  scale: [1, 1.02, 1]
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-              >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8 leading-tight">
+              Ready to Find Your{' '}
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Sports Community?
-              </motion.span>
+              </span>
             </h2>
             
             <motion.p 
               variants={itemVariants}
-              className="text-lg md:text-2xl text-white/90 max-w-4xl mx-auto mb-12 leading-relaxed"
+              className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed"
             >
-              Join SportsBuddy today and connect with thousands of sports enthusiasts in your area. 
-              Start your journey to a more active and social lifestyle!
+              Join SportsBuddy today and connect with thousands of sports enthusiasts in your area.
             </motion.p>
 
             {/* Stats */}
@@ -423,16 +299,15 @@ const CallToAction = () => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.1, duration: 0.5 }}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  className="group relative p-4 bg-white/20 backdrop-blur-xl rounded-xl border border-white/30"
+                  whileHover={{ y: -2 }}
+                  className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="relative z-10 text-center">
-                    <div className="w-8 h-8 mx-auto mb-2 rounded-lg bg-white/20 flex items-center justify-center">
-                      <stat.icon className="w-4 h-4 text-white" />
+                  <div className="text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 rounded-lg bg-gradient-to-r from-blue-100/50 to-purple-100/50 dark:from-blue-900/40 dark:to-purple-900/40 flex items-center justify-center">
+                      <stat.icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div className="text-xl font-bold text-white">{stat.value}</div>
-                    <div className="text-xs text-white/80">{stat.label}</div>
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">{stat.label}</div>
                   </div>
                 </motion.div>
               ))}
@@ -443,27 +318,23 @@ const CallToAction = () => {
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
             <Link to="/register">
               <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="group relative px-10 py-5 bg-white text-blue-600 font-bold rounded-2xl shadow-2xl overflow-hidden text-lg"
-                style={{ transformStyle: 'preserve-3d' }}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="group relative px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl overflow-hidden text-lg border-2 border-transparent hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-white to-blue-50 transform transition-transform group-hover:scale-110" />
                 <div className="relative flex items-center gap-3">
-                  <Rocket className="w-6 h-6 transform group-hover:scale-110 transition-transform" />
+                  <Rocket className="w-6 h-6" />
                   <span>Get Started Free</span>
-                  <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               </motion.button>
             </Link>
             
             <Link to="/events">
               <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
+                whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className="group px-10 py-5 bg-white/10 backdrop-blur-xl border-2 border-white/30 text-white font-bold rounded-2xl hover:bg-white/20 transition-all duration-300 text-lg"
-                style={{ transformStyle: 'preserve-3d' }}
+                className="group px-10 py-5 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 text-gray-900 dark:text-white font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300 text-lg shadow-md hover:shadow-lg"
               >
                 <div className="flex items-center gap-3">
                   <Globe className="w-6 h-6" />
@@ -484,13 +355,13 @@ const CallToAction = () => {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 whileHover={{ scale: 1.05, y: -5 }}
                 viewport={{ once: true }}
-                className="group bg-white/10 backdrop-blur-xl rounded-2xl p-6 text-center border border-white/20 hover:bg-white/20 transition-all duration-300 hover:border-white/40"
+                className="group bg-white dark:bg-gray-800 rounded-2xl p-6 text-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300 shadow-md hover:shadow-lg"
               >
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
                   <feature.icon className="w-6 h-6 text-white" />
                 </div>
-                <div className="text-white font-bold mb-1">{feature.label}</div>
-                <div className="text-white/80 text-sm">{feature.desc}</div>
+                <div className="text-gray-900 dark:text-white font-bold mb-1">{feature.label}</div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm">{feature.desc}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -498,7 +369,7 @@ const CallToAction = () => {
           {/* Trust Indicators */}
           <motion.div
             variants={itemVariants}
-            className="mt-16 flex flex-wrap justify-center items-center gap-8 text-white/80"
+            className="mt-16 flex flex-wrap justify-center items-center gap-8 text-gray-600 dark:text-gray-400"
           >
             <div className="flex items-center gap-2">
               <div className="flex">
@@ -510,39 +381,18 @@ const CallToAction = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-green-400" />
+              <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <span className="text-sm font-medium">Verified Community</span>
             </div>
             
             <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-red-400" />
+              <Heart className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span className="text-sm font-medium">15K+ Happy Users</span>
             </div>
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Additional Floating Elements */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-blue-800/50 to-transparent pointer-events-none" />
-      
-      {/* Corner Decorative Elements */}
-      <motion.div
-        className="absolute top-10 right-10 w-20 h-20 bg-white/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.6, 0.3],
-        }}
-        transition={{ duration: 4, repeat: Infinity }}
-      />
-      
-      <motion.div
-        className="absolute bottom-10 left-10 w-16 h-16 bg-yellow-400/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.2, 0.5, 0.2],
-        }}
-        transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-      />
     </section>
   )
 }

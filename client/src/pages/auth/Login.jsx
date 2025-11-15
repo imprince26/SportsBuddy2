@@ -89,7 +89,7 @@ const Login = () => {
         {[...Array(15)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1.5 h-1.5 bg-blue-400/30 dark:bg-blue-300/30 rounded-full"
+            className="absolute w-1.5 h-1.5 bg-primary/30 dark:bg-primary/70/30 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -112,7 +112,7 @@ const Login = () => {
         {[Trophy, Zap, Users, Target].map((Icon, i) => (
           <motion.div
             key={i}
-            className="absolute text-blue-200/15 dark:text-blue-400/20"
+            className="absolute text-primary/50/15 dark:text-primary/20"
             style={{
               left: `${20 + (i * 20) % 60}%`,
               top: `${25 + (i * 20) % 50}%`,
@@ -179,7 +179,7 @@ const Login = () => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="w-8 h-8 text-blue-600"
+                    className="w-8 h-8 text-primary"
                   >
                     <circle cx="12" cy="12" r="10" />
                     <path d="m4.93 4.93 4.24 4.24" />
@@ -282,10 +282,10 @@ const Login = () => {
                       <Shield className="w-6 h-6 text-white" />
                     </motion.div>
                   </div>
-                  <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  <CardTitle className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
                     Welcome Back
                   </CardTitle>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  <p className="text-neutral-600 dark:text-gray-400 text-sm">
                     Sign in to continue your sports journey
                   </p>
                 </motion.div>
@@ -363,7 +363,7 @@ const Login = () => {
                     <motion.div variants={itemVariants} className="flex justify-end">
                       <Link
                         to="/forgot-password"
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium hover:underline transition-colors"
+                        className="text-sm text-primary dark:text-primary hover:text-primary/90 dark:hover:text-primary font-medium hover:underline transition-colors"
                       >
                         Forgot password?
                       </Link>
@@ -401,11 +401,11 @@ const Login = () => {
                   variants={itemVariants}
                   className="text-center pt-4 border-t border-gray-200 dark:border-gray-700"
                 >
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  <p className="text-neutral-600 dark:text-gray-400 text-sm">
                     Don't have an account?{" "}
                     <Link
                       to="/register"
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold hover:underline transition-colors"
+                      className="text-primary dark:text-primary hover:text-primary/90 dark:hover:text-primary font-semibold hover:underline transition-colors"
                     >
                       Sign up here
                     </Link>
@@ -445,8 +445,8 @@ const Login = () => {
               className="lg:hidden text-center mt-6"
             >
               <div className="flex items-center justify-center space-x-2">
-                <Trophy className="w-5 h-5 text-blue-600" />
-                <span className="font-bold text-lg text-gray-900 dark:text-white">SportsBuddy</span>
+                <Trophy className="w-5 h-5 text-primary" />
+                <span className="font-bold text-lg text-neutral-900 dark:text-white">SportsBuddy</span>
                 <Zap className="w-5 h-5 text-purple-600" />
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext();
 
-export function ThemeProvider({ children, defaultTheme = 'system', storageKey = 'sportsbuddy-theme' }) {
+export function ThemeProvider({ children, defaultTheme = 'light', storageKey = 'sportsbuddy-theme' }) {
   const [theme, setTheme] = useState(() => {
     const storedTheme = localStorage.getItem(storageKey);
     return storedTheme || defaultTheme;

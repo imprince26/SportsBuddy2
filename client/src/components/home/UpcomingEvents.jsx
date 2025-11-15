@@ -128,43 +128,27 @@ const UpcomingEvents = () => {
         >
           <motion.div
             variants={itemVariants}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 dark:bg-gray-800/20 backdrop-blur-xl rounded-full border border-gray-200/30 dark:border-gray-700/30 mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 mb-6"
           >
             <Sparkles className="w-4 h-4 text-blue-500" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Live Events</span>
-            <div className="flex gap-1">
-              {[...Array(3)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="w-1 h-1 bg-green-500/60 rounded-full animate-pulse" 
-                  style={{ animationDelay: `${i * 0.2}s` }} 
-                />
-              ))}
-            </div>
           </motion.div>
 
           <motion.h2 
             variants={itemVariants}
-            className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"
+            className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"
           >
-            Upcoming
-            <motion.span 
-              className="block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent"
-              animate={{ 
-                backgroundPosition: ['0%', '100%', '0%'],
-              }}
-              transition={{ duration: 5, repeat: Infinity }}
-            >
+            Upcoming{' '}
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Events
-            </motion.span>
+            </span>
           </motion.h2>
           
           <motion.p 
             variants={itemVariants}
-            className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed mb-8"
+            className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed mb-8"
           >
-            Join exciting sports events happening in your area and connect with fellow athletes. 
-            Discover new challenges, make friends, and push your limits.
+            Join exciting sports events happening in your area and connect with fellow athletes.
           </motion.p>
 
           {/* Quick Stats */}
@@ -178,11 +162,10 @@ const UpcomingEvents = () => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="group relative p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-xl border border-gray-200/50 dark:border-gray-700/50"
+                whileHover={{ y: -2 }}
+                className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10 text-center">
+                <div className="text-center">
                   <div className={`w-8 h-8 mx-auto mb-2 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
                     <stat.icon className={`w-4 h-4 ${stat.color}`} />
                   </div>
@@ -247,58 +230,13 @@ const UpcomingEvents = () => {
                 <motion.div
                   key={event._id}
                   variants={cardVariants}
-                  whileHover={{ 
-                    scale: 1.05, 
-                    rotateY: 5,
-                    z: 50
-                  }}
-                  onHoverStart={() => setHoveredIndex(index)}
-                  onHoverEnd={() => setHoveredIndex(null)}
+                  whileHover={{ y: -4 }}
                   className="group relative"
-                  style={{ transformStyle: 'preserve-3d' }}
                 >
                   <Link
                     to={`/events/${event._id}`}
-                    className="block h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 transition-all duration-500 overflow-hidden shadow-lg hover:shadow-2xl"
+                    className="block h-full bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300 shadow-md hover:shadow-lg overflow-hidden"
                   >
-                    {/* Animated Background Pattern */}
-                    <div className="absolute inset-0 opacity-5">
-                      <motion.div
-                        className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500"
-                        animate={{
-                          scale: hoveredIndex === index ? [1, 1.1, 1] : 1,
-                          rotate: hoveredIndex === index ? [0, 5, 0] : 0,
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      />
-                    </div>
-
-                    {/* Floating Particles for Each Card */}
-                    {hoveredIndex === index && (
-                      <div className="absolute inset-0 pointer-events-none">
-                        {[...Array(8)].map((_, i) => (
-                          <motion.div
-                            key={i}
-                            className="absolute w-1 h-1 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"
-                            style={{
-                              left: `${20 + Math.random() * 60}%`,
-                              top: `${20 + Math.random() * 60}%`,
-                            }}
-                            initial={{ opacity: 0, scale: 0 }}
-                            animate={{ 
-                              opacity: [0, 1, 0],
-                              scale: [0, 1.5, 0],
-                              y: [0, -20, -40],
-                            }}
-                            transition={{
-                              duration: 1.5,
-                              repeat: Infinity,
-                              delay: i * 0.2,
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
 
                     {/* Event Image */}
                     <div className="relative h-56 overflow-hidden">

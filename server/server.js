@@ -101,7 +101,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use((req, res,next) => {
+app.use((req, res, next) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'
@@ -118,7 +118,7 @@ app.use((err, req, res, next) => {
 
 // Health check route
 app.get("/health", (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     status: "OK",
     timestamp: new Date().toISOString(),
     uptime: process.uptime()

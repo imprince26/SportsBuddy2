@@ -1,11 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { getRedisClient } from './redis.js';
 
-/**
- * Create Upstash rate limiter instance
- * @param {Object} config - Rate limiter configuration
- * @returns {Ratelimit|null} Rate limiter instance
- */
 const createUpstashRateLimiter = (config) => {
   const redis = getRedisClient();
   if (!redis) {
@@ -76,11 +71,6 @@ const rateLimiters = {
   search: createUpstashRateLimiter(rateLimiterConfigs.search),
 };
 
-/**
- * Generate rate limit key based on user or IP
- * @param {Object} req - Express request object
- * @returns {string} Rate limit key
- */
 const getRateLimitKey = (req) => {
   if (req.user?.id) {
     return `user:${req.user.id}`;
@@ -88,12 +78,6 @@ const getRateLimitKey = (req) => {
   return `ip:${req.ip}`;
 };
 
-/**
- * Create rate limiter middleware
- * @param {string} type - Type of rate limiter (global, auth, api, etc.)
- * @param {Object} options - Additional options
- * @returns {Function} Express middleware
- */
 export const createRateLimitMiddleware = (type, options = {}) => {
   const limiter = rateLimiters[type];
   const config = rateLimiterConfigs[type];

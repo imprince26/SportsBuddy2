@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Trophy, Users, TrendingUp, Sparkles,Zap,Calendar,MapPin } from 'lucide-react'
-import BgElements from '../BgElements'
+import { ArrowRight, Trophy, Users, TrendingUp, Sparkles, Zap, Calendar, MapPin } from 'lucide-react'
 
 const CategoriesSection = () => {
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -10,294 +8,120 @@ const CategoriesSection = () => {
 
   const categories = [
     { 
-      id: "Football", 
-      name: "Football", 
-      icon: "⚽", 
-      gradient: "from-green-400 to-blue-500",
-      bgGradient: "from-green-500/20 to-blue-500/20",
-      participants: "2.5K+",
-      events: "450+",
-      description: "Join the world's most popular sport",
-      color: "text-green-500"
+      id: 'Football', 
+      name: 'Football', 
+      icon: '⚽', 
+      participants: '2.5K+',
+      events: '450+',
+      description: 'Join the world\'s most popular sport',
     },
     { 
-      id: "Basketball", 
-      name: "Basketball", 
-      icon: "🏀", 
-      gradient: "from-orange-400 to-red-500",
-      bgGradient: "from-orange-500/20 to-red-500/20",
-      participants: "1.8K+",
-      events: "320+",
-      description: "Dribble your way to new friendships",
-      color: "text-orange-500"
+      id: 'Basketball', 
+      name: 'Basketball', 
+      icon: '🏀', 
+      participants: '1.8K+',
+      events: '320+',
+      description: 'Dribble your way to new friendships',
     },
     { 
-      id: "Tennis", 
-      name: "Tennis", 
-      icon: "🎾", 
-      gradient: "from-yellow-400 to-green-500",
-      bgGradient: "from-yellow-500/20 to-green-500/20",
-      participants: "1.2K+",
-      events: "280+",
-      description: "Serve up some competitive fun",
-      color: "text-yellow-500"
+      id: 'Tennis', 
+      name: 'Tennis', 
+      icon: '🎾', 
+      participants: '1.2K+',
+      events: '280+',
+      description: 'Serve up some competitive fun',
     },
     { 
-      id: "Running", 
-      name: "Running", 
-      icon: "🏃", 
-      gradient: "from-blue-400 to-purple-500",
-      bgGradient: "from-blue-500/20 to-purple-500/20",
-      participants: "3.2K+",
-      events: "520+",
-      description: "Run towards your fitness goals",
-      color: "text-blue-500"
+      id: 'Running', 
+      name: 'Running', 
+      icon: '🏃', 
+      participants: '3.2K+',
+      events: '520+',
+      description: 'Run towards your fitness goals',
     },
   ]
-
-  const stats = [
-    { label: "Total Categories", value: "25+", icon: Trophy, color: "text-yellow-500" },
-    { label: "Active Players", value: "15K+", icon: Users, color: "text-blue-500" },
-    { label: "Events This Month", value: "2.8K+", icon: Calendar, color: "text-green-500" },
-    { label: "Cities Covered", value: "150+", icon: MapPin, color: "text-purple-500" },
-  ]
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        duration: 0.6
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 }
-    }
-  }
-
-  const cardVariants = {
-    hidden: { opacity: 0, scale: 0.8, rotateY: -30 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      rotateY: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-        duration: 0.6
-      }
-    }
-  }
 
   return (
-    <section className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
+    <section className='py-24 bg-background border-t border-border relative overflow-hidden'>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02] -z-10" />
 
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Header Section */}
-        <motion.div
-          className="text-center mb-16"
-        >
-          <div
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 mb-6"
-          >
-            <Sparkles className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Explore Sports Categories</span>
+      <div className='container mx-auto px-4'>
+        <div className='flex flex-col md:flex-row justify-between items-end mb-12 gap-6'>
+          <div className='max-w-2xl'>
+            <div className='flex items-center gap-2 text-primary font-medium mb-4'>
+              <Sparkles className='w-4 h-4' />
+              <span className='text-sm uppercase tracking-wider'>Explore Categories</span>
+            </div>
+            <h2 className='text-3xl md:text-4xl font-bold font-heading text-foreground mb-4'>
+              Popular Sports Categories
+            </h2>
+            <p className='text-muted-foreground text-lg'>
+              Discover events across a wide range of sports and activities. Find your passion and connect with others.
+            </p>
           </div>
+          <Link to='/events' className='hidden md:flex items-center gap-2 text-foreground font-medium hover:text-primary transition-colors group'>
+            View all categories <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
+          </Link>
+        </div>
 
-          <motion.h2 
-            variants={itemVariants}
-            className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"
-          >
-            Popular Sports{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Categories
-            </span>
-          </motion.h2>
-          
-          <motion.p 
-            variants={itemVariants}
-            className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed"
-          >
-            Discover events across a wide range of sports and activities. Find your passion and connect with others.
-          </motion.p>
-
-          {/* Stats Section */}
-          <motion.div
-            variants={itemVariants}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto mt-12"
-          >
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
-              >
-                <div className="text-center">
-                  <div className={`w-8 h-8 mx-auto mb-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center`}>
-                    <stat.icon className={`w-4 h-4 ${stat.color}`} />
-                  </div>
-                  <div className="text-xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">{stat.label}</div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-
-        {/* Categories Grid */}
-        <motion.div
-          // initial="hidden"
-          // whileInView="visible"
-          // viewport={{ once: true }}
-          // variants={containerVariants}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
-        >
-          {categories.map((category, index) => (
-            <motion.div
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
+          {categories.map((category) => (
+            <Link
               key={category.id}
-              variants={cardVariants}
-              whileHover={{ y: -4 }}
-              className="group relative"
+              to={`/events?category=${category.id}`}
+              onClick={() => setSelectedCategory(category.id)}
+              className='group block p-6 rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300'
             >
-              <Link
-                to={`/events?category=${category.id}`}
-                className="block h-full"
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                <div className="relative h-full p-6 lg:p-8 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-300 shadow-md hover:shadow-lg">
-
-                  <div className="relative z-10 h-full flex flex-col text-center">
-                    {/* Icon */}
-                    {/* <motion.div 
-                      className="text-6xl lg:text-7xl mb-4 transform group-hover:scale-110 transition-transform duration-500"
-                      animate={{
-                        rotate: hoveredIndex === index ? [0, 10, -10, 0] : 0,
-                      }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      {category.icon}
-                    </motion.div> */}
-
-                    {/* Category Name */}
-                    <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300">
-                      {category.name}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-grow leading-relaxed">
-                      {category.description}
-                    </p>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="p-2 bg-gray-100/50 dark:bg-gray-700/50 rounded-lg backdrop-blur-sm">
-                        <div className="flex items-center justify-center gap-1">
-                          <Users className="w-3 h-3 text-blue-500" />
-                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{category.participants}</span>
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">Players</div>
-                      </div>
-                      <div className="p-2 bg-gray-100/50 dark:bg-gray-700/50 rounded-lg backdrop-blur-sm">
-                        <div className="flex items-center justify-center gap-1">
-                          <Calendar className="w-3 h-3 text-green-500" />
-                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{category.events}</span>
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">Events</div>
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    <motion.div
-                      className="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors duration-300"
-                      whileHover={{ x: 5 }}
-                    >
-                      <span>Explore Events</span>
-                      <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" />
-                    </motion.div>
-
-                    {/* Trending Badge */}
-                    {index < 3 && (
-                      <motion.div
-                        initial={{ scale: 0, rotate: -45 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ delay: 0.5 + index * 0.1 }}
-                        className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg"
-                      >
-                        <TrendingUp className="w-4 h-4 text-white" />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Hover Glow Effect */}
-                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                    <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${category.gradient} opacity-20 blur-xl`} />
-                  </div>
+              <div className='flex justify-between items-start mb-6'>
+                <span className='text-4xl filter drop-shadow-md'>{category.icon}</span>
+                <div className='p-2 rounded-full bg-secondary border border-border group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300'>
+                  <ArrowRight className='w-4 h-4 text-muted-foreground group-hover:text-white' />
                 </div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Call to Action */}
-        <motion.div
-          // initial={{ opacity: 0, y: 30 }}
-          // whileInView={{ opacity: 1, y: 0 }}
-          // transition={{ duration: 0.6, delay: 0.3 }}
-          // viewport={{ once: true }}
-          className="text-center mt-16"
-        >
-          <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white shadow-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <Zap className="w-6 h-6 text-yellow-300" />
               </div>
-              <div className="text-left">
-                <div className="font-bold text-lg">Can't find your sport?</div>
-                <div className="text-sm text-white/80">Create a custom event for any activity</div>
+              
+              <h3 className='text-xl font-bold font-heading text-foreground mb-2 group-hover:text-primary transition-colors'>
+                {category.name}
+              </h3>
+              <p className='text-sm text-muted-foreground mb-6 line-clamp-2'>
+                {category.description}
+              </p>
+
+              <div className='flex items-center gap-4 pt-4 border-t border-border'>
+                <div className='flex items-center gap-1.5 text-xs font-medium text-muted-foreground'>
+                  <Users className='w-3.5 h-3.5' />
+                  {category.participants}
+                </div>
+                <div className='flex items-center gap-1.5 text-xs font-medium text-muted-foreground'>
+                  <Calendar className='w-3.5 h-3.5' />
+                  {category.events}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className='mt-12 p-8 rounded-2xl bg-card border border-border relative overflow-hidden group hover:border-primary/30 transition-colors'>
+          <div className='absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none' />
+          
+          <div className='relative z-10 flex flex-col md:flex-row items-center justify-between gap-8'>
+            <div className='flex items-center gap-6'>
+              <div className='w-14 h-14 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors'>
+                <Zap className='w-7 h-7 text-primary' />
+              </div>
+              <div>
+                <h3 className='text-xl font-bold font-heading text-foreground mb-1'>Can't find your sport?</h3>
+                <p className='text-muted-foreground'>Create a custom event for any activity you love.</p>
               </div>
             </div>
-            <Link to="/events/create">
-              <motion.button
-                whileHover={{ scale: 1.05, x: 5 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                Create Event
-              </motion.button>
+            <Link to='/events/create'>
+              <button className='px-8 py-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5'>
+                Create Custom Event
+              </button>
             </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
-
-      {/* Additional Floating Elements */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-50 to-transparent dark:from-gray-900 dark:to-transparent pointer-events-none" />
-      
-      {/* Corner Decorative Elements */}
-      <motion.div
-        className="absolute top-10 right-10 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.6, 0.3],
-        }}
-        transition={{ duration: 4, repeat: Infinity }}
-      />
-      
-      <motion.div
-        className="absolute bottom-10 left-10 w-16 h-16 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.2, 0.5, 0.2],
-        }}
-        transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-      />
     </section>
   )
 }

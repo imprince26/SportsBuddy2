@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import {
   Users,
   Target,
@@ -43,42 +42,6 @@ const About = () => {
   useEffect(() => {
     document.title = "About Us - SportsBuddy"
   }, [])
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  }
-
-  const floatingVariants = {
-    initial: { y: 0 },
-    animate: {
-      y: [-10, 10, -10],
-      transition: {
-        duration: 4,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  }
 
   // Our Mission & Vision
   const missionData = {
@@ -204,41 +167,30 @@ const About = () => {
 
         {/* Floating Sports Icons */}
         {[Trophy, Star, Heart, Target, Users].map((Icon, i) => (
-          <motion.div
+          <div
             key={i}
-            className="absolute text-blue-200/10 dark:text-blue-400/15"
+            className="absolute text-blue-200/10 dark:text-blue-400/15 animate-bounce"
             style={{
               left: `${15 + (i * 18) % 70}%`,
               top: `${20 + (i * 30) % 60}%`,
+              animationDelay: `${i * 0.5}s`,
+              animationDuration: '3s'
             }}
-            variants={floatingVariants}
-            initial="initial"
-            animate="animate"
-            transition={{ delay: i * 0.5 }}
           >
             <Icon size={24 + (i % 3) * 8} />
-          </motion.div>
+          </div>
         ))}
 
         {/* Animated Particles */}
         {[...Array(15)].map((_, i) => (
-          <motion.div
+          <div
             key={i}
-            className="absolute w-2 h-2 bg-blue-400/20 dark:bg-blue-300/20 rounded-full"
+            className="absolute w-2 h-2 bg-blue-400/20 dark:bg-blue-300/20 rounded-full animate-pulse"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.2, 0.8, 0.2],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: 4 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-              ease: "easeInOut"
+              animationDelay: `${Math.random() * 2}s`,
+              animationDuration: `${2 + Math.random() * 2}s`
             }}
           />
         ))}
@@ -246,14 +198,11 @@ const About = () => {
 
       <div className="relative z-10">
         {/* Hero Section */}
-        <motion.section
-          className="pt-16 pb-12 px-4 sm:px-6 lg:px-8"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+        <section
+          className="pt-16 pb-12 px-4 sm:px-6 lg:px-8 animate-in fade-in duration-700"
         >
           <div className="max-w-7xl mx-auto text-center">
-            <motion.div variants={itemVariants} className="mb-8">
+            <div className="mb-8 animate-in slide-in-from-bottom-4 duration-700 delay-100">
               <div className="flex items-center justify-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                   <Heart className="w-6 h-6 text-white" />
@@ -267,37 +216,33 @@ const About = () => {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.p
-              variants={itemVariants}
-              className="text-xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto mb-12 leading-relaxed"
+            <p
+              className="text-xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto mb-12 leading-relaxed animate-in slide-in-from-bottom-4 duration-700 delay-200"
             >
               SportsBuddy is India's fastest-growing sports community platform, designed to bring athletes together,
               organize events, and create lasting connections through the power of sports. From weekend warriors to
               professional athletes, we're building a world where everyone can find their sporting tribe.
-            </motion.p>
+            </p>
 
             {/* Company Stats */}
-            <motion.div
-              variants={itemVariants}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-6xl mx-auto mb-16"
+            <div
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-6xl mx-auto mb-16 animate-in slide-in-from-bottom-4 duration-700 delay-300"
             >
               {companyStats.map((stat, index) => (
-                <motion.div
+                <div
                   key={index}
-                  className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50"
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  transition={{ duration: 0.2 }}
+                  className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 hover:scale-105 hover:-translate-y-1 transition-all duration-200"
                 >
                   <stat.icon className={`w-6 h-6 text-${stat.color}-500 mx-auto mb-2`} />
                   <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">{stat.label}</div>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Mission, Vision, Values Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">

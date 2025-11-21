@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "react-hot-toast"
 import { format } from "date-fns"
 import { useEvents } from "@/hooks/useEvents"
@@ -38,6 +37,8 @@ import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 import { eventSchema, defaultEventValues } from "@/schemas/eventSchema"
 
+import HeroBg from "@/components/HeroBg"
+
 const EditEvent = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -66,41 +67,37 @@ const EditEvent = () => {
       title: "Basic Info",
       icon: FileText,
       description: "Event name, category & description",
-      color: "from-blue-500 to-blue-600"
     },
     {
       id: "details",
       title: "Event Details",
       icon: Settings,
       description: "Date, time & location",
-      color: "from-purple-500 to-purple-600"
     },
     {
       id: "media",
       title: "Media & Rules",
       icon: Camera,
       description: "Images, rules & equipment",
-      color: "from-green-500 to-green-600"
     },
     {
       id: "review",
       title: "Review",
       icon: Eye,
       description: "Final review & publish",
-      color: "from-orange-500 to-orange-600"
     },
   ]
 
   const categories = [
-    { value: "Football", label: "Football", icon: "⚽", color: "from-green-400 to-green-600", participants: "50K+" },
-    { value: "Basketball", label: "Basketball", icon: "🏀", color: "from-orange-400 to-orange-600", participants: "45K+" },
-    { value: "Tennis", label: "Tennis", icon: "🎾", color: "from-yellow-400 to-yellow-600", participants: "30K+" },
-    { value: "Running", label: "Running", icon: "🏃", color: "from-blue-400 to-blue-600", participants: "60K+" },
-    { value: "Cycling", label: "Cycling", icon: "🚴", color: "from-purple-400 to-purple-600", participants: "25K+" },
-    { value: "Swimming", label: "Swimming", icon: "🏊", color: "from-cyan-400 to-cyan-600", participants: "20K+" },
-    { value: "Volleyball", label: "Volleyball", icon: "🏐", color: "from-pink-400 to-pink-600", participants: "15K+" },
-    { value: "Cricket", label: "Cricket", icon: "🏏", color: "from-red-400 to-red-600", participants: "40K+" },
-    { value: "Other", label: "Other Sports", icon: "🎯", color: "from-gray-400 to-gray-600", participants: "10K+" },
+    { value: "Football", label: "Football", icon: "⚽", participants: "50K+" },
+    { value: "Basketball", label: "Basketball", icon: "🏀", participants: "45K+" },
+    { value: "Tennis", label: "Tennis", icon: "🎾", participants: "30K+" },
+    { value: "Running", label: "Running", icon: "🏃", participants: "60K+" },
+    { value: "Cycling", label: "Cycling", icon: "🚴", participants: "25K+" },
+    { value: "Swimming", label: "Swimming", icon: "🏊", participants: "20K+" },
+    { value: "Volleyball", label: "Volleyball", icon: "🏐", participants: "15K+" },
+    { value: "Cricket", label: "Cricket", icon: "🏏", participants: "40K+" },
+    { value: "Other", label: "Other Sports", icon: "🎯", participants: "10K+" },
   ]
 
   // Calculate completion progress
@@ -338,94 +335,65 @@ const EditEvent = () => {
     return (
       <div
         className={cn(
-          "relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
+          "relative w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300",
           isActive
-            ? `bg-gradient-to-br ${step.color} text-white shadow-lg scale-110`
+            ? "bg-primary text-primary-foreground shadow-md"
             : isCompleted
-              ? "bg-gradient-to-br from-green-500 to-green-600 text-white"
-              : "bg-white dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700"
+              ? "bg-muted text-foreground"
+              : "bg-card text-muted-foreground border border-border"
         )}
       >
         {isCompleted ? (
-          <CheckCircle className="w-6 h-6" />
+          <CheckCircle className="w-5 h-5" />
         ) : (
-          <StepIcon className="w-6 h-6" />
-        )}
-        {isActive && (
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+          <StepIcon className="w-5 h-5" />
         )}
       </div>
     )
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.1,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
-  }
-
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 flex justify-center items-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center"
+      <div className="min-h-screen bg-background flex justify-center items-center">
+        <div
+          className="flex flex-col items-center animate-in fade-in zoom-in-95 duration-300"
         >
           <div className="relative">
-            <Loader2 className="w-16 h-16 animate-spin text-blue-600" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-blue-200 rounded-full animate-pulse" />
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
           </div>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mt-6 text-center"
+          <div
+            className="mt-6 text-center animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300"
           >
-            <p className="text-lg font-medium text-gray-900 dark:text-white">
+            <p className="text-lg font-medium text-foreground">
               Loading event details...
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Preparing your event for editing
             </p>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (!form.getValues("name")) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 flex items-center justify-center">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md mx-4">
-          <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-red-200/50 dark:border-red-700/50 shadow-2xl">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="max-w-md mx-4 animate-in fade-in zoom-in-95 duration-300">
+          <Card className="bg-card border-red-900/50 shadow-xl">
             <CardContent className="p-8 text-center">
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }}>
+              <div className="animate-in zoom-in duration-500 delay-200">
                 <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              </motion.div>
-              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+              </div>
+              <h3 className="text-2xl font-semibold text-foreground mb-2">
                 Event Not Found
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-muted-foreground mb-6">
                 The event you're looking for doesn't exist or you don't have permission to edit it.
               </p>
               <Button
                 asChild
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Link to="/events">
                   <ChevronLeft className="w-4 h-4 mr-2" />
@@ -434,43 +402,39 @@ const EditEvent = () => {
               </Button>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
-      {/* Background Effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-blue-400/10 via-transparent to-transparent rounded-full blur-3xl" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-purple-400/10 via-transparent to-transparent rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-background relative">
+      <HeroBg />
 
-      <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <motion.div variants={containerVariants} initial="hidden" animate="visible">
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <div className="animate-in fade-in duration-500">
           {/* Header */}
-          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
-            <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="mb-8 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-4 mb-8">
               <Button
                 variant="ghost"
                 asChild
-                className="p-1 sm:p-2 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg sm:rounded-xl"
+                className="h-10 w-10 p-0 rounded-full hover:bg-muted"
               >
                 <Link to={`/events/${id}`}>
-                  <ChevronLeft className="w-4 h-4 sm:w-5 h-5" />
+                  <ChevronLeft className="w-5 h-5" />
                 </Link>
               </Button>
               <div className="flex-1">
-                <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                    <Settings className="w-5 h-5 text-foreground" />
                   </div>
                   <div>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold text-foreground">
                       Edit Event
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">
+                    <p className="text-muted-foreground">
                       Update your event details and settings
                     </p>
                   </div>
@@ -478,7 +442,7 @@ const EditEvent = () => {
                 {hasChanges && (
                   <Badge
                     variant="secondary"
-                    className="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200"
+                    className="bg-amber-900/30 text-amber-200 border-amber-800"
                   >
                     <Settings className="w-3 h-3 mr-1" />
                     Unsaved Changes
@@ -488,7 +452,7 @@ const EditEvent = () => {
               <Button
                 variant="destructive"
                 onClick={() => setShowConfirmDelete(true)}
-                className="shadow-lg hover:shadow-xl transition-shadow"
+                className="shadow-sm hover:shadow-md transition-shadow"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete Event
@@ -496,125 +460,113 @@ const EditEvent = () => {
             </div>
 
             {/* Progress Section */}
-            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-lg sm:shadow-xl">
-              <CardContent className="p-4 sm:p-6">
+            <Card className="bg-card border-border shadow-sm">
+              <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-0">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-md sm:rounded-lg flex items-center justify-center">
-                      <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                  <div className="flex items-center gap-3 mb-4 sm:mb-0">
+                    <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
+                      <Trophy className="w-4 h-4 text-foreground" />
                     </div>
                     <div>
-                      <span className="font-semibold text-gray-900 dark:text-white text-base sm:text-lg">
+                      <span className="font-semibold text-foreground text-base">
                         Event Update Progress
                       </span>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-muted-foreground">
                         Complete all fields to finalize your event updates
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                    <span className="text-2xl font-bold text-foreground">
                       {Math.round(completionProgress)}%
                     </span>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Complete</p>
+                    <p className="text-sm text-muted-foreground">Complete</p>
                   </div>
                 </div>
-                <div className="relative">
-                  <Progress value={completionProgress} className="h-2 sm:h-3 bg-gray-200 dark:bg-gray-700" />
-                  <div
-                    className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-500 rounded-full opacity-20 blur-sm"
-                    style={{ width: `${completionProgress}%` }}
-                  />
-                </div>
+                <Progress value={completionProgress} className="h-2 bg-muted" />
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
           {/* Step Navigation */}
-          <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
-            <div className="grid md:grid-cols-4 grid-cols-1 gap-3 sm:gap-4">
+          <div className="mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-100">
+            <div className="grid md:grid-cols-4 grid-cols-1 gap-4">
               {steps.map((step, index) => (
-                <motion.button
+                <button
                   key={step.id}
                   onClick={() => setActiveTab(step.id)}
                   className={cn(
-                    "p-4 sm:p-6 rounded-lg sm:rounded-2xl border-2 transition-all duration-300 text-left group",
+                    "p-4 rounded-xl border transition-all duration-300 text-left group hover:-translate-y-0.5 active:scale-95",
                     activeTab === step.id
-                      ? "border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 shadow-lg sm:shadow-xl scale-100 sm:scale-105"
-                      : "border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md"
+                      ? "border-primary bg-card shadow-md"
+                      : "border-border bg-card/50 hover:border-primary/50"
                   )}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
                 >
-                  <div className="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-3">
+                  <div className="flex items-center gap-4 mb-3">
                     {getStepIcon(step, index)}
                     <div className="flex-1">
                       <h3
                         className={cn(
-                          "font-semibold text-base sm:text-lg transition-colors",
-                          activeTab === step.id ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"
+                          "font-semibold text-base transition-colors",
+                          activeTab === step.id ? "text-foreground" : "text-muted-foreground"
                         )}
                       >
                         {step.title}
                       </h3>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">{step.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <span className="text-xs font-medium text-muted-foreground">
                       Step {index + 1} of {steps.length}
                     </span>
-                    {activeTab === step.id && <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />}
+                    {activeTab === step.id && <ArrowRight className="w-4 h-4 text-foreground" />}
                   </div>
-                </motion.button>
+                </button>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Main Form */}
-          <motion.div variants={itemVariants}>
-            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-lg sm:shadow-2xl">
+          <div className="animate-in slide-in-from-bottom-4 duration-500 delay-200">
+            <Card className="bg-card border-border shadow-lg">
               <CardContent className="p-0">
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     {/* Basic Info Tab */}
                     {activeTab === "basic" && (
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="p-4 sm:p-8"
+                      <div
+                        className="p-8 animate-in slide-in-from-right-4 duration-500"
                       >
-                        <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
-                            <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+                            <FileText className="w-6 h-6 text-foreground" />
                           </div>
                           <div>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Basic Information</h2>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">
+                            <h2 className="text-2xl font-bold text-foreground">Basic Information</h2>
+                            <p className="text-muted-foreground">
                               Update the essential details about your event
                             </p>
                           </div>
                         </div>
-                        <div className="space-y-6 sm:space-y-8">
+                        <div className="space-y-8">
                           {/* Event Name */}
                           <FormField
                             control={form.control}
                             name="name"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                  <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                                <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
                                   Event Name *
                                 </FormLabel>
                                 <FormControl>
                                   <Input
                                     placeholder="Enter an exciting and descriptive event name"
                                     {...field}
-                                    className="h-12 sm:h-14 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full"
+                                    className="h-12 text-base bg-background border-input focus:ring-primary"
                                   />
                                 </FormControl>
-                                <FormDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                                <FormDescription className="text-muted-foreground">
                                   Choose a catchy name that clearly describes your event and attracts participants
                                 </FormDescription>
                                 <FormMessage />
@@ -627,45 +579,39 @@ const EditEvent = () => {
                             name="category"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                  <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+                                <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
                                   Sport Category *
                                 </FormLabel>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                   {categories.map((category) => (
-                                    <motion.button
+                                    <button
                                       key={category.value}
                                       type="button"
                                       onClick={() => field.onChange(category.value)}
                                       className={cn(
-                                        "p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-200 text-left group",
+                                        "p-4 rounded-xl border transition-all duration-200 text-left group hover:-translate-y-0.5 active:scale-95",
                                         field.value === category.value
-                                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-100 sm:scale-105"
-                                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md"
+                                          ? "border-primary bg-muted"
+                                          : "border-border hover:border-primary/50"
                                       )}
-                                      whileHover={{ y: -2 }}
-                                      whileTap={{ scale: 0.98 }}
                                     >
-                                      <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                      <div className="flex items-center gap-3 mb-2">
                                         <div
-                                          className={cn(
-                                            "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl bg-gradient-to-br",
-                                            category.color
-                                          )}
+                                          className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl bg-card"
                                         >
                                           {category.icon}
                                         </div>
                                         <div className="flex-1">
-                                          <h3 className="font-semibold text-base sm:text-gray-900 dark:text-white">{category.label}</h3>
-                                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                          <h3 className="font-semibold text-foreground">{category.label}</h3>
+                                          <p className="text-xs text-muted-foreground">
                                             {category.participants} players
                                           </p>
                                         </div>
                                       </div>
-                                    </motion.button>
+                                    </button>
                                   ))}
                                 </div>
-                                <FormDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                                <FormDescription className="text-muted-foreground">
                                   Select the main sport or activity for your event
                                 </FormDescription>
                                 <FormMessage />
@@ -678,49 +624,44 @@ const EditEvent = () => {
                             name="description"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                                <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
                                   Event Description *
                                 </FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="Describe your event in detail. What makes it special? What should participants expect? Include any special features, prizes, or unique aspects of your event..."
+                                    placeholder="Describe your event in detail..."
                                     rows={4}
                                     {...field}
-                                    className="text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 resize-none w-full"
+                                    className="text-base bg-background border-input focus:ring-primary resize-none"
                                   />
                                 </FormControl>
-                                <FormDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                                  Provide comprehensive details about the event, what to expect, and any special features (minimum 20 characters)
+                                <FormDescription className="text-muted-foreground">
+                                  Provide comprehensive details about the event (minimum 20 characters)
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                           {/* Date and Time */}
-                          <div className="grid md:grid-cols-2 grid-cols-1 gap-4 sm:gap-6">
+                          <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                             <FormField
                               control={form.control}
                               name="date"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                                  <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
                                     Event Date *
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <Calendar className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                                      <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                       <Input
                                         type="date"
                                         {...field}
-                                        className="h-12 sm:h-14 pl-10 sm:pl-12 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full"
+                                        className="h-12 pl-12 text-base bg-background border-input focus:ring-primary"
                                       />
                                     </div>
                                   </FormControl>
-                                  <FormDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                                    When will your event take place?
-                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -730,49 +671,45 @@ const EditEvent = () => {
                               name="time"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                                  <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
                                     Start Time *
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <Clock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                                      <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                       <Input
                                         type="time"
                                         {...field}
-                                        className="h-12 sm:h-14 pl-10 sm:pl-12 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full"
+                                        className="h-12 pl-12 text-base bg-background border-input focus:ring-primary"
                                       />
                                     </div>
                                   </FormControl>
-                                  <FormDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                                    What time does the event start?
-                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
                           </div>
                           {/* Location */}
-                          <div className="space-y-4 sm:space-y-6">
+                          <div className="space-y-6">
                             <div className="flex items-center gap-2">
-                              <MapPinIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
-                              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Location Details</h3>
+                              <MapPinIcon className="w-6 h-6 text-foreground" />
+                              <h3 className="text-xl font-semibold text-foreground">Location Details</h3>
                             </div>
 
-                            <div className="grid md:grid-cols-2 grid-cols-1 gap-4 sm:gap-6">
+                            <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                               <FormField
                                 control={form.control}
                                 name="location.address"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Address *</FormLabel>
+                                    <FormLabel className="text-base font-semibold text-foreground">Address *</FormLabel>
                                     <FormControl>
                                       <div className="relative">
-                                        <MapPin className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                                        <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                         <Input
                                           placeholder="Enter the complete venue address"
                                           {...field}
-                                          className="h-12 sm:h-14 pl-10 sm:pl-12 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full"
+                                          className="h-12 pl-12 text-base bg-background border-input focus:ring-primary"
                                         />
                                       </div>
                                     </FormControl>
@@ -785,12 +722,12 @@ const EditEvent = () => {
                                 name="location.city"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">City *</FormLabel>
+                                    <FormLabel className="text-base font-semibold text-foreground">City *</FormLabel>
                                     <FormControl>
                                       <Input
                                         placeholder="Enter city name"
                                         {...field}
-                                        className="h-12 sm:h-14 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full"
+                                        className="h-12 text-base bg-background border-input focus:ring-primary"
                                       />
                                     </FormControl>
                                     <FormMessage />
@@ -802,14 +739,14 @@ const EditEvent = () => {
                                 name="location.state"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                                    <FormLabel className="text-base font-semibold text-foreground">
                                       State/Province
                                     </FormLabel>
                                     <FormControl>
                                       <Input
                                         placeholder="Enter state (optional)"
                                         {...field}
-                                        className="h-12 sm:h-14 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full"
+                                        className="h-12 text-base bg-background border-input focus:ring-primary"
                                       />
                                     </FormControl>
                                     <FormMessage />
@@ -818,65 +755,62 @@ const EditEvent = () => {
                               />
                             </div>
                           </div>
-                          <div className="flex justify-end pt-4 sm:pt-6">
+                          <div className="flex justify-end pt-6">
                             <Button
                               type="button"
                               onClick={() => setActiveTab("details")}
                               size="lg"
-                              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 h-auto text-base"
                             >
                               Next: Event Details
-                              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                              <ArrowRight className="w-5 h-5 ml-2" />
                             </Button>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     )}
 
                     {/* Event Details Tab */}
                     {activeTab === "details" && (
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="p-4 sm:p-8"
+                      <div
+                        className="p-8 animate-in slide-in-from-right-4 duration-500"
                       >
-                        <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
-                            <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+                            <Settings className="w-6 h-6 text-foreground" />
                           </div>
                           <div>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Event Configuration</h2>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">
+                            <h2 className="text-2xl font-bold text-foreground">Event Configuration</h2>
+                            <p className="text-muted-foreground">
                               Update the important details and requirements
                             </p>
                           </div>
                         </div>
-                        <div className="space-y-6 sm:space-y-8">
-                          <div className="grid md:grid-cols-2 grid-cols-1 gap-4 sm:gap-8">
+                        <div className="space-y-8">
+                          <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                             <FormField
                               control={form.control}
                               name="maxParticipants"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <UsersIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                                  <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
+                                    <UsersIcon className="w-5 h-5 text-muted-foreground" />
                                     Maximum Participants *
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <Users className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                                      <Users className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                       <Input
                                         type="number"
                                         min={2}
                                         max={1000}
                                         {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
-                                        className="h-12 sm:h-14 pl-10 sm:pl-12 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full"
+                                        className="h-12 pl-12 text-base bg-background border-input focus:ring-primary"
                                       />
                                     </div>
                                   </FormControl>
-                                  <FormDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                                  <FormDescription className="text-muted-foreground">
                                     How many people can participate in this event?
                                   </FormDescription>
                                   <FormMessage />
@@ -888,24 +822,24 @@ const EditEvent = () => {
                               name="registrationFee"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                                  <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
+                                    <DollarSign className="w-5 h-5 text-muted-foreground" />
                                     Registration Fee ($)
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <DollarSign className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                                      <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                       <Input
                                         type="number"
                                         min={0}
                                         step={0.01}
                                         {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
-                                        className="h-12 sm:h-14 pl-10 sm:pl-12 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full"
+                                        className="h-12 pl-12 text-base bg-background border-input focus:ring-primary"
                                       />
                                     </div>
                                   </FormControl>
-                                  <FormDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                                  <FormDescription className="text-muted-foreground">
                                     Set to 0 for free events. This helps cover venue and equipment costs.
                                   </FormDescription>
                                   <FormMessage />
@@ -913,65 +847,57 @@ const EditEvent = () => {
                               )}
                             />
                           </div>
-                          <div className="grid md:grid-cols-2 grid-cols-1 gap-4 sm:gap-8">
+                          <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                             <FormField
                               control={form.control}
                               name="difficulty"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <Award className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                                  <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
+                                    <Award className="w-5 h-5 text-muted-foreground" />
                                     Difficulty Level *
                                   </FormLabel>
-                                  <div className="space-y-2 sm:space-y-3">
+                                  <div className="space-y-3">
                                     {[
                                       {
                                         value: "Beginner",
-                                        color: "from-green-400 to-green-600",
                                         icon: "🌱",
                                         description: "Open to all skill levels - perfect for newcomers",
                                       },
                                       {
                                         value: "Intermediate",
-                                        color: "from-yellow-400 to-orange-500",
                                         icon: "⚡",
                                         description: "Some experience required - moderate challenge",
                                       },
                                       {
                                         value: "Advanced",
-                                        color: "from-red-400 to-red-600",
                                         icon: "🔥",
                                         description: "High skill level required - competitive play",
                                       },
                                     ].map((level) => (
-                                      <motion.button
+                                      <button
                                         key={level.value}
                                         type="button"
                                         onClick={() => field.onChange(level.value)}
                                         className={cn(
-                                          "w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-200 text-left",
+                                          "w-full p-4 rounded-xl border transition-all duration-200 text-left hover:translate-x-1",
                                           field.value === level.value
-                                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-100 sm:scale-105"
-                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                            ? "border-primary bg-muted"
+                                            : "border-border hover:border-primary/50"
                                         )}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
                                       >
-                                        <div className="flex items-center gap-2 sm:gap-3">
+                                        <div className="flex items-center gap-3">
                                           <div
-                                            className={cn(
-                                              "w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center text-base sm:text-lg bg-gradient-to-br",
-                                              level.color
-                                            )}
+                                            className="w-10 h-10 rounded-lg flex items-center justify-center text-lg bg-card"
                                           >
                                             {level.icon}
                                           </div>
                                           <div className="flex-1">
-                                            <h4 className="font-semibold text-base sm:text-gray-900 dark:text-white">{level.value}</h4>
-                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{level.description}</p>
+                                            <h4 className="font-semibold text-foreground">{level.value}</h4>
+                                            <p className="text-sm text-muted-foreground">{level.description}</p>
                                           </div>
                                         </div>
-                                      </motion.button>
+                                      </button>
                                     ))}
                                   </div>
                                   <FormMessage />
@@ -983,62 +909,54 @@ const EditEvent = () => {
                               name="eventType"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <Target className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+                                  <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
+                                    <Target className="w-5 h-5 text-muted-foreground" />
                                     Event Type *
                                   </FormLabel>
-                                  <div className="space-y-2 sm:space-y-3">
+                                  <div className="space-y-3">
                                     {[
                                       {
                                         value: "casual",
                                         icon: Heart,
-                                        color: "from-blue-400 to-blue-600",
                                         title: "Casual",
                                         description: "Fun and relaxed atmosphere - social play",
                                       },
                                       {
                                         value: "tournament",
                                         icon: Trophy,
-                                        color: "from-yellow-400 to-orange-500",
                                         title: "Tournament",
                                         description: "Competitive event with rankings and prizes",
                                       },
                                       {
                                         value: "training",
                                         icon: Target,
-                                        color: "from-green-400 to-green-600",
                                         title: "Training",
                                         description: "Skill development and coaching session",
                                       },
                                     ].map((type) => (
-                                      <motion.button
+                                      <button
                                         key={type.value}
                                         type="button"
                                         onClick={() => field.onChange(type.value)}
                                         className={cn(
-                                          "w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-200 text-left",
+                                          "w-full p-4 rounded-xl border transition-all duration-200 text-left hover:translate-x-1",
                                           field.value === type.value
-                                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-100 sm:scale-105"
-                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                            ? "border-primary bg-muted"
+                                            : "border-border hover:border-primary/50"
                                         )}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
                                       >
-                                        <div className="flex items-center gap-2 sm:gap-3">
+                                        <div className="flex items-center gap-3">
                                           <div
-                                            className={cn(
-                                              "w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center bg-gradient-to-br",
-                                              type.color
-                                            )}
+                                            className="w-10 h-10 rounded-lg flex items-center justify-center bg-card"
                                           >
-                                            <type.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                                            <type.icon className="w-5 h-5 text-foreground" />
                                           </div>
                                           <div className="flex-1">
-                                            <h4 className="font-semibold text-base sm:text-gray-900 dark:text-white">{type.title}</h4>
-                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{type.description}</p>
+                                            <h4 className="font-semibold text-foreground">{type.title}</h4>
+                                            <p className="text-sm text-muted-foreground">{type.description}</p>
                                           </div>
                                         </div>
-                                      </motion.button>
+                                      </button>
                                     ))}
                                   </div>
                                   <FormMessage />
@@ -1046,90 +964,82 @@ const EditEvent = () => {
                               )}
                             />
                           </div>
-                          <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 pt-4 sm:pt-6">
+                          <div className="flex justify-between pt-6">
                             <Button
                               type="button"
                               variant="outline"
                               onClick={() => setActiveTab("basic")}
                               size="lg"
-                              className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800 w-full sm:w-auto"
+                              className="px-8 py-4 h-auto text-base rounded-xl border-border hover:bg-muted text-foreground"
                             >
-                              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                              <ChevronLeft className="w-5 h-5 mr-2" />
                               Previous
                             </Button>
                             <Button
                               type="button"
                               onClick={() => setActiveTab("media")}
                               size="lg"
-                              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 h-auto text-base"
                             >
                               Next: Media & Rules
-                              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                              <ArrowRight className="w-5 h-5 ml-2" />
                             </Button>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     )}
 
                     {/* Media & Rules Tab */}
                     {activeTab === "media" && (
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="p-4 sm:p-8"
+                      <div
+                        className="p-8 animate-in slide-in-from-right-4 duration-500"
                       >
-                        <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
-                            <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+                            <Camera className="w-6 h-6 text-foreground" />
                           </div>
                           <div>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Media & Guidelines</h2>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">
+                            <h2 className="text-2xl font-bold text-foreground">Media & Guidelines</h2>
+                            <p className="text-muted-foreground">
                               Update visual content and set expectations for participants
                             </p>
                           </div>
                         </div>
-                        <div className="space-y-8 sm:space-y-10">
+                        <div className="space-y-10">
                           {/* Images Section */}
-                          <div className="space-y-4 sm:space-y-6">
+                          <div className="space-y-6">
                             <div className="flex items-center gap-2">
-                              <ImagePlus className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
-                              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Event Images</h3>
-                              <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>
+                              <ImagePlus className="w-6 h-6 text-foreground" />
+                              <h3 className="text-xl font-semibold text-foreground">Event Images</h3>
+                              <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground">Optional</Badge>
                             </div>
 
                             {/* Existing Images */}
                             {existingImages.length > 0 && (
                               <div className="mb-6">
-                                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">
+                                <h4 className="text-md font-medium text-foreground mb-3">
                                   Current Images
                                 </h4>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-                                  <AnimatePresence>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                     {existingImages.map((image, index) => (
-                                      <motion.div
+                                      <div
                                         key={index}
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.8 }}
-                                        className="relative group"
+                                        className="relative group animate-in fade-in zoom-in-95 duration-300"
                                       >
                                         <img
                                           src={image.url || "/placeholder.svg?height=200&width=200"}
                                           alt={`Event ${index}`}
-                                          className="w-full h-24 sm:h-32 object-cover rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-sm sm:shadow-md group-hover:shadow-lg transition-all duration-200"
+                                          className="w-full h-32 object-cover rounded-xl border border-border shadow-sm group-hover:shadow-md transition-all duration-200"
                                         />
                                         <button
                                           type="button"
                                           onClick={() => removeExistingImage(index)}
-                                          className="absolute -top-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-md"
+                                          className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-md"
                                         >
-                                          <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                                          <X className="w-4 h-4" />
                                         </button>
-                                      </motion.div>
+                                      </div>
                                     ))}
-                                  </AnimatePresence>
                                 </div>
                               </div>
                             )}
@@ -1137,10 +1047,10 @@ const EditEvent = () => {
                             {/* Image Upload Area */}
                             <div
                               className={cn(
-                                "border-2 border-dashed rounded-2xl p-8 text-center transition-colors duration-200 bg-gray-50/50 dark:bg-gray-800/50",
+                                "border-2 border-dashed rounded-2xl p-8 text-center transition-colors duration-200 bg-card/50",
                                 dragActive
-                                  ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                                  : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
+                                  ? "border-primary bg-muted"
+                                  : "border-border hover:border-primary/50"
                               )}
                               onDragEnter={handleDrag}
                               onDragLeave={handleDrag}
@@ -1148,16 +1058,16 @@ const EditEvent = () => {
                               onDrop={handleDrop}
                             >
                               <div className="mb-6">
-                                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                  <ImagePlus className="w-10 h-10 text-white" />
+                                <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                  <ImagePlus className="w-10 h-10 text-foreground" />
                                 </div>
-                                <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                                <h4 className="text-xl font-semibold text-foreground mb-3">
                                   Upload New Images
                                 </h4>
-                                <p className="text-gray-600 dark:text-gray-400 mb-3 text-lg">
+                                <p className="text-muted-foreground mb-3 text-lg">
                                   Add more stunning visuals to your event
                                 </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <p className="text-sm text-muted-foreground">
                                   PNG, JPG, WEBP up to 5MB each • Maximum 5 images total
                                 </p>
                               </div>
@@ -1171,7 +1081,7 @@ const EditEvent = () => {
                               />
                               <label
                                 htmlFor="new-image-upload"
-                                className="inline-flex items-center px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl"
+                                className="inline-flex items-center px-8 py-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 cursor-pointer"
                               >
                                 <Upload className="w-5 h-5 mr-3" />
                                 <span className="text-lg font-medium">Choose New Images</span>
@@ -1179,94 +1089,81 @@ const EditEvent = () => {
                             </div>
 
                             {/* New Images Preview */}
-                            <AnimatePresence>
-                              {imagePreview.length > 0 && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: 20 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -20 }}
-                                  className="space-y-3"
-                                >
-                                  <h4 className="text-md font-medium text-gray-900 dark:text-white">
-                                    New Images to Upload
-                                  </h4>
-                                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                    {imagePreview.map((src, index) => (
-                                      <motion.div
-                                        key={index}
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                                        className="relative group"
+                            {imagePreview.length > 0 && (
+                              <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <h4 className="text-md font-medium text-foreground">
+                                  New Images to Upload
+                                </h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                  {imagePreview.map((src, index) => (
+                                    <div
+                                      key={index}
+                                      className="relative group animate-in fade-in zoom-in duration-300"
+                                      style={{ animationDelay: `${index * 100}ms` }}
+                                    >
+                                      <img
+                                        src={src || "/placeholder.svg"}
+                                        alt={`New Preview ${index}`}
+                                        className="w-full h-32 object-cover rounded-xl border border-border shadow-sm group-hover:shadow-md transition-all duration-200"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => removeNewImage(index)}
+                                        className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-md"
                                       >
-                                        <img
-                                          src={src || "/placeholder.svg"}
-                                          alt={`New Preview ${index}`}
-                                          className="w-full h-32 object-cover rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-md group-hover:shadow-lg transition-all duration-200"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={() => removeNewImage(index)}
-                                          className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-lg"
-                                        >
-                                          <X className="w-4 h-4" />
-                                        </button>
-                                      </motion.div>
-                                    ))}
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                                        <X className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           {/* Rules Section */}
                           <div className="space-y-6">
                             <div className="flex items-center gap-2">
-                              <Shield className="w-6 h-6 text-green-500" />
-                              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                              <Shield className="w-6 h-6 text-foreground" />
+                              <h3 className="text-xl font-semibold text-foreground">
                                 Event Rules & Guidelines
                               </h3>
-                              <Badge variant="secondary" className="ml-2">Optional</Badge>
+                              <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground">Optional</Badge>
                             </div>
 
-                            <Card className="border-2 border-gray-200 dark:border-gray-700">
+                            <Card className="border border-border shadow-sm">
                               <CardContent className="p-6">
                                 <div className="flex gap-3 mb-4">
                                   <Input
                                     value={newRule}
                                     onChange={(e) => setNewRule(e.target.value)}
                                     placeholder="Add a rule or guideline for participants..."
-                                    className="flex-1 h-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg"
+                                    className="flex-1 h-12 text-lg bg-background border-input focus:ring-primary"
                                     onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
                                   />
                                   <Button
                                     type="button"
                                     onClick={addRule}
                                     disabled={!newRule.trim()}
-                                    className="h-12 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg disabled:opacity-50"
+                                    className="h-12 px-6 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                                   >
                                     <Plus className="w-5 h-5 mr-2" />
                                     Add Rule
                                   </Button>
                                 </div>
 
-                                <AnimatePresence>
-                                  {form.getValues("rules")?.length > 0 ? (
+                                {form.getValues("rules")?.length > 0 ? (
                                     <div className="space-y-3">
                                       {form.getValues("rules").map((rule, index) => (
-                                        <motion.div
+                                        <div
                                           key={index}
-                                          initial={{ opacity: 0, y: 10 }}
-                                          animate={{ opacity: 1, y: 0 }}
-                                          exit={{ opacity: 0, y: -10 }}
-                                          className="flex items-start gap-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700"
+                                          className="flex items-start gap-4 p-4 rounded-lg bg-muted border border-border animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         >
-                                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0 mt-1">
-                                            <span className="text-sm font-bold text-white">
+                                          <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center flex-shrink-0 mt-1">
+                                            <span className="text-sm font-bold text-foreground">
                                               {index + 1}
                                             </span>
                                           </div>
-                                          <p className="flex-1 text-gray-900 dark:text-white text-lg leading-relaxed">
+                                          <p className="flex-1 text-foreground text-lg leading-relaxed">
                                             {rule}
                                           </p>
                                           <Button
@@ -1274,25 +1171,24 @@ const EditEvent = () => {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => removeRule(index)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
                                           >
                                             <Trash2 className="w-4 h-4" />
                                           </Button>
-                                        </motion.div>
+                                        </div>
                                       ))}
                                     </div>
                                   ) : (
-                                    <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50">
-                                      <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
+                                      <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                                      <h4 className="text-lg font-medium text-foreground mb-2">
                                         No Rules Added Yet
                                       </h4>
-                                      <p className="text-gray-600 dark:text-gray-400">
+                                      <p className="text-muted-foreground">
                                         Add rules to help participants understand expectations and guidelines.
                                       </p>
                                     </div>
                                   )}
-                                </AnimatePresence>
                               </CardContent>
                             </Card>
                           </div>
@@ -1300,24 +1196,24 @@ const EditEvent = () => {
                           {/* Equipment Section */}
                           <div className="space-y-6">
                             <div className="flex items-center gap-2">
-                              <Target className="w-6 h-6 text-purple-500" />
-                              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                              <Target className="w-6 h-6 text-foreground" />
+                              <h3 className="text-xl font-semibold text-foreground">
                                 Required Equipment
                               </h3>
-                              <Badge variant="secondary" className="ml-2">Optional</Badge>
+                              <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground">Optional</Badge>
                             </div>
 
-                            <Card className="border-2 border-gray-200 dark:border-gray-700">
+                            <Card className="border border-border shadow-sm">
                               <CardContent className="p-6">
                                 <div className="flex gap-3 mb-4">
                                   <Input
                                     value={newEquipment.item}
                                     onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
                                     placeholder="Add equipment needed for the event..."
-                                    className="flex-1 h-12 text-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg"
+                                    className="flex-1 h-12 text-lg bg-background border-input focus:ring-primary"
                                     onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
                                   />
-                                  <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                  <div className="flex items-center gap-3 px-4 py-2 bg-muted rounded-lg border border-border">
                                     <input
                                       type="checkbox"
                                       id="equipment-required"
@@ -1325,11 +1221,11 @@ const EditEvent = () => {
                                       onChange={(e) =>
                                         setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))
                                       }
-                                      className="w-4 h-4 text-blue-600"
+                                      className="w-4 h-4 text-foreground rounded border-input focus:ring-primary"
                                     />
                                     <label
                                       htmlFor="equipment-required"
-                                      className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap"
+                                      className="text-sm font-medium text-foreground whitespace-nowrap"
                                     >
                                       Required
                                     </label>
@@ -1338,27 +1234,23 @@ const EditEvent = () => {
                                     type="button"
                                     onClick={addEquipment}
                                     disabled={!newEquipment.item.trim()}
-                                    className="h-12 px-6 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg disabled:opacity-50"
+                                    className="h-12 px-6 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                                   >
                                     <Plus className="w-5 h-5 mr-2" />
                                     Add
                                   </Button>
                                 </div>
 
-                                <AnimatePresence>
-                                  {form.getValues("equipment")?.length > 0 ? (
+                                {form.getValues("equipment")?.length > 0 ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                       {form.getValues("equipment").map((item, index) => (
-                                        <motion.div
+                                        <div
                                           key={index}
-                                          initial={{ opacity: 0, y: 10 }}
-                                          animate={{ opacity: 1, y: 0 }}
-                                          exit={{ opacity: 0, y: -10 }}
-                                          className="flex items-center justify-between p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700"
+                                          className="flex items-center justify-between p-4 rounded-lg bg-muted border border-border animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         >
                                           <div className="flex items-center gap-3">
-                                            <CheckCircle className="w-5 h-5 text-purple-500" />
-                                            <span className="text-gray-900 dark:text-white font-medium">
+                                            <CheckCircle className="w-5 h-5 text-foreground" />
+                                            <span className="text-foreground font-medium">
                                               {item.item}
                                             </span>
                                             {item.required && (
@@ -1372,25 +1264,24 @@ const EditEvent = () => {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => removeEquipment(index)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
                                           >
                                             <Trash2 className="w-4 h-4" />
                                           </Button>
-                                        </motion.div>
+                                        </div>
                                       ))}
                                     </div>
                                   ) : (
-                                    <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50">
-                                      <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
+                                      <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                                      <h4 className="text-lg font-medium text-foreground mb-2">
                                         No Equipment Listed
                                       </h4>
-                                      <p className="text-gray-600 dark:text-gray-400">
+                                      <p className="text-muted-foreground">
                                         List any equipment or gear participants should bring to the event.
                                       </p>
                                     </div>
                                   )}
-                                </AnimatePresence>
                               </CardContent>
                             </Card>
                           </div>
@@ -1401,7 +1292,7 @@ const EditEvent = () => {
                               variant="outline"
                               onClick={() => setActiveTab("details")}
                               size="lg"
-                              className="px-8 py-4 rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                              className="px-8 py-4 rounded-xl border-border hover:bg-muted text-foreground"
                             >
                               <ChevronLeft className="w-5 h-5 mr-2" />
                               Previous
@@ -1410,33 +1301,30 @@ const EditEvent = () => {
                               type="button"
                               onClick={() => setActiveTab("review")}
                               size="lg"
-                              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 rounded-xl"
                             >
                               Next: Review & Save
                               <ArrowRight className="w-5 h-5 ml-2" />
                             </Button>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     )}
 
                     {/* Review Tab */}
                     {activeTab === "review" && (
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="p-8"
+                      <div
+                        className="p-8 animate-in slide-in-from-right-4 duration-500"
                       >
                         <div className="flex items-center gap-4 mb-8">
-                          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                            <Eye className="w-8 h-8 text-white" />
+                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+                            <Eye className="w-6 h-6 text-foreground" />
                           </div>
                           <div>
-                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                            <h2 className="text-2xl font-bold text-foreground">
                               Review & Save Changes
                             </h2>
-                            <p className="text-gray-600 dark:text-gray-400 text-lg">
+                            <p className="text-muted-foreground">
                               Review all changes before saving your updated event
                             </p>
                           </div>
@@ -1444,33 +1332,33 @@ const EditEvent = () => {
 
                         <div className="space-y-8">
                           {/* Event Summary Card */}
-                          <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-700">
+                          <Card className="bg-card border-border">
                             <CardContent className="p-8">
-                              <div className="flex items-start gap-6">
+                              <div className="flex flex-col md:flex-row items-start gap-6">
                                 {(existingImages.length > 0 || imagePreview.length > 0) ? (
                                   <img
                                     src={existingImages[0]?.url || imagePreview[0]}
                                     alt="Event preview"
-                                    className="w-32 h-32 object-cover rounded-2xl border-2 border-white dark:border-gray-700 shadow-lg"
+                                    className="w-32 h-32 object-cover rounded-xl border border-border shadow-sm"
                                   />
                                 ) : (
-                                  <div className="w-32 h-32 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-2xl flex items-center justify-center">
-                                    <Camera className="w-12 h-12 text-gray-400" />
+                                  <div className="w-32 h-32 bg-muted rounded-xl flex items-center justify-center">
+                                    <Camera className="w-10 h-10 text-muted-foreground" />
                                   </div>
                                 )}
                                 <div className="flex-1 space-y-4">
                                   <div>
-                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                    <h3 className="text-2xl font-bold text-foreground mb-2">
                                       {form.getValues("name") || "Event Name"}
                                     </h3>
-                                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                      <Badge variant="secondary" className="text-xs">
+                                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                                      <Badge variant="secondary" className="bg-muted text-foreground">
                                         {form.getValues("category") || "Category"}
                                       </Badge>
-                                      <Badge variant="outline" className="text-xs">
+                                      <Badge variant="outline" className="border-border text-muted-foreground">
                                         {form.getValues("difficulty")}
                                       </Badge>
-                                      <Badge variant="outline" className="text-xs capitalize">
+                                      <Badge variant="outline" className="border-border text-muted-foreground capitalize">
                                         {form.getValues("eventType")}
                                       </Badge>
                                     </div>
@@ -1478,28 +1366,28 @@ const EditEvent = () => {
 
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                     <div className="flex items-center gap-2">
-                                      <Calendar className="w-4 h-4 text-blue-500" />
-                                      <span className="text-gray-900 dark:text-white">
+                                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                                      <span className="text-foreground">
                                         {form.getValues("date") ? new Date(form.getValues("date")).toLocaleDateString() : "Date"}
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Clock className="w-4 h-4 text-orange-500" />
-                                      <span className="text-gray-900 dark:text-white">
+                                      <Clock className="w-4 h-4 text-muted-foreground" />
+                                      <span className="text-foreground">
                                         {form.getValues("time") || "Time"}
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Users className="w-4 h-4 text-green-500" />
-                                      <span className="text-gray-900 dark:text-white">
+                                      <Users className="w-4 h-4 text-muted-foreground" />
+                                      <span className="text-foreground">
                                         {form.getValues("maxParticipants")} participants
                                       </span>
                                     </div>
                                   </div>
 
                                   <div className="flex items-center gap-2 text-sm">
-                                    <MapPin className="w-4 h-4 text-red-500" />
-                                    <span className="text-gray-900 dark:text-white">
+                                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-foreground">
                                       {[
                                         form.getValues("location.address"),
                                         form.getValues("location.city"),
@@ -1510,8 +1398,8 @@ const EditEvent = () => {
 
                                   {form.getValues("registrationFee") > 0 && (
                                     <div className="flex items-center gap-2 text-sm">
-                                      <DollarSign className="w-4 h-4 text-green-500" />
-                                      <span className="text-gray-900 dark:text-white font-semibold">
+                                      <DollarSign className="w-4 h-4 text-muted-foreground" />
+                                      <span className="text-foreground font-semibold">
                                         ${form.getValues("registrationFee")} registration fee
                                       </span>
                                     </div>
@@ -1520,8 +1408,8 @@ const EditEvent = () => {
                               </div>
 
                               {form.getValues("description") && (
-                                <div className="mt-6 pt-6 border-t border-blue-200 dark:border-blue-700">
-                                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                <div className="mt-6 pt-6 border-t border-border">
+                                  <p className="text-muted-foreground leading-relaxed">
                                     {form.getValues("description")}
                                   </p>
                                 </div>
@@ -1532,10 +1420,10 @@ const EditEvent = () => {
                           {/* Additional Details */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {form.getValues("rules")?.length > 0 && (
-                              <Card>
+                              <Card className="border-border">
                                 <CardHeader>
-                                  <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Shield className="w-5 h-5 text-green-500" />
+                                  <CardTitle className="flex items-center gap-2 text-lg text-foreground">
+                                    <Shield className="w-5 h-5 text-muted-foreground" />
                                     Event Rules ({form.getValues("rules").length})
                                   </CardTitle>
                                 </CardHeader>
@@ -1543,14 +1431,14 @@ const EditEvent = () => {
                                   <ul className="space-y-2">
                                     {form.getValues("rules").slice(0, 3).map((rule, index) => (
                                       <li key={index} className="flex items-start gap-2 text-sm">
-                                        <span className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                                        <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                                           {index + 1}
                                         </span>
-                                        <span className="text-gray-700 dark:text-gray-300">{rule}</span>
+                                        <span className="text-muted-foreground">{rule}</span>
                                       </li>
                                     ))}
                                     {form.getValues("rules").length > 3 && (
-                                      <li className="text-sm text-gray-500 dark:text-gray-400 ml-7">
+                                      <li className="text-sm text-muted-foreground ml-7">
                                         ... and {form.getValues("rules").length - 3} more rules
                                       </li>
                                     )}
@@ -1560,10 +1448,10 @@ const EditEvent = () => {
                             )}
 
                             {form.getValues("equipment")?.length > 0 && (
-                              <Card>
+                              <Card className="border-border">
                                 <CardHeader>
-                                  <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Target className="w-5 h-5 text-purple-500" />
+                                  <CardTitle className="flex items-center gap-2 text-lg text-foreground">
+                                    <Target className="w-5 h-5 text-muted-foreground" />
                                     Equipment ({form.getValues("equipment").length})
                                   </CardTitle>
                                 </CardHeader>
@@ -1571,15 +1459,15 @@ const EditEvent = () => {
                                   <ul className="space-y-2">
                                     {form.getValues("equipment").slice(0, 4).map((item, index) => (
                                       <li key={index} className="flex items-center gap-2 text-sm">
-                                        <CheckCircle className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                                        <span className="text-gray-700 dark:text-gray-300">{item.item}</span>
+                                        <CheckCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                        <span className="text-muted-foreground">{item.item}</span>
                                         {item.required && (
                                           <Badge variant="destructive" className="text-xs">Required</Badge>
                                         )}
                                       </li>
                                     ))}
                                     {form.getValues("equipment").length > 4 && (
-                                      <li className="text-sm text-gray-500 dark:text-gray-400 ml-6">
+                                      <li className="text-sm text-muted-foreground ml-6">
                                         ... and {form.getValues("equipment").length - 4} more items
                                       </li>
                                     )}
@@ -1591,23 +1479,23 @@ const EditEvent = () => {
 
                           {/* Completion Status */}
                           <Card className={cn(
-                            "border-2",
+                            "border",
                             completionProgress === 100
-                              ? "border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20"
-                              : "border-orange-300 dark:border-orange-600 bg-orange-50 dark:bg-orange-900/20"
+                              ? "border-green-900 bg-green-900/10"
+                              : "border-amber-900 bg-amber-900/10"
                           )}>
                             <CardContent className="p-6">
                               <div className="flex items-center gap-3 mb-4">
                                 {completionProgress === 100 ? (
-                                  <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                                  <CheckCircle className="w-8 h-8 text-green-400" />
                                 ) : (
-                                  <AlertTriangle className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+                                  <AlertTriangle className="w-8 h-8 text-amber-400" />
                                 )}
                                 <div>
-                                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  <h3 className="text-lg font-semibold text-foreground">
                                     {completionProgress === 100 ? "Event Ready to Update!" : "Complete Required Fields"}
                                   </h3>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p className="text-sm text-muted-foreground">
                                     {completionProgress === 100
                                       ? "All required information has been provided. Your event is ready to be updated."
                                       : "Please fill in all required fields to save your event changes."
@@ -1616,8 +1504,8 @@ const EditEvent = () => {
                                 </div>
                               </div>
                               <div className="relative">
-                                <Progress value={completionProgress} className="h-2" />
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-2 block">
+                                <Progress value={completionProgress} className="h-2 bg-muted" />
+                                <span className="text-sm font-medium text-muted-foreground mt-2 block">
                                   {Math.round(completionProgress)}% Complete
                                 </span>
                               </div>
@@ -1631,7 +1519,7 @@ const EditEvent = () => {
                               variant="outline"
                               onClick={() => setActiveTab("media")}
                               size="lg"
-                              className="px-8 py-4 rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                              className="px-8 py-4 rounded-xl border-border hover:bg-muted text-foreground"
                             >
                               <ChevronLeft className="w-5 h-5 mr-2" />
                               Previous
@@ -1642,7 +1530,7 @@ const EditEvent = () => {
                                 type="button"
                                 variant="outline"
                                 size="lg"
-                                className="px-8 py-4 rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                className="px-8 py-4 rounded-xl border-border hover:bg-muted text-foreground"
                                 onClick={() => navigate(`/events/${id}`)}
                               >
                                 Cancel Changes
@@ -1652,11 +1540,11 @@ const EditEvent = () => {
                                 type="submit"
                                 disabled={loading || completionProgress < 100}
                                 size="lg"
-                                className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                                className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
                               >
                                 {loading ? (
                                   <>
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                    <div className="w-5 h-5 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin mr-2" />
                                     Updating Event...
                                   </>
                                 ) : (
@@ -1669,14 +1557,14 @@ const EditEvent = () => {
                             </div>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     )}
                   </form>
                 </Form>
               </CardContent>
             </Card>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

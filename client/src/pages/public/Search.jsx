@@ -4,7 +4,6 @@ import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from '@/hooks/useAuth';
 import { format } from "date-fns"
 import { SearchIcon, Filter, MapPin, Calendar, Users, Star, ChevronDown, X, Loader2, User, CalendarDays, Dumbbell, Clock, Sliders, ArrowUpDown, CheckCircle2 } from 'lucide-react'
-import { motion, AnimatePresence } from "framer-motion"
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -248,16 +247,11 @@ const Search = () => {
           </div>
 
           {/* Filters */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-4 p-4 bg-card-light dark:bg-card-dark rounded-lg border border-border-light dark:border-border-dark">
+          {showFilters && (
+            <div
+              className="overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300"
+            >
+              <div className="mt-4 p-4 bg-card-light dark:bg-card-dark rounded-lg border border-border-light dark:border-border-dark">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">Filters</h3>
                     <button
@@ -373,9 +367,8 @@ const Search = () => {
                     </div>
                   )}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+            </div>
+          )}
         </form>
 
         {/* Results Header */}

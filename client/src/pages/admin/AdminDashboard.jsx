@@ -164,7 +164,7 @@ const AdminDashboard = () => {
         change: `+${analytics.events.thisMonth}`,
         changeType: analytics.events.thisMonth > 0 ? "positive" : "neutral",
         icon: Calendar,
-        color: "purple",
+        color: "indigo",
         description: "Created events",
         trend: eventGrowth.trend,
         trendValue: eventGrowth.rate,
@@ -266,8 +266,8 @@ const AdminDashboard = () => {
   const getColorClasses = (color) => {
     const colors = {
       blue: "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200/20 dark:border-blue-700/20",
-      purple:
-        "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border-purple-200/20 dark:border-purple-700/20",
+      indigo:
+        "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 border-indigo-200/20 dark:border-indigo-700/20",
       green:
         "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 border-green-200/20 dark:border-green-700/20",
       orange:
@@ -393,7 +393,7 @@ const AdminDashboard = () => {
       {/* Header with Gradient Background - Fully Responsive */}
       <motion.div
         variants={itemVariants}
-        className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-4 sm:p-6 lg:p-8 text-white shadow-xl"
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-4 sm:p-6 lg:p-8 text-white shadow-xl"
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -688,7 +688,7 @@ const AdminDashboard = () => {
                         >
                           <Avatar className="w-8 h-8 sm:w-10 sm:h-10 ring-2 ring-white/20 dark:ring-gray-700/20 shrink-0">
                             <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs sm:text-sm">
+                            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white font-semibold text-xs sm:text-sm">
                               {user.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
@@ -772,7 +772,7 @@ const AdminDashboard = () => {
                 <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
                   <CardHeader className="pb-3 sm:pb-4">
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
-                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />
+                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 shrink-0" />
                       <span className="truncate">Event Analytics</span>
                     </CardTitle>
                   </CardHeader>
@@ -945,7 +945,7 @@ const AdminDashboard = () => {
                 <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
                   <CardHeader className="pb-3 sm:pb-4">
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
-                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 shrink-0" />
                       <span className="truncate">Quick Insights</span>
                     </CardTitle>
                   </CardHeader>
@@ -995,16 +995,16 @@ const AdminDashboard = () => {
                           </div>
                         </div>
 
-                        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border border-purple-200/50 dark:border-purple-700/50">
+                        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/50 border border-indigo-200/50 dark:border-indigo-700/50">
                           <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-500 rounded-lg flex items-center justify-center shrink-0">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
                               <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs sm:text-sm font-medium text-purple-900 dark:text-purple-100">
+                              <p className="text-xs sm:text-sm font-medium text-indigo-900 dark:text-indigo-100">
                                 Event Success Rate
                               </p>
-                              <p className="text-xs text-purple-700 dark:text-purple-300">
+                              <p className="text-xs text-indigo-700 dark:text-indigo-300">
                                 {analytics?.events.total
                                   ? ((analytics?.events.past / analytics?.events.total) * 100).toFixed(1)
                                   : 0}
@@ -1060,7 +1060,7 @@ const AdminDashboard = () => {
                   description: "Review and approve events",
                   icon: Calendar,
                   href: "/admin/events",
-                  color: "purple",
+                  color: "indigo",
                 },
                 {
                   title: "Send Notifications",

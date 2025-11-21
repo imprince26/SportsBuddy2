@@ -467,7 +467,7 @@ const ManageEvents = () => {
       transition={{ delay: index * 0.05 }}
       className="group"
     >
-      <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-all duration-300 hover:border-purple-300/50 dark:hover:border-purple-600/50 overflow-hidden">
+      <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-all duration-300 hover:border-indigo-300/50 dark:hover:border-indigo-600/50 overflow-hidden">
         {/* Event Image */}
         <div className="relative h-32 overflow-hidden">
           {event.images && event.images.length > 0 ? (
@@ -477,7 +477,7 @@ const ManageEvents = () => {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center">
               <div className="text-3xl">{getCategoryIcon(event.category)}</div>
             </div>
           )}
@@ -598,7 +598,7 @@ const ManageEvents = () => {
                 Created {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
               </span>
 
-              <Link to={`/events/${event._id}`} className="text-purple-600 hover:text-purple-700 text-xs font-medium">
+              <Link to={`/events/${event._id}`} className="text-indigo-600 hover:text-indigo-700 text-xs font-medium">
                 View →
               </Link>
             </div>
@@ -619,7 +619,7 @@ const ManageEvents = () => {
       whileHover={{ scale: 1.02 }}
       className="group"
     >
-      <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all duration-300 hover:border-purple-300/50 dark:hover:border-purple-600/50 overflow-hidden">
+      <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all duration-300 hover:border-indigo-300/50 dark:hover:border-indigo-600/50 overflow-hidden">
         {/* Event Image */}
         <div className="relative h-48 overflow-hidden">
           {event.images && event.images.length > 0 ? (
@@ -629,7 +629,7 @@ const ManageEvents = () => {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center">
               <div className="text-4xl">{getCategoryIcon(event.category)}</div>
             </div>
           )}
@@ -781,7 +781,7 @@ const ManageEvents = () => {
                 Created {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
               </span>
 
-              <Link to={`/events/${event._id}`} className="text-purple-600 hover:text-purple-700 text-sm font-medium">
+              <Link to={`/events/${event._id}`} className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
                 View →
               </Link>
             </div>
@@ -823,7 +823,7 @@ const ManageEvents = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-xl flex items-center justify-center">
                 <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div>
@@ -876,7 +876,7 @@ const ManageEvents = () => {
             change: `+${eventStats.thisMonth || 0}`,
             changeType: "positive",
             icon: Calendar,
-            color: "purple",
+            color: "indigo",
             description: "All events",
           },
           {
@@ -916,7 +916,7 @@ const ManageEvents = () => {
               whileTap={{ scale: 0.98 }}
             >
               <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-purple-500/5 dark:to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-indigo-500/5 dark:to-indigo-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                 <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10">
                   <div className="flex items-center justify-between mb-2 sm:mb-4">
@@ -941,8 +941,8 @@ const ManageEvents = () => {
                       <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{stat.description}</p>
                     </div>
 
-                    <div className="p-2 sm:p-3 rounded-xl border transition-transform duration-300 group-hover:scale-110 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-purple-200/50 dark:border-purple-700/50">
-                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-purple-600 dark:text-purple-400" />
+                    <div className="p-2 sm:p-3 rounded-xl border transition-transform duration-300 group-hover:scale-110 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/50 border-indigo-200/50 dark:border-indigo-700/50">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-indigo-600 dark:text-indigo-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -1052,7 +1052,7 @@ const ManageEvents = () => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-lg sm:text-xl">
-                  <CalendarDays className="w-5 h-5 text-purple-600" />
+                  <CalendarDays className="w-5 h-5 text-indigo-600" />
                   Events ({filteredEvents.length})
                 </CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-400 text-sm">
@@ -1125,7 +1125,7 @@ const ManageEvents = () => {
                               size="sm"
                               onClick={() => setCurrentPage(page)}
                               className={
-                                currentPage === page ? "bg-purple-600 text-white" : "bg-white/50 dark:bg-gray-800/50"
+                                currentPage === page ? "bg-indigo-600 text-white" : "bg-white/50 dark:bg-gray-800/50"
                               }
                             >
                               {page}
@@ -1158,7 +1158,7 @@ const ManageEvents = () => {
         <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 w-[95vw] max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5 text-purple-600" />
+              <Eye className="w-5 h-5 text-indigo-600" />
               Event Details
             </DialogTitle>
           </DialogHeader>
@@ -1244,7 +1244,7 @@ const ManageEvents = () => {
               Close
             </Button>
             <Link to={`/events/${selectedEvent?._id}`}>
-              <Button className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto">View Full Event</Button>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto">View Full Event</Button>
             </Link>
           </DialogFooter>
         </DialogContent>
@@ -1255,7 +1255,7 @@ const ManageEvents = () => {
         <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 w-[95vw] max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Edit className="w-5 h-5 text-purple-600" />
+              <Edit className="w-5 h-5 text-indigo-600" />
               Edit Event
             </DialogTitle>
             <DialogDescription>Update event information and settings</DialogDescription>
@@ -1338,7 +1338,7 @@ const ManageEvents = () => {
             <Button variant="outline" onClick={() => setShowEditDialog(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button onClick={submitEditEvent} className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto">
+            <Button onClick={submitEditEvent} className="bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto">
               Save Changes
             </Button>
           </DialogFooter>

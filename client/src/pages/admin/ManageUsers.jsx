@@ -386,7 +386,7 @@ const ManageUsers = () => {
                   <div className="relative">
                     <Avatar className="w-12 h-12 ring-2 ring-gray-200/50 dark:ring-gray-700/50">
                       <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white font-semibold text-sm">
                         {user.name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
@@ -528,7 +528,7 @@ const ManageUsers = () => {
                 <div className="relative">
                   <Avatar className="w-12 h-12 ring-2 ring-gray-200/50 dark:ring-gray-700/50">
                     <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white font-semibold">
                       {user.name?.charAt(0)?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
@@ -655,7 +655,7 @@ const ManageUsers = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center">
                 <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div>
@@ -724,7 +724,7 @@ const ManageUsers = () => {
             change: "+8%",
             changeType: "positive",
             icon: TrendingUp,
-            color: "purple",
+            color: "indigo",
             description: "Monthly growth"
           },
           {
@@ -989,7 +989,7 @@ const ManageUsers = () => {
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16 ring-2 ring-gray-200/50 dark:ring-gray-700/50">
                     <AvatarImage src={selectedUser.avatar || "/placeholder.svg"} alt={selectedUser.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white font-semibold text-lg">
                       {selectedUser.name?.charAt(0)?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>

@@ -344,7 +344,7 @@ const AdminAnalytics = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 sm:gap-3 mb-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div>
@@ -471,7 +471,7 @@ const AdminAnalytics = () => {
             change: `+${analytics?.events?.thisMonth || 0}`,
             changeType: analytics?.events?.thisMonth > 0 ? "positive" : "neutral",
             icon: Calendar,
-            color: "purple",
+            color: "indigo",
             description: "Created events",
             subValue: `${analytics?.events?.active || 0} active now`,
           },
@@ -685,7 +685,7 @@ const AdminAnalytics = () => {
                 <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
                   <CardHeader className="pb-2 sm:pb-3">
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
-                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
                       Event Analytics
                     </CardTitle>
                     <CardDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
@@ -715,7 +715,7 @@ const AdminAnalytics = () => {
                             }}
                           />
                           <Legend fontSize={10} />
-                          <Bar dataKey="events" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Events Created" />
+                          <Bar dataKey="events" fill="#6366f1" radius={[4, 4, 0, 0]} name="Events Created" />
                           <Line
                             type="monotone"
                             dataKey="engagement"
@@ -757,7 +757,7 @@ const AdminAnalytics = () => {
                         label: "Weekly Active",
                         value: analytics?.engagementMetrics?.weeklyActive || 0,
                         icon: Calendar,
-                        color: "purple",
+                        color: "indigo",
                       },
                       {
                         label: "Monthly Active",
@@ -839,8 +839,8 @@ const AdminAnalytics = () => {
                               <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
                             </linearGradient>
                             <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
+                              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="#6366f1" stopOpacity={0.1} />
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />
@@ -873,7 +873,7 @@ const AdminAnalytics = () => {
                           <Area
                             type="monotone"
                             dataKey="events"
-                            stroke="#8b5cf6"
+                            stroke="#6366f1"
                             fillOpacity={1}
                             fill="url(#colorEvents)"
                             name="Events"
@@ -944,7 +944,7 @@ const AdminAnalytics = () => {
                 <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
                   <CardHeader className="pb-2 sm:pb-3">
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
-                      <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                      <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
                       Category Distribution
                     </CardTitle>
                     <CardDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
@@ -1073,7 +1073,7 @@ const AdminAnalytics = () => {
                         title: "Retention Rate",
                         value: analytics?.performanceMetrics?.retentionRate || "0%",
                         icon: Heart,
-                        color: "purple",
+                        color: "indigo",
                         description: "User retention over time",
                       },
                       {
@@ -1200,7 +1200,7 @@ const AdminAnalytics = () => {
                       transition={{ delay: index * 0.1 }}
                       className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
                     >
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
                         <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">

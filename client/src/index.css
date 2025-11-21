@@ -10,7 +10,7 @@ body {
 /* Selection colors matching admin theme */
 ::selection {
   background-color: hsl(234, 89%, 74%, 0.3);
-  /* Blue-purple gradient with opacity */
+  /* Blue-indigo gradient with opacity */
   color: hsl(0, 0%, 100%);
   /* White text */
 }
@@ -28,13 +28,13 @@ body {
     --primary-foreground: 0 0% 100%;
     /* #ffffff */
     
-    /* Secondary - Purple accent from admin gradient */
-    --secondary: 262 83% 58%;
-    /* #8b5cf6 - Purple 500 */
+    /* Secondary - Indigo accent from admin gradient */
+    --secondary: 226 71% 57%;
+    /* #6366f1 - Indigo 500 */
     --secondary-foreground: 0 0% 100%;
     /* #ffffff */
     
-    /* Accent - Matching admin purple */
+    /* Accent - Matching admin indigo */
     --accent: 237 62% 92%;
     /* #e0e7ff - Blue 100 */
     --accent-foreground: 221 83% 53%;
@@ -101,16 +101,16 @@ body {
     /* Chart colors matching admin dashboard */
     --chart-1: 221 83% 53%;
     /* #3b82f6 - Primary blue */
-    --chart-2: 262 83% 58%;
-    /* #8b5cf6 - Purple */
+    --chart-2: 226 71% 57%;
+    /* #6366f1 - Indigo */
     --chart-3: 142 76% 36%;
     /* #16a34a - Green */
     --chart-4: 32 95% 44%;
     /* #ea580c - Orange */
     --chart-5: 0 84% 60%;
     /* #ef4444 - Red */
-    --chart-6: 285 85% 35%;
-    /* #7c3aed - Violet */
+    --chart-6: 326 85% 35%;
+    /* #db2777 - Pink 600 */
     --chart-7: 171 77% 64%;
     /* #06d6a0 - Emerald */
     --chart-8: 43 96% 56%;
@@ -124,9 +124,9 @@ body {
     --primary-foreground: 222 84% 5%;
     /* #0f172a */
     
-    /* Secondary - Purple for dark mode */
-    --secondary: 262 83% 58%;
-    /* #8b5cf6 - Purple 500 */
+    /* Secondary - Indigo for dark mode */
+    --secondary: 226 71% 57%;
+    /* #6366f1 - Indigo 500 */
     --secondary-foreground: 222 84% 5%;
     /* #0f172a */
     
@@ -197,16 +197,16 @@ body {
     /* Chart colors for dark mode */
     --chart-1: 213 94% 68%;
     /* #60a5fa - Blue 400 */
-    --chart-2: 262 83% 58%;
-    /* #8b5cf6 - Purple 500 */
+    --chart-2: 226 71% 57%;
+    /* #6366f1 - Indigo 500 */
     --chart-3: 142 71% 45%;
     /* #22c55e - Green 500 */
     --chart-4: 32 95% 44%;
     /* #ea580c - Orange 600 */
     --chart-5: 0 84% 60%;
     /* #ef4444 - Red 500 */
-    --chart-6: 271 91% 65%;
-    /* #a855f7 - Purple 500 */
+    --chart-6: 326 91% 65%;
+    /* #e879f9 - Pink 400 */
     --chart-7: 162 94% 40%;
     /* #10b981 - Emerald 500 */
     --chart-8: 43 96% 56%;
@@ -245,11 +245,11 @@ body {
   
   /* Gradient utilities matching admin theme */
   .gradient-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #3b82f6 100%);
   }
   
   .gradient-card {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
   }
   
   /* Shadow utilities matching admin style */

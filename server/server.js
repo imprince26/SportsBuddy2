@@ -17,13 +17,24 @@ import venueRoute from './routes/venueRoute.js';
 
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
-import { uploadImage, upload } from "./config/cloudinary.js";
 import job from "./utils/cron.js";
-import { rateLimiters } from "./utils/rateLimitingUtils.js";
+import { upstashRateLimiters } from "./config/upstashRateLimiter.js";
+import { checkRedisHealth } from "./config/redis.js";
 
 dotenv.config();
 
 connectDB();
+
+// Initialize Redis and check health
+checkRedisHealth().then(isHealthy => {
+  if (isHealthy) {
+    console.log('Redis cache is ready');
+  } else {
+    console.warn('Redis cache is not available, caching disabled');
+  }
+}).catch(err => {
+  console.error('Redis health check error:', err.message);
+});
 
 const app = express();
 const httpServer = createServer(app);
@@ -38,7 +49,6 @@ const allowedOrigins = [
 const io = setupSocket(httpServer);
 app.set("io", io);
 
-// Trust proxy if behind a reverse proxy (for accurate IP detection)
 app.set('trust proxy', 1);
 
 // Middleware
@@ -47,8 +57,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-// Apply global rate limiter to all requests
-app.use(rateLimiters.global);
+// Apply Upstash global rate limiter to all requests
+app.use(upstashRateLimiters.global);
 
 if (process.env.NODE_ENV === "production") job.start();
 
@@ -67,15 +77,15 @@ app.use(cors({
 
 // Routes
 app.use("/api/auth", authRoute);
-app.use("/api/events", rateLimiters.api, eventRoute);
-app.use("/api/users", rateLimiters.api, userRoute);
-app.use('/api/admin', rateLimiters.admin, adminRoute);
-app.use('/api/notifications', rateLimiters.api, notificationRoute);
-app.use("/api/upload", rateLimiters.upload, uploadRoute);
-app.use("/api/athletes", rateLimiters.api, athletesRoute);
-app.use("/api/community", rateLimiters.api, communityRoute);
-app.use("/api/leaderboard", rateLimiters.api, leaderboardRoute);
-app.use("/api/venues", rateLimiters.api, venueRoute);
+app.use("/api/events", upstashRateLimiters.api, eventRoute);
+app.use("/api/users", upstashRateLimiters.api, userRoute);
+app.use('/api/admin', upstashRateLimiters.admin, adminRoute);
+app.use('/api/notifications', upstashRateLimiters.api, notificationRoute);
+app.use("/api/upload", upstashRateLimiters.upload, uploadRoute);
+app.use("/api/athletes", upstashRateLimiters.api, athletesRoute);
+app.use("/api/community", upstashRateLimiters.api, communityRoute);
+app.use("/api/leaderboard", upstashRateLimiters.api, leaderboardRoute);
+app.use("/api/venues", upstashRateLimiters.api, venueRoute);
 
 // Error handling middleware for rate limiting
 app.use((err, req, res, next) => {
@@ -89,7 +99,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use((req, res,next) => {
+app.use((req, res, next) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'
@@ -106,7 +116,7 @@ app.use((err, req, res, next) => {
 
 // Health check route
 app.get("/health", (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     status: "OK",
     timestamp: new Date().toISOString(),
     uptime: process.uptime()

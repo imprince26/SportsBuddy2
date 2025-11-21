@@ -2,6 +2,9 @@ import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
 import { cloudinary, uploadImage, deleteImage } from "../config/cloudinary.js";
 import { validateEvent } from "../utils/validation.js";
+import { invalidateEventCaches } from "../cache/eventCache.js";
+import { getCache, setCache } from "../config/redis.js";
+import { CacheKeys } from "../utils/cacheKeys.js";
 
 // Create Event Controller
 export const createEvent = async (req, res) => {
@@ -68,6 +71,9 @@ export const createEvent = async (req, res) => {
     const io = req.app.get("io");
     io.emit("newEvent", populatedEvent);
 
+    // Invalidate event caches after creating new event
+    await invalidateEventCaches(savedEvent._id, req.user._id);
+
     res.status(201).json({
       success: true,
       data: populatedEvent
@@ -107,6 +113,21 @@ export const getAllEvents = async (req, res) => {
       lat,
       lng
     } = req.query;
+
+    // Generate cache key from query parameters
+    const cacheKey = CacheKeys.EVENTS.LIST(page, limit, category, difficulty, status, dateRange, sortBy, search);
+    
+    // Try to get from cache first
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+      console.log(`Cache HIT: ${cacheKey}`);
+      return res.status(200).json({
+        ...cachedData,
+        fromCache: true
+      });
+    }
+    
+    console.log(`Cache MISS: ${cacheKey}`);
 
     // Build query object
     const query = {};
@@ -388,6 +409,11 @@ export const getAllEvents = async (req, res) => {
       'Expires': '0'
     });
 
+    // Cache the response for 30 minutes (1800 seconds)
+    const ttl = parseInt(process.env.CACHE_EVENTS_TTL) || 1800;
+    await setCache(cacheKey, response, ttl);
+    console.log(`Cached response: ${cacheKey} (TTL: ${ttl}s)`);
+
     res.status(200).json(response);
 
   } catch (error) {
@@ -404,7 +430,22 @@ export const getAllEvents = async (req, res) => {
 // Get Event by ID
 export const getEventById = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id)
+    const { id } = req.params;
+    
+    // Try cache first
+    const cacheKey = CacheKeys.EVENTS.DETAIL(id);
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+      console.log(`Cache HIT: ${cacheKey}`);
+      return res.status(200).json({
+        ...cachedData,
+        fromCache: true
+      });
+    }
+    
+    console.log(`Cache MISS: ${cacheKey}`);
+    
+    const event = await Event.findById(id)
       .populate("createdBy", "name avatar username email")
       .populate("participants.user", "name avatar username")
       .populate("teams.members", "name avatar username")
@@ -438,10 +479,17 @@ export const getEventById = async (req, res) => {
       'Expires': '0'
     });
 
-    res.status(200).json({
+    const response = {
       success: true,
       data: eventWithMetadata
-    });
+    };
+    
+    // Cache for 1 hour
+    const ttl = parseInt(process.env.CACHE_EVENTS_TTL) || 1800;
+    await setCache(cacheKey, response, ttl * 2);
+    console.log(`Cached event: ${cacheKey} (TTL: ${ttl * 2}s)`);
+
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -528,6 +576,9 @@ export const updateEvent = async (req, res) => {
     const io = req.app.get("io");
     io.to(`event:${event._id}`).emit("eventUpdated", updatedEvent);
 
+    // Invalidate event caches after update
+    await invalidateEventCaches(req.params.id, event.createdBy);
+
     res.json({
       success: true,
       data: updatedEvent
@@ -590,6 +641,9 @@ export const deleteEvent = async (req, res) => {
         },
       }
     );
+
+    // Invalidate event caches after deletion
+    await invalidateEventCaches(req.params.id, event.createdBy);
 
     res.json({
       success: true,

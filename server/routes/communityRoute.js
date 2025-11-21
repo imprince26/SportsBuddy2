@@ -1,4 +1,6 @@
 import express from 'express';
+import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
+import { CacheKeys, getCacheTTL } from '../utils/cacheKeys.js';
 import {
   createCommunity,
   getCommunities,
@@ -26,15 +28,48 @@ import { upload } from '../config/cloudinary.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/', getCommunities);
-router.get('/featured', getFeaturedCommunities);
-router.get('/search', searchCommunities);
-router.get('/stats', getCommunityStats);
-router.get('/posts', getCommunityPosts);
-router.get('/posts/trending', getTrendingPosts);
-router.get('/posts/:id', getCommunityPostById);
-router.get('/:id', getCommunity);
+const communityTTL = getCacheTTL('community');
+
+// Public routes with caching
+router.get('/', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.LIST(req.query.page || 1), communityTTL),
+  getCommunities
+);
+
+router.get('/featured', 
+  cacheMiddleware(() => CacheKeys.COMMUNITY.FEATURED(), communityTTL * 2),
+  getFeaturedCommunities
+);
+
+router.get('/search', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.SEARCH(req.query.search, req.query.page || 1), communityTTL),
+  searchCommunities
+);
+
+router.get('/stats', 
+  cacheMiddleware(() => CacheKeys.COMMUNITY.STATS(), communityTTL * 2),
+  getCommunityStats
+);
+
+router.get('/posts', 
+  cacheMiddleware((req) => `community:posts:all:page:${req.query.page || 1}`, communityTTL / 2),
+  getCommunityPosts
+);
+
+router.get('/posts/trending', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.TRENDING_POSTS(req.query.page || 1), communityTTL / 2),
+  getTrendingPosts
+);
+
+router.get('/posts/:id', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.POST_DETAIL(req.params.id), communityTTL),
+  getCommunityPostById
+);
+
+router.get('/:id', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.DETAIL(req.params.id), communityTTL),
+  getCommunity
+);
 
 // Protected routes
 router.use(isAuthenticated);
@@ -45,7 +80,10 @@ router.put('/:id', upload.array('image', 1), updateCommunity);
 router.delete('/:id', deleteCommunity);
 
 // User communities
-router.get('/user/:userId', getUserCommunities);
+router.get('/user/:userId', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.params.userId), communityTTL),
+  getUserCommunities
+);
 
 // Community membership
 router.post('/:id/join', joinCommunity);

@@ -21,16 +21,17 @@ import {
 
 const router = express.Router();
 
-// Public routes
+// Public routes - caching now handled in controllers
 router.get('/', getAllEvents);
 router.get('/featured', getFeaturedEvents);
 router.get('/trending', getTrendingEvents);
-router.get('/:id', getEventById);
 router.get('/search', searchEvents);
 router.get('/nearby', getNearbyEvents);
+router.get('/:id', getEventById);
 
 // Protected routes
 router.use(isAuthenticated);
+
 router.post('/', upload.array('images', 5), createEvent);
 router.put('/:id', upload.array('images', 5), updateEvent);
 router.delete('/:id', deleteEvent);

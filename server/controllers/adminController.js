@@ -4,6 +4,8 @@ import asyncHandler from 'express-async-handler';
 import sendEmail from '../config/sendEmail.js';
 import { AdminSentEmailHtml } from '../utils/emailTemplate.js';
 import PDFDocument from 'pdfkit';
+import { deleteCachePattern } from '../config/redis.js';
+import { CacheKeys } from '../utils/cacheKeys.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -535,6 +537,10 @@ export const updateUser = asyncHandler(async (req, res) => {
 
         const updatedUser = await user.save();
 
+        // Invalidate admin cache
+        await deleteCachePattern(CacheKeys.ADMIN.ALL());
+        await deleteCachePattern(CacheKeys.USERS.ALL(req.params.id));
+
         res.json({
             success: true,
             message: 'User updated successfully',
@@ -597,6 +603,10 @@ export const deleteUser = asyncHandler(async (req, res) => {
         );
 
         await user.deleteOne();
+
+        // Invalidate admin cache
+        await deleteCachePattern(CacheKeys.ADMIN.ALL());
+        await deleteCachePattern(CacheKeys.USERS.ALL(req.params.id));
 
         res.json({
             success: true,
@@ -851,6 +861,10 @@ export const updateEvent = asyncHandler(async (req, res) => {
         // Populate the response
         await updatedEvent.populate('createdBy', 'name email');
 
+        // Invalidate caches
+        await deleteCachePattern(CacheKeys.ADMIN.ALL());
+        await deleteCachePattern(CacheKeys.EVENTS.ALL_EVENTS());
+
         res.json({
             success: true,
             message: 'Event updated successfully',
@@ -901,6 +915,10 @@ export const deleteEvent = asyncHandler(async (req, res) => {
         }
 
         await event.deleteOne();
+
+        // Invalidate caches
+        await deleteCachePattern(CacheKeys.ADMIN.ALL());
+        await deleteCachePattern(CacheKeys.EVENTS.ALL_EVENTS());
 
         res.json({
             success: true,

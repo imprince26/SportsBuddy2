@@ -120,14 +120,14 @@ export const getAllEvents = async (req, res) => {
     // Try to get from cache first
     const cachedData = await getCache(cacheKey);
     if (cachedData) {
-      console.log(`✅ Cache HIT: ${cacheKey}`);
+      console.log(`Cache HIT: ${cacheKey}`);
       return res.status(200).json({
         ...cachedData,
         fromCache: true
       });
     }
     
-    console.log(`❌ Cache MISS: ${cacheKey}`);
+    console.log(`Cache MISS: ${cacheKey}`);
 
     // Build query object
     const query = {};
@@ -412,7 +412,7 @@ export const getAllEvents = async (req, res) => {
     // Cache the response for 30 minutes (1800 seconds)
     const ttl = parseInt(process.env.CACHE_EVENTS_TTL) || 1800;
     await setCache(cacheKey, response, ttl);
-    console.log(`💾 Cached response: ${cacheKey} (TTL: ${ttl}s)`);
+    console.log(`Cached response: ${cacheKey} (TTL: ${ttl}s)`);
 
     res.status(200).json(response);
 
@@ -436,14 +436,14 @@ export const getEventById = async (req, res) => {
     const cacheKey = CacheKeys.EVENTS.DETAIL(id);
     const cachedData = await getCache(cacheKey);
     if (cachedData) {
-      console.log(`✅ Cache HIT: ${cacheKey}`);
+      console.log(`Cache HIT: ${cacheKey}`);
       return res.status(200).json({
         ...cachedData,
         fromCache: true
       });
     }
     
-    console.log(`❌ Cache MISS: ${cacheKey}`);
+    console.log(`Cache MISS: ${cacheKey}`);
     
     const event = await Event.findById(id)
       .populate("createdBy", "name avatar username email")
@@ -487,7 +487,7 @@ export const getEventById = async (req, res) => {
     // Cache for 1 hour
     const ttl = parseInt(process.env.CACHE_EVENTS_TTL) || 1800;
     await setCache(cacheKey, response, ttl * 2);
-    console.log(`💾 Cached event: ${cacheKey} (TTL: ${ttl * 2}s)`);
+    console.log(`Cached event: ${cacheKey} (TTL: ${ttl * 2}s)`);
 
     res.status(200).json(response);
   } catch (error) {

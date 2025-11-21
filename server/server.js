@@ -17,9 +17,7 @@ import venueRoute from './routes/venueRoute.js';
 
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
-import { uploadImage, upload } from "./config/cloudinary.js";
 import job from "./utils/cron.js";
-import { rateLimiters } from "./utils/rateLimitingUtils.js";
 import { upstashRateLimiters } from "./config/upstashRateLimiter.js";
 import { checkRedisHealth } from "./config/redis.js";
 

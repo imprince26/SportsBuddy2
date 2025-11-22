@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Heart, MessageCircle, Share2, Eye, Send } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Share2, Eye, Send, Filter } from 'lucide-react';
 import { useCommunity } from '../../hooks/useCommunity';
 import { useAuth } from '../../hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
@@ -9,28 +9,75 @@ import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Textarea } from '../../components/ui/textarea';
 import { Separator } from '../../components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import Loader from '../../components/Loader';
 import ImageGalleryModal from '../../components/community/ImageGalleryModal';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
-const CommentItem = ({ comment, currentUser, onLike, onReply, level = 0, postId }) => {
+const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, level = 0, postId, onRefresh, parentCommentId }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [isLiked, setIsLiked] = useState(
     comment.likes?.some(like => like.user === currentUser?.id || like.user?._id === currentUser?.id)
   );
+  const [localLikesCount, setLocalLikesCount] = useState(comment.likes?.length || 0);
+
+  // Sync local state when comment data changes
+  useEffect(() => {
+    setIsLiked(comment.likes?.some(like => like.user === currentUser?.id || like.user?._id === currentUser?.id));
+    setLocalLikesCount(comment.likes?.length || 0);
+  }, [comment.likes, currentUser]);
 
   const handleLike = async () => {
-    setIsLiked(!isLiked);
-    await onLike(postId, comment._id);
+    if (!currentUser) {
+      toast.error('Please login to like comments');
+      return;
+    }
+    
+    // Optimistic UI update - instant feedback
+    const wasLiked = isLiked;
+    const previousCount = localLikesCount;
+    
+    setIsLiked(!wasLiked);
+    setLocalLikesCount(prev => wasLiked ? prev - 1 : prev + 1);
+    
+    // Background API call - no await, no page refresh
+    (async () => {
+      try {
+        // If this is a reply (level > 0), use likeReply, otherwise use likeComment
+        if (level > 0 && parentCommentId && onLikeReply) {
+          await onLikeReply(postId, parentCommentId, comment._id);
+        } else {
+          await onLike(postId, comment._id);
+        }
+        // Silently succeed - UI already updated
+      } catch (error) {
+        // Revert on error
+        setIsLiked(wasLiked);
+        setLocalLikesCount(previousCount);
+        toast.error('Failed to update like');
+        console.error('Like error:', error);
+      }
+    })();
   };
 
   const handleReply = async () => {
     if (!replyContent.trim()) return;
-    await onReply(postId, comment._id, replyContent);
-    setReplyContent('');
-    setShowReplyForm(false);
+    
+    try {
+      const result = await onReply(postId, comment._id, replyContent);
+      if (result) {
+        setReplyContent('');
+        setShowReplyForm(false);
+        // Wait a bit for server to update then refresh
+        setTimeout(async () => {
+          if (onRefresh) await onRefresh();
+        }, 300);
+      }
+    } catch (error) {
+      toast.error('Failed to add reply');
+    }
   };
 
   const author = comment.author || {};
@@ -70,7 +117,7 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, level = 0, postId 
               }`}
             >
               <Heart className={`h-3 w-3 ${isLiked ? 'fill-current' : ''}`} />
-              <span>{comment.likes?.length || 0}</span>
+              <span>{localLikesCount}</span>
             </button>
             {level < 2 && (
               <button
@@ -110,8 +157,11 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, level = 0, postId 
                   currentUser={currentUser}
                   onLike={onLike}
                   onReply={onReply}
+                  onLikeReply={onLikeReply}
                   postId={postId}
                   level={level + 1}
+                  onRefresh={onRefresh}
+                  parentCommentId={level === 0 ? comment._id : parentCommentId}
                 />
               ))}
             </div>
@@ -134,6 +184,7 @@ const PostDetail = () => {
     addCommentToPost,
     likeComment,
     replyToComment,
+    likeReply,
     sharePost,
     incrementPostView,
   } = useCommunity();
@@ -144,6 +195,7 @@ const PostDetail = () => {
   const [sharesCount, setSharesCount] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [commentFilter, setCommentFilter] = useState('newest');
 
   useEffect(() => {
     if (postId) {
@@ -179,16 +231,35 @@ const PostDetail = () => {
 
   const handleShare = async () => {
     try {
-      const result = await sharePost(postId);
-      if (result && result.success) {
-        setSharesCount(result.data.shares);
-        const url = window.location.href;
+      const url = window.location.href;
+      const shareData = {
+        title: `${currentPost.author?.name || 'User'}'s Post`,
+        text: currentPost.content || 'Check out this post!',
+        url: url,
+      };
+
+      // Try Web Share API first
+      if (navigator.share) {
+        await navigator.share(shareData);
+        const result = await sharePost(postId);
+        if (result && result.success) {
+          setSharesCount(result.data.shares);
+        }
+        toast.success('Post shared successfully!');
+      } else {
+        // Fallback to clipboard
         await navigator.clipboard.writeText(url);
+        const result = await sharePost(postId);
+        if (result && result.success) {
+          setSharesCount(result.data.shares);
+        }
         toast.success('Link copied to clipboard!');
       }
     } catch (error) {
       console.error('Error sharing post:', error);
-      toast.error('Failed to share post');
+      if (error.name !== 'AbortError') {
+        toast.error('Failed to share post');
+      }
     }
   };
 
@@ -215,6 +286,24 @@ const PostDetail = () => {
 
   const author = currentPost.author || {};
   const authorName = author.name || author.username || 'Unknown User';
+
+  // Filter and sort comments
+  const getFilteredComments = () => {
+    if (!currentPost?.comments) return [];
+    const comments = [...currentPost.comments];
+    
+    switch (commentFilter) {
+      case 'oldest':
+        return comments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      case 'most-liked':
+        return comments.sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0));
+      case 'newest':
+      default:
+        return comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+  };
+
+  const filteredComments = getFilteredComments();
 
   return (
     <div className="min-h-screen bg-background">
@@ -376,19 +465,36 @@ const PostDetail = () => {
 
         {/* Comments */}
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md mt-4 mx-4 p-4">
-          <h3 className="font-semibold text-lg mb-4">
-            Comments ({currentPost.comments?.length || 0})
-          </h3>
-          {currentPost.comments && currentPost.comments.length > 0 ? (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-lg">
+              Comments ({currentPost.comments?.length || 0})
+            </h3>
+            {currentPost.comments && currentPost.comments.length > 0 && (
+              <Select value={commentFilter} onValueChange={setCommentFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="most-liked">Most Liked</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          {filteredComments && filteredComments.length > 0 ? (
             <div className="space-y-4">
-              {currentPost.comments.map((comment) => (
+              {filteredComments.map((comment) => (
                 <CommentItem
                   key={comment._id}
                   comment={comment}
                   currentUser={user}
                   onLike={likeComment}
                   onReply={replyToComment}
+                  onLikeReply={likeReply}
                   postId={postId}
+                  onRefresh={() => getCommunityPostById(postId)}
                 />
               ))}
             </div>

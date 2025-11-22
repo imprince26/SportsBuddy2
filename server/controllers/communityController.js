@@ -165,6 +165,7 @@ export const getCommunity = async (req, res) => {
       .populate("members.user", "name avatar username location.city")
       .populate("posts.author", "name avatar username")
       .populate("posts.comments.author", "name avatar username")
+      .populate("posts.comments.replies.author", "name avatar username")
       .populate("events")
       .lean();
 
@@ -1110,6 +1111,10 @@ export const getCommunityPosts = async (req, res) => {
       .populate({
         path: 'posts.comments.author',
         select: 'name username avatar'
+      })
+      .populate({
+        path: 'posts.comments.replies.author',
+        select: 'name username avatar'
       });
 
     console.log('Found communities:', communities.length);
@@ -1310,7 +1315,8 @@ export const getCommunityPostById = async (req, res) => {
       { "posts.$": 1, name: 1, image: 1 }
     )
       .populate("posts.author", "name username avatar")
-      .populate("posts.comments.author", "name username avatar");
+      .populate("posts.comments.author", "name username avatar")
+      .populate("posts.comments.replies.author", "name username avatar");
 
     if (!community || !community.posts.length) {
       return res.status(404).json({
@@ -1330,9 +1336,11 @@ export const getCommunityPostById = async (req, res) => {
           name: community.name,
           image: community.image
         },
-        likesCount: post.likes.length,
-        commentsCount: post.comments.length,
-        isLiked: req.user ? post.likes.includes(req.user.id) : false
+        likesCount: post.likes?.length || 0,
+        commentsCount: post.comments?.length || 0,
+        viewsCount: post.views?.length || 0,
+        sharesCount: post.shares || 0,
+        isLiked: req.user ? post.likes.some(like => like.user?.toString() === req.user.id) : false
       }
     });
 

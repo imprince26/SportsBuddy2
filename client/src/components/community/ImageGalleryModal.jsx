@@ -24,15 +24,16 @@ const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-7xl w-full h-[90vh] p-0 bg-black/95"
+        className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-black/95 border-0"
         onKeyDown={handleKeyDown}
+        showCloseButton={false}
       >
-        <div className="relative w-full h-full flex items-center justify-center">
+        <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
           {/* Close Button */}
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+            className="absolute top-2 right-2 z-50 text-white hover:bg-white/20 rounded-full"
             onClick={onClose}
           >
             <X className="h-6 w-6" />
@@ -44,7 +45,7 @@ const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-4 z-50 text-white hover:bg-white/20"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20 rounded-full h-12 w-12"
                 onClick={handlePrevious}
               >
                 <ChevronLeft className="h-8 w-8" />
@@ -53,7 +54,7 @@ const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-4 z-50 text-white hover:bg-white/20"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20 rounded-full h-12 w-12"
                 onClick={handleNext}
               >
                 <ChevronRight className="h-8 w-8" />
@@ -61,38 +62,40 @@ const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
             </>
           )}
 
-          {/* Image */}
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={currentIndex}
-              src={images[currentIndex]?.url}
-              alt={`Image ${currentIndex + 1}`}
-              className="max-h-full max-w-full object-contain"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
-            />
-          </AnimatePresence>
+          {/* Image Container */}
+          <div className="flex-1 flex items-center justify-center w-full px-16 py-12">
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={currentIndex}
+                src={images[currentIndex]?.url}
+                alt={`Image ${currentIndex + 1}`}
+                className="max-h-full max-w-full object-contain"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+              />
+            </AnimatePresence>
+          </div>
 
           {/* Counter */}
           {images.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm">
+            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
               {currentIndex + 1} / {images.length}
             </div>
           )}
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex gap-2 overflow-x-auto max-w-md p-2">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 overflow-x-auto max-w-[80vw] p-2 scrollbar-hide">
               {images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
                     index === currentIndex
                       ? 'border-white scale-110'
-                      : 'border-transparent opacity-60 hover:opacity-100'
+                      : 'border-white/30 opacity-60 hover:opacity-100 hover:border-white/60'
                   }`}
                 >
                   <img

@@ -124,18 +124,18 @@ const CreateCommunity = () => {
 
   // Categories
   const categories = [
-    { value: 'Football', label: 'Football', icon: '⚽' },
-    { value: 'Cricket', label: 'Cricket', icon: '🏏' },
-    { value: 'Basketball', label: 'Basketball', icon: '🏀' },
-    { value: 'Badminton', label: 'Badminton', icon: '🏸' },
-    { value: 'Tennis', label: 'Tennis', icon: '🎾' },
-    { value: 'Volleyball', label: 'Volleyball', icon: '🏐' },
-    { value: 'Swimming', label: 'Swimming', icon: '🏊‍♂️' },
-    { value: 'Running', label: 'Running', icon: '🏃‍♂️' },
-    { value: 'Cycling', label: 'Cycling', icon: '🚴‍♂️' },
-    { value: 'Gym', label: 'Gym & Fitness', icon: '💪' },
-    { value: 'Yoga', label: 'Yoga', icon: '🧘‍♀️' },
-    { value: 'Other', label: 'Other Sports', icon: '🏆' }
+    { value: 'Football', label: 'Football' },
+    { value: 'Cricket', label: 'Cricket' },
+    { value: 'Basketball', label: 'Basketball' },
+    { value: 'Badminton', label: 'Badminton' },
+    { value: 'Tennis', label: 'Tennis' },
+    { value: 'Volleyball', label: 'Volleyball' },
+    { value: 'Swimming', label: 'Swimming' },
+    { value: 'Running', label: 'Running' },
+    { value: 'Cycling', label: 'Cycling' },
+    { value: 'Gym', label: 'Gym & Fitness' },
+    { value: 'Yoga', label: 'Yoga' },
+    { value: 'Other', label: 'Other Sports' }
   ];
 
   // Steps configuration

@@ -5,11 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "react-hot-toast"
 import { format } from "date-fns"
 import { useEvents } from "@/hooks/useEvents"
+import { useVenue } from "@/hooks/useVenue"
 import {
   Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Save, Eye, Upload, Plus,
   Trash2, CheckCircle, Award, Target, Shield, Camera,
   FileText, Settings, ArrowRight, Star, Trophy, DollarSign, AlertTriangle,
-  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers, Loader2
+  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers, Loader2, Zap, Flame, Building2
 } from 'lucide-react'
 import {
   Form,
@@ -43,6 +44,7 @@ const EditEvent = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { getEventById, updateEvent, deleteEvent, loading } = useEvents()
+  const { venues, getVenues } = useVenue()
   const [pageLoading, setPageLoading] = useState(true)
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [existingImages, setExistingImages] = useState([])
@@ -55,6 +57,8 @@ const EditEvent = () => {
   const [completionProgress, setCompletionProgress] = useState(0)
   const [hasChanges, setHasChanges] = useState(false)
   const [dragActive, setDragActive] = useState(false)
+  const [selectedVenue, setSelectedVenue] = useState(null)
+  const [venueSearch, setVenueSearch] = useState("")
 
   const form = useForm({
     resolver: zodResolver(eventSchema),
@@ -89,15 +93,15 @@ const EditEvent = () => {
   ]
 
   const categories = [
-    { value: "Football", label: "Football", icon: "⚽", participants: "50K+" },
-    { value: "Basketball", label: "Basketball", icon: "🏀", participants: "45K+" },
-    { value: "Tennis", label: "Tennis", icon: "🎾", participants: "30K+" },
-    { value: "Running", label: "Running", icon: "🏃", participants: "60K+" },
-    { value: "Cycling", label: "Cycling", icon: "🚴", participants: "25K+" },
-    { value: "Swimming", label: "Swimming", icon: "🏊", participants: "20K+" },
-    { value: "Volleyball", label: "Volleyball", icon: "🏐", participants: "15K+" },
-    { value: "Cricket", label: "Cricket", icon: "🏏", participants: "40K+" },
-    { value: "Other", label: "Other Sports", icon: "🎯", participants: "10K+" },
+    { value: "Football", label: "Football", participants: "50K+" },
+    { value: "Basketball", label: "Basketball", participants: "45K+" },
+    { value: "Tennis", label: "Tennis", participants: "30K+" },
+    { value: "Running", label: "Running", participants: "60K+" },
+    { value: "Cycling", label: "Cycling", participants: "25K+" },
+    { value: "Swimming", label: "Swimming", participants: "20K+" },
+    { value: "Volleyball", label: "Volleyball", participants: "15K+" },
+    { value: "Cricket", label: "Cricket", participants: "40K+" },
+    { value: "Other", label: "Other Sports", participants: "10K+" },
   ]
 
   // Calculate completion progress
@@ -154,6 +158,12 @@ const EditEvent = () => {
             equipment: eventData.equipment || [],
           })
           setExistingImages(eventData.images || [])
+          
+          // Set selected venue if event has one
+          if (eventData.venue) {
+            setSelectedVenue(eventData.venue)
+          }
+          
           document.title = `Edit Event - ${eventData.name || "Untitled Event"}`
           setHasChanges(false)
           calculateProgress()
@@ -171,6 +181,11 @@ const EditEvent = () => {
 
     fetchEventDetails()
   }, [id, form, navigate, calculateProgress])
+
+  // Load venues on mount
+  useEffect(() => {
+    getVenues()
+  }, [])
 
   const handleDrag = (e) => {
     e.preventDefault()
@@ -288,6 +303,11 @@ const EditEvent = () => {
           eventFormData.append(key, value)
         }
       })
+
+      // Add venue if selected
+      if (selectedVenue) {
+        eventFormData.append("venue", selectedVenue._id)
+      }
 
       if (existingImages.length > 0) {
         eventFormData.append("existingImages", JSON.stringify(existingImages))
@@ -696,6 +716,96 @@ const EditEvent = () => {
                               <h3 className="text-xl font-semibold text-foreground">Location Details</h3>
                             </div>
 
+                            {/* Venue Selection */}
+                            <div className="space-y-4 p-4 bg-accent rounded-lg border border-border">
+                              <div className="flex items-center gap-2">
+                                <Building2 className="w-5 h-5 text-primary" />
+                                <h4 className="font-semibold text-foreground">Select Venue (Optional)</h4>
+                              </div>
+                              
+                              {selectedVenue ? (
+                                <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-primary/30">
+                                  <div className="flex items-center gap-3">
+                                    {selectedVenue.images?.[0]?.url || selectedVenue.images?.[0] ? (
+                                      <img 
+                                        src={selectedVenue.images[0]?.url || selectedVenue.images[0]} 
+                                        alt={selectedVenue.name}
+                                        className="w-12 h-12 rounded-lg object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                                        <Building2 className="w-6 h-6 text-primary" />
+                                      </div>
+                                    )}
+                                    <div>
+                                      <p className="font-semibold text-foreground">{selectedVenue.name}</p>
+                                      <p className="text-sm text-muted-foreground">{selectedVenue.location?.city}</p>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSelectedVenue(null)}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="space-y-3">
+                                  <Input
+                                    placeholder="Search venues by name or location..."
+                                    value={venueSearch}
+                                    onChange={(e) => setVenueSearch(e.target.value)}
+                                    className="bg-background"
+                                  />
+                                  <div className="max-h-48 overflow-y-auto space-y-2">
+                                    {venues
+                                      ?.filter(v => 
+                                        v.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
+                                        v.location?.city.toLowerCase().includes(venueSearch.toLowerCase())
+                                      )
+                                      .slice(0, 5)
+                                      .map(venue => (
+                                        <button
+                                          key={venue._id}
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedVenue(venue)
+                                            form.setValue('location.address', venue.location?.address || '')
+                                            form.setValue('location.city', venue.location?.city || '')
+                                            form.setValue('location.state', venue.location?.state || '')
+                                          }}
+                                          className="w-full flex items-center gap-3 p-3 bg-card hover:bg-accent rounded-lg border border-border transition-colors text-left"
+                                        >
+                                          {venue.images?.[0]?.url || venue.images?.[0] ? (
+                                            <img 
+                                              src={venue.images[0]?.url || venue.images[0]} 
+                                              alt={venue.name}
+                                              className="w-10 h-10 rounded object-cover"
+                                            />
+                                          ) : (
+                                            <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
+                                              <Building2 className="w-5 h-5 text-primary" />
+                                            </div>
+                                          )}
+                                          <div className="flex-1">
+                                            <p className="font-medium text-foreground text-sm">{venue.name}</p>
+                                            <p className="text-xs text-muted-foreground">{venue.location?.city}</p>
+                                          </div>
+                                        </button>
+                                      ))}
+                                    {venueSearch && venues?.filter(v => 
+                                      v.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
+                                      v.location?.city.toLowerCase().includes(venueSearch.toLowerCase())
+                                    ).length === 0 && (
+                                      <p className="text-sm text-muted-foreground text-center py-4">No venues found</p>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
                             <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                               <FormField
                                 control={form.control}
@@ -861,17 +971,17 @@ const EditEvent = () => {
                                     {[
                                       {
                                         value: "Beginner",
-                                        icon: "🌱",
+                                        icon: Seedling,
                                         description: "Open to all skill levels - perfect for newcomers",
                                       },
                                       {
                                         value: "Intermediate",
-                                        icon: "⚡",
+                                        icon: Zap,
                                         description: "Some experience required - moderate challenge",
                                       },
                                       {
                                         value: "Advanced",
-                                        icon: "🔥",
+                                        icon: Flame,
                                         description: "High skill level required - competitive play",
                                       },
                                     ].map((level) => (
@@ -888,9 +998,9 @@ const EditEvent = () => {
                                       >
                                         <div className="flex items-center gap-3">
                                           <div
-                                            className="w-10 h-10 rounded-lg flex items-center justify-center text-lg bg-card"
+                                            className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10"
                                           >
-                                            {level.icon}
+                                            <level.icon className="w-5 h-5 text-primary" />
                                           </div>
                                           <div className="flex-1">
                                             <h4 className="font-semibold text-foreground">{level.value}</h4>

@@ -146,9 +146,21 @@ export const VenueProvider = ({ children }) => {
           Array.from(value).forEach((file) => {
             formData.append('images', file);
           });
+        } else if (key === 'amenities' && Array.isArray(value)) {
+          // Convert amenities array to proper format
+          const amenitiesObjects = value.map(name => ({ name, available: true }));
+          formData.append(key, JSON.stringify(amenitiesObjects));
+        } else if (key === 'pricing') {
+          // Format pricing object
+          const pricing = {
+            hourlyRate: venueData.pricePerHour || 0,
+            dayRate: (venueData.pricePerHour || 0) * 8,
+            currency: 'INR'
+          };
+          formData.append(key, JSON.stringify(pricing));
         } else if (typeof value === 'object' && value !== null) {
           formData.append(key, JSON.stringify(value));
-        } else {
+        } else if (key !== 'pricePerHour') {
           formData.append(key, value);
         }
       });
@@ -186,9 +198,21 @@ export const VenueProvider = ({ children }) => {
           Array.from(value).forEach((file) => {
             formData.append('images', file);
           });
+        } else if (key === 'amenities' && Array.isArray(value)) {
+          // Convert amenities array to proper format
+          const amenitiesObjects = value.map(name => ({ name, available: true }));
+          formData.append(key, JSON.stringify(amenitiesObjects));
+        } else if (key === 'pricing') {
+          // Format pricing object
+          const pricing = {
+            hourlyRate: updateData.pricePerHour || 0,
+            dayRate: (updateData.pricePerHour || 0) * 8,
+            currency: 'INR'
+          };
+          formData.append(key, JSON.stringify(pricing));
         } else if (typeof value === 'object' && value !== null) {
           formData.append(key, JSON.stringify(value));
-        } else {
+        } else if (key !== 'pricePerHour') {
           formData.append(key, value);
         }
       });

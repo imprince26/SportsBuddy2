@@ -28,32 +28,28 @@ const NotFound = () => {
       description: "Discover amazing sports events",
       icon: Calendar,
       href: "/events",
-      gradient: "from-primary to-primary",
-      color: "blue"
+      color: "primary"
     },
     {
       title: "Find Athletes",
       description: "Connect with sports buddies",
       icon: Users,
       href: "/athletes",
-      gradient: "from-green-500 to-green-600",
-      color: "green"
+      color: "primary"
     },
     {
       title: "View Dashboard",
       description: "Check your activity",
       icon: Trophy,
       href: "/dashboard",
-      gradient: "from-secondary to-secondary",
-      color: "purple"
+      color: "primary"
     },
     {
       title: "Sports Centers",
       description: "Find nearby facilities",
       icon: Dumbbell,
       href: "/venues",
-      gradient: "from-orange-500 to-orange-600",
-      color: "orange"
+      color: "primary"
     }
   ]
 
@@ -168,22 +164,22 @@ const NotFound = () => {
                   <Link
                     key={action.title}
                     to={action.href}
-                    className="block p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-blue-500/50 transition-all duration-300 group bg-zinc-50 dark:bg-zinc-900/50 hover:shadow-md"
+                    className="block p-6 rounded-2xl border border-border hover:border-primary/50 transition-all duration-300 group bg-card hover:shadow-md"
                   >
                     <div className="relative mb-4">
-                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${action.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm`}>
-                        <action.icon className="w-7 h-7 text-white" />
+                      <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                        <action.icon className="w-7 h-7 text-primary-foreground" />
                       </div>
                     </div>
 
-                    <h3 className="font-semibold text-lg text-zinc-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
                       {action.title}
                     </h3>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                    <p className="text-sm text-muted-foreground mb-4">
                       {action.description}
                     </p>
 
-                    <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium group-hover:gap-2 transition-all">
+                    <div className="flex items-center text-primary text-sm font-medium group-hover:gap-2 transition-all">
                       <span>Explore</span>
                       <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                     </div>

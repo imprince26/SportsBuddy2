@@ -349,6 +349,7 @@ export const LeaderboardProvider = ({ children }) => {
     loading,
     error,
     pagination,
+    currentUserPosition: userRanking,
 
     // Actions
     getLeaderboard,

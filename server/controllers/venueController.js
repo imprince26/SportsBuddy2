@@ -308,6 +308,7 @@ export const createVenue = async (req, res) => {
       message: "Error creating venue",
       error: error.message
     });
+    console.log(error)
   }
 };
 

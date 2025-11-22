@@ -119,7 +119,7 @@ const Venues = () => {
   const { 
     venues, 
     loading, 
-    getAllVenues, 
+    getVenues, 
     filters, 
     setFilters,
     pagination 
@@ -129,18 +129,18 @@ const Venues = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    getAllVenues();
+    getVenues();
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    getAllVenues({ ...filters, search: searchQuery });
+    getVenues({ ...filters, search: searchQuery });
   };
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    getAllVenues(newFilters);
+    getVenues(newFilters);
   };
 
   const clearFilters = () => {
@@ -153,7 +153,7 @@ const Venues = () => {
       sortBy: 'createdAt:desc'
     };
     setFilters(defaultFilters);
-    getAllVenues(defaultFilters);
+    getVenues(defaultFilters);
   };
 
   return (
@@ -300,7 +300,7 @@ const Venues = () => {
                 <Button
                   variant="outline"
                   disabled={!pagination.hasPrev}
-                  onClick={() => getAllVenues(filters, pagination.currentPage - 1)}
+                  onClick={() => getVenues(filters, pagination.currentPage - 1)}
                 >
                   Previous
                 </Button>
@@ -310,7 +310,7 @@ const Venues = () => {
                 <Button
                   variant="outline"
                   disabled={!pagination.hasNext}
-                  onClick={() => getAllVenues(filters, pagination.currentPage + 1)}
+                  onClick={() => getVenues(filters, pagination.currentPage + 1)}
                 >
                   Next
                 </Button>

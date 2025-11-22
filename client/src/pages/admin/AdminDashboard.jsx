@@ -38,6 +38,7 @@ import {
   ChevronRight,
   BarChart3,
   Menu,
+  Building2,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
@@ -346,6 +347,12 @@ const AdminDashboard = () => {
                 <Button variant="ghost" className="w-full justify-start">
                   <Calendar className="w-4 h-4 mr-2" />
                   Manage Events
+                </Button>
+              </Link>
+              <Link to="/admin/venues" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Manage Venues
                 </Button>
               </Link>
               <Link to="/admin/analytics" onClick={() => setMobileMenuOpen(false)}>
@@ -1061,6 +1068,13 @@ const AdminDashboard = () => {
                   icon: Calendar,
                   href: "/admin/events",
                   color: "indigo",
+                },
+                {
+                  title: "Manage Venues",
+                  description: "Create and manage venues",
+                  icon: Building2,
+                  href: "/admin/venues",
+                  color: "purple",
                 },
                 {
                   title: "Send Notifications",

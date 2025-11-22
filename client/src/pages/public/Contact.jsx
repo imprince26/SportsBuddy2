@@ -144,14 +144,14 @@ const Contact = () => {
 
   // Support categories
   const supportCategories = [
-    { value: "general", label: "General Inquiry", icon: "💬" },
-    { value: "technical", label: "Technical Support", icon: "🔧" },
-    { value: "billing", label: "Billing & Payments", icon: "💳" },
-    { value: "events", label: "Event Related", icon: "🏆" },
-    { value: "account", label: "Account Issues", icon: "👤" },
-    { value: "partnership", label: "Partnership", icon: "🤝" },
-    { value: "feedback", label: "Feedback", icon: "⭐" },
-    { value: "other", label: "Other", icon: "📋" }
+    { value: "general", label: "General Inquiry" },
+    { value: "technical", label: "Technical Support" },
+    { value: "billing", label: "Billing & Payments" },
+    { value: "events", label: "Event Related" },
+    { value: "account", label: "Account Issues" },
+    { value: "partnership", label: "Partnership" },
+    { value: "feedback", label: "Feedback" },
+    { value: "other", label: "Other" }
   ]
 
   // Social media links

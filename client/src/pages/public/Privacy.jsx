@@ -1168,9 +1168,9 @@ const Privacy = () => {
                       <div>
                         <h5 className="font-medium text-gray-800 dark:text-gray-300 mb-2">Service Providers</h5>
                         <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                          <li>🔒 All bound by strict data protection agreements</li>
-                          <li>📋 Regular compliance assessments</li>
-                          <li>🛡️ Same security standards as SportsBuddy</li>
+                          <li>All bound by strict data protection agreements</li>
+                          <li>Regular compliance assessments</li>
+                          <li>Same security standards as SportsBuddy</li>
                         </ul>
                       </div>
                     </div>

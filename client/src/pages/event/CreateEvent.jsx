@@ -9,7 +9,7 @@ import {
   Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Save, Eye, Upload, Plus,
   Trash2, CheckCircle, Sparkles, Award, Target, Shield, Camera,
   FileText, Settings, ArrowRight, Star, Trophy, AlertTriangle,
-  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers, IndianRupee, Building2
+  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers, IndianRupee, Building2, Zap, Flame
 } from 'lucide-react'
 
 import {
@@ -83,15 +83,15 @@ const CreateEventForm = () => {
   ]
 
   const categories = [
-    { value: "Football", label: "Football", icon: "⚽", participants: "50K+" },
-    { value: "Basketball", label: "Basketball", icon: "🏀", participants: "45K+" },
-    { value: "Tennis", label: "Tennis", icon: "🎾", participants: "30K+" },
-    { value: "Running", label: "Running", icon: "🏃", participants: "60K+" },
-    { value: "Cycling", label: "Cycling", icon: "🚴", participants: "25K+" },
-    { value: "Swimming", label: "Swimming", icon: "🏊", participants: "20K+" },
-    { value: "Volleyball", label: "Volleyball", icon: "🏐", participants: "15K+" },
-    { value: "Cricket", label: "Cricket", icon: "🏏", participants: "40K+" },
-    { value: "Other", label: "Other Sports", icon: "🎯", participants: "10K+" },
+    { value: "Football", label: "Football", participants: "50K+" },
+    { value: "Basketball", label: "Basketball", participants: "45K+" },
+    { value: "Tennis", label: "Tennis", participants: "30K+" },
+    { value: "Running", label: "Running", participants: "60K+" },
+    { value: "Cycling", label: "Cycling", participants: "25K+" },
+    { value: "Swimming", label: "Swimming", participants: "20K+" },
+    { value: "Volleyball", label: "Volleyball", participants: "15K+" },
+    { value: "Cricket", label: "Cricket", participants: "40K+" },
+    { value: "Other", label: "Other Sports", participants: "10K+" },
   ]
 
   // Page Title
@@ -542,9 +542,9 @@ const CreateEventForm = () => {
                               {selectedVenue ? (
                                 <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-primary/30">
                                   <div className="flex items-center gap-3">
-                                    {selectedVenue.images?.[0] ? (
+                                    {selectedVenue.images?.[0]?.url || selectedVenue.images?.[0] ? (
                                       <img 
-                                        src={selectedVenue.images[0]} 
+                                        src={selectedVenue.images[0]?.url || selectedVenue.images[0]} 
                                         alt={selectedVenue.name}
                                         className="w-12 h-12 rounded-lg object-cover"
                                       />
@@ -595,9 +595,9 @@ const CreateEventForm = () => {
                                           }}
                                           className="w-full flex items-center gap-3 p-3 bg-card hover:bg-accent rounded-lg border border-border transition-colors text-left"
                                         >
-                                          {venue.images?.[0] ? (
+                                          {venue.images?.[0]?.url || venue.images?.[0] ? (
                                             <img 
-                                              src={venue.images[0]} 
+                                              src={venue.images[0]?.url || venue.images[0]} 
                                               alt={venue.name}
                                               className="w-10 h-10 rounded object-cover"
                                             />
@@ -788,17 +788,17 @@ const CreateEventForm = () => {
                                     {[
                                       {
                                         value: "Beginner",
-                                        icon: "🌱",
+                                        icon: Seedling,
                                         description: "Open to all skill levels - perfect for newcomers",
                                       },
                                       {
                                         value: "Intermediate",
-                                        icon: "⚡",
+                                        icon: Zap,
                                         description: "Some experience required - moderate challenge",
                                       },
                                       {
                                         value: "Advanced",
-                                        icon: "🔥",
+                                        icon: Flame,
                                         description: "High skill level required - competitive play",
                                       },
                                     ].map((level) => (
@@ -809,15 +809,15 @@ const CreateEventForm = () => {
                                         className={cn(
                                           "w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.02] active:scale-98",
                                           field.value === level.value
-                                            ? "border-blue-500 bg-blue-900/20 scale-100 sm:scale-105"
+                                            ? "border-primary bg-primary/20 scale-100 sm:scale-105"
                                             : "border-border hover:border-muted-foreground/20"
                                         )}
                                       >
                                         <div className="flex items-center gap-2 sm:gap-3">
                                           <div
-                                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center text-base sm:text-lg bg-primary/10"
+                                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center bg-primary/10"
                                           >
-                                            {level.icon}
+                                            <level.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                                           </div>
                                           <div className="flex-1">
                                             <h4 className="font-semibold text-base sm:text-foreground">{level.value}</h4>

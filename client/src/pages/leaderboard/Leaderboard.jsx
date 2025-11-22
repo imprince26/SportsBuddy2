@@ -205,7 +205,8 @@ const Leaderboard = () => {
   const { 
     leaderboard, 
     loading, 
-    getLeaderboard, 
+    getLeaderboard,
+    getLeaderboardBySport,
     currentUserPosition,
     categories,
     getCategories
@@ -219,7 +220,30 @@ const Leaderboard = () => {
   }, []);
 
   useEffect(() => {
-    getLeaderboard({ category: activeCategory, timeframe });
+    // Map activeCategory to timeframe for the API call
+    const timeframeMap = {
+      'overall': 'all',
+      'monthly': 'monthly',
+      'weekly': 'weekly',
+      'football': 'all',
+      'basketball': 'all',
+      'tennis': 'all',
+      'cricket': 'all',
+      'volleyball': 'all',
+      'badminton': 'all',
+      'swimming': 'all',
+      'running': 'all',
+      'cycling': 'all'
+    };
+    
+    const apiTimeframe = timeframeMap[activeCategory] || timeframe;
+    
+    // If category is a sport, use sport-specific leaderboard
+    if (activeCategory !== 'overall' && activeCategory !== 'monthly' && activeCategory !== 'weekly') {
+      getLeaderboardBySport(activeCategory, timeframe);
+    } else {
+      getLeaderboard(apiTimeframe);
+    }
   }, [activeCategory, timeframe]);
 
   const topThree = leaderboard.slice(0, 3);

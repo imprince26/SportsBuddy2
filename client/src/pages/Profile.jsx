@@ -40,6 +40,8 @@ import {
   Globe,
   Image as ImageIcon,
   Loader2,
+  Bike,
+  Waves,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -403,17 +405,17 @@ const Profile = () => {
 
   const getSportIcon = (sport) => {
     const icons = {
-      Football: "⚽",
-      Basketball: "🏀",
-      Tennis: "🎾",
-      Running: "🏃",
-      Cycling: "🚴",
-      Swimming: "🏊",
-      Volleyball: "🏐",
-      Cricket: "🏏",
-      Other: "🏃",
+      Football: Trophy,
+      Basketball: Trophy,
+      Tennis: Trophy,
+      Running: Activity,
+      Cycling: Bike,
+      Swimming: Waves,
+      Volleyball: Trophy,
+      Cricket: Trophy,
+      Other: Activity,
     }
-    return icons[sport] || "🏃"
+    return icons[sport] || Activity
   }
 
   useEffect(() => {
@@ -880,9 +882,12 @@ const Profile = () => {
                       >
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <span className="text-3xl">
-                              {getSportIcon(sport.sport)}
-                            </span>
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              {(() => {
+                                const IconComponent = getSportIcon(sport.sport);
+                                return <IconComponent className="w-5 h-5 text-primary" />;
+                              })()}
+                            </div>
                             <h3 className="font-semibold text-lg">{sport.sport}</h3>
                           </div>
                           {editing && (
@@ -1169,7 +1174,10 @@ const Profile = () => {
                       (sport) => (
                         <SelectItem key={sport} value={sport}>
                           <div className="flex items-center gap-2">
-                            <span>{getSportIcon(sport)}</span>
+                            {(() => {
+                              const IconComponent = getSportIcon(sport);
+                              return <IconComponent className="w-4 h-4" />;
+                            })()}
                             {sport}
                           </div>
                         </SelectItem>

@@ -63,10 +63,13 @@ const MessageBubble = ({ message, isOwn }) => {
             "rounded-xl px-3 py-2 text-sm",
             isOwn
               ? "bg-primary text-primary-foreground rounded-br-sm"
-              : "bg-muted text-foreground rounded-bl-sm"
+              : "bg-card border border-border rounded-bl-sm"
           )}
         >
-          <div className="break-words">
+          <div className={cn(
+            "break-words",
+            !isOwn && "text-card-foreground"
+          )}>
             {message.content || message.message}
           </div>
         </div>
@@ -541,7 +544,8 @@ const EventChat = () => {
               <Button
                 type="submit"
                 disabled={!message.trim() || isSending}
-                className="h-10 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-sm"
+                size="icon"
+                className="h-10 w-10"
               >
                 {isSending ? (
                   <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />

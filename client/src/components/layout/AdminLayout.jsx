@@ -30,6 +30,7 @@ import {
   X,
   Maximize2,
   Minimize2,
+  Building2,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
@@ -117,6 +118,13 @@ const AdminLayout = () => {
           icon: Calendar,
           badge: `${analyticsData?.events?.total || 0}`,
           description: "Event management",
+        },
+        {
+          name: "Venues",
+          path: "/admin/venues",
+          icon: Building2,
+          badge: null,
+          description: "Venue management",
         },
         {
           name: "Analytics",

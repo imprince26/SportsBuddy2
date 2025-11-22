@@ -92,18 +92,18 @@ const Community = () => {
 
   // Categories
   const categories = [
-    { value: 'all', label: 'All Sports', icon: '', color: 'from-blue-500 to-cyan-500' },
-    { value: 'Football', label: 'Football', icon: '', color: 'from-green-500 to-emerald-500' },
-    { value: 'Cricket', label: 'Cricket', icon: '', color: 'from-orange-500 to-red-500' },
-    { value: 'Basketball', label: 'Basketball', icon: '', color: 'from-orange-600 to-yellow-500' },
-    { value: 'Badminton', label: 'Badminton', icon: '', color: 'from-purple-500 to-pink-500' },
-    { value: 'Tennis', label: 'Tennis', icon: '', color: 'from-yellow-500 to-lime-500' },
-    { value: 'Volleyball', label: 'Volleyball', icon: '', color: 'from-blue-600 to-indigo-500' },
-    { value: 'Swimming', label: 'Swimming', icon: '', color: 'from-cyan-500 to-blue-500' },
-    { value: 'Running', label: 'Running', icon: '', color: 'from-red-500 to-pink-500' },
-    { value: 'Cycling', label: 'Cycling', icon: '', color: 'from-indigo-500 to-purple-500' },
-    { value: 'Gym', label: 'Gym & Fitness', icon: '', color: 'from-gray-600 to-gray-800' },
-    { value: 'Yoga', label: 'Yoga', icon: '', color: 'from-teal-500 to-green-500' }
+    { value: 'all', label: 'All Sports', icon: '' },
+    { value: 'Football', label: 'Football', icon: '' },
+    { value: 'Cricket', label: 'Cricket', icon: '' },
+    { value: 'Basketball', label: 'Basketball', icon: '' },
+    { value: 'Badminton', label: 'Badminton', icon: '' },
+    { value: 'Tennis', label: 'Tennis', icon: '' },
+    { value: 'Volleyball', label: 'Volleyball', icon: '' },
+    { value: 'Swimming', label: 'Swimming', icon: '' },
+    { value: 'Running', label: 'Running', icon: '' },
+    { value: 'Cycling', label: 'Cycling', icon: '' },
+    { value: 'Gym', label: 'Gym & Fitness', icon: '' },
+    { value: 'Yoga', label: 'Yoga', icon: '' }
   ];
 
   // Animation variants

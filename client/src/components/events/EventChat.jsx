@@ -68,12 +68,13 @@ const EventChat = ({ eventId }) => {
   };
 
   return (
-    <div className="flex flex-col h-[600px] border rounded-lg">
-      <div className="p-4 border-b">
-        <h3 className="text-lg font-semibold">Event Chat</h3>
+    <div className="flex flex-col h-[600px] border border-border rounded-lg bg-card shadow-sm">
+      <div className="p-4 border-b border-border bg-card">
+        <h3 className="text-lg font-semibold text-foreground">Event Chat</h3>
+        <p className="text-xs text-muted-foreground mt-1">Chat with other participants</p>
       </div>
       
-      <ScrollArea ref={scrollRef} className="flex-1 p-4">
+      <ScrollArea ref={scrollRef} className="flex-1 p-4 bg-background">
         <div className="space-y-4">
           {messages.map((message, index) => (
             <div
@@ -82,9 +83,9 @@ const EventChat = ({ eventId }) => {
                 message.userId === user._id ? "flex-row-reverse" : ""
               }`}
             >
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-8 w-8 border-2 border-border">
                 <img
-                  src={message.userAvatar || `https://ui-avatars.com/api/?name=${message.userName}`}
+                  src={message.userAvatar || `https://ui-avatars.com/api/?name=${message.userName}&background=random`}
                   alt={message.userName}
                 />
               </Avatar>
@@ -93,14 +94,22 @@ const EventChat = ({ eventId }) => {
                 className={`max-w-[70%] ${
                   message.userId === user._id
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                } rounded-lg p-3`}
+                    : "bg-muted text-foreground"
+                } rounded-lg p-3 shadow-sm`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium">
+                  <span className={`text-sm font-medium ${
+                    message.userId === user._id 
+                      ? "text-primary-foreground" 
+                      : "text-foreground"
+                  }`}>
                     {message.userName}
                   </span>
-                  <span className="text-xs opacity-70">
+                  <span className={`text-xs ${
+                    message.userId === user._id 
+                      ? "text-primary-foreground/70" 
+                      : "text-muted-foreground"
+                  }`}>
                     {formatTime(message.timestamp)}
                   </span>
                 </div>
@@ -113,15 +122,15 @@ const EventChat = ({ eventId }) => {
 
       <form
         onSubmit={handleSendMessage}
-        className="p-4 border-t flex items-center gap-2"
+        className="p-4 border-t border-border bg-card flex items-center gap-2"
       >
         <Input
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type a message..."
-          className="flex-1"
+          className="flex-1 bg-background border-border focus:border-primary"
         />
-        <Button type="submit" size="icon">
+        <Button type="submit" size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Send className="h-4 w-4" />
         </Button>
       </form>

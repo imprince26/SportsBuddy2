@@ -53,7 +53,9 @@ import CommunityDetails from './pages/community/CommunityDetails';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageUsers from './pages/admin/ManageUsers';
 import ManageEvents from './pages/admin/ManageEvents';
-// import ManageVenues from './pages/admin/ManageVenues';
+import AdminVenues from './pages/admin/AdminVenues';
+import CreateVenue from './pages/admin/CreateVenue';
+import EditVenue from './pages/admin/EditVenue';
 import AdminSearch from './pages/admin/AdminSearch';
 import AdminMessages from './pages/admin/AdminMessages';
 import AdminSettings from './pages/admin/AdminSettings';
@@ -179,14 +181,13 @@ function App() {
             <Route path="dashboard" element={<ProtectedRoute adminOnly title="Admin Dashboard"><AdminDashboard /></ProtectedRoute>} />
             <Route path="users" element={<ProtectedRoute adminOnly title="Manage Users"><ManageUsers /></ProtectedRoute>} />
             <Route path="events" element={<ProtectedRoute adminOnly title="Manage Events"><ManageEvents /></ProtectedRoute>} />
-            {/* <Route path="venues" element={<ProtectedRoute adminOnly title="Manage Venues"><ManageVenues /></ProtectedRoute>} /> */}
+            <Route path="venues" element={<ProtectedRoute adminOnly title="Manage Venues"><AdminVenues /></ProtectedRoute>} />
+            <Route path="create-venue" element={<ProtectedRoute adminOnly title="Create Venue"><CreateVenue /></ProtectedRoute>} />
+            <Route path="edit-venue/:id" element={<ProtectedRoute adminOnly title="Edit Venue"><EditVenue /></ProtectedRoute>} />
             <Route path="notifications" element={<ProtectedRoute adminOnly title="Admin Notifications"><NotificationsPage /></ProtectedRoute>} />
             <Route path="search" element={<ProtectedRoute adminOnly title="Admin Search"><AdminSearch /></ProtectedRoute>} />
             <Route path="messages" element={<ProtectedRoute adminOnly title="Admin Messages"><AdminMessages /></ProtectedRoute>} />
             <Route path="analytics" element={<ProtectedRoute adminOnly title="Analytics"><AdminAnalytics /></ProtectedRoute>} />
-            {/* <Route path="reports" element={<ProtectedRoute adminOnly title="Reports"><AdminReports /></ProtectedRoute>} />
-            <Route path="moderation" element={<ProtectedRoute adminOnly title="Content Moderation"><ContentModeration /></ProtectedRoute>} /> */}
-            {/* <Route path="logs" element={<ProtectedRoute adminOnly title="System Logs"><SystemLogs /></ProtectedRoute>} /> */}
             <Route path="settings" element={<ProtectedRoute adminOnly title="Admin Settings"><AdminSettings /></ProtectedRoute>} />
           </Route>
 

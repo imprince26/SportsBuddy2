@@ -38,7 +38,10 @@ import {
   Smile,
   Paperclip,
   ImageIcon,
-  IndianRupee
+  IndianRupee,
+  Activity,
+  Bike,
+  Waves
 } from "lucide-react"
 
 import { useAuth } from "@/hooks/useAuth"
@@ -236,15 +239,15 @@ const EventDetails = () => {
 
   const getCategoryIcon = (category) => {
     const icons = {
-      Football: "⚽",
-      Basketball: "🏀",
-      Tennis: "🎾",
-      Running: "🏃",
-      Cycling: "🚴",
-      Swimming: "🏊",
-      Volleyball: "🏐",
-      Cricket: "🏏",
-      default: "🏆",
+      Football: Trophy,
+      Basketball: Trophy,
+      Tennis: Trophy,
+      Running: Activity,
+      Cycling: Bike,
+      Swimming: Waves,
+      Volleyball: Trophy,
+      Cricket: Trophy,
+      default: Trophy,
     }
     return icons[category] || icons.default
   }
@@ -309,7 +312,7 @@ const EventDetails = () => {
         setRating(0)
         setReview("")
         setHasRated(true)
-        toast.success("Review submitted successfully! ⭐")
+        toast.success("Review submitted successfully!")
       }
     } catch (err) {
       console.error("Error submitting rating:", err)
@@ -468,7 +471,7 @@ const EventDetails = () => {
     } else {
       favorites.push(id)
       localStorage.setItem("favorites", JSON.stringify(favorites))
-      toast.success("Added to favorites ❤️")
+      toast.success("Added to favorites")
     }
 
     setIsFavorite(!isFavorite)
@@ -573,7 +576,12 @@ const EventDetails = () => {
                 >
                   <div className="group relative">
                     <div className="relative px-4 sm:px-6 py-2 sm:py-3 bg-card rounded-full border border-border flex items-center gap-2 sm:gap-3 shadow-sm">
-                      <span className="text-2xl">{getCategoryIcon(event.category)}</span>
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                        {(() => {
+                          const IconComponent = getCategoryIcon(event.category);
+                          return <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />;
+                        })()}
+                      </div>
                       <span className="text-foreground font-medium text-sm sm:text-base">{event.category}</span>
                       {event.difficulty && (
                         <span className="text-white font-medium text-xs">
@@ -1618,8 +1626,8 @@ const EventDetails = () => {
         <DialogContent className="max-w-5xl h-[85vh] bg-card/95 backdrop-blur-xl border-border p-0 overflow-hidden">
           <DialogHeader className="p-4 sm:p-6 pb-0 border-b border-border">
             <DialogTitle className="flex items-center gap-3 text-foreground">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                <MessageSquare className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg font-semibold truncate">Event Chat</h3>
@@ -1627,7 +1635,7 @@ const EventDetails = () => {
               </div>
               <Badge
                 variant="secondary"
-                className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700 px-3 py-1"
+                className="px-3 py-1"
               >
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                 Participants Only
@@ -1673,9 +1681,9 @@ const EventDetails = () => {
                           >
                             {/* Avatar */}
                             {!isOwn && showAvatar ? (
-                              <Avatar className="w-8 h-8 ring-2 ring-white dark:ring-gray-800 shadow-sm">
+                              <Avatar className="w-8 h-8 ring-2 ring-border shadow-sm">
                                 <AvatarImage src={msg.user?.avatar?.url || "/placeholder.svg"} />
-                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-semibold">
+                                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                                   {msg.user.name?.charAt(0)?.toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
@@ -1706,8 +1714,8 @@ const EventDetails = () => {
                                 className={cn(
                                   "relative px-4 py-2 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md group",
                                   isOwn
-                                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                                    : "bg-card text-foreground border border-border",
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-card border border-border",
                                   // Rounded corners based on position
                                   isOwn
                                     ? showAvatar ? "rounded-tr-md" : isLastInGroup ? "rounded-br-md" : "rounded-r-md"
@@ -1715,7 +1723,10 @@ const EventDetails = () => {
                                 )}
                               >
                                 {/* Message Content */}
-                                <div className="text-sm leading-relaxed break-words">
+                                <div className={cn(
+                                  "text-sm leading-relaxed break-words",
+                                  !isOwn && "text-card-foreground"
+                                )}>
                                   {msg.message}
                                 </div>
 
@@ -1748,8 +1759,8 @@ const EventDetails = () => {
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center h-64 text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
-                      <MessageSquare className="w-8 h-8 text-white" />
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                      <MessageSquare className="w-8 h-8 text-primary" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">
                       Start the conversation
@@ -1808,7 +1819,7 @@ const EventDetails = () => {
 
                 {/* Message Input Container */}
                 <div className="flex-1 relative">
-                  <div className="flex items-end bg-card rounded-2xl border border-border shadow-sm focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                  <div className="flex items-end bg-card rounded-2xl border border-border shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                     <Input
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
@@ -1832,8 +1843,8 @@ const EventDetails = () => {
                       <Smile className={cn(
                         "w-5 h-5 transition-colors",
                         showEmojiPicker
-                          ? "text-blue-500"
-                          : "text-muted-foreground hover:text-blue-500"
+                          ? "text-primary"
+                          : "text-muted-foreground hover:text-primary"
                       )} />
                     </button>
                   </div>
@@ -1843,7 +1854,8 @@ const EventDetails = () => {
                 <Button
                   type="submit"
                   disabled={!message.trim() || sendingMessage}
-                  className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  size="icon"
+                  className="h-12 w-12 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {sendingMessage ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

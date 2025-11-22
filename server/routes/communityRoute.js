@@ -66,24 +66,29 @@ router.get('/posts/:id',
   getCommunityPostById
 );
 
+// Protected routes
+router.use(isAuthenticated);
+
+// User communities (must be before /:id to avoid conflicts)
+router.get('/my-communities', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.user.id), communityTTL),
+  getUserCommunities
+);
+router.get('/user/:userId', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.params.userId), communityTTL),
+  getUserCommunities
+);
+
+// Community detail (after specific routes)
 router.get('/:id', 
   cacheMiddleware((req) => CacheKeys.COMMUNITY.DETAIL(req.params.id), communityTTL),
   getCommunity
 );
 
-// Protected routes
-router.use(isAuthenticated);
-
 // Community CRUD
 router.post('/', upload.array('image', 1), createCommunity);
 router.put('/:id', upload.array('image', 1), updateCommunity);
 router.delete('/:id', deleteCommunity);
-
-// User communities
-router.get('/user/:userId', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.params.userId), communityTTL),
-  getUserCommunities
-);
 
 // Community membership
 router.post('/:id/join', joinCommunity);

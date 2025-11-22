@@ -97,9 +97,9 @@ const CommunityDetails = () => {
     joinCommunity,
     leaveCommunity,
     deleteCommunity,
-    createPost,
-    toggleLike,
-    addComment
+    createCommunityPost,
+    likeCommunityPost,
+    addCommentToPost
   } = useCommunity();
 
   // State management
@@ -125,7 +125,7 @@ const CommunityDetails = () => {
   useEffect(() => {
     if (id) {
       fetchCommunity(id);
-      getCommunityPosts({ communityId: id, sortBy });
+      getCommunityPosts({ communityId: id, sortBy }, 1);
     }
   }, [id, sortBy]);
 
@@ -136,7 +136,7 @@ const CommunityDetails = () => {
 
       socket.on('new-post', (post) => {
         if (post.community === id) {
-          getCommunityPosts({ communityId: id, sortBy });
+          getCommunityPosts({ communityId: id, sortBy }, 1);
         }
       });
 
@@ -220,26 +220,47 @@ const CommunityDetails = () => {
     }
 
     setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append('content', postContent);
-    formData.append('community', id);
-    formData.append('type', postType);
 
-    postImages.forEach((image, index) => {
-      formData.append('images', image);
-    });
+    const postData = {
+      content: postContent,
+      communityId: id,
+      images: postImages
+    };
 
     try {
-      await createPost(formData);
-      setPostContent('');
-      setPostImages([]);
-      setPostType('text');
-      setShowCreatePost(false);
-      getCommunityPosts({ communityId: id, sortBy });
+      const result = await createCommunityPost(postData);
+      if (result.success) {
+        setPostContent('');
+        setPostImages([]);
+        setPostType('text');
+        setShowCreatePost(false);
+        // Refresh posts
+        await getCommunityPosts({ communityId: id, sortBy }, 1);
+      }
     } catch (error) {
-      // Error already handled in hook
+      console.error('Error creating post:', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleLikePost = async (postId) => {
+    try {
+      await likeCommunityPost(postId);
+      // Refresh posts to get updated likes
+      await getCommunityPosts({ communityId: id, sortBy }, 1);
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
+  };
+
+  const handleAddComment = async (postId, comment) => {
+    try {
+      await addCommentToPost(postId, comment);
+      // Refresh posts to get updated comments
+      await getCommunityPosts({ communityId: id, sortBy }, 1);
+    } catch (error) {
+      console.error('Error adding comment:', error);
     }
   };
 
@@ -494,7 +515,7 @@ const CommunityDetails = () => {
                     <Users className="w-4 h-4" />
                     <span className="hidden sm:inline">Members</span>
                   </TabsTrigger>
-                  <TabsTrigger value="about" className="flex items-center gap-2 hidden lg:flex">
+                  <TabsTrigger value="about" className="items-center gap-2 hidden lg:flex">
                     <FileText className="w-4 h-4" />
                     <span className="hidden sm:inline">About</span>
                   </TabsTrigger>
@@ -577,8 +598,8 @@ const CommunityDetails = () => {
                   <PostsList
                     posts={posts}
                     currentUser={user}
-                    onLike={toggleLike}
-                    onComment={addComment}
+                    onLike={handleLikePost}
+                    onComment={handleAddComment}
                     loading={loading}
                   />
                 </TabsContent>

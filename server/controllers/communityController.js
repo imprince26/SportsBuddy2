@@ -1,6 +1,7 @@
 import Community from '../models/communityModel.js';
 import User from '../models/userModel.js';
 import { cloudinary } from '../config/cloudinary.js';
+import { deleteCachePattern } from '../config/redis.js';
 
 // Get all communities
 export const getCommunities = async (req, res) => {
@@ -230,10 +231,32 @@ export const createCommunity = async (req, res) => {
       settings
     } = req.body;
 
+    // Validation
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Community name is required"
+      });
+    }
+
+    if (!description || !description.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Community description is required"
+      });
+    }
+
+    if (!category) {
+      return res.status(400).json({
+        success: false,
+        message: "Community category is required"
+      });
+    }
+
     let uploadedImage = null;
 
     // Handle image upload
-    if (req.files) {
+    if (req.files && req.files.length > 0) {
       try {
         const result = await cloudinary.uploader.upload(req.files[0].path, {
           folder: "communities",
@@ -248,17 +271,18 @@ export const createCommunity = async (req, res) => {
           public_id: result.public_id
         };
       } catch (uploadError) {
+        console.error("Image upload error:", uploadError);
         throw new Error("Image upload failed: " + uploadError.message);
       }
     }
 
     const community = new Community({
-      name,
-      description,
+      name: name.trim(),
+      description: description.trim(),
       category,
       location: typeof location === "string" ? JSON.parse(location) : location,
       rules: Array.isArray(rules) ? rules : JSON.parse(rules || "[]"),
-      isPrivate: isPrivate === "true",
+      isPrivate: isPrivate === "true" || isPrivate === true,
       settings: typeof settings === "string" ? JSON.parse(settings) : settings,
       image: uploadedImage,
       creator: req.user.id,
@@ -282,10 +306,21 @@ export const createCommunity = async (req, res) => {
       data: populatedCommunity
     });
   } catch (error) {
+    console.error("Error creating community:", error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      message: "Error creating community",
-      error: error.message
+      message: error.message || "Error creating community"
     });
   }
 };
@@ -1014,6 +1049,8 @@ export const getCommunityPosts = async (req, res) => {
       communityId = ""
     } = req.query;
 
+    console.log('getCommunityPosts called with:', { page, limit, category, search, sortBy, communityId });
+
     let query = {};
 
     // Filter by community
@@ -1055,8 +1092,14 @@ export const getCommunityPosts = async (req, res) => {
         sort = { createdAt: -1 };
     }
 
+    // Build query for finding communities
+    let communityQuery = {};
+    if (communityId) {
+      communityQuery._id = communityId;
+    }
+
     // Get posts from communities collection
-    const communities = await Community.find(query.communityId ? { _id: query.communityId } : {})
+    const communities = await Community.find(communityQuery)
       .populate({
         path: 'posts.author',
         select: 'name username avatar'
@@ -1065,6 +1108,11 @@ export const getCommunityPosts = async (req, res) => {
         path: 'posts.comments.author',
         select: 'name username avatar'
       });
+
+    console.log('Found communities:', communities.length);
+    communities.forEach(c => {
+      console.log(`Community ${c.name} has ${c.posts?.length || 0} posts`);
+    });
 
     let allPosts = [];
     communities.forEach(community => {
@@ -1111,6 +1159,8 @@ export const getCommunityPosts = async (req, res) => {
     // Pagination
     const total = allPosts.length;
     const paginatedPosts = allPosts.slice(skip, skip + parseInt(limit));
+
+    console.log('Total posts found:', total, 'Returning:', paginatedPosts.length);
 
     res.json({
       success: true,
@@ -1218,6 +1268,11 @@ export const createCommunityPost = async (req, res) => {
       .select("posts name image");
 
     const createdPost = updatedCommunity.posts[updatedCommunity.posts.length - 1];
+
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:*`);
+    await deleteCachePattern(`community:detail:${communityId}`);
+    await deleteCachePattern(`community:list:*`);
 
     res.status(201).json({
       success: true,
@@ -1465,6 +1520,10 @@ export const likeCommunityPost = async (req, res) => {
 
     await community.save();
 
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:*`);
+    await deleteCachePattern(`community:detail:${community._id}`);
+
     res.json({
       success: true,
       message: isLiked ? "Post unliked" : "Post liked",
@@ -1516,6 +1575,10 @@ export const addCommentToPost = async (req, res) => {
 
     post.comments.push(newComment);
     await community.save();
+
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:*`);
+    await deleteCachePattern(`community:detail:${community._id}`);
 
     // Get updated post with populated comment
     const updatedCommunity = await Community.findOne({ "posts._id": id })

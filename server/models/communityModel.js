@@ -118,10 +118,7 @@ const communitySchema = new mongoose.Schema(
         default: Date.now,
       },
     }],
-    rules: [{
-      title: String,
-      description: String,
-    }],
+    rules: [String],
     events: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Event",

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -9,7 +9,8 @@ import {
   Trash2,
   Lock,
   Globe,
-  Info
+  Info,
+  Loader2
 } from 'lucide-react';
 import { useCommunity } from '@/hooks/useCommunity';
 import { Button } from '@/components/ui/button';
@@ -40,9 +41,10 @@ const SPORTS_CATEGORIES = [
   'Other'
 ];
 
-const CreateCommunity = () => {
+const EditCommunity = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { createCommunity, loading } = useCommunity();
+  const { fetchCommunity, updateCommunity, loading, currentCommunity } = useCommunity();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -65,6 +67,37 @@ const CreateCommunity = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [errors, setErrors] = useState({});
+  const [initializing, setInitializing] = useState(true);
+
+  useEffect(() => {
+    const loadCommunity = async () => {
+      const community = await fetchCommunity(id);
+      if (community) {
+        setFormData({
+          name: community.name || '',
+          description: community.description || '',
+          category: community.category || '',
+          location: community.location || {
+            city: '',
+            state: '',
+            country: ''
+          },
+          isPrivate: community.isPrivate || false,
+          settings: community.settings || {
+            allowMemberPosts: true,
+            allowMemberEvents: true,
+            autoApproveMembers: false
+          },
+          rules: community.rules && community.rules.length > 0 ? community.rules : ['']
+        });
+        if (community.image?.url) {
+          setImagePreview(community.image.url);
+        }
+      }
+      setInitializing(false);
+    };
+    loadCommunity();
+  }, [id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -177,16 +210,28 @@ const CreateCommunity = () => {
 
     const submitData = {
       ...formData,
-      rules: formData.rules.filter(r => r.trim()),
-      image: imageFile
+      rules: formData.rules.filter(r => r.trim())
     };
 
-    const result = await createCommunity(submitData);
+    // Only include image if a new file was selected
+    if (imageFile) {
+      submitData.image = imageFile;
+    }
+
+    const result = await updateCommunity(id, submitData);
 
     if (result.success) {
-      navigate(`/community/${result.data._id}`);
+      navigate(`/community/${id}`);
     }
   };
+
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background relative pb-20">
@@ -207,9 +252,9 @@ const CreateCommunity = () => {
                 Back
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">Create Community</h1>
+                <h1 className="text-2xl font-bold">Edit Community</h1>
                 <p className="text-sm text-muted-foreground">
-                  Build a community around your favorite sport
+                  Update your community settings
                 </p>
               </div>
             </div>
@@ -534,13 +579,13 @@ const CreateCommunity = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(`/community/${id}`)}
                 disabled={loading}
               >
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Creating...' : 'Create Community'}
+                {loading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>
@@ -550,4 +595,4 @@ const CreateCommunity = () => {
   );
 };
 
-export default CreateCommunity;
+export default EditCommunity;

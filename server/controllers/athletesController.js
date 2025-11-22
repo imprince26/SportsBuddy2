@@ -329,23 +329,26 @@ export const toggleFollowAthlete = asyncHandler(async (req, res) => {
             await User.findByIdAndUpdate(currentUserId, {
                 $pull: { following: id }
             });
-            await User.findByIdAndUpdate(id, {
+            const updatedAthlete = await User.findByIdAndUpdate(id, {
                 $pull: { followers: currentUserId }
-            });
+            }, { new: true });
 
             res.json({
                 success: true,
                 message: "Unfollowed successfully",
-                isFollowing: false
+                data: {
+                    isFollowing: false,
+                    followersCount: updatedAthlete.followers.length
+                }
             });
         } else {
             // Follow
             await User.findByIdAndUpdate(currentUserId, {
                 $addToSet: { following: id }
             });
-            await User.findByIdAndUpdate(id, {
+            const updatedAthlete = await User.findByIdAndUpdate(id, {
                 $addToSet: { followers: currentUserId }
-            });
+            }, { new: true });
 
             // Add notification to the followed user
             await User.findByIdAndUpdate(id, {
@@ -362,7 +365,10 @@ export const toggleFollowAthlete = asyncHandler(async (req, res) => {
             res.json({
                 success: true,
                 message: "Followed successfully",
-                isFollowing: true
+                data: {
+                    isFollowing: true,
+                    followersCount: updatedAthlete.followers.length
+                }
             });
         }
 

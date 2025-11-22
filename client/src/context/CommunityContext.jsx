@@ -16,21 +16,23 @@ export const CommunityProvider = ({ children }) => {
   const [followingPosts, setFollowingPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
   const [currentCommunity, setCurrentCommunity] = useState(null);
+  const [communities, setCommunities] = useState([]);
+  const [myCommunities, setMyCommunities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
+    page: 1,
+    pages: 1,
     total: 0,
     hasNext: false,
     hasPrev: false,
-    limit: 10
+    limit: 12
   });
   const [filters, setFilters] = useState({
     category: 'all',
     search: '',
-    sortBy: 'latest',
-    communityId: ''
+    sortBy: 'members:desc',
+    location: ''
   });
 
   // Socket event handlers
@@ -405,7 +407,195 @@ export const CommunityProvider = ({ children }) => {
       console.error('Error fetching community:', error);
       return null;
     }
-  }
+  };
+
+  // Get all communities with filters
+  const getCommunities = async (newFilters = null, page = 1) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const currentFilters = newFilters || filters;
+      if (newFilters) {
+        setFilters(newFilters);
+      }
+
+      const queryParams = new URLSearchParams();
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (value && value !== 'all') queryParams.append(key, value);
+      });
+
+      queryParams.append('page', page);
+      queryParams.append('limit', pagination.limit);
+
+      const response = await api.get(`/community?${queryParams}`);
+
+      if (response.data.success) {
+        setCommunities(response.data.data);
+        setPagination(response.data.pagination);
+        return response.data.data;
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch communities';
+      setError(message);
+      toast.error(message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get user's communities
+  const getMyCommunities = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.get('/community/my-communities');
+
+      if (response.data.success) {
+        setMyCommunities(response.data.data);
+        return response.data.data;
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch your communities';
+      setError(message);
+      toast.error(message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Create new community
+  const createCommunity = async (communityData) => {
+    setLoading(true);
+    const toastId = toast.loading('Creating community...');
+
+    try {
+      const formData = new FormData();
+      
+      Object.entries(communityData).forEach(([key, value]) => {
+        if (key === 'image' && value instanceof File) {
+          formData.append('image', value);
+        } else if (key === 'rules' && Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'location' && typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'settings' && typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await api.post('/community', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        toast.success('Community created successfully!', { id: toastId });
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      console.error('Create community error:', error.response?.data);
+      const message = error.response?.data?.errors 
+        ? error.response.data.errors.join(', ')
+        : error.response?.data?.message || 'Failed to create community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update community
+  const updateCommunity = async (communityId, updateData) => {
+    setLoading(true);
+    const toastId = toast.loading('Updating community...');
+
+    try {
+      const formData = new FormData();
+      
+      Object.entries(updateData).forEach(([key, value]) => {
+        if (key === 'image' && value instanceof File) {
+          formData.append('image', value);
+        } else if (key === 'rules' && Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'location' && typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'settings' && typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await api.put(`/community/${communityId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        const updated = response.data.data;
+        setCommunities(prev => prev.map(c => c._id === communityId ? updated : c));
+        setMyCommunities(prev => prev.map(c => c._id === communityId ? updated : c));
+        if (currentCommunity?._id === communityId) {
+          setCurrentCommunity(updated);
+        }
+        toast.success('Community updated successfully!', { id: toastId });
+        return { success: true, data: updated };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Join community
+  const joinCommunity = async (communityId) => {
+    const toastId = toast.loading('Joining community...');
+
+    try {
+      const response = await api.post(`/community/${communityId}/join`);
+
+      if (response.data.success) {
+        toast.success(response.data.message || 'Successfully joined community!', { id: toastId });
+        // Refresh communities to update join status
+        getMyCommunities();
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to join community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    }
+  };
+
+  // Leave community
+  const leaveCommunity = async (communityId) => {
+    const toastId = toast.loading('Leaving community...');
+
+    try {
+      const response = await api.post(`/community/${communityId}/leave`);
+
+      if (response.data.success) {
+        toast.success('Successfully left community!', { id: toastId });
+        setMyCommunities(prev => prev.filter(c => c._id !== communityId));
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to leave community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    }
+  };
 
   // Clear current post
   const clearCurrentPost = () => {
@@ -433,8 +623,19 @@ export const CommunityProvider = ({ children }) => {
     pagination,
     filters,
     currentCommunity,
+    communities,
+    myCommunities,
     
-    // Actions
+    // Community Actions
+    getCommunities,
+    getMyCommunities,
+    createCommunity,
+    updateCommunity,
+    joinCommunity,
+    leaveCommunity,
+    fetchCommunity,
+    
+    // Post Actions
     getCommunityPosts,
     createCommunityPost,
     getCommunityPostById,
@@ -447,8 +648,7 @@ export const CommunityProvider = ({ children }) => {
     getCommunityStats,
     clearCurrentPost,
     resetFilters,
-    setFilters,
-    fetchCommunity
+    setFilters
   };
 
   return (

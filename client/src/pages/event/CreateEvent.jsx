@@ -4,11 +4,12 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "react-hot-toast"
 import { useEvents } from "@/hooks/useEvents"
+import { useVenue } from "@/hooks/useVenue"
 import {
   Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Save, Eye, Upload, Plus,
   Trash2, CheckCircle, Sparkles, Award, Target, Shield, Camera,
   FileText, Settings, ArrowRight, Star, Trophy, AlertTriangle,
-  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers,IndianRupee
+  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers, IndianRupee, Building2
 } from 'lucide-react'
 
 import {
@@ -32,6 +33,7 @@ import { eventSchema, defaultEventValues } from "@/schemas/eventSchema"
 const CreateEventForm = () => {
   const navigate = useNavigate()
   const { createEvent } = useEvents()
+  const { venues, getVenues, searchVenues } = useVenue()
   const [isLoading, setIsLoading] = useState(false)
   const [images, setImages] = useState([])
   const [imagePreview, setImagePreview] = useState([])
@@ -40,53 +42,56 @@ const CreateEventForm = () => {
   const [currentStep, setCurrentStep] = useState(0)
   const [completionProgress, setCompletionProgress] = useState(0)
   const [activeTab, setActiveTab] = useState("basic")
+  const [selectedVenue, setSelectedVenue] = useState(null)
+  const [venueSearch, setVenueSearch] = useState("")
 
   const form = useForm({
     resolver: zodResolver(eventSchema),
     defaultValues: defaultEventValues,
   })
 
+  // Load venues on component mount
+  useEffect(() => {
+    getVenues()
+  }, [])
+
   const steps = [
     {
       id: "basic",
       title: "Basic Info",
       icon: FileText,
-      description: "Event name, category & description",
-      color: "from-blue-500 to-blue-600"
+      description: "Event name, category & description"
     },
     {
       id: "details",
       title: "Event Details",
       icon: Settings,
-      description: "Date, time & location",
-      color: "from-purple-500 to-purple-600"
+      description: "Date, time & location"
     },
     {
       id: "media",
       title: "Media & Rules",
       icon: Camera,
-      description: "Images, rules & equipment",
-      color: "from-green-500 to-green-600"
+      description: "Images, rules & equipment"
     },
     {
       id: "review",
       title: "Review",
       icon: Eye,
-      description: "Final review & publish",
-      color: "from-orange-500 to-orange-600"
+      description: "Final review & publish"
     },
   ]
 
   const categories = [
-    { value: "Football", label: "Football", icon: "⚽", color: "from-green-400 to-green-600", participants: "50K+" },
-    { value: "Basketball", label: "Basketball", icon: "🏀", color: "from-orange-400 to-orange-600", participants: "45K+" },
-    { value: "Tennis", label: "Tennis", icon: "🎾", color: "from-yellow-400 to-yellow-600", participants: "30K+" },
-    { value: "Running", label: "Running", icon: "🏃", color: "from-blue-400 to-blue-600", participants: "60K+" },
-    { value: "Cycling", label: "Cycling", icon: "🚴", color: "from-purple-400 to-purple-600", participants: "25K+" },
-    { value: "Swimming", label: "Swimming", icon: "🏊", color: "from-cyan-400 to-cyan-600", participants: "20K+" },
-    { value: "Volleyball", label: "Volleyball", icon: "🏐", color: "from-pink-400 to-pink-600", participants: "15K+" },
-    { value: "Cricket", label: "Cricket", icon: "🏏", color: "from-red-400 to-red-600", participants: "40K+" },
-    { value: "Other", label: "Other Sports", icon: "🎯", color: "from-gray-400 to-gray-600", participants: "10K+" },
+    { value: "Football", label: "Football", icon: "⚽", participants: "50K+" },
+    { value: "Basketball", label: "Basketball", icon: "🏀", participants: "45K+" },
+    { value: "Tennis", label: "Tennis", icon: "🎾", participants: "30K+" },
+    { value: "Running", label: "Running", icon: "🏃", participants: "60K+" },
+    { value: "Cycling", label: "Cycling", icon: "🚴", participants: "25K+" },
+    { value: "Swimming", label: "Swimming", icon: "🏊", participants: "20K+" },
+    { value: "Volleyball", label: "Volleyball", icon: "🏐", participants: "15K+" },
+    { value: "Cricket", label: "Cricket", icon: "🏏", participants: "40K+" },
+    { value: "Other", label: "Other Sports", icon: "🎯", participants: "10K+" },
   ]
 
   // Page Title
@@ -188,7 +193,11 @@ const CreateEventForm = () => {
   const onSubmit = async (formData) => {
     try {
       setIsLoading(true)
-      const data = { ...formData, images: images }
+      const data = { 
+        ...formData, 
+        images: images,
+        venue: selectedVenue?._id || null
+      }
       const result = await createEvent(data)
 
       if (result.success) {
@@ -212,9 +221,9 @@ const CreateEventForm = () => {
         className={cn(
           "relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
           isActive
-            ? `bg-gradient-to-br ${step.color} text-white shadow-lg scale-110`
+            ? "bg-primary text-white shadow-lg scale-110"
             : isCompleted
-              ? "bg-gradient-to-br from-green-500 to-green-600 text-white"
+              ? "bg-primary text-white"
               : "bg-slate-900 text-slate-400 border border-slate-800"
         )}
       >
@@ -254,7 +263,7 @@ const CreateEventForm = () => {
               </Button>
               <div className="flex-1">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center">
                     <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div>
@@ -274,7 +283,7 @@ const CreateEventForm = () => {
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
                   <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-0">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-md sm:rounded-lg flex items-center justify-center">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary rounded-md sm:rounded-lg flex items-center justify-center">
                       <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                     </div>
                     <div>
@@ -296,7 +305,7 @@ const CreateEventForm = () => {
                 <div className="relative">
                   <Progress value={completionProgress} className="h-2 sm:h-3 bg-muted" />
                   <div
-                    className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-500 rounded-full opacity-20 blur-sm"
+                    className="absolute inset-0 bg-primary rounded-full opacity-20 blur-sm"
                     style={{ width: `${completionProgress}%` }}
                   />
                 </div>
@@ -355,7 +364,7 @@ const CreateEventForm = () => {
                         className="p-4 sm:p-8 animate-in slide-in-from-right-4 duration-500"
                       >
                         <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
                             <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                           </div>
                           <div>
@@ -415,10 +424,7 @@ const CreateEventForm = () => {
                                     >
                                       <div className="flex items-center gap-2 sm:gap-3 mb-2">
                                         <div
-                                          className={cn(
-                                            "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl bg-gradient-to-br",
-                                            category.color
-                                          )}
+                                          className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl bg-primary/10"
                                         >
                                           {category.icon}
                                         </div>
@@ -526,6 +532,97 @@ const CreateEventForm = () => {
                               <h3 className="text-lg sm:text-xl font-semibold text-foreground">Location Details</h3>
                             </div>
 
+                            {/* Venue Selection */}
+                            <div className="space-y-4 p-4 bg-accent rounded-lg border border-border">
+                              <div className="flex items-center gap-2">
+                                <Building2 className="w-5 h-5 text-primary" />
+                                <h4 className="font-semibold text-foreground">Select Venue (Optional)</h4>
+                              </div>
+                              
+                              {selectedVenue ? (
+                                <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-primary/30">
+                                  <div className="flex items-center gap-3">
+                                    {selectedVenue.images?.[0] ? (
+                                      <img 
+                                        src={selectedVenue.images[0]} 
+                                        alt={selectedVenue.name}
+                                        className="w-12 h-12 rounded-lg object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                                        <Building2 className="w-6 h-6 text-primary" />
+                                      </div>
+                                    )}
+                                    <div>
+                                      <p className="font-semibold text-foreground">{selectedVenue.name}</p>
+                                      <p className="text-sm text-muted-foreground">{selectedVenue.location?.city}</p>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSelectedVenue(null)}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="space-y-3">
+                                  <Input
+                                    placeholder="Search venues by name or location..."
+                                    value={venueSearch}
+                                    onChange={(e) => setVenueSearch(e.target.value)}
+                                    className="bg-background"
+                                  />
+                                  <div className="max-h-48 overflow-y-auto space-y-2">
+                                    {venues
+                                      .filter(v => 
+                                        v.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
+                                        v.location?.city.toLowerCase().includes(venueSearch.toLowerCase())
+                                      )
+                                      .slice(0, 5)
+                                      .map(venue => (
+                                        <button
+                                          key={venue._id}
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedVenue(venue)
+                                            // Auto-fill location fields
+                                            form.setValue('location.address', venue.location?.address || '')
+                                            form.setValue('location.city', venue.location?.city || '')
+                                            form.setValue('location.state', venue.location?.state || '')
+                                          }}
+                                          className="w-full flex items-center gap-3 p-3 bg-card hover:bg-accent rounded-lg border border-border transition-colors text-left"
+                                        >
+                                          {venue.images?.[0] ? (
+                                            <img 
+                                              src={venue.images[0]} 
+                                              alt={venue.name}
+                                              className="w-10 h-10 rounded object-cover"
+                                            />
+                                          ) : (
+                                            <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
+                                              <Building2 className="w-5 h-5 text-primary" />
+                                            </div>
+                                          )}
+                                          <div className="flex-1">
+                                            <p className="font-medium text-foreground text-sm">{venue.name}</p>
+                                            <p className="text-xs text-muted-foreground">{venue.location?.city}</p>
+                                          </div>
+                                        </button>
+                                      ))}
+                                    {venueSearch && venues.filter(v => 
+                                      v.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
+                                      v.location?.city.toLowerCase().includes(venueSearch.toLowerCase())
+                                    ).length === 0 && (
+                                      <p className="text-sm text-muted-foreground text-center py-4">No venues found</p>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
                             <div className="grid md:grid-cols-2 grid-cols-1 gap-4 sm:gap-6">
                               <FormField
                                 control={form.control}
@@ -590,7 +687,7 @@ const CreateEventForm = () => {
                               type="button"
                               onClick={() => setActiveTab("details")}
                               size="lg"
-                              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
                             >
                               Next: Event Details
                               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -606,7 +703,7 @@ const CreateEventForm = () => {
                         className="p-4 sm:p-8 animate-in slide-in-from-right-4 duration-500"
                       >
                         <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
                             <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                           </div>
                           <div>
@@ -691,19 +788,16 @@ const CreateEventForm = () => {
                                     {[
                                       {
                                         value: "Beginner",
-                                        color: "from-green-400 to-green-600",
                                         icon: "🌱",
                                         description: "Open to all skill levels - perfect for newcomers",
                                       },
                                       {
                                         value: "Intermediate",
-                                        color: "from-yellow-400 to-orange-500",
                                         icon: "⚡",
                                         description: "Some experience required - moderate challenge",
                                       },
                                       {
                                         value: "Advanced",
-                                        color: "from-red-400 to-red-600",
                                         icon: "🔥",
                                         description: "High skill level required - competitive play",
                                       },
@@ -721,10 +815,7 @@ const CreateEventForm = () => {
                                       >
                                         <div className="flex items-center gap-2 sm:gap-3">
                                           <div
-                                            className={cn(
-                                              "w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center text-base sm:text-lg bg-gradient-to-br",
-                                              level.color
-                                            )}
+                                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center text-base sm:text-lg bg-primary/10"
                                           >
                                             {level.icon}
                                           </div>
@@ -754,21 +845,18 @@ const CreateEventForm = () => {
                                       {
                                         value: "casual",
                                         icon: Heart,
-                                        color: "from-blue-400 to-blue-600",
                                         title: "Casual",
                                         description: "Fun and relaxed atmosphere - social play",
                                       },
                                       {
                                         value: "tournament",
                                         icon: Trophy,
-                                        color: "from-yellow-400 to-orange-500",
                                         title: "Tournament",
                                         description: "Competitive event with rankings and prizes",
                                       },
                                       {
                                         value: "training",
                                         icon: Target,
-                                        color: "from-green-400 to-green-600",
                                         title: "Training",
                                         description: "Skill development and coaching session",
                                       },
@@ -786,10 +874,7 @@ const CreateEventForm = () => {
                                       >
                                         <div className="flex items-center gap-2 sm:gap-3">
                                           <div
-                                            className={cn(
-                                              "w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center bg-gradient-to-br",
-                                              type.color
-                                            )}
+                                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center bg-primary"
                                           >
                                             <type.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                                           </div>
@@ -821,7 +906,7 @@ const CreateEventForm = () => {
                               type="button"
                               onClick={() => setActiveTab("media")}
                               size="lg"
-                              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
                             >
                               Next: Media & Rules
                               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -837,7 +922,7 @@ const CreateEventForm = () => {
                         className="p-4 sm:p-8 animate-in slide-in-from-right-4 duration-500"
                       >
                         <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
                             <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                           </div>
                           <div>
@@ -857,7 +942,7 @@ const CreateEventForm = () => {
                             </div>
                             <div className="border-2 border-dashed border-border rounded-lg sm:rounded-2xl p-4 sm:p-8 text-center hover:border-blue-500 transition-colors duration-200 bg-muted/50">
                               <div className="mb-4 sm:mb-6">
-                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-md sm:shadow-lg">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-lg sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-md sm:shadow-lg">
                                   <ImagePlus className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                                 </div>
                                 <h4 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
@@ -880,7 +965,7 @@ const CreateEventForm = () => {
                               />
                               <label
                                 htmlFor="image-upload"
-                                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-200 cursor-pointer shadow-md sm:shadow-lg hover:shadow-xl"
+                                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all duration-200 cursor-pointer shadow-md sm:shadow-lg hover:shadow-xl"
                               >
                                 <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
                                 <span className="text-base sm:text-lg font-medium">Choose Images</span>
@@ -934,7 +1019,7 @@ const CreateEventForm = () => {
                                     type="button"
                                     onClick={addRule}
                                     disabled={!newRule.trim()}
-                                    className="h-10 sm:h-12 px-4 sm:px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
+                                    className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
                                   >
                                     <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                                     Add Rule
@@ -945,9 +1030,9 @@ const CreateEventForm = () => {
                                       {form.getValues("rules").map((rule, index) => (
                                         <div
                                           key={index}
-                                          className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-green-900/20 border border-green-700 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                          className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         >
-                                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
+                                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
                                             <span className="text-xs sm:text-sm font-bold text-white">{index + 1}</span>
                                           </div>
                                           <p className="flex-1 text-foreground text-base sm:text-lg leading-relaxed">
@@ -1015,7 +1100,7 @@ const CreateEventForm = () => {
                                     type="button"
                                     onClick={addEquipment}
                                     disabled={!newEquipment.item.trim()}
-                                    className="h-10 sm:h-12 px-4 sm:px-6 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
+                                    className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
                                   >
                                     <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                                     Add
@@ -1026,10 +1111,10 @@ const CreateEventForm = () => {
                                       {form.getValues("equipment").map((item, index) => (
                                         <div
                                           key={index}
-                                          className="flex items-center justify-between p-3 sm:p-4 rounded-md sm:rounded-lg bg-purple-900/20 border border-purple-700 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                          className="flex items-center justify-between p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         >
                                           <div className="flex items-center gap-2 sm:gap-3">
-                                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+                                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                                             <span className="text-foreground font-medium text-sm sm:text-base">
                                               {item.item}
                                             </span>
@@ -1078,7 +1163,7 @@ const CreateEventForm = () => {
                               type="button"
                               onClick={() => setActiveTab("review")}
                               size="lg"
-                              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
                             >
                               Next: Review & Publish
                               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -1094,7 +1179,7 @@ const CreateEventForm = () => {
                         className="p-4 sm:p-8 animate-in slide-in-from-right-4 duration-500"
                       >
                         <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-lg sm:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg">
                             <Eye className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                           </div>
                           <div>
@@ -1106,7 +1191,7 @@ const CreateEventForm = () => {
                         </div>
                         <div className="space-y-6 sm:space-y-8">
                           {/* Event Summary Card */}
-                          <Card className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border-blue-700">
+                          <Card className="bg-primary/10 border-primary/20">
                             <CardContent className="p-4 sm:p-8">
                               <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                                 {imagePreview.length > 0 ? (
@@ -1192,7 +1277,7 @@ const CreateEventForm = () => {
                                   <ul className="space-y-2">
                                     {form.getValues("rules").slice(0, 3).map((rule, index) => (
                                       <li key={index} className="flex items-start gap-2 text-xs sm:text-sm">
-                                        <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-green-900/20 text-green-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                                        <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                                           {index + 1}
                                         </span>
                                         <span className="text-muted-foreground">{rule}</span>
@@ -1219,7 +1304,7 @@ const CreateEventForm = () => {
                                   <ul className="space-y-2">
                                     {form.getValues("equipment").slice(0, 4).map((item, index) => (
                                       <li key={index} className="flex items-center gap-2 text-xs sm:text-sm">
-                                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0" />
+                                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                                         <span className="text-muted-foreground">{item.item}</span>
                                         {item.required && <Badge variant="destructive" className="text-xs">Required</Badge>}
                                       </li>
@@ -1239,14 +1324,14 @@ const CreateEventForm = () => {
                             className={cn(
                               "border-2",
                               completionProgress === 100
-                                ? "border-green-600 bg-green-900/20"
+                                ? "border-primary bg-primary/10"
                                 : "border-orange-600 bg-orange-900/20"
                             )}
                           >
                             <CardContent className="p-4 sm:p-6">
                               <div className="flex items-center gap-2 sm:gap-3 mb-4">
                                 {completionProgress === 100 ? (
-                                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
+                                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                                 ) : (
                                   <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400" />
                                 )}
@@ -1298,7 +1383,7 @@ const CreateEventForm = () => {
                                 type="submit"
                                 disabled={isLoading || completionProgress < 100}
                                 size="lg"
-                                className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 w-full sm:w-auto"
+                                className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 w-full sm:w-auto"
                               >
                                 {isLoading ? (
                                   <>

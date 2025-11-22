@@ -286,7 +286,7 @@ const AdminSearch = () => {
   const getRoleColor = (role) => {
     switch (role?.toLowerCase()) {
       case "admin":
-        return "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border-purple-200/20"
+        return "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 border-indigo-200/20"
       case "user":
         return "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200/20"
       default:
@@ -351,7 +351,7 @@ const AdminSearch = () => {
       <div className="flex items-start gap-4">
         <Avatar className="w-12 h-12 ring-2 ring-white/20 dark:ring-gray-700/20 shrink-0">
           <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
             {user.name?.charAt(0)?.toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
@@ -602,7 +602,7 @@ const AdminSearch = () => {
       {/* Header with Gradient Background */}
       <motion.div
         variants={itemVariants}
-        className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-4 sm:p-6 lg:p-8 text-white shadow-xl"
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-4 sm:p-6 lg:p-8 text-white shadow-xl"
       >
         <div className="relative z-10 flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:justify-between lg:items-center">
           <div className="flex-1">
@@ -962,7 +962,7 @@ const AdminSearch = () => {
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base sm:text-lg">
-                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 shrink-0" />
                         <span className="truncate">
                           Events ({results.events.pagination?.total || 0})
                         </span>
@@ -1063,8 +1063,8 @@ const AdminSearch = () => {
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">Total Results</div>
                       </div>
-                      <div className="text-center p-4 rounded-lg bg-purple-50/50 dark:bg-purple-900/20">
-                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      <div className="text-center p-4 rounded-lg bg-indigo-50/50 dark:bg-indigo-900/20">
+                        <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                           {results.insights.categoryBreakdown?.length || 0}
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">Categories</div>

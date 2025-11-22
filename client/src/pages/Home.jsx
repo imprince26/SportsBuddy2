@@ -27,7 +27,7 @@ const Home = () => {
       <FeaturesSection />
 
       {/* Testimonials Section */}
-      {/* <Testimonials /> */}
+      <Testimonials />
 
       <CTASection />
     </div>

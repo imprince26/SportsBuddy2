@@ -2,215 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Admin Theme Selection Styles */
-body {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Selection colors matching admin theme */
-::selection {
-  background-color: hsl(234, 89%, 74%, 0.3);
-  /* Blue-purple gradient with opacity */
-  color: hsl(0, 0%, 100%);
-  /* White text */
-}
-
-::-moz-selection {
-  background-color: hsl(234, 89%, 74%, 0.3);
-  color: hsl(0, 0%, 100%);
-}
-
 @layer base {
   :root {
-    /* Primary - Blue gradient matching admin theme */
-    --primary: 221 83% 53%;
-    /* #3b82f6 - Blue 600 */
-    --primary-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Secondary - Purple accent from admin gradient */
-    --secondary: 262 83% 58%;
-    /* #8b5cf6 - Purple 500 */
-    --secondary-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Accent - Matching admin purple */
-    --accent: 237 62% 92%;
-    /* #e0e7ff - Blue 100 */
-    --accent-foreground: 221 83% 53%;
-    /* #3b82f6 */
-    
-    /* Background - Light glassmorphism effect */
-    --background: 220 23% 97%;
-    /* #f8fafc - Slate 50 */
-    --foreground: 222 84% 5%;
-    /* #0f172a - Slate 900 */
-    
-    /* Card - Glassmorphism white with opacity */
+    /* Light Theme - Clean & Professional */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
     --card: 0 0% 100%;
-    /* #ffffff */
-    --card-foreground: 222 84% 5%;
-    /* #0f172a */
-    
-    /* Popover - Matching card style */
+    --card-foreground: 222.2 84% 4.9%;
+
     --popover: 0 0% 100%;
-    /* #ffffff */
-    --popover-foreground: 222 84% 5%;
-    /* #0f172a */
-    
-    /* Muted - Light blue-gray matching admin sidebar */
-    --muted: 214 32% 91%;
-    /* #e2e8f0 - Slate 200 */
-    --muted-foreground: 215 16% 47%;
-    /* #64748b - Slate 500 */
-    
-    /* Border - Subtle blue-gray */
-    --border: 214 32% 91%;
-    /* #e2e8f0 - Slate 200 */
-    --input: 214 32% 91%;
-    /* #e2e8f0 - Slate 200 */
-    
-    /* Ring - Primary blue for focus states */
-    --ring: 221 83% 53%;
-    /* #3b82f6 */
-    
-    /* Destructive - Red for errors */
-    --destructive: 0 84% 60%;
-    /* #ef4444 - Red 500 */
-    --destructive-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Success - Green matching admin success states */
-    --success: 142 76% 36%;
-    /* #16a34a - Green 600 */
-    --success-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Warning - Orange matching admin warning states */
-    --warning: 32 95% 44%;
-    /* #ea580c - Orange 600 */
-    --warning-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Info - Light blue for info states */
-    --info: 199 89% 48%;
-    /* #0ea5e9 - Sky 500 */
-    --info-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Chart colors matching admin dashboard */
-    --chart-1: 221 83% 53%;
-    /* #3b82f6 - Primary blue */
-    --chart-2: 262 83% 58%;
-    /* #8b5cf6 - Purple */
-    --chart-3: 142 76% 36%;
-    /* #16a34a - Green */
-    --chart-4: 32 95% 44%;
-    /* #ea580c - Orange */
-    --chart-5: 0 84% 60%;
-    /* #ef4444 - Red */
-    --chart-6: 285 85% 35%;
-    /* #7c3aed - Violet */
-    --chart-7: 171 77% 64%;
-    /* #06d6a0 - Emerald */
-    --chart-8: 43 96% 56%;
-    /* #f59e0b - Amber */
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 221.2 83.2% 53.3%; /* Vibrant Blue */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
+    --radius: 0.75rem;
   }
 
   .dark {
-    /* Primary - Brighter blue for dark mode */
-    --primary: 213 94% 68%;
-    /* #60a5fa - Blue 400 */
-    --primary-foreground: 222 84% 5%;
-    /* #0f172a */
-    
-    /* Secondary - Purple for dark mode */
-    --secondary: 262 83% 58%;
-    /* #8b5cf6 - Purple 500 */
-    --secondary-foreground: 222 84% 5%;
-    /* #0f172a */
-    
-    /* Accent - Dark blue accent */
-    --accent: 215 28% 17%;
-    /* #1e293b - Slate 800 */
-    --accent-foreground: 213 94% 68%;
-    /* #60a5fa */
-    
-    /* Background - Dark matching admin dark theme */
-    --background: 222 84% 5%;
-    /* #0f172a - Slate 900 */
+    /* Dark Theme - Deep & Premium "Midnight Blue" */
+    --background: 224 71% 4%; /* Very dark blue/black */
     --foreground: 210 40% 98%;
-    /* #f8fafc - Slate 50 */
-    
-    /* Card - Dark glassmorphism */
-    --card: 217 33% 17%;
-    /* #1e293b - Slate 800 */
+
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-    /* #f8fafc */
-    
-    /* Popover - Matching card */
-    --popover: 217 33% 17%;
-    /* #1e293b - Slate 800 */
+
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    /* #f8fafc */
-    
-    /* Muted - Dark blue-gray */
-    --muted: 215 28% 17%;
-    /* #1e293b - Slate 800 */
-    --muted-foreground: 217 11% 65%;
-    /* #94a3b8 - Slate 400 */
-    
-    /* Border - Dark border */
-    --border: 215 28% 17%;
-    /* #1e293b - Slate 800 */
-    --input: 215 28% 17%;
-    /* #1e293b - Slate 800 */
-    
-    /* Ring - Bright blue for focus */
-    --ring: 213 94% 68%;
-    /* #60a5fa */
-    
-    /* Destructive - Bright red for dark mode */
-    --destructive: 0 63% 31%;
-    /* #991b1b - Red 800 */
-    --destructive-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Success - Green for dark mode */
-    --success: 142 76% 36%;
-    /* #16a34a - Green 600 */
-    --success-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Warning - Orange for dark mode */
-    --warning: 32 95% 44%;
-    /* #ea580c - Orange 600 */
-    --warning-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Info - Sky blue for dark mode */
-    --info: 199 89% 48%;
-    /* #0ea5e9 - Sky 500 */
-    --info-foreground: 0 0% 100%;
-    /* #ffffff */
-    
-    /* Chart colors for dark mode */
-    --chart-1: 213 94% 68%;
-    /* #60a5fa - Blue 400 */
-    --chart-2: 262 83% 58%;
-    /* #8b5cf6 - Purple 500 */
-    --chart-3: 142 71% 45%;
-    /* #22c55e - Green 500 */
-    --chart-4: 32 95% 44%;
-    /* #ea580c - Orange 600 */
-    --chart-5: 0 84% 60%;
-    /* #ef4444 - Red 500 */
-    --chart-6: 271 91% 65%;
-    /* #a855f7 - Purple 500 */
-    --chart-7: 162 94% 40%;
-    /* #10b981 - Emerald 500 */
-    --chart-8: 43 96% 56%;
-    /* #f59e0b - Amber 500 */
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -218,73 +72,26 @@ body {
   * {
     @apply border-border;
   }
-
-  html {
-    @apply bg-background text-foreground;
-  }
-
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Additional admin theme utilities */
 @layer utilities {
-  /* Glassmorphism utility classes matching admin style */
   .glass {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    @apply bg-background/60 backdrop-blur-lg border-b border-border/50;
   }
   
-  .glass-dark {
-    background: rgba(17, 24, 39, 0.8);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(55, 65, 81, 0.2);
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400;
   }
-  
-  /* Gradient utilities matching admin theme */
-  .gradient-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%);
-  }
-  
-  .gradient-card {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
-  }
-  
-  /* Shadow utilities matching admin style */
-  .shadow-glass {
-    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-  }
-  
-  .shadow-admin {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  }
-}
 
-/* Custom scrollbar matching admin theme */
-@layer base {
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  .bg-grid-white {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(255 255 255 / 0.04)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
   }
-  
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary));
-    border-radius: 3px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.8);
-  }
-  
-  /* Firefox scrollbar */
-  html {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--primary)) hsl(var(--muted));
+
+  .bg-grid-black {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(0 0 0 / 0.04)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
   }
 }

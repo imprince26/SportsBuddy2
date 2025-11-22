@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
 import {
   Shield,
   FileText,
@@ -93,35 +92,6 @@ const Terms = () => {
     { id: "contact", title: "Contact Information", icon: Mail }
   ]
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.1
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 }
-    }
-  }
-
-  const sectionVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.6 }
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 relative overflow-hidden">
       {/* Background Elements */}
@@ -131,69 +101,46 @@ const Terms = () => {
 
         {/* Animated Particles */}
         {[...Array(20)].map((_, i) => (
-          <motion.div
+          <div
             key={i}
-            className="absolute w-1 h-1 bg-blue-400/30 dark:bg-blue-300/30 rounded-full"
+            className="absolute w-1 h-1 bg-blue-400/30 dark:bg-blue-300/30 rounded-full animate-pulse"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.3, 0.8, 0.3],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 4 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-              ease: "easeInOut"
+              animationDuration: `${4 + Math.random() * 2}s`,
             }}
           />
         ))}
 
         {/* Floating Legal Icons */}
         {[Shield, Scale, Book, Gavel].map((Icon, i) => (
-          <motion.div
+          <div
             key={i}
-            className="absolute text-purple-200/10 dark:text-purple-400/15"
+            className="absolute text-purple-200/10 dark:text-purple-400/15 animate-bounce"
             style={{
               left: `${20 + (i * 20) % 60}%`,
               top: `${25 + (i * 25) % 50}%`,
-            }}
-            animate={{
-              y: [0, -8, 0],
-              rotate: [0, 5, -5, 0],
-            }}
-            transition={{
-              duration: 4 + i * 0.5,
-              repeat: Infinity,
-              ease: "easeInOut"
+              animationDuration: `${4 + i * 0.5}s`,
             }}
           >
             <Icon size={25 + (i % 2) * 10} />
-          </motion.div>
+          </div>
         ))}
       </div>
 
       {/* Scroll Progress Bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 z-50 origin-left"
-        style={{ scaleX: scrollProgress / 100 }}
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: scrollProgress / 100 }}
+      <div
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 z-50 origin-left transition-transform duration-100"
+        style={{ transform: `scaleX(${scrollProgress / 100})` }}
       />
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 lg:grid-cols-4 gap-8"
+        <div
+          className="grid grid-cols-1 lg:grid-cols-4 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700"
         >
           {/* Sidebar - Table of Contents */}
-          <motion.div variants={itemVariants} className="lg:col-span-1">
+          <div className="lg:col-span-1 animate-in fade-in slide-in-from-left-8 duration-700 delay-100">
             <div className="sticky top-8 space-y-6">
               {/* Header Card */}
               <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
@@ -232,15 +179,13 @@ const Terms = () => {
                     const isActive = activeSection === item.id
 
                     return (
-                      <motion.button
+                      <button
                         key={item.id}
                         onClick={() => scrollToSection(item.id)}
-                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${isActive
+                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 group hover:scale-[1.02] hover:translate-x-0.5 active:scale-[0.98] ${isActive
                             ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700"
                             : "hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                           }`}
-                        whileHover={{ scale: 1.02, x: 2 }}
-                        whileTap={{ scale: 0.98 }}
                       >
                         <div className="flex items-center gap-3">
                           <Icon className={`w-4 h-4 ${isActive ? "text-blue-600 dark:text-blue-400" : "group-hover:text-gray-700 dark:group-hover:text-gray-300"}`} />
@@ -248,7 +193,7 @@ const Terms = () => {
                             {index + 1}. {item.title}
                           </span>
                         </div>
-                      </motion.button>
+                      </button>
                     )
                   })}
                 </CardContent>
@@ -295,17 +240,14 @@ const Terms = () => {
                 </CardContent>
               </Card>
             </div>
-          </motion.div>
+          </div>
 
           {/* Main Content */}
-          <motion.div variants={itemVariants} className="lg:col-span-3">
+          <div className="lg:col-span-3 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
             <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
               <CardHeader className="border-b border-gray-200/50 dark:border-gray-700/50 pb-6">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="text-center space-y-4"
+                <div
+                  className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -345,19 +287,15 @@ const Terms = () => {
                       Please read them carefully.
                     </p>
                   </div>
-                </motion.div>
+                </div>
               </CardHeader>
 
               <CardContent className="p-8 space-y-12">
                 {/* Section 1: Acceptance of Terms */}
-                <motion.section
+                <section
                   id="acceptance"
                   data-section="acceptance"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -395,19 +333,15 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 2: Service Description */}
-                <motion.section
+                <section
                   id="description"
                   data-section="description"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -451,19 +385,15 @@ const Terms = () => {
                       at any time with reasonable notice to users.
                     </p>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 3: User Eligibility */}
-                <motion.section
+                <section
                   id="eligibility"
                   data-section="eligibility"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
@@ -521,19 +451,15 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 4: User Accounts */}
-                <motion.section
+                <section
                   id="accounts"
                   data-section="accounts"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
@@ -595,19 +521,15 @@ const Terms = () => {
                       unauthorized use of your account.
                     </p>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 5: User Conduct */}
-                <motion.section
+                <section
                   id="conduct"
                   data-section="conduct"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
@@ -659,19 +581,15 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 6: Content Guidelines */}
-                <motion.section
+                <section
                   id="content"
                   data-section="content"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
@@ -754,19 +672,15 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 7: Privacy & Data */}
-                <motion.section
+                <section
                   id="privacy"
                   data-section="privacy"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
@@ -842,19 +756,15 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 8: Event Participation */}
-                <motion.section
+                <section
                   id="events"
                   data-section="events"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
@@ -932,19 +842,15 @@ const Terms = () => {
                       of SportsBuddy.
                     </p>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 9: Payments & Fees */}
-                <motion.section
+                <section
                   id="payments"
                   data-section="payments"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
@@ -1027,19 +933,15 @@ const Terms = () => {
                       </ul>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 10: Intellectual Property */}
-                <motion.section
+                <section
                   id="intellectual"
                   data-section="intellectual"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
@@ -1137,19 +1039,15 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 12: Account Termination */}
-                <motion.section
+                <section
                   id="termination"
                   data-section="termination"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
@@ -1244,19 +1142,15 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 13: Terms Modifications */}
-                <motion.section
+                <section
                   id="modifications"
                   data-section="modifications"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
@@ -1350,19 +1244,15 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Section 11: Limitation of Liability */}
-                <motion.section
+                <section
                   id="liability"
                   data-section="liability"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
@@ -1410,19 +1300,15 @@ const Terms = () => {
                       </p>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 <Separator className="my-8" />
 
                 {/* Contact Section */}
-                <motion.section
+                <section
                   id="contact"
                   data-section="contact"
-                  variants={sectionVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="space-y-6"
+                  className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -1479,12 +1365,11 @@ const Terms = () => {
                       </div>
                     </div>
                   </div>
-                </motion.section>
+                </section>
 
                 {/* Footer */}
-                <motion.div
-                  variants={itemVariants}
-                  className="mt-12 pt-8 border-t border-gray-200/50 dark:border-gray-700/50"
+                <div
+                  className="mt-12 pt-8 border-t border-gray-200/50 dark:border-gray-700/50 animate-in fade-in slide-in-from-bottom-4 duration-500"
                 >
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200/50 dark:border-blue-700/50">
                     <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1524,11 +1409,11 @@ const Terms = () => {
                       © 2025 SportsBuddy. All rights reserved. | Version 2.0
                     </p>
                   </div>
-                </motion.div>
+                </div>
               </CardContent>
             </Card>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </div>
   )

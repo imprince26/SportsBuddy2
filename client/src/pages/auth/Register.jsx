@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { motion } from "framer-motion"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -32,6 +31,7 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import ModernInput from "@/components/ModernInput"
 import { cn } from "@/lib/utils"
 import { defaultRegisterValues, registerSchema } from "@/schemas/authSchema"
+import HeroBg from "@/components/HeroBg"
 
 // Compact Password Strength Component
 const PasswordStrength = ({ password }) => {
@@ -66,25 +66,21 @@ const PasswordStrength = ({ password }) => {
   if (!password) return null
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-1"
+    <div
+      className="space-y-1 animate-in fade-in slide-in-from-top-2 duration-300"
     >
       <div className="flex items-center space-x-2">
-        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-          <motion.div
+        <div className="flex-1 bg-secondary rounded-full h-1.5">
+          <div
             className={cn("h-1.5 rounded-full transition-all duration-300", passwordStrength.color)}
-            initial={{ width: "0%" }}
-            animate={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
-            transition={{ duration: 0.3 }}
+            style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
           />
         </div>
-        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[55px]">
+        <span className="text-xs text-muted-foreground font-medium min-w-[55px]">
           {passwordStrength.label}
         </span>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -129,118 +125,39 @@ const Register = () => {
     }
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        staggerChildren: 0.08,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.4,
-        ease: "easeOut"
-      },
-    },
-  }
-
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 via-blue-50/20 to-purple-50/30 dark:from-purple-950/20 dark:via-blue-950/10 dark:to-purple-950/20" />
-
-        {/* Animated Particles */}
-        {[...Array(12)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-purple-400/30 dark:bg-purple-300/30 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.3, 0.8, 0.3],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 4 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-
-        {/* Floating Sports Icons */}
-        {[UserPlus, Trophy, Users, Target].map((Icon, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-purple-200/10 dark:text-purple-400/15"
-            style={{
-              left: `${20 + (i * 20) % 60}%`,
-              top: `${25 + (i * 25) % 50}%`,
-            }}
-            animate={{
-              y: [0, -8, 0],
-              rotate: [0, 5, -5, 0],
-            }}
-            transition={{
-              duration: 4 + i * 0.5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Icon size={25 + (i % 2) * 10} />
-          </motion.div>
-        ))}
-      </div>
+    <div className="h-screen bg-background relative overflow-hidden">
+      <HeroBg />
 
       <div className="relative z-10 h-full flex">
         {/* Left Side - Registration Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center mb-16 p-4">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="w-full max-w-md"
+          <div
+            className="w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700"
           >
-            <Card className="backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/90 dark:bg-gray-900/90 shadow-xl rounded-2xl">
-              <CardHeader className="pb-3 pt-4">
-                <motion.div variants={itemVariants} className="text-center">
+            <Card className="bg-card border-border shadow-2xl shadow-black/5 rounded-3xl">
+              <CardHeader className="pb-3 pt-6">
+                <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
                   <div className="flex items-center justify-center mb-3">
-                    <motion.div
-                      className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg"
-                      whileHover={{ scale: 1.05, rotate: 5 }}
+                    <div
+                      className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg hover:scale-105 hover:rotate-6 transition-transform duration-300"
                     >
-                      <UserPlus className="w-5 h-5 text-white" />
-                    </motion.div>
+                      <UserPlus className="w-5 h-5 text-primary-foreground" />
+                    </div>
                   </div>
-                  <CardTitle className="text-xl font-bold text-neutral-900 dark:text-white mb-1">
+                  <CardTitle className="text-xl font-bold text-foreground mb-1">
                     Join SportsBuddy
                   </CardTitle>
-                  <p className="text-neutral-600 dark:text-gray-400 text-xs">
+                  <p className="text-muted-foreground text-xs">
                     Create your account and start your sports journey
                   </p>
-                </motion.div>
+                </div>
               </CardHeader>
 
-              <CardContent className="space-y-3 px-6 pb-4">
+              <CardContent className="space-y-3 px-6 pb-6">
                 {authError && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    variants={itemVariants}
+                  <div
+                    className="animate-in fade-in zoom-in-95 duration-300"
                   >
                     <Alert className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 rounded-xl py-2">
                       <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-400" />
@@ -251,12 +168,12 @@ const Register = () => {
                         {authError}
                       </AlertDescription>
                     </Alert>
-                  </motion.div>
+                  </div>
                 )}
 
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-                    <motion.div variants={itemVariants}>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
                       <FormField
                         control={form.control}
                         name="name"
@@ -277,9 +194,9 @@ const Register = () => {
                           </FormItem>
                         )}
                       />
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={itemVariants}>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
                       <FormField
                         control={form.control}
                         name="username"
@@ -300,9 +217,9 @@ const Register = () => {
                           </FormItem>
                         )}
                       />
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={itemVariants}>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
                       <FormField
                         control={form.control}
                         name="email"
@@ -323,9 +240,9 @@ const Register = () => {
                           </FormItem>
                         )}
                       />
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={itemVariants}>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-500">
                       <FormField
                         control={form.control}
                         name="password"
@@ -351,9 +268,9 @@ const Register = () => {
                           </FormItem>
                         )}
                       />
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={itemVariants}>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-700">
                       <FormField
                         control={form.control}
                         name="confirmPassword"
@@ -376,43 +293,41 @@ const Register = () => {
                           </FormItem>
                         )}
                       />
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={itemVariants} className="flex items-start space-x-2 pt-1">
+                    <div className="flex items-start space-x-2 pt-1 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-1000">
                       <Checkbox
                         id="terms"
                         checked={agreedToTerms}
                         onCheckedChange={setAgreedToTerms}
-                        className="mt-0.5 h-4 w-4"
+                        className="mt-0.5 h-4 w-4 border-border data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                       />
                       <label
                         htmlFor="terms"
-                        className="text-xs text-neutral-600 dark:text-gray-400 cursor-pointer leading-relaxed"
+                        className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
                       >
                         I agree to the{" "}
-                        <Link to="/terms" className="text-primary dark:text-primary hover:underline font-medium">
+                        <Link to="/terms" className="text-primary hover:underline font-medium">
                           Terms of Service
                         </Link>{" "}
                         and{" "}
-                        <Link to="/privacy" className="text-primary dark:text-primary hover:underline font-medium">
+                        <Link to="/privacy" className="text-primary hover:underline font-medium">
                           Privacy Policy
                         </Link>
                       </label>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={itemVariants}>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-1000">
                       <Button
                         type="submit"
                         disabled={form.formState.isSubmitting || loading || !agreedToTerms}
-                        className="w-full h-10 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 hover:from-purple-700 hover:via-blue-700 hover:to-purple-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl group relative overflow-hidden disabled:opacity-50 text-sm"
+                        className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl group relative overflow-hidden disabled:opacity-50 text-sm"
                       >
                         <div className="relative z-10 flex items-center justify-center">
                           {form.formState.isSubmitting || loading ? (
                             <div className="flex items-center space-x-2">
-                              <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full"
+                              <div
+                                className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"
                               />
                               <span>Creating Account...</span>
                             </div>
@@ -424,28 +339,26 @@ const Register = () => {
                           )}
                         </div>
                       </Button>
-                    </motion.div>
+                    </div>
                   </form>
                 </Form>
 
-                <motion.div
-                  variants={itemVariants}
-                  className="text-center pt-2 border-t border-gray-200 dark:border-gray-700"
+                <div
+                  className="text-center pt-2 border-t border-border animate-in fade-in slide-in-from-bottom-4 duration-500 delay-1000"
                 >
-                  <p className="text-neutral-600 dark:text-gray-400 text-xs">
+                  <p className="text-muted-foreground text-xs">
                     Already have an account?{" "}
                     <Link
                       to="/login"
-                      className="text-primary dark:text-primary hover:text-primary/90 dark:hover:text-blue-300 font-semibold hover:underline transition-colors"
+                      className="text-primary hover:text-primary/80 font-semibold hover:underline transition-colors"
                     >
                       Sign in here
                     </Link>
                   </p>
-                </motion.div>
+                </div>
 
                 {/* Trust Indicators */}
-                <motion.div
-                  variants={itemVariants}
+                <div
                   className="flex items-center justify-center space-x-4 pt-1"
                 >
                   {[
@@ -453,77 +366,55 @@ const Register = () => {
                     { icon: CheckCircle, text: "Trusted", color: "text-blue-500" },
                     { icon: Sparkles, text: "Free", color: "text-purple-500" },
                   ].map((item, index) => (
-                    <motion.div
+                    <div
                       key={item.text}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 1.0 + index * 0.1 }}
-                      className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400"
+                      className={`flex items-center space-x-1 text-xs text-muted-foreground animate-in fade-in slide-in-from-bottom-2 duration-500`}
+                      style={{ animationDelay: `${1000 + index * 100}ms`, animationFillMode: 'both' }}
                     >
                       <item.icon className={`w-3 h-3 ${item.color}`} />
                       <span className="font-medium">{item.text}</span>
-                    </motion.div>
+                    </div>
                   ))}
-                </motion.div>
+                </div>
               </CardContent>
             </Card>
 
             {/* Mobile Logo */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="lg:hidden text-center mt-4"
+            <div
+              className="lg:hidden text-center mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-700"
             >
               <div className="flex items-center justify-center space-x-1">
-                <Trophy className="w-4 h-4 text-purple-600" />
-                <span className="font-bold text-base text-neutral-900 dark:text-white">SportsBuddy</span>
-                <Zap className="w-4 h-4 text-primary" />
+                <Trophy className="w-4 h-4 text-primary" />
+                <span className="font-bold text-base text-foreground">SportsBuddy</span>
+                <Zap className="w-4 h-4 text-yellow-500" />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Your sports community awaits
               </p>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
 
         {/* Right Side - Branding */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 items-center justify-center p-8 relative overflow-hidden"
+        <div
+          className="hidden lg:flex lg:w-1/2 bg-zinc-950 items-center justify-center p-8 relative overflow-hidden animate-in fade-in slide-in-from-right-8 duration-700"
         >
           {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundImage: `
-                  radial-gradient(circle at 25% 25%, rgba(255,255,255,0.3) 0%, transparent 50%),
-                  radial-gradient(circle at 75% 75%, rgba(255,255,255,0.2) 0%, transparent 50%)
-                `
-              }}
-            />
-          </div>
+          <div className="absolute inset-0 bg-grid-white/[0.02]" />
+          <div className="absolute inset-0 bg-gradient-to-bl from-primary/20 to-purple-500/20 opacity-50" />
 
           <div className="max-w-md text-center text-white relative z-10">
-            <motion.div
-              initial={{ scale: 0, rotate: 90 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-              className="mb-6"
+            <div
+              className="mb-6 animate-in zoom-in duration-700 delay-300"
             >
               {/* SportsBuddy Logo */}
               <div className="relative mx-auto w-20 h-20 mb-4">
-                <motion.div
-                  className="absolute inset-0 bg-white/20 rounded-full"
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                <div
+                  className="absolute inset-0 bg-primary/20 rounded-full animate-spin-slow"
+                  style={{ animationDuration: '25s' }}
                 />
-                <motion.div
-                  className="absolute inset-1 bg-white rounded-full flex items-center justify-center shadow-xl"
-                  whileHover={{ scale: 1.05 }}
+                <div
+                  className="absolute inset-1 bg-background rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform duration-300 border border-primary/20"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -533,41 +424,32 @@ const Register = () => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="w-7 h-7 text-purple-600"
+                    className="w-7 h-7 text-primary"
                   >
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                     <path d="m22 21-3-3" />
                     <path d="m16 16 3 3" />
                   </svg>
-                </motion.div>
+                </div>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-2xl font-bold mb-3 bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent"
+            <h1
+              className="text-2xl font-bold mb-3 text-foreground dark:text-white animate-in fade-in slide-in-from-bottom-4 duration-500 delay-500"
             >
               Start Your Journey!
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="text-base opacity-90 mb-6 leading-relaxed"
+            <p
+              className="text-base opacity-90 mb-6 leading-relaxed text-muted-foreground dark:text-zinc-400 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-700"
             >
               Join thousands of sports enthusiasts and discover amazing opportunities.
-            </motion.p>
+            </p>
 
             {/* Benefits List */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="space-y-3 text-left"
+            <div
+              className="space-y-3 text-left animate-in fade-in duration-500 delay-1000"
             >
               {[
                 { icon: Users, text: "Connect with local sports communities" },
@@ -575,48 +457,41 @@ const Register = () => {
                 { icon: Activity, text: "Track your fitness progress" },
                 { icon: Heart, text: "Find training partners" },
               ].map((benefit, index) => (
-                <motion.div
+                <div
                   key={benefit.text}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
-                  className="flex items-center space-x-3"
+                  className="flex items-center space-x-3 animate-in fade-in slide-in-from-left-4 duration-500"
+                  style={{ animationDelay: `${1000 + index * 100}ms`, animationFillMode: 'both' }}
                 >
-                  <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center">
-                    <benefit.icon className="w-3.5 h-3.5 text-white" />
+                  <div className="w-7 h-7 bg-white/5 rounded-lg flex items-center justify-center border border-white/10">
+                    <benefit.icon className="w-3.5 h-3.5 text-zinc-400" />
                   </div>
-                  <span className="text-sm font-medium">{benefit.text}</span>
-                </motion.div>
+                  <span className="text-sm font-medium text-zinc-400">{benefit.text}</span>
+                </div>
               ))}
-            </motion.div>
+            </div>
 
             {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 }}
-              className="mt-8 grid grid-cols-3 gap-3 text-center"
+            <div
+              className="mt-8 grid grid-cols-3 gap-3 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 delay-1000"
             >
               {[
                 { number: "50K+", label: "Athletes", icon: Users },
                 { number: "1000+", label: "Events", icon: Trophy },
                 { number: "100+", label: "Cities", icon: Globe },
               ].map((stat, index) => (
-                <motion.div
+                <div
                   key={stat.label}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.3 + index * 0.1 }}
-                  className="bg-white/10 rounded-xl p-3 backdrop-blur-sm"
+                  className="bg-white/5 rounded-xl p-3 backdrop-blur-sm animate-in fade-in zoom-in-90 duration-500 border border-white/10"
+                  style={{ animationDelay: `${1300 + index * 100}ms`, animationFillMode: 'both' }}
                 >
-                  <stat.icon className="w-5 h-5 mx-auto mb-1 text-white/80" />
+                  <stat.icon className="w-5 h-5 mx-auto mb-1 text-primary" />
                   <div className="text-base font-bold text-white">{stat.number}</div>
-                  <div className="text-xs text-white/80">{stat.label}</div>
-                </motion.div>
+                  <div className="text-xs text-zinc-400">{stat.label}</div>
+                </div>
               ))}
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

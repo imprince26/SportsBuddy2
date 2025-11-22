@@ -105,6 +105,7 @@ export const getAllEvents = async (req, res) => {
       status,
       dateRange,
       feeType, // Added feeType filter
+      venue, // Added venue filter
       sortBy = "date:asc",
       radius = 10,
       location,
@@ -142,6 +143,11 @@ export const getAllEvents = async (req, res) => {
         { "location.address": { $regex: search.trim(), $options: "i" } },
         { category: { $regex: search.trim(), $options: "i" } }
       ];
+    }
+
+    // Venue filter
+    if (venue) {
+      query.venue = venue;
     }
 
     // Category filter

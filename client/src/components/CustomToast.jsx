@@ -104,126 +104,67 @@ const CustomToast = () => {
   };
 
   const getToastStyles = (type, theme) => {
-    const baseStyles = "relative overflow-hidden backdrop-blur-xl border shadow-2xl";
+    // Unified Dark Theme Styles (SaaS Premium Look)
+    const baseStyles = "relative overflow-hidden backdrop-blur-xl border shadow-2xl bg-slate-950/95 dark:bg-black/95";
 
-    if (theme === 'dark') {
-      switch (type) {
-        case 'success':
-          return `${baseStyles} bg-gradient-to-r from-green-900/90 to-emerald-900/90 border-green-500/30 text-green-100`;
-        case 'error':
-          return `${baseStyles} bg-gradient-to-r from-red-900/90 to-rose-900/90 border-red-500/30 text-red-100`;
-        case 'warning':
-          return `${baseStyles} bg-gradient-to-r from-yellow-900/90 to-amber-900/90 border-yellow-500/30 text-yellow-100`;
-        case 'info':
-          return `${baseStyles} bg-gradient-to-r from-blue-900/90 to-cyan-900/90 border-blue-500/30 text-blue-100`;
-        case 'loading':
-          return `${baseStyles} bg-gradient-to-r from-gray-800/90 to-gray-900/90 border-gray-600/30 text-gray-100`;
-        case 'achievement':
-          return `${baseStyles} bg-gradient-to-r from-purple-900/90 to-indigo-900/90 border-purple-500/30 text-purple-100`;
-        case 'sports':
-          return `${baseStyles} bg-gradient-to-r from-blue-900/90 to-purple-900/90 border-blue-500/30 text-blue-100`;
-        default:
-          return `${baseStyles} bg-gradient-to-r from-gray-800/90 to-gray-900/90 border-gray-600/30 text-gray-100`;
-      }
-    } else {
-      switch (type) {
-        case 'success':
-          return `${baseStyles} bg-gradient-to-r from-green-50/95 to-emerald-50/95 border-green-300/50 text-green-800`;
-        case 'error':
-          return `${baseStyles} bg-gradient-to-r from-red-50/95 to-rose-50/95 border-red-300/50 text-red-800`;
-        case 'warning':
-          return `${baseStyles} bg-gradient-to-r from-yellow-50/95 to-amber-50/95 border-yellow-300/50 text-yellow-800`;
-        case 'info':
-          return `${baseStyles} bg-gradient-to-r from-blue-50/95 to-cyan-50/95 border-blue-300/50 text-blue-800`;
-        case 'loading':
-          return `${baseStyles} bg-gradient-to-r from-gray-50/95 to-gray-100/95 border-gray-300/50 text-gray-800`;
-        case 'achievement':
-          return `${baseStyles} bg-gradient-to-r from-purple-50/95 to-indigo-50/95 border-purple-300/50 text-purple-800`;
-        case 'sports':
-          return `${baseStyles} bg-gradient-to-r from-blue-50/95 to-purple-50/95 border-blue-300/50 text-blue-800`;
-        default:
-          return `${baseStyles} bg-gradient-to-r from-gray-50/95 to-gray-100/95 border-gray-300/50 text-gray-800`;
-      }
+    switch (type) {
+      case 'success':
+        return `${baseStyles} border-green-500/20 text-green-50 shadow-green-900/20`;
+      case 'error':
+        return `${baseStyles} border-red-500/20 text-red-50 shadow-red-900/20`;
+      case 'warning':
+        return `${baseStyles} border-yellow-500/20 text-yellow-50 shadow-yellow-900/20`;
+      case 'info':
+        return `${baseStyles} border-blue-500/20 text-blue-50 shadow-blue-900/20`;
+      case 'loading':
+        return `${baseStyles} border-slate-700/30 text-slate-200 shadow-slate-900/20`;
+      case 'achievement':
+        return `${baseStyles} border-purple-500/20 text-purple-50 shadow-purple-900/20`;
+      case 'sports':
+        return `${baseStyles} border-blue-500/20 text-blue-50 shadow-blue-900/20`;
+      default:
+        return `${baseStyles} border-slate-700/30 text-slate-200 shadow-slate-900/20`;
     }
   };
 
   const getIconStyles = (type, theme) => {
-    if (theme === 'dark') {
-      switch (type) {
-        case 'success':
-          return 'text-green-400';
-        case 'error':
-          return 'text-red-400';
-        case 'warning':
-          return 'text-yellow-400';
-        case 'info':
-          return 'text-blue-400';
-        case 'loading':
-          return 'text-gray-400';
-        case 'achievement':
-          return 'text-purple-400';
-        case 'sports':
-          return 'text-blue-400';
-        default:
-          return 'text-gray-400';
-      }
-    } else {
-      switch (type) {
-        case 'success':
-          return 'text-green-600';
-        case 'error':
-          return 'text-red-600';
-        case 'warning':
-          return 'text-yellow-600';
-        case 'info':
-          return 'text-blue-600';
-        case 'loading':
-          return 'text-gray-600';
-        case 'achievement':
-          return 'text-purple-600';
-        case 'sports':
-          return 'text-blue-600';
-        default:
-          return 'text-gray-600';
-      }
+    // Unified Icon Colors
+    switch (type) {
+      case 'success':
+        return 'text-green-400';
+      case 'error':
+        return 'text-red-400';
+      case 'warning':
+        return 'text-yellow-400';
+      case 'info':
+        return 'text-blue-400';
+      case 'loading':
+        return 'text-slate-400';
+      case 'achievement':
+        return 'text-purple-400';
+      case 'sports':
+        return 'text-blue-400';
+      default:
+        return 'text-slate-400';
     }
   };
 
   const getProgressBarColor = (type, theme) => {
-    if (theme === 'dark') {
-      switch (type) {
-        case 'success':
-          return 'bg-green-500';
-        case 'error':
-          return 'bg-red-500';
-        case 'warning':
-          return 'bg-yellow-500';
-        case 'info':
-          return 'bg-blue-500';
-        case 'achievement':
-          return 'bg-purple-500';
-        case 'sports':
-          return 'bg-gradient-to-r from-blue-500 to-purple-500';
-        default:
-          return 'bg-gray-500';
-      }
-    } else {
-      switch (type) {
-        case 'success':
-          return 'bg-green-500';
-        case 'error':
-          return 'bg-red-500';
-        case 'warning':
-          return 'bg-yellow-500';
-        case 'info':
-          return 'bg-blue-500';
-        case 'achievement':
-          return 'bg-purple-500';
-        case 'sports':
-          return 'bg-gradient-to-r from-blue-500 to-purple-500';
-        default:
-          return 'bg-gray-500';
-      }
+    switch (type) {
+      case 'success':
+        return 'bg-green-500';
+      case 'error':
+        return 'bg-red-500';
+      case 'warning':
+        return 'bg-yellow-500';
+      case 'info':
+        return 'bg-blue-500';
+      case 'achievement':
+        return 'bg-purple-500';
+      case 'sports':
+        return 'bg-gradient-to-r from-blue-500 to-purple-500';
+      default:
+        return 'bg-slate-500';
     }
   };
 

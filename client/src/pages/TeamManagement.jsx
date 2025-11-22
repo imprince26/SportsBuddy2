@@ -4,7 +4,6 @@ import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from "@/hooks/useSocket"
 import { Users, UserPlus, UserMinus, Crown, ChevronLeft, Loader2, AlertTriangle, User, MessageSquare, Settings, Shield, Check, X, Plus, Search } from 'lucide-react'
-import { motion, AnimatePresence } from "framer-motion"
 
 const TeamManagement = () => {
   const { eventId, teamId } = useParams()
@@ -456,197 +455,173 @@ const TeamManagement = () => {
       </div>
       
       {/* Invite Modal */}
-      <AnimatePresence>
-        {showInviteModal && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg w-full max-w-md overflow-hidden"
-            >
-              <div className="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">Invite to Team</h3>
-                <button 
-                  onClick={() => {
-                    setShowInviteModal(false)
-                    setSearchTerm("")
-                    setSearchResults([])
-                  }}
-                  className="p-1 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              
-              <div className="p-4">
-                <form onSubmit={handleSearch} className="mb-4">
-                  <div className="relative">
-                    <Search
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
-                      size={18}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Search users by name or username"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 w-full rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-                    />
-                  </div>
-                </form>
-                
-                {searchResults.length > 0 ? (
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {searchResults.map((user) => (
-                      <div key={user._id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted-light dark:hover:bg-muted-dark">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full overflow-hidden bg-muted-light dark:bg-muted-dark flex items-center justify-center mr-3">
-                            {user.avatar ? (
-                              <img
-                                src={user.avatar || "/placeholder.svg?height=40&width=40"}
-                                alt={user.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <User size={20} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
-                            )}
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-foreground-light dark:text-foreground-dark">{user.name}</h4>
-                            <p className="text-xs text-muted-foreground-light dark:text-muted-foreground-dark">@{user.username}</p>
-                          </div>
-                        </div>
-                        
-                        <button
-                          onClick={() => handleInviteUser(user._id)}
-                          className="p-2 rounded-full bg-primary-light/10 dark:bg-primary-dark/10 text-primary-light dark:text-primary-dark hover:bg-primary-light/20 dark:hover:bg-primary-dark/20 transition-colors"
-                        >
-                          <UserPlus size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : searchTerm ? (
-                  <div className="text-center py-8">
-                    <Users className="w-12 h-12 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-3" />
-                    <p className="text-muted-foreground-light dark:text-muted-foreground-dark">No users found</p>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Search className="w-12 h-12 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-3" />
-                    <p className="text-muted-foreground-light dark:text-muted-foreground-dark">Search for users to invite</p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-      
-      {/* Settings Modal */}
-      <AnimatePresence>
-        {showSettingsModal && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg w-full max-w-md overflow-hidden"
-            >
-              <div className="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">Team Settings</h3>
-                <button 
-                  onClick={() => setShowSettingsModal(false)}
-                  className="p-1 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              
-              <div className="p-4">
-                <div className="mb-4">
-                  <label htmlFor="teamName" className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
-                    Team Name
-                  </label>
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">Invite to Team</h3>
+              <button 
+                onClick={() => {
+                  setShowInviteModal(false)
+                  setSearchTerm("")
+                  setSearchResults([])
+                }}
+                className="p-1 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              <form onSubmit={handleSearch} className="mb-4">
+                <div className="relative">
+                  <Search
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground-light dark:text-muted-foreground-dark"
+                    size={18}
+                  />
                   <input
                     type="text"
-                    id="teamName"
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                    className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
+                    placeholder="Search users by name or username"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-2 w-full rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
                   />
                 </div>
-                
-                <div className="flex justify-between">
-                  <button
-                    onClick={() => setConfirmAction({ type: 'delete', teamId: team._id, name: team.name })}
-                    className="px-4 py-2 rounded-md text-destructive-light dark:text-destructive-dark hover:bg-destructive-light/10 dark:hover:bg-destructive-dark/10 transition-colors"
-                  >
-                    Delete Team
-                  </button>
-                  
-                  <button
-                    onClick={handleUpdateTeam}
-                    disabled={!teamName.trim()}
-                    className="px-4 py-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Save Changes
-                  </button>
+              </form>
+              
+              {searchResults.length > 0 ? (
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {searchResults.map((user) => (
+                    <div key={user._id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted-light dark:hover:bg-muted-dark">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-muted-light dark:bg-muted-dark flex items-center justify-center mr-3">
+                          {user.avatar ? (
+                            <img
+                              src={user.avatar || "/placeholder.svg?height=40&width=40"}
+                              alt={user.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User size={20} className="text-muted-foreground-light dark:text-muted-foreground-dark" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-foreground-light dark:text-foreground-dark">{user.name}</h4>
+                          <p className="text-xs text-muted-foreground-light dark:text-muted-foreground-dark">@{user.username}</p>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => handleInviteUser(user._id)}
+                        className="p-2 rounded-full bg-primary-light/10 dark:bg-primary-dark/10 text-primary-light dark:text-primary-dark hover:bg-primary-light/20 dark:hover:bg-primary-dark/20 transition-colors"
+                      >
+                        <UserPlus size={16} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </motion.div>
+              ) : searchTerm ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-3" />
+                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark">No users found</p>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Search className="w-12 h-12 text-muted-foreground-light dark:text-muted-foreground-dark mx-auto mb-3" />
+                  <p className="text-muted-foreground-light dark:text-muted-foreground-dark">Search for users to invite</p>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
+      
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-foreground-light dark:text-foreground-dark">Team Settings</h3>
+              <button 
+                onClick={() => setShowSettingsModal(false)}
+                className="p-1 rounded-full hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              <div className="mb-4">
+                <label htmlFor="teamName" className="block text-sm font-medium text-foreground-light dark:text-foreground-dark mb-1">
+                  Team Name
+                </label>
+                <input
+                  type="text"
+                  id="teamName"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  className="w-full p-2 rounded-md border border-input-light dark:border-input-dark bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
+                />
+              </div>
+              
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setConfirmAction({ type: 'delete', teamId: team._id, name: team.name })}
+                  className="px-4 py-2 rounded-md text-destructive-light dark:text-destructive-dark hover:bg-destructive-light/10 dark:hover:bg-destructive-dark/10 transition-colors"
+                >
+                  Delete Team
+                </button>
+                
+                <button
+                  onClick={handleUpdateTeam}
+                  disabled={!teamName.trim()}
+                  className="px-4 py-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Confirmation Modal */}
-      <AnimatePresence>
-        {confirmAction && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg w-full max-w-md p-6"
-            >
-              <h3 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
-                {confirmAction.type === 'delete' ? 'Delete Team' : 'Remove Member'}
-              </h3>
-              <p className="text-foreground-light dark:text-foreground-dark mb-6">
-                {confirmAction.type === 'delete' 
-                  ? `Are you sure you want to delete the team "${confirmAction.name}"? This action cannot be undone.`
-                  : `Are you sure you want to remove ${confirmAction.name} from the team?`
-                }
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setConfirmAction(null)}
-                  className="px-4 py-2 rounded-md border border-input-light dark:border-input-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirmAction.type === 'delete') {
-                      handleDeleteTeam()
-                    } else {
-                      handleRemoveUser(confirmAction.userId)
-                    }
-                    setConfirmAction(null)
-                  }}
-                  className="px-4 py-2 rounded-md bg-destructive-light dark:bg-destructive-dark text-white hover:bg-destructive-light/90 dark:hover:bg-destructive-dark/90 transition-colors"
-                >
-                  {confirmAction.type === 'delete' ? 'Delete' : 'Remove'}
-                </button>
-              </div>
-            </motion.div>
+      {confirmAction && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-semibold text-foreground-light dark:text-foreground-dark mb-4">
+              {confirmAction.type === 'delete' ? 'Delete Team' : 'Remove Member'}
+            </h3>
+            <p className="text-foreground-light dark:text-foreground-dark mb-6">
+              {confirmAction.type === 'delete' 
+                ? `Are you sure you want to delete the team "${confirmAction.name}"? This action cannot be undone.`
+                : `Are you sure you want to remove ${confirmAction.name} from the team?`
+              }
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmAction(null)}
+                className="px-4 py-2 rounded-md border border-input-light dark:border-input-dark text-foreground-light dark:text-foreground-dark hover:bg-muted-light dark:hover:bg-muted-dark transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (confirmAction.type === 'delete') {
+                    handleDeleteTeam()
+                  } else {
+                    handleRemoveUser(confirmAction.userId)
+                  }
+                  setConfirmAction(null)
+                }}
+                className="px-4 py-2 rounded-md bg-destructive-light dark:bg-destructive-dark text-white hover:bg-destructive-light/90 dark:hover:bg-destructive-dark/90 transition-colors"
+              >
+                {confirmAction.type === 'delete' ? 'Delete' : 'Remove'}
+              </button>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   )
 }

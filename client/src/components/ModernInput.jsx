@@ -43,14 +43,14 @@ const ModernInput = ({
           color: error
             ? "#ef4444"
             : isFocused
-              ? "#3b82f6"
-              : "#6b7280"
+              ? "#60a5fa" // blue-400
+              : "#94a3b8" // slate-400
         }}
         transition={{ duration: 0.2, ease: "easeOut" }}
         className={cn(
           "absolute left-12 top-1/2 -translate-y-1/2 pointer-events-none font-medium z-20 px-2 origin-left",
-          "bg-white dark:bg-gray-900",
-          shouldLabelBeUp && "bg-white dark:bg-gray-900"
+          "bg-slate-950 dark:bg-black",
+          shouldLabelBeUp && "bg-slate-950 dark:bg-black"
         )}
         style={{ transformOrigin: "left center" }}
       >
@@ -59,32 +59,32 @@ const ModernInput = ({
 
       {/* Input Container */}
       <div className="relative">
-        {/* Gradient Border Container */}
+        {/* Border Container */}
         <motion.div
           className={cn(
-            "absolute inset-0 rounded-xl p-[2px]",
+            "absolute inset-0 rounded-xl p-[1px]",
             error
-              ? "bg-gradient-to-r from-red-400 to-red-600"
+              ? "bg-red-500"
               : isFocused
-                ? "bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600"
-                : "bg-gray-200 dark:bg-gray-700"
+                ? "bg-blue-500"
+                : "bg-slate-800"
           )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-900 rounded-xl" />
+          <div className="w-full h-full bg-slate-950 dark:bg-black rounded-xl" />
         </motion.div>
 
         {/* Input Field Container */}
         <div className={cn(
-          "relative bg-white dark:bg-gray-900 rounded-xl",
-          "border-2 transition-all duration-300",
+          "relative bg-slate-950 dark:bg-black rounded-xl",
+          "border transition-all duration-300",
           error
-            ? "border-red-300 dark:border-red-700"
+            ? "border-red-500"
             : isFocused
-              ? "border-transparent shadow-lg shadow-blue-500/20 dark:shadow-blue-400/30"
-              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+              ? "border-blue-500 shadow-sm shadow-blue-500/20"
+              : "border-slate-800 hover:border-slate-700"
         )}>
           {/* Icon */}
           <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
@@ -94,8 +94,8 @@ const ModernInput = ({
                 color: error
                   ? "#ef4444"
                   : isFocused
-                    ? "#3b82f6"
-                    : "#6b7280"
+                    ? "#60a5fa" // blue-400
+                    : "#94a3b8" // slate-400
               }}
               transition={{ duration: 0.2 }}
             >
@@ -120,7 +120,7 @@ const ModernInput = ({
             placeholder=""
             className={cn(
               "w-full h-12 pl-12 bg-transparent border-0",
-              "text-gray-900 dark:text-purple-50 text-base",
+              "text-slate-50 text-base",
               "placeholder:text-transparent",
               "focus:outline-none focus:ring-0 rounded-xl",
               "transition-all duration-300",
@@ -137,10 +137,10 @@ const ModernInput = ({
               <motion.button
                 type="button"
                 onClick={onTogglePassword}
-                className="flex items-center justify-center w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors rounded"
+                className="flex items-center justify-center w-6 h-6 text-slate-500 hover:text-slate-300 transition-colors rounded"
                 whileHover={{
                   scale: 1.1,
-                  backgroundColor: "rgba(59, 130, 246, 0.1)"
+                  backgroundColor: "rgba(255, 255, 255, 0.05)"
                 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}

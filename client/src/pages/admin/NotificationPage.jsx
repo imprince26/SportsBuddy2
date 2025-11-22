@@ -405,7 +405,7 @@ const ManageNotifications = () => {
   const getTypeColor = (type) => {
     switch (type) {
       case "announcement":
-        return "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border-purple-200/20";
+        return "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 border-indigo-200/20";
       case "system":
         return "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200/20";
       case "event":
@@ -466,7 +466,7 @@ const ManageNotifications = () => {
       change: "+2.1%",
       changeType: "positive",
       icon: TrendingUp,
-      color: "purple",
+      color: "indigo",
       description: "Average open rate",
     },
     {
@@ -560,7 +560,7 @@ const ManageNotifications = () => {
       {/* Header with Gradient Background */}
       <motion.div
         variants={itemVariants}
-        className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-4 text-white shadow-xl"
+        className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 p-4 text-white shadow-xl"
       >
         <div className="absolute inset-0 opacity-10">
           <svg viewBox="0 0 100 100" className="w-full h-full">
@@ -789,7 +789,7 @@ const ManageNotifications = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-base">
-                      <MessageSquare className="w-4 h-4 text-purple-600 shrink-0" />
+                      <MessageSquare className="w-4 h-4 text-indigo-600 shrink-0" />
                       <span className="truncate">
                         Notifications ({filteredNotifications.length})
                       </span>
@@ -1040,7 +1040,7 @@ const ManageNotifications = () => {
               <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                    <PieChart className="w-4 h-4 text-purple-600" />
+                    <PieChart className="w-4 h-4 text-indigo-600" />
                     Notification Types
                   </CardTitle>
                   <CardDescription>
@@ -1138,20 +1138,20 @@ const ManageNotifications = () => {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200/50 dark:border-purple-700/50">
+                  <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200/50 dark:border-indigo-700/50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                        <p className="text-sm font-medium text-indigo-900 dark:text-indigo-100">
                           Avg. Engagement
                         </p>
-                        <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                        <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                           {stats?.overview?.avgEngagementRate?.toFixed(1) || 0}%
                         </p>
-                        <p className="text-xs text-purple-700 dark:text-purple-300">
+                        <p className="text-xs text-indigo-700 dark:text-indigo-300">
                           Average across all notifications
                         </p>
                       </div>
-                      <TrendingUp className="w-6 h-6 text-purple-500" />
+                      <TrendingUp className="w-6 h-6 text-indigo-500" />
                     </div>
                   </div>
                 </CardContent>
@@ -1598,14 +1598,14 @@ const ManageNotifications = () => {
                           </p>
                         </div>
 
-                        <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200/20">
+                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200/20">
                           <div className="flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4 text-purple-600" />
-                            <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                            <TrendingUp className="w-4 h-4 text-indigo-600" />
+                            <span className="text-sm font-medium text-indigo-900 dark:text-indigo-100">
                               Engagement
                             </span>
                           </div>
-                          <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                          <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                             {selectedNotification.engagementRate?.toFixed(1) || 0}%
                           </p>
                         </div>

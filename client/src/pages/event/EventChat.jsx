@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import { 
@@ -29,18 +28,16 @@ import { Badge } from '@/components/ui/badge';
 // Message Bubble Component
 const MessageBubble = ({ message, isOwn }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className={cn(
-        "flex gap-2 mb-3",
+        "flex gap-2 mb-3 animate-in fade-in slide-in-from-bottom-2 duration-300",
         isOwn ? "flex-row-reverse" : "flex-row"
       )}
     >
       {!isOwn && (
         <Avatar className="w-7 h-7 mt-1 flex-shrink-0">
           <AvatarImage src={message.user?.avatar} />
-          <AvatarFallback className="text-xs">
+          <AvatarFallback className="text-xs bg-muted text-muted-foreground">
             {message.user?.name?.charAt(0)?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -49,13 +46,13 @@ const MessageBubble = ({ message, isOwn }) => {
       <div className={cn("flex flex-col max-w-[75%]", isOwn ? "items-end" : "items-start")}>
         {!isOwn && (
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-xs font-medium text-foreground">
               {message.user?.name}
             </span>
             {message.user?.role === 'admin' && (
               <Crown className="h-3 w-3 text-yellow-500" />
             )}
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               {format(new Date(message.timestamp), 'HH:mm')}
             </span>
           </div>
@@ -65,8 +62,8 @@ const MessageBubble = ({ message, isOwn }) => {
           className={cn(
             "rounded-xl px-3 py-2 text-sm",
             isOwn
-              ? "bg-blue-500 text-white rounded-br-sm"
-              : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-sm"
+              ? "bg-primary text-primary-foreground rounded-br-sm"
+              : "bg-muted text-foreground rounded-bl-sm"
           )}
         >
           <div className="break-words">
@@ -75,12 +72,12 @@ const MessageBubble = ({ message, isOwn }) => {
         </div>
 
         {isOwn && (
-          <span className="text-xs text-gray-500 mt-1">
+          <span className="text-xs text-muted-foreground mt-1">
             {format(new Date(message.timestamp), 'HH:mm')}
           </span>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -94,22 +91,22 @@ const ParticipantsSidebar = ({ participants, eventCreator, onlineUsers, isOpen, 
     <>
       {/* Mobile Overlay */}
       <div 
-        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
         onClick={onClose}
       />
       
       {/* Sidebar */}
-      <div className="fixed md:relative top-0 right-0 h-full w-72 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 z-50 flex flex-col">
+      <div className="fixed md:relative top-0 right-0 h-full w-72 bg-card border-l border-border z-50 flex flex-col shadow-xl">
         {/* Header */}
-        <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900 dark:text-white">
+        <div className="p-3 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold text-foreground">
             Participants ({participants?.length || 0})
           </h3>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="md:hidden p-1 h-7 w-7"
+            className="md:hidden p-1 h-7 w-7 text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -120,29 +117,29 @@ const ParticipantsSidebar = ({ participants, eventCreator, onlineUsers, isOpen, 
           {/* Event Creator */}
           {eventCreator && (
             <>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <div className="relative">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src={eventCreator.avatar} />
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback className="text-xs bg-muted text-muted-foreground">
                       {eventCreator.name?.charAt(0)?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   {isOnline(eventCreator._id) && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {eventCreator.name}
                     </p>
-                    <Crown className="h-3 w-3 text-yellow-500" />
+                    <Crown className="h-3 w-3 text-amber-500" />
                   </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Organizer</p>
+                  <p className="text-xs text-muted-foreground">Organizer</p>
                 </div>
               </div>
-              <div className="border-b border-gray-200 dark:border-gray-600 my-2"></div>
+              <div className="border-b border-border my-2"></div>
             </>
           )}
 
@@ -150,29 +147,29 @@ const ParticipantsSidebar = ({ participants, eventCreator, onlineUsers, isOpen, 
           {participants?.map((participant) => (
             <div
               key={participant._id}
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors"
             >
               <div className="relative">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={participant.user?.avatar} />
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="text-xs bg-muted text-muted-foreground">
                     {participant.user?.name?.charAt(0)?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {isOnline(participant.user?._id) && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {participant.user?.name}
                   </p>
                   {participant.user?.role === 'admin' && (
-                    <Shield className="h-3 w-3 text-blue-500" />
+                    <Shield className="h-3 w-3 text-primary" />
                   )}
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   {isOnline(participant.user?._id) ? 'Online' : 'Offline'}
                 </p>
               </div>
@@ -413,41 +410,41 @@ const EventChat = () => {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading chat...</p>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading chat...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex">
+    <div className="h-screen bg-background flex">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col h-full min-w-0">
         {/* Chat Header */}
-        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
+        <div className="bg-card/90 backdrop-blur-sm border-b border-border p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(`/events/${eventId}`)}
-                className="p-2 flex-shrink-0"
+                className="p-2 flex-shrink-0 text-muted-foreground hover:text-foreground"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Hash className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Hash className="w-5 h-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                  <h1 className="text-lg font-semibold text-foreground truncate">
                     {event?.name}
                   </h1>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     {event?.date && format(new Date(event.date), 'MMM dd')}
                     <span>•</span>
@@ -459,7 +456,7 @@ const EventChat = () => {
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs">
+              <Badge variant="secondary" className="bg-green-500/10 text-green-500 text-xs border-green-500/20">
                 {onlineUsers.length} online
               </Badge>
               
@@ -467,7 +464,7 @@ const EventChat = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowParticipants(!showParticipants)}
-                className="p-2"
+                className="p-2 text-muted-foreground hover:text-foreground"
               >
                 <Users className="h-4 w-4" />
               </Button>
@@ -476,7 +473,7 @@ const EventChat = () => {
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 bg-background">
           <div 
             ref={messagesContainerRef}
             className="flex-1 overflow-y-auto p-4 space-y-1"
@@ -484,19 +481,19 @@ const EventChat = () => {
             {messages.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Hash className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Hash className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
                     Start the conversation
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Be the first to send a message in this chat
                   </p>
                 </div>
               </div>
             ) : (
-              <AnimatePresence>
+              <>
                 {messages.map((msg, index) => (
                   <MessageBubble
                     key={msg._id || `${msg.timestamp}-${index}`}
@@ -504,31 +501,28 @@ const EventChat = () => {
                     isOwn={msg.user?._id === user?.id}
                   />
                 ))}
-              </AnimatePresence>
+              </>
             )}
 
             {/* Typing Indicators */}
             {isTyping.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm px-2"
+              <div
+                className="flex items-center gap-2 text-muted-foreground text-sm px-2 animate-in fade-in slide-in-from-bottom-2 duration-300"
               >
                 <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
                 <span>Someone is typing...</span>
-              </motion.div>
+              </div>
             )}
 
             <div ref={messagesEndRef} />
           </div>
 
           {/* Message Input */}
-          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
+          <div className="bg-card/90 backdrop-blur-sm border-t border-border p-4 flex-shrink-0">
             <form onSubmit={sendMessage} className="flex items-center gap-3">
               <div className="flex-1">
                 <Input
@@ -539,7 +533,7 @@ const EventChat = () => {
                     handleTyping();
                   }}
                   placeholder="Type your message..."
-                  className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg"
+                  className="bg-muted border-input focus:border-primary rounded-lg text-foreground placeholder:text-muted-foreground"
                   disabled={isSending}
                 />
               </div>
@@ -547,10 +541,10 @@ const EventChat = () => {
               <Button
                 type="submit"
                 disabled={!message.trim() || isSending}
-                className="h-10 px-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg shadow-sm"
+                className="h-10 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-sm"
               >
                 {isSending ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
@@ -573,3 +567,4 @@ const EventChat = () => {
 };
 
 export default EventChat;
+

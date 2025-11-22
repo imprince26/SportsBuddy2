@@ -40,7 +40,11 @@ const AdminLayout = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false) // Default to false for mobile-first
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (window.innerWidth < 1024) return false
+    const saved = localStorage.getItem("adminSidebarOpen")
+    return saved !== null ? JSON.parse(saved) : true
+  })
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return (
       localStorage.getItem("theme") === "dark" ||
@@ -199,7 +203,8 @@ const AdminLayout = () => {
       if (mobile) {
         setIsSidebarOpen(false)
       } else {
-        setIsSidebarOpen(true)
+        const saved = localStorage.getItem("adminSidebarOpen")
+        setIsSidebarOpen(saved !== null ? JSON.parse(saved) : true)
       }
     }
 
@@ -207,6 +212,13 @@ const AdminLayout = () => {
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [])
+
+  // Persist sidebar state
+  useEffect(() => {
+    if (!isMobile) {
+      localStorage.setItem("adminSidebarOpen", JSON.stringify(isSidebarOpen))
+    }
+  }, [isSidebarOpen, isMobile])
 
   // Close profile menu when clicking outside
   useEffect(() => {
@@ -265,10 +277,10 @@ const AdminLayout = () => {
         <Link to="/admin/dashboard" className="flex items-center space-x-3 group">
           <motion.div
             whileHover={{ scale: 1.05, rotate: 5 }}
-            className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg"
+            className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg"
           >
             <Shield className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-xl blur-xl group-hover:blur-lg transition-all duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-xl blur-xl group-hover:blur-lg transition-all duration-300" />
           </motion.div>
           <div className="flex flex-col">
             <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
@@ -285,7 +297,7 @@ const AdminLayout = () => {
           <div className="relative">
             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 ring-2 ring-white/20 dark:ring-gray-700/20">
               <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+              <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white font-semibold">
                 {user?.name
                   ?.split(" ")
                   .map((n) => n[0])
@@ -300,7 +312,7 @@ const AdminLayout = () => {
               {user?.email || "admin@sportsbuddy.com"}
             </p>
           </div>
-          <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 shadow-lg text-xs">
+          <Badge className="bg-blue-600 text-white border-0 shadow-lg text-xs">
             Admin
           </Badge>
         </div>
@@ -315,9 +327,9 @@ const AdminLayout = () => {
               {analyticsData?.users?.total}
             </div>
           </div>
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-2 sm:p-3 border border-purple-200/20 dark:border-purple-700/20">
-            <div className="text-xs font-medium text-purple-600 dark:text-purple-400">Events</div>
-            <div className="text-sm sm:text-lg font-bold text-purple-900 dark:text-purple-100">
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg p-2 sm:p-3 border border-indigo-200/20 dark:border-indigo-700/20">
+            <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400">Events</div>
+            <div className="text-sm sm:text-lg font-bold text-indigo-900 dark:text-indigo-100">
               {analyticsData?.events?.total}
             </div>
           </div>
@@ -604,7 +616,7 @@ const AdminLayout = () => {
                 >
                   <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
                     <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-semibold">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white text-xs font-semibold">
                       {user?.name
                         ?.split(" ")
                         .map((n) => n[0])

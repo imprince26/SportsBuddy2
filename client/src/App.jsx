@@ -24,11 +24,11 @@ import Privacy from './pages/public/Privacy';
 import Terms from './pages/public/Terms';
 import Help from './pages/public/Help';
 import NotFound from './pages/NotFound';
-// import Venues from './pages/venue/Venues';
-// import VenueDetails from './pages/venue/VenueDetails';
-// import Leaderboard from './pages/Leaderboard';
+import Venues from './pages/venues/Venues';
+import VenueDetails from './pages/venues/VenueDetails';
+import Leaderboard from './pages/leaderboard/Leaderboard';
 // import Community from './pages/community/Community';
-// import Athletes from './pages/Athletes';
+import Athletes from './pages/athletes/Athletes';
 
 // Protected User Pages
 import Dashboard from './pages/Dashboard';
@@ -142,12 +142,12 @@ function App() {
             <Route path="events/:id" element={<PublicRoute title="Event Details"><EventDetails /></PublicRoute>} />
             <Route path="profile/:userId" element={<PublicRoute title="Profile"><PublicProfile /></PublicRoute>} />
             <Route path="search" element={<PublicRoute title="Search"><Search /></PublicRoute>} />
-            {/* <Route path="venues" element={<PublicRoute title="Sports Venues"><Venues /></PublicRoute>} />
+            <Route path="venues" element={<PublicRoute title="Sports Venues"><Venues /></PublicRoute>} />
             <Route path="venues/:id" element={<PublicRoute title="Venue Details"><VenueDetails /></PublicRoute>} />
             <Route path="athletes" element={<PublicRoute title="Athletes"><Athletes /></PublicRoute>} />
             <Route path="leaderboard" element={<PublicRoute title="Leaderboard"><Leaderboard /></PublicRoute>} />
             <Route path="community" element={<PublicRoute title="Community"><Community /></PublicRoute>} />
-            <Route path="community/:id" element={<PublicRoute title="Community Details"><CommunityDetails /></PublicRoute>} /> */}
+            <Route path="community/:id" element={<PublicRoute title="Community Details"><CommunityDetails /></PublicRoute>} />
             <Route path="about" element={<PublicRoute title="About Us"><About /></PublicRoute>} />
             <Route path="contact" element={<PublicRoute title="Contact Us"><Contact /></PublicRoute>} />
             <Route path="privacy" element={<PublicRoute title="Privacy Policy"><Privacy /></PublicRoute>} />
@@ -169,9 +169,7 @@ function App() {
             <Route path="events/:eventId/teams/:teamId" element={<ProtectedRoute title="Team Details"><TeamManagement /></ProtectedRoute>} />
             <Route path="users/:id/followers" element={<ProtectedRoute title="Followers"><FollowersFollowing type="followers" /></ProtectedRoute>} />
             <Route path="users/:id/following" element={<ProtectedRoute title="Following"><FollowersFollowing type="following" /></ProtectedRoute>} />
-            <Route path="community" element={<PublicRoute title="Community"><Community /></PublicRoute>} />
             <Route path="community/create" element={<ProtectedRoute title="Create Community"><CreateCommunity /></ProtectedRoute>} />
-            <Route path="community/:id" element={<PublicRoute title="Community Details"><CommunityDetails /></PublicRoute>} />
             {/* <Route path="venues/create" element={<ProtectedRoute title="Create Venue"><CreateVenue /></ProtectedRoute>} />
             <Route path="venues/:id/edit" element={<ProtectedRoute title="Edit Venue"><EditVenue /></ProtectedRoute>} /> */}
           </Route>

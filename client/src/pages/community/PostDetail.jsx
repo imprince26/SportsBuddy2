@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Heart, MessageCircle, Share2, Eye, Send, Filter } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Share2, Eye, Send, Filter, MoreVertical, Edit2, Trash2 } from 'lucide-react';
 import { useCommunity } from '../../hooks/useCommunity';
 import { useAuth } from '../../hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
@@ -10,13 +10,21 @@ import { Card } from '../../components/ui/card';
 import { Textarea } from '../../components/ui/textarea';
 import { Separator } from '../../components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
 import Loader from '../../components/Loader';
 import ImageGalleryModal from '../../components/community/ImageGalleryModal';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
-const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, level = 0, postId, onRefresh, parentCommentId }) => {
+const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, onEdit, onDelete, level = 0, postId, onRefresh, parentCommentId }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
   const [replyContent, setReplyContent] = useState('');
   const [isLiked, setIsLiked] = useState(
     comment.likes?.some(like => like.user === currentUser?.id || like.user?._id === currentUser?.id)
@@ -80,6 +88,36 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, level
     }
   };
 
+  const handleEdit = async () => {
+    if (!editContent.trim()) {
+      toast.error('Comment cannot be empty');
+      return;
+    }
+
+    try {
+      await onEdit(postId, level > 0 ? parentCommentId : null, comment._id, editContent);
+      setIsEditing(false);
+      setTimeout(async () => {
+        if (onRefresh) await onRefresh();
+      }, 300);
+    } catch (error) {
+      toast.error('Failed to update comment');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      try {
+        await onDelete(postId, level > 0 ? parentCommentId : null, comment._id);
+        setTimeout(async () => {
+          if (onRefresh) await onRefresh();
+        }, 300);
+      } catch (error) {
+        toast.error('Failed to delete comment');
+      }
+    }
+  };
+
   const author = comment.author || {};
   const authorName = author.name || author.username || 'Unknown User';
 
@@ -95,18 +133,65 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, level
 
         <div className="flex-1">
           <div className="bg-card/80 border border-border/30 rounded-lg p-3 backdrop-blur-sm">
-            <div className="flex items-center gap-2 mb-1">
-              <Link
-                to={`/profile/${author._id || author.id}`}
-                className="font-semibold text-sm hover:underline"
-              >
-                {authorName}
-              </Link>
-              <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-              </span>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-2">
+                <Link
+                  to={`/profile/${author._id || author.id}`}
+                  className="font-semibold text-sm hover:underline"
+                >
+                  {authorName}
+                </Link>
+                <span className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                  {comment.updatedAt && comment.updatedAt !== comment.createdAt && ' (edited)'}
+                </span>
+              </div>
+              
+              {currentUser && (author._id === currentUser.id || author.id === currentUser.id) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      <MoreVertical className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                      <Edit2 className="h-3 w-3 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                      <Trash2 className="h-3 w-3 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
-            <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
+            
+            {isEditing ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="min-h-[60px] text-sm"
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleEdit}>Save</Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditContent(comment.content);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
+            )}
           </div>
 
           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
@@ -158,6 +243,8 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, level
                   onLike={onLike}
                   onReply={onReply}
                   onLikeReply={onLikeReply}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
                   postId={postId}
                   level={level + 1}
                   onRefresh={onRefresh}
@@ -187,6 +274,10 @@ const PostDetail = () => {
     likeReply,
     sharePost,
     incrementPostView,
+    updateCommentContent,
+    deleteCommentContent,
+    updateReplyContent,
+    deleteReplyContent,
   } = useCommunity();
 
   const [commentContent, setCommentContent] = useState('');
@@ -260,6 +351,26 @@ const PostDetail = () => {
       if (error.name !== 'AbortError') {
         toast.error('Failed to share post');
       }
+    }
+  };
+
+  const handleEditComment = async (postId, parentCommentId, commentId, content) => {
+    if (parentCommentId) {
+      // It's a reply
+      await updateReplyContent(postId, parentCommentId, commentId, content);
+    } else {
+      // It's a comment
+      await updateCommentContent(postId, commentId, content);
+    }
+  };
+
+  const handleDeleteComment = async (postId, parentCommentId, commentId) => {
+    if (parentCommentId) {
+      // It's a reply
+      await deleteReplyContent(postId, parentCommentId, commentId);
+    } else {
+      // It's a comment
+      await deleteCommentContent(postId, commentId);
     }
   };
 
@@ -493,6 +604,8 @@ const PostDetail = () => {
                   onLike={likeComment}
                   onReply={replyToComment}
                   onLikeReply={likeReply}
+                  onEdit={handleEditComment}
+                  onDelete={handleDeleteComment}
                   postId={postId}
                   onRefresh={() => getCommunityPostById(postId)}
                 />

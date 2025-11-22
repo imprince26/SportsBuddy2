@@ -100,6 +100,7 @@ const CommunityDetails = () => {
     leaveCommunity,
     deleteCommunity,
     createCommunityPost,
+    updateCommunityPost,
     likeCommunityPost,
     addCommentToPost,
     sharePost,
@@ -111,7 +112,11 @@ const CommunityDetails = () => {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeletePostDialog, setShowDeletePostDialog] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showEditPost, setShowEditPost] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
   const [joinMessage, setJoinMessage] = useState('');
   const [postContent, setPostContent] = useState('');
   const [postImages, setPostImages] = useState([]);
@@ -132,6 +137,12 @@ const CommunityDetails = () => {
   useEffect(() => {
     if (id) {
       fetchCommunity(id);
+    }
+  }, [id]);
+
+  // Refresh posts when sortBy changes
+  useEffect(() => {
+    if (id) {
       getCommunityPosts({ communityId: id, sortBy }, 1);
     }
   }, [id, sortBy]);
@@ -283,11 +294,63 @@ const CommunityDetails = () => {
     }
   };
 
-  const handleDeletePost = async (postId) => {
+  const handleEditPost = (post) => {
+    setEditingPost(post);
+    setPostContent(post.content);
+    setPostType(post.type || 'text');
+    setPostImages([]);
+    setShowEditPost(true);
+  };
+
+  const handleUpdatePost = async () => {
+    if (!postContent.trim() && postImages.length === 0) {
+      toast.error('Post content or images required');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      await deleteCommunityPost(postId);
+      const updateData = {
+        content: postContent,
+        type: postType
+      };
+
+      if (postImages.length > 0) {
+        updateData.images = postImages;
+      }
+
+      const result = await updateCommunityPost(editingPost._id, updateData);
+      
+      if (result.success) {
+        setShowEditPost(false);
+        setEditingPost(null);
+        setPostContent('');
+        setPostImages([]);
+        setPostType('text');
+        await getCommunityPosts({ communityId: id, sortBy }, 1);
+      }
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast.error('Failed to update post');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    setPostToDelete(postId);
+    setShowDeletePostDialog(true);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!postToDelete) return;
+    
+    try {
+      await deleteCommunityPost(postToDelete);
       toast.success('Post deleted successfully');
       await getCommunityPosts({ communityId: id, sortBy }, 1);
+      setShowDeletePostDialog(false);
+      setPostToDelete(null);
     } catch (error) {
       console.error('Error deleting post:', error);
       toast.error('Failed to delete post');
@@ -625,12 +688,13 @@ const CommunityDetails = () => {
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Community Posts</h3>
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="latest">Latest</SelectItem>
-                        <SelectItem value="popular">Popular</SelectItem>
+                        <SelectItem value="popular">Most Liked</SelectItem>
+                        <SelectItem value="comments">Most Discussed</SelectItem>
                         <SelectItem value="oldest">Oldest</SelectItem>
                       </SelectContent>
                     </Select>
@@ -678,6 +742,7 @@ const CommunityDetails = () => {
                           currentUser={user}
                           onLike={handleLikePost}
                           onShare={handleSharePost}
+                          onEdit={handleEditPost}
                           onDelete={handleDeletePost}
                           onImageClick={handleImageClick}
                         />
@@ -735,6 +800,7 @@ const CommunityDetails = () => {
                                 currentUser={user}
                                 onLike={handleLikePost}
                                 onShare={handleSharePost}
+                                onEdit={handleEditPost}
                                 onDelete={handleDeletePost}
                                 onImageClick={handleImageClick}
                               />
@@ -1047,6 +1113,173 @@ const CommunityDetails = () => {
         isSubmitting={isSubmitting}
         fileInputRef={fileInputRef}
       />
+
+      {/* Edit Post Dialog */}
+      <Dialog open={showEditPost} onOpenChange={setShowEditPost}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Post</DialogTitle>
+            <DialogDescription>
+              Update your post content
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Post Type Selector */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={postType === 'text' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPostType('text')}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Text
+              </Button>
+              <Button
+                variant={postType === 'image' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPostType('image')}
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Photo
+              </Button>
+              <Button
+                variant={postType === 'video' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPostType('video')}
+              >
+                <Video className="w-4 h-4 mr-2" />
+                Video
+              </Button>
+            </div>
+
+            {/* Content Input */}
+            <Textarea
+              placeholder="What's on your mind?"
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+              rows={4}
+              className="resize-none"
+            />
+
+            {/* Existing Images */}
+            {editingPost?.images && editingPost.images.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Current Images</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {editingPost.images.map((image, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                      <img
+                        src={image.url}
+                        alt={`Image ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* New Image Upload */}
+            {(postType === 'image' || postImages.length > 0) && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Add New Images</h4>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={postImages.length >= 5}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Images
+                  </Button>
+                </div>
+
+                {/* New Image Previews */}
+                {postImages.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {postImages.map((image, index) => (
+                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 w-6 h-6 p-0"
+                          onClick={() => removeImage(index)}
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowEditPost(false);
+              setEditingPost(null);
+              setPostContent('');
+              setPostImages([]);
+              setPostType('text');
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdatePost} disabled={isSubmitting || (!postContent.trim() && postImages.length === 0)}>
+              {isSubmitting ? 'Updating...' : 'Update Post'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Post Confirmation Dialog */}
+      <Dialog open={showDeletePostDialog} onOpenChange={setShowDeletePostDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="w-5 h-5" />
+              Delete Post
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeletePostDialog(false);
+                setPostToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDeletePost}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Post
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Image Gallery Modal */}
       <ImageGalleryModal

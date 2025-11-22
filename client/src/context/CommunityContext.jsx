@@ -674,6 +674,74 @@ export const CommunityProvider = ({ children }) => {
     }
   };
 
+  // Update comment
+  const updateCommentContent = async (postId, commentId, content) => {
+    try {
+      const response = await api.put(`/community/posts/${postId}/comments/${commentId}`, {
+        content
+      });
+
+      if (response.data.success) {
+        toast.success('Comment updated successfully');
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update comment';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Delete comment
+  const deleteCommentContent = async (postId, commentId) => {
+    try {
+      const response = await api.delete(`/community/posts/${postId}/comments/${commentId}`);
+
+      if (response.data.success) {
+        toast.success('Comment deleted successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete comment';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Update reply
+  const updateReplyContent = async (postId, commentId, replyId, content) => {
+    try {
+      const response = await api.put(`/community/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+        content
+      });
+
+      if (response.data.success) {
+        toast.success('Reply updated successfully');
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update reply';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Delete reply
+  const deleteReplyContent = async (postId, commentId, replyId) => {
+    try {
+      const response = await api.delete(`/community/posts/${postId}/comments/${commentId}/replies/${replyId}`);
+
+      if (response.data.success) {
+        toast.success('Reply deleted successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete reply';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
   const value = {
     // State
     posts,
@@ -716,6 +784,10 @@ export const CommunityProvider = ({ children }) => {
     likeComment,
     replyToComment,
     likeReply,
+    updateCommentContent,
+    deleteCommentContent,
+    updateReplyContent,
+    deleteReplyContent,
   };
 
   return (

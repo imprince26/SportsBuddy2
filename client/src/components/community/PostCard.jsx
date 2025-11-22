@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Share2, Eye, MoreVertical, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Eye, MoreVertical, Bookmark, Edit2, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '../ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -19,6 +20,7 @@ const PostCard = ({
   onLike,
   onShare,
   onDelete,
+  onEdit,
   onImageClick,
 }) => {
   const navigate = useNavigate();
@@ -124,15 +126,28 @@ const PostCard = ({
                   Save post
                 </DropdownMenuItem>
                 {currentUser.id === (author._id || author.id) && (
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete?.(post._id);
-                    }}
-                    className="text-destructive"
-                  >
-                    Delete post
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit?.(post);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Edit post
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete?.(post._id);
+                      }}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete post
+                    </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

@@ -1414,9 +1414,16 @@ export const updateCommunityPost = async (req, res) => {
 
     await community.save();
 
-    // Return updated post
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${id}`);
+    await deleteCachePattern('community:posts:trending:*');
+
+    // Return updated post with all populated data
     const updatedCommunity = await Community.findOne({ "posts._id": id })
       .populate("posts.author", "name username avatar")
+      .populate("posts.comments.author", "name username avatar")
+      .populate("posts.comments.replies.author", "name username avatar")
       .select("posts name image");
 
     const updatedPost = updatedCommunity.posts.id(id);
@@ -1430,7 +1437,9 @@ export const updateCommunityPost = async (req, res) => {
           _id: updatedCommunity._id,
           name: updatedCommunity.name,
           image: updatedCommunity.image
-        }
+        },
+        likesCount: updatedPost.likes.length,
+        commentsCount: updatedPost.comments.length
       }
     });
 
@@ -2113,6 +2122,286 @@ export const likeReply = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error liking reply",
+      error: error.message
+    });
+  }
+};
+
+// Update comment
+export const updateComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment content is required"
+      });
+    }
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    // Check if user is the comment author
+    if (comment.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this comment"
+      });
+    }
+
+    comment.content = content.trim();
+    comment.updatedAt = new Date();
+
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${postId}`);
+
+    // Return updated comment
+    const updatedCommunity = await Community.findOne({ "posts._id": postId })
+      .populate("posts.comments.author", "name username avatar");
+
+    const updatedPost = updatedCommunity.posts.id(postId);
+    const updatedComment = updatedPost.comments.id(commentId);
+
+    res.json({
+      success: true,
+      message: "Comment updated successfully",
+      data: updatedComment
+    });
+
+  } catch (error) {
+    console.error("Error in updateComment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating comment",
+      error: error.message
+    });
+  }
+};
+
+// Delete comment
+export const deleteComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    // Check if user is the comment author, post author, or community admin
+    if (comment.author.toString() !== req.user.id &&
+        post.author.toString() !== req.user.id &&
+        !community.admins.includes(req.user.id) &&
+        !community.moderators.includes(req.user.id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this comment"
+      });
+    }
+
+    // Remove the comment
+    post.comments.pull(commentId);
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${postId}`);
+
+    res.json({
+      success: true,
+      message: "Comment deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error in deleteComment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting comment",
+      error: error.message
+    });
+  }
+};
+
+// Update reply
+export const updateReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Reply content is required"
+      });
+    }
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const reply = comment.replies.id(replyId);
+
+    if (!reply) {
+      return res.status(404).json({
+        success: false,
+        message: "Reply not found"
+      });
+    }
+
+    // Check if user is the reply author
+    if (reply.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this reply"
+      });
+    }
+
+    reply.content = content.trim();
+    reply.updatedAt = new Date();
+
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${postId}`);
+
+    // Return updated reply
+    const updatedCommunity = await Community.findOne({ "posts._id": postId })
+      .populate("posts.comments.replies.author", "name username avatar");
+
+    const updatedPost = updatedCommunity.posts.id(postId);
+    const updatedComment = updatedPost.comments.id(commentId);
+    const updatedReply = updatedComment.replies.id(replyId);
+
+    res.json({
+      success: true,
+      message: "Reply updated successfully",
+      data: updatedReply
+    });
+
+  } catch (error) {
+    console.error("Error in updateReply:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating reply",
+      error: error.message
+    });
+  }
+};
+
+// Delete reply
+export const deleteReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const reply = comment.replies.id(replyId);
+
+    if (!reply) {
+      return res.status(404).json({
+        success: false,
+        message: "Reply not found"
+      });
+    }
+
+    // Check if user is the reply author, comment author, post author, or community admin
+    if (reply.author.toString() !== req.user.id &&
+        comment.author.toString() !== req.user.id &&
+        post.author.toString() !== req.user.id &&
+        !community.admins.includes(req.user.id) &&
+        !community.moderators.includes(req.user.id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this reply"
+      });
+    }
+
+    // Remove the reply
+    comment.replies.pull(replyId);
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${postId}`);
+
+    res.json({
+      success: true,
+      message: "Reply deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error in deleteReply:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting reply",
       error: error.message
     });
   }

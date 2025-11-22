@@ -51,19 +51,39 @@ const Dashboard = () => {
         if (eventsData.data.success) {
           const now = new Date()
           const events = eventsData.data.data
+          
+          // Filter participating events (exclude created events)
+          const participatingEvents = events.filter(event => {
+            const isParticipant = event.participants?.some(p => {
+              const participantId = typeof p.user === 'object' ? p.user._id : p.user
+              return participantId?.toString() === user.id?.toString()
+            })
+            const isCreator = (event.createdBy?._id || event.createdBy)?.toString() === user.id?.toString()
+            return isParticipant && !isCreator
+          })
+
+          // Filter created events
+          const createdEvents = events.filter(event => {
+            const creatorId = typeof event.createdBy === 'object' ? event.createdBy._id : event.createdBy
+            return creatorId?.toString() === user.id?.toString()
+          })
+
+          // Filter upcoming events (from all user events)
+          const upcomingEvents = events.filter(event => {
+            const eventDate = new Date(event.date)
+            return eventDate > now && event.status === "Upcoming"
+          }).sort((a, b) => new Date(a.date) - new Date(b.date)) // Sort by nearest date first
+
+          // Filter completed events
+          const completedEvents = events.filter(event => 
+            event.status === "Completed"
+          )
+
           setUserEvents({
-            participating: events.filter(event =>
-              event.participants?.some(p => p.user._id === user.id || p.user === user.id)
-            ),
-            created: events.filter(event =>
-              event.createdBy._id === user.id || event.createdBy === user.id
-            ),
-            upcoming: events.filter(event =>
-              new Date(event.date) > now && event.status === "Upcoming"
-            ),
-            completed: events.filter(event =>
-              event.status === "Completed"
-            )
+            participating: participatingEvents,
+            created: createdEvents,
+            upcoming: upcomingEvents,
+            completed: completedEvents
           })
         }
 

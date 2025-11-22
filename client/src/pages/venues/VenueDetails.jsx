@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { format } from 'date-fns';
 import { 
   MapPin, 
   Star, 
@@ -15,7 +16,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
-  Trophy
+  Trophy,
+  Mail,
+  DollarSign,
+  Award,
+  Sparkles,
+  MessageSquare,
+  Send,
+  Copy,
+  ImageIcon,
+  X
 } from 'lucide-react';
 import { useVenue } from '@/hooks/useVenue';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,27 +36,39 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from 'react-hot-toast';
 
 const VenueDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { 
     currentVenue, 
     loading, 
     getVenueById, 
     toggleVenueFavorite, 
     favoriteVenues,
-    bookVenue 
+    addVenueReview
   } = useVenue();
   const { user } = useAuth();
   const { getEvents } = useEvents();
   
   const [activeImage, setActiveImage] = useState(0);
-  const [bookingDate, setBookingDate] = useState(new Date().toISOString().split('T')[0]);
-  const [bookingTime, setBookingTime] = useState('');
-  const [duration, setDuration] = useState(1);
+  const [showImageGallery, setShowImageGallery] = useState(false);
   const [venueEvents, setVenueEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(false);
+  const [showRatingDialog, setShowRatingDialog] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState('');
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -77,29 +99,85 @@ const VenueDetails = () => {
 
   const isFavorite = favoriteVenues.includes(id);
 
-  const handleBook = async () => {
+  const nextImage = () => {
+    if (currentVenue?.images?.length > 0) {
+      setActiveImage((prev) => (prev + 1) % currentVenue.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (currentVenue?.images?.length > 0) {
+      setActiveImage((prev) => 
+        prev === 0 ? currentVenue.images.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const handleBookNow = () => {
     if (!user) {
       toast.error('Please login to book a venue');
       return;
     }
-    
-    if (!bookingTime) {
-      toast.error('Please select a time');
+    navigate(`/venues/${id}/book`);
+  };
+
+  const handleSubmitReview = async () => {
+    if (!user) {
+      toast.error('Please login to add a review');
       return;
     }
 
-    const startTime = new Date(`${bookingDate}T${bookingTime}`);
-    const endTime = new Date(startTime.getTime() + duration * 60 * 60 * 1000);
-
-    const result = await bookVenue(id, {
-      startTime,
-      endTime,
-      eventId: null // Or handle event association
-    });
-
-    if (result.success) {
-      // Reset form or redirect
+    if (rating === 0) {
+      toast.error('Please select a rating');
+      return;
     }
+
+    const result = await addVenueReview(id, rating, review);
+    if (result.success) {
+      setShowRatingDialog(false);
+      setRating(0);
+      setReview('');
+      // Refresh venue data
+      getVenueById(id);
+    }
+  };
+
+  const handleShare = async (platform) => {
+    const venueUrl = window.location.href;
+    const venueTitle = currentVenue?.name || 'Sports Venue';
+    const venueDescription = `Check out ${currentVenue?.name} - ${currentVenue?.location?.address}, ${currentVenue?.location?.city}`;
+
+    switch (platform) {
+      case 'copy':
+        try {
+          await navigator.clipboard.writeText(venueUrl);
+          toast.success('Link copied to clipboard! 📋');
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          toast.error('Failed to copy link');
+        }
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(venueUrl)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(
+          `https://twitter.com/intent/tweet?url=${encodeURIComponent(venueUrl)}&text=${encodeURIComponent(venueDescription)}`,
+          '_blank'
+        );
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${venueDescription} - ${venueUrl}`)}`, '_blank');
+        break;
+      case 'linkedin':
+        window.open(
+          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(venueUrl)}`,
+          '_blank'
+        );
+        break;
+    }
+
+    setShowShareDialog(false);
   };
 
   if (loading || !currentVenue) {
@@ -120,18 +198,70 @@ const VenueDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
-      {/* Image Gallery */}
-      <div className="relative h-[40vh] lg:h-[50vh] bg-gray-900">
-        <div className="absolute inset-0">
-          <img 
-            src={currentVenue.images?.[activeImage]?.url || 'https://images.unsplash.com/photo-1519766304800-c64daf4681bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'} 
-            alt={currentVenue.name}
-            className="w-full h-full object-cover opacity-80"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
-        </div>
+      {/* Image Gallery Carousel */}
+      <div className="relative h-[40vh] lg:h-[60vh] bg-gray-900 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeImage}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0"
+          >
+            <img 
+              src={currentVenue.images?.[activeImage]?.url || 'https://images.unsplash.com/photo-1519766304800-c64daf4681bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'} 
+              alt={`${currentVenue.name} - Image ${activeImage + 1}`}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-gray-900/20" />
+          </motion.div>
+        </AnimatePresence>
 
-        <div className="absolute top-6 left-4 lg:left-8 z-10">
+        {/* Image Navigation - Only show if multiple images */}
+        {currentVenue.images?.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+
+            {/* Image Indicators */}
+            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+              {currentVenue.images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImage(idx)}
+                  className={`h-2 rounded-full transition-all ${
+                    idx === activeImage 
+                      ? 'w-8 bg-white' 
+                      : 'w-2 bg-white/50 hover:bg-white/75'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* View All Images Button */}
+            <button
+              onClick={() => setShowImageGallery(true)}
+              className="absolute bottom-24 right-4 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
+            >
+              <ImageIcon className="w-4 h-4" />
+              <span className="text-sm font-medium">View All ({currentVenue.images.length})</span>
+            </button>
+          </>
+        )}
+
+        {/* Back Button */}
+        <div className="absolute top-6 left-4 lg:left-8 z-20">
           <Link to="/venues">
             <Button variant="secondary" size="sm" className="rounded-full backdrop-blur-md bg-white/20 hover:bg-white/30 text-white border-0">
               <ChevronLeft className="w-4 h-4 mr-1" /> Back to Venues
@@ -139,9 +269,9 @@ const VenueDetails = () => {
           </Link>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-8 container mx-auto">
+        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-8 container mx-auto z-30">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="space-y-2">
+            <div className="space-y-2 z-30">
               <div className="flex items-center gap-2 mb-2">
                 {currentVenue.isVerified && (
                   <Badge className="bg-primary text-primary-foreground border-0">
@@ -159,7 +289,7 @@ const VenueDetails = () => {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Button 
                 variant="outline" 
                 size="icon"
@@ -168,10 +298,21 @@ const VenueDetails = () => {
               >
                 <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
               </Button>
+              {user && (
+                <Button 
+                  variant="outline"
+                  className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                  onClick={() => setShowRatingDialog(true)}
+                >
+                  <Star className="w-4 h-4 mr-2" />
+                  Rate Venue
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="icon"
                 className="rounded-full w-12 h-12 bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                onClick={() => setShowShareDialog(true)}
               >
                 <Share2 className="w-5 h-5" />
               </Button>
@@ -180,41 +321,54 @@ const VenueDetails = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 -mt-8 relative z-10">
+      <div className="container mx-auto px-4 py-8 -mt-8 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card className="bg-white dark:bg-gray-900 border-0 shadow-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="relative z-30 grid grid-cols-2 sm:grid-cols-4 gap-4"
+            >
+              <Card className="bg-white dark:bg-gray-900 border-0 shadow-lg hover:shadow-xl transition-shadow">
                 <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <Star className="w-6 h-6 text-yellow-500 mb-2" />
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">{currentVenue.averageRating}</span>
-                  <span className="text-xs text-gray-500">Rating</span>
+                  <div className="p-3 rounded-full bg-yellow-50 dark:bg-yellow-900/20 mb-2">
+                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">{currentVenue.averageRating || '0'}</span>
+                  <span className="text-xs text-gray-500">{currentVenue.ratings?.length || 0} Reviews</span>
                 </CardContent>
               </Card>
-              <Card className="bg-white dark:bg-gray-900 border-0 shadow-sm">
+              <Card className="bg-white dark:bg-gray-900 border-0 shadow-lg hover:shadow-xl transition-shadow">
                 <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <Users className="w-6 h-6 text-blue-500 mb-2" />
+                  <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-900/20 mb-2">
+                    <Users className="w-5 h-5 text-blue-500" />
+                  </div>
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">{currentVenue.capacity}</span>
                   <span className="text-xs text-gray-500">Capacity</span>
                 </CardContent>
               </Card>
-              <Card className="bg-white dark:bg-gray-900 border-0 shadow-sm">
+              <Card className="bg-white dark:bg-gray-900 border-0 shadow-lg hover:shadow-xl transition-shadow">
                 <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <CalendarIcon className="w-6 h-6 text-green-500 mb-2" />
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">{currentVenue.totalBookings}</span>
+                  <div className="p-3 rounded-full bg-green-50 dark:bg-green-900/20 mb-2">
+                    <CalendarIcon className="w-5 h-5 text-green-500" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">{currentVenue.totalBookings || 0}</span>
                   <span className="text-xs text-gray-500">Bookings</span>
                 </CardContent>
               </Card>
-              <Card className="bg-white dark:bg-gray-900 border-0 shadow-sm">
+              <Card className="bg-white dark:bg-gray-900 border-0 shadow-lg hover:shadow-xl transition-shadow">
                 <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <Shield className="w-6 h-6 text-purple-500 mb-2" />
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">Safe</span>
-                  <span className="text-xs text-gray-500">Verified</span>
+                  <div className="p-3 rounded-full bg-purple-50 dark:bg-purple-900/20 mb-2">
+                    <DollarSign className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">₹{currentVenue.pricing?.hourlyRate || 0}</span>
+                  <span className="text-xs text-gray-500">Per Hour</span>
                 </CardContent>
               </Card>
-            </div>
+            </motion.div>
 
             {/* Tabs */}
             <Tabs defaultValue="about" className="w-full">
@@ -348,127 +502,363 @@ const VenueDetails = () => {
 
               <TabsContent value="amenities" className="pt-6">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {currentVenue.amenities?.map((amenity, idx) => (
-                    <div key={idx} className="flex items-center p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                      <span className="text-gray-700 dark:text-gray-300">{amenity}</span>
-                    </div>
-                  ))}
+                  {currentVenue.amenities?.map((amenity, idx) => {
+                    const amenityName = typeof amenity === 'string' ? amenity : amenity.name;
+                    const isAvailable = typeof amenity === 'string' ? true : amenity.available;
+                    return (
+                      <div key={idx} className={`flex items-center p-3 bg-white dark:bg-gray-900 rounded-xl border ${
+                        isAvailable 
+                          ? 'border-gray-100 dark:border-gray-800' 
+                          : 'border-gray-100 dark:border-gray-800 opacity-50'
+                      }`}>
+                        <CheckCircle className={`w-5 h-5 mr-3 ${
+                          isAvailable ? 'text-green-500' : 'text-gray-400'
+                        }`} />
+                        <span className="text-gray-700 dark:text-gray-300">{amenityName}</span>
+                        {!isAvailable && (
+                          <Badge variant="outline" className="ml-auto text-xs">Unavailable</Badge>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </TabsContent>
 
               <TabsContent value="reviews" className="pt-6 space-y-6">
-                {currentVenue.recentReviews?.map((review, idx) => (
-                  <div key={idx} className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={review.user?.avatar} />
-                          <AvatarFallback>{review.user?.name?.[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white">{review.user?.name}</h4>
-                          <p className="text-xs text-gray-500">{new Date(review.date).toLocaleDateString()}</p>
+                {/* Write Review Button */}
+                {user && (
+                  <Button 
+                    className="w-full mb-4"
+                    onClick={() => setShowRatingDialog(true)}
+                  >
+                    <Star className="w-4 h-4 mr-2" />
+                    Write a Review
+                  </Button>
+                )}
+
+                {/* Reviews List */}
+                {currentVenue.ratings && currentVenue.ratings.length > 0 ? (
+                  <div className="space-y-4">
+                    {currentVenue.ratings.map((review, idx) => (
+                      <motion.div 
+                        key={idx} 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={review.user?.avatar?.url || review.user?.avatar} />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {review.user?.name?.[0]?.toUpperCase() || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">
+                                {review.user?.name || 'Anonymous User'}
+                              </h4>
+                              <p className="text-xs text-gray-500">
+                                {format(new Date(review.date), 'MMM dd, yyyy')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1.5 rounded-lg">
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                            <span className="font-bold text-yellow-700 dark:text-yellow-400">{review.rating}.0</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-lg">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 mr-1" />
-                        <span className="font-bold text-yellow-700 dark:text-yellow-500">{review.rating}</span>
-                      </div>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400">{review.review}</p>
+                        {review.review && (
+                          <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                            {review.review}
+                          </p>
+                        )}
+                      </motion.div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+                    <MessageSquare className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-700 dark:text-gray-300 text-lg font-medium">No reviews yet</p>
+                    <p className="text-sm text-gray-500 mt-2">Be the first to share your experience!</p>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24">
+            <div className="sticky top-24 space-y-4">
               <Card className="border-0 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
-                <div className="bg-primary p-6 text-primary-foreground">
-                  <p className="text-sm font-medium opacity-90">Price per hour</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold">${currentVenue.pricing?.hourlyRate}</span>
-                    <span className="opacity-80">/hr</span>
+                <div className="bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Award className="w-5 h-5" />
+                    <p className="text-sm font-medium opacity-90">Best Price</p>
                   </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold">₹{currentVenue.pricing?.hourlyRate}</span>
+                    <span className="opacity-80">/hour</span>
+                  </div>
+                  <p className="text-sm opacity-75 mt-2">Day rate: ₹{currentVenue.pricing?.dayRate}</p>
                 </div>
                 
-                <CardContent className="p-6 space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-                    <input 
-                      type="date" 
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent"
-                      value={bookingDate}
-                      onChange={(e) => setBookingDate(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Time</label>
-                    <select 
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent"
-                      value={bookingTime}
-                      onChange={(e) => setBookingTime(e.target.value)}
-                    >
-                      <option value="">Select time</option>
-                      <option value="09:00">09:00 AM</option>
-                      <option value="10:00">10:00 AM</option>
-                      <option value="11:00">11:00 AM</option>
-                      <option value="14:00">02:00 PM</option>
-                      <option value="15:00">03:00 PM</option>
-                      <option value="16:00">04:00 PM</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Duration</label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3].map((hr) => (
-                        <button
-                          key={hr}
-                          className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                            duration === hr 
-                              ? 'border-primary bg-primary/10 text-primary' 
-                              : 'border-gray-200 dark:border-gray-700 hover:border-green-200'
-                          }`}
-                          onClick={() => setDuration(hr)}
-                        >
-                          {hr} hr
-                        </button>
-                      ))}
+                <CardContent className="p-6 space-y-4">
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+                      <span className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        Instant Confirmation
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+                      <span className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        Flexible Cancellation
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        Cash Payment Accepted
+                      </span>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <div className="flex justify-between mb-2 text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">${currentVenue.pricing?.hourlyRate} x {duration} hrs</span>
-                      <span className="font-medium">${currentVenue.pricing?.hourlyRate * duration}</span>
-                    </div>
-                    <div className="flex justify-between mb-6 text-lg font-bold">
-                      <span>Total</span>
-                      <span>${currentVenue.pricing?.hourlyRate * duration}</span>
-                    </div>
+                  <Button 
+                    className="w-full h-12 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+                    onClick={handleBookNow}
+                  >
+                    <CalendarIcon className="w-5 h-5 mr-2" />
+                    Book This Venue
+                  </Button>
+                  <p className="text-xs text-center text-gray-500">
+                    Secure your booking with cash payment on arrival
+                  </p>
+                </CardContent>
+              </Card>
 
-                    <Button 
-                      className="w-full h-12 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
-                      onClick={handleBook}
-                    >
-                      Book Now
-                    </Button>
-                    <p className="text-xs text-center text-gray-500 mt-3">
-                      You won't be charged yet
-                    </p>
-                  </div>
+              {/* Contact Card */}
+              <Card className="border-0 shadow-lg bg-white dark:bg-gray-900">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Phone className="w-5 h-5 text-primary" />
+                    Contact Venue
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  {currentVenue.contactInfo?.phone && (
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-gray-400" />
+                      <a href={`tel:${currentVenue.contactInfo.phone}`} className="text-primary hover:underline">
+                        {currentVenue.contactInfo.phone}
+                      </a>
+                    </div>
+                  )}
+                  {currentVenue.contactInfo?.email && (
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                      <a href={`mailto:${currentVenue.contactInfo.email}`} className="text-primary hover:underline">
+                        {currentVenue.contactInfo.email}
+                      </a>
+                    </div>
+                  )}
+                  {currentVenue.contactInfo?.website && (
+                    <div className="flex items-center gap-3">
+                      <Globe className="w-4 h-4 text-gray-400" />
+                      <a href={currentVenue.contactInfo.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        Visit Website
+                      </a>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Rating Dialog */}
+      <Dialog open={showRatingDialog} onOpenChange={setShowRatingDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Rate Your Experience
+            </DialogTitle>
+            <DialogDescription>
+              Share your experience with {currentVenue.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* Star Rating */}
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-sm font-medium">How would you rate this venue?</p>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setRating(star)}
+                    onMouseEnter={() => setHoveredRating(star)}
+                    onMouseLeave={() => setHoveredRating(0)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <Star
+                      className={`w-8 h-8 ${
+                        star <= (hoveredRating || rating)
+                          ? 'fill-yellow-500 text-yellow-500'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              {rating > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {rating === 5 && 'Excellent!'}
+                  {rating === 4 && 'Very Good!'}
+                  {rating === 3 && 'Good'}
+                  {rating === 2 && 'Could be better'}
+                  {rating === 1 && 'Needs improvement'}
+                </p>
+              )}
+            </div>
+
+            {/* Review Text */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Your Review (Optional)</label>
+              <Textarea
+                placeholder="Share your experience with others..."
+                value={review}
+                onChange={(e) => setReview(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setShowRatingDialog(false);
+                  setRating(0);
+                  setReview('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleSubmitReview}
+                disabled={rating === 0}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Submit Review
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Gallery Modal */}
+      <Dialog open={showImageGallery} onOpenChange={setShowImageGallery}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Venue Images ({currentVenue.images?.length})</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto max-h-[70vh] p-4">
+            {currentVenue.images?.map((image, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.05 }}
+                className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                onClick={() => {
+                  setActiveImage(idx);
+                  setShowImageGallery(false);
+                }}
+              >
+                <img
+                  src={image.url}
+                  alt={`${currentVenue.name} - ${idx + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+                {idx === activeImage && (
+                  <div className="absolute inset-0 bg-primary/20 border-2 border-primary flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-white" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-primary" />
+              Share Venue
+            </DialogTitle>
+            <DialogDescription>
+              Share {currentVenue.name} with your friends and community
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <Button
+              onClick={() => handleShare('copy')}
+              variant="outline"
+              className="flex flex-col items-center gap-2 h-24 hover:bg-primary/5"
+            >
+              <div className="p-2 rounded-full bg-primary/10">
+                <Copy className="w-5 h-5 text-primary" />
+              </div>
+              <span className="text-sm font-medium">Copy Link</span>
+            </Button>
+            <Button
+              onClick={() => handleShare('whatsapp')}
+              variant="outline"
+              className="flex flex-col items-center gap-2 h-24 hover:bg-green-50 dark:hover:bg-green-950"
+            >
+              <div className="p-2 rounded-full bg-green-500">
+                <MessageSquare className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-sm font-medium">WhatsApp</span>
+            </Button>
+            <Button
+              onClick={() => handleShare('facebook')}
+              variant="outline"
+              className="flex flex-col items-center gap-2 h-24 hover:bg-blue-50 dark:hover:bg-blue-950"
+            >
+              <div className="p-2 rounded-full bg-blue-600">
+                <Share2 className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-sm font-medium">Facebook</span>
+            </Button>
+            <Button
+              onClick={() => handleShare('twitter')}
+              variant="outline"
+              className="flex flex-col items-center gap-2 h-24 hover:bg-sky-50 dark:hover:bg-sky-950"
+            >
+              <div className="p-2 rounded-full bg-sky-500">
+                <MessageSquare className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-sm font-medium">Twitter</span>
+            </Button>
+          </div>
+          <div className="mt-4 p-3 bg-muted rounded-lg">
+            <p className="text-xs text-muted-foreground break-all">
+              {window.location.href}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

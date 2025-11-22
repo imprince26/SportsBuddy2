@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AlertTriangle, 
   RefreshCw, 
@@ -10,11 +10,17 @@ import {
   Shield,
   Zap,
   HelpCircle,
-  ExternalLink
+  ExternalLink,
+  Terminal,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  CheckCircle2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -26,7 +32,8 @@ class ErrorBoundary extends React.Component {
       errorId: null,
       isRetrying: false,
       retryCount: 0,
-      showDetails: false
+      showDetails: false,
+      copied: false
     };
   }
 
@@ -134,6 +141,18 @@ Please describe what you were doing when this error occurred:
     }));
   };
 
+  copyErrorDetails = () => {
+    const errorDetails = `
+Error ID: ${this.state.errorId}
+Message: ${this.state.error?.message}
+URL: ${window.location.href}
+Time: ${new Date().toISOString()}
+    `;
+    navigator.clipboard.writeText(errorDetails);
+    this.setState({ copied: true });
+    setTimeout(() => this.setState({ copied: false }), 2000);
+  };
+
   getErrorCategory = () => {
     const message = this.state.error?.message?.toLowerCase() || '';
     
@@ -156,17 +175,32 @@ Please describe what you were doing when this error occurred:
       const ErrorIcon = errorCategory.icon;
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden relative">
-          {/* Background Elements */}
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-hidden">
+          {/* Animated Background Elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-blue-950/20" />
-
-            {/* Animated Particles */}
-            {[...Array(15)].map((_, i) => (
+            {/* Large Gradient Orbs */}
+            <motion.div 
+              className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-3xl"
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.5, 0.3]
+              }}
+              transition={{ duration: 8, repeat: Infinity }}
+            />
+            <motion.div 
+              className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-destructive/20 to-destructive/5 rounded-full blur-3xl"
+              animate={{ 
+                scale: [1.2, 1, 1.2],
+                opacity: [0.3, 0.5, 0.3]
+              }}
+              transition={{ duration: 10, repeat: Infinity }}
+            />
+            
+            {/* Floating Particles */}
+            {[...Array(30)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 bg-red-400/30 rounded-full"
+                className={`absolute w-1 h-1 rounded-full ${i % 3 === 0 ? 'bg-primary/40' : i % 3 === 1 ? 'bg-destructive/40' : 'bg-muted-foreground/30'}`}
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
@@ -174,295 +208,320 @@ Please describe what you were doing when this error occurred:
                 animate={{
                   y: [0, -30, 0],
                   x: [0, Math.random() * 20 - 10, 0],
-                  opacity: [0.3, 0.6, 0.3],
-                  scale: [1, 1.2, 1],
+                  opacity: [0.2, 0.6, 0.2],
+                  scale: [1, 1.5, 1],
                 }}
                 transition={{
-                  duration: 4 + Math.random() * 2,
+                  duration: 4 + Math.random() * 4,
                   repeat: Infinity,
-                  delay: Math.random() * 2,
+                  delay: Math.random() * 3,
                   ease: "easeInOut"
                 }}
               />
             ))}
 
-            {/* Grid Pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <div
-                className="w-full h-full"
-                style={{
-                  backgroundImage: `
-                    linear-gradient(rgba(239, 68, 68, 0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(239, 68, 68, 0.1) 1px, transparent 1px)
-                  `,
-                  backgroundSize: '60px 60px',
-                }}
-              />
-            </div>
+            {/* Grid Pattern Overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(var(--foreground-rgb),0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(var(--foreground-rgb),0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
           </div>
 
-          <div className="container mx-auto max-w-4xl px-4 py-8 relative z-10 min-h-screen flex items-center justify-center">
+          {/* Main Content */}
+          <div className="container mx-auto max-w-4xl px-4 py-8 md:py-16 relative z-10 min-h-screen flex items-center justify-center">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center w-full"
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="w-full"
             >
-              {/* Error Icon and Title */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="relative mb-8"
-              >
-                <div className="relative mx-auto w-32 h-32 mb-6">
+              {/* Glassmorphic Error Card */}
+              <Card className="border-border/40 bg-card/60 backdrop-blur-2xl shadow-2xl shadow-black/10 dark:shadow-black/50 overflow-hidden relative">
+                {/* Top Accent Bar */}
+                <div className={`h-1.5 w-full ${errorCategory.color}`} />
+                
+                <CardHeader className="text-center space-y-8 pb-8 pt-12">
+                  {/* 3D Error Icon */}
                   <motion.div
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className={`absolute inset-0 ${errorCategory.color} rounded-full flex items-center justify-center shadow-2xl`}
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ 
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 15,
+                      delay: 0.2 
+                    }}
+                    className="flex justify-center"
                   >
-                    <ErrorIcon className="w-16 h-16 text-white" />
-                  </motion.div>
-                  
-                  {/* Pulsing effect */}
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className={`absolute inset-0 ${errorCategory.color} rounded-full opacity-20 blur-xl`}
-                  />
-                </div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="mb-4"
-                >
-                  <Badge className={`${errorCategory.color} text-white border-0 mb-4 px-4 py-2`}>
-                    {errorCategory.type}
-                  </Badge>
-                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                    Oops! Something went wrong
-                  </h1>
-                  <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                    We encountered an unexpected error while processing your request. 
-                    Don't worry, our team has been notified and we're working on a fix.
-                  </p>
-                </motion.div>
-              </motion.div>
-
-              {/* Error Details Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="mb-8"
-              >
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-2xl max-w-2xl mx-auto">
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between text-gray-900 dark:text-white">
-                      <span className="flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5 text-amber-500" />
-                        Error Information
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={this.toggleDetails}
-                        className="text-gray-600 dark:text-gray-400"
+                    <div className="relative">
+                      {/* Main Icon Container */}
+                      <motion.div
+                        animate={{ 
+                          rotateY: [0, 10, -10, 0],
+                          rotateX: [0, -5, 5, 0]
+                        }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        className={`relative w-28 h-28 rounded-3xl ${errorCategory.color} flex items-center justify-center shadow-2xl`}
+                        style={{ transformStyle: "preserve-3d" }}
                       >
-                        <HelpCircle className="w-4 h-4 mr-2" />
-                        {this.state.showDetails ? 'Hide Details' : 'Show Details'}
-                      </Button>
+                        <ErrorIcon className="w-14 h-14 text-white relative z-10" strokeWidth={2} />
+                        
+                        {/* Inner glow */}
+                        <div className="absolute inset-2 bg-white/20 rounded-2xl blur-md" />
+                      </motion.div>
+                      
+                      {/* Pulsing Ring */}
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.3, 1],
+                          opacity: [0.4, 0.8, 0.4]
+                        }}
+                        transition={{ duration: 2.5, repeat: Infinity }}
+                        className={`absolute inset-0 ${errorCategory.color} rounded-3xl blur-2xl opacity-50`}
+                      />
+                      
+                      {/* Rotating Ring */}
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute -inset-4"
+                      >
+                        <div className={`w-full h-full rounded-full border-2 border-dashed ${errorCategory.color.replace('bg-', 'border-')} opacity-30`} />
+                      </motion.div>
+                    </div>
+                  </motion.div>
+
+                  {/* Error Type Badge */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Badge className={`${errorCategory.color} text-white border-0 px-5 py-2 text-sm font-semibold shadow-lg`}>
+                      {errorCategory.type}
+                    </Badge>
+                  </motion.div>
+
+                  {/* Title and Description */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="space-y-4"
+                  >
+                    <CardTitle className="text-4xl md:text-5xl font-extrabold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text">
+                      Oops! Something Went Wrong
                     </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Error ID</div>
-                        <div className="text-gray-900 dark:text-white font-mono text-sm">
-                          {this.state.errorId}
+                    <CardDescription className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                      We encountered an unexpected error. Our team has been automatically notified and we're working on a fix. 
+                      Your experience matters to us!
+                    </CardDescription>
+                  </motion.div>
+                </CardHeader>
+
+                <CardContent className="space-y-8 pb-10">
+                  {/* Error Info Grid */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                  >
+                    {[
+                      { label: 'Error ID', value: this.state.errorId, mono: true },
+                      { label: 'Retry Attempts', value: this.state.retryCount, mono: false },
+                      { label: 'Timestamp', value: new Date().toLocaleTimeString(), mono: false }
+                    ].map((item, idx) => (
+                      <motion.div
+                        key={idx}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        className="p-5 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 border border-border/50 backdrop-blur-sm"
+                      >
+                        <div className="text-sm font-medium text-muted-foreground mb-2">{item.label}</div>
+                        <div className={`font-bold ${item.mono ? 'font-mono text-xs' : 'text-lg'} truncate`}>
+                          {item.value}
                         </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+
+                  {/* Technical Details Accordion */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="border-t border-border/50 pt-6"
+                  >
+                    <Button
+                      variant="ghost"
+                      onClick={this.toggleDetails}
+                      className="w-full justify-between hover:bg-muted/70 group py-6"
+                    >
+                      <span className="flex items-center gap-3 text-base font-semibold">
+                        <Terminal className="w-5 h-5 group-hover:text-primary transition-colors" />
+                        Technical Details
+                      </span>
+                      <motion.div
+                        animate={{ rotate: this.state.showDetails ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ChevronDown className="w-5 h-5" />
+                      </motion.div>
+                    </Button>
+
+                    <AnimatePresence>
+                      {this.state.showDetails && this.state.error && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="mt-4 space-y-4">
+                            {/* Error Message */}
+                            <div className="p-5 rounded-xl bg-gradient-to-br from-destructive/15 to-destructive/5 border-2 border-destructive/30">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="text-sm font-bold text-destructive flex items-center gap-2">
+                                  <AlertTriangle className="w-4 h-4" />
+                                  Error Message
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={this.copyErrorDetails}
+                                  className="h-8 px-3 hover:bg-destructive/20"
+                                >
+                                  {this.state.copied ? (
+                                    <>
+                                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-green-600" />
+                                      <span className="text-green-600 font-medium">Copied!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3.5 h-3.5 mr-1.5" />
+                                      <span className="font-medium">Copy</span>
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                              <div className="font-mono text-sm break-words text-destructive/90 bg-destructive/5 p-3 rounded-lg">
+                                {this.state.error.message}
+                              </div>
+                            </div>
+
+                            {/* Stack Trace */}
+                            {this.state.error.stack && (
+                              <details className="group cursor-pointer">
+                                <summary className="p-4 rounded-xl bg-muted/60 hover:bg-muted border border-border/50 text-sm font-semibold flex items-center gap-2 transition-all">
+                                  <Bug className="w-4 h-4 group-open:text-primary transition-colors" />
+                                  Stack Trace
+                                  <ChevronDown className="w-4 h-4 ml-auto group-open:rotate-180 transition-transform" />
+                                </summary>
+                                <div className="mt-3 p-5 rounded-xl bg-muted/30 border-2 border-border/50 overflow-x-auto max-h-80">
+                                  <pre className="text-xs font-mono whitespace-pre-wrap break-words leading-relaxed">
+                                    {this.state.error.stack}
+                                  </pre>
+                                </div>
+                              </details>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+
+                  <Separator className="my-6" />
+
+                  {/* Action Buttons */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className="flex flex-wrap justify-center gap-3"
+                  >
+                    {[
+                      { 
+                        onClick: this.handleRetry, 
+                        disabled: this.state.isRetrying,
+                        variant: 'default',
+                        icon: RefreshCw,
+                        label: this.state.isRetrying ? 'Retrying...' : 'Try Again',
+                        spinning: this.state.isRetrying
+                      },
+                      { onClick: this.handleReload, variant: 'outline', icon: RefreshCw, label: 'Reload Page' },
+                      { onClick: this.handleGoHome, variant: 'outline', icon: Home, label: 'Go Home' },
+                      { onClick: this.handleReportBug, variant: 'outline', icon: Mail, label: 'Report Bug' }
+                    ].map((btn, idx) => {
+                      const Icon = btn.icon;
+                      return (
+                        <motion.div
+                          key={idx}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            onClick={btn.onClick}
+                            disabled={btn.disabled}
+                            variant={btn.variant}
+                            size="lg"
+                            className={`shadow-lg ${btn.variant === 'default' ? 'bg-primary hover:bg-primary/90 text-white' : ''}`}
+                          >
+                            <Icon className={`w-5 h-5 mr-2 ${btn.spinning ? 'animate-spin' : ''}`} />
+                            {btn.label}
+                          </Button>
+                        </motion.div>
+                      );
+                    })}
+                  </motion.div>
+
+                  {/* Help Section */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.9 }}
+                    className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-2 border-primary/20"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={`p-3 rounded-xl ${errorCategory.color} flex-shrink-0`}>
+                        <HelpCircle className="w-6 h-6 text-white" />
                       </div>
-                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Retry Attempts</div>
-                        <div className="text-gray-900 dark:text-white">
-                          {this.state.retryCount}
-                        </div>
+                      <div className="space-y-3 flex-1">
+                        <div className="font-bold text-lg">Need Assistance?</div>
+                        <ul className="space-y-2 text-sm text-muted-foreground">
+                          <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            Try refreshing the page or clearing your browser cache
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            Ensure you have a stable internet connection
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            Contact support with Error ID: <span className="font-mono font-bold text-foreground">{this.state.errorId}</span>
+                          </li>
+                        </ul>
                       </div>
                     </div>
+                  </motion.div>
+                </CardContent>
+              </Card>
 
-                    {this.state.showDetails && this.state.error && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-3"
-                      >
-                        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                          <div className="text-sm font-medium text-red-700 dark:text-red-300 mb-2">
-                            Error Message
-                          </div>
-                          <div className="text-red-900 dark:text-red-100 font-mono text-sm break-all">
-                            {this.state.error.message}
-                          </div>
-                        </div>
-
-                        {this.state.error.stack && (
-                          <details className="group">
-                            <summary className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-                              Stack Trace
-                            </summary>
-                            <div className="mt-2 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-x-auto">
-                              <pre className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                                {this.state.error.stack}
-                              </pre>
-                            </div>
-                          </details>
-                        )}
-                      </motion.div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Action Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-                className="flex flex-wrap justify-center gap-4 mb-8"
-              >
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    onClick={this.handleRetry}
-                    disabled={this.state.isRetrying}
-                    size="lg"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg"
-                  >
-                    {this.state.isRetrying ? (
-                      <>
-                        <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                        Retrying...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="w-5 h-5 mr-2" />
-                        Try Again
-                      </>
-                    )}
-                  </Button>
-                </motion.div>
-
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    onClick={this.handleReload}
-                    variant="outline"
-                    size="lg"
-                    className="border-gray-300 dark:border-gray-600"
-                  >
-                    <RefreshCw className="w-5 h-5 mr-2" />
-                    Reload Page
-                  </Button>
-                </motion.div>
-
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    onClick={this.handleGoHome}
-                    variant="outline"
-                    size="lg"
-                    className="border-gray-300 dark:border-gray-600"
-                  >
-                    <Home className="w-5 h-5 mr-2" />
-                    Go Home
-                  </Button>
-                </motion.div>
-
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    onClick={this.handleReportBug}
-                    variant="outline"
-                    size="lg"
-                    className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
-                  >
-                    <Mail className="w-5 h-5 mr-2" />
-                    Report Bug
-                  </Button>
-                </motion.div>
-              </motion.div>
-
-              {/* Help Section */}
+              {/* Footer */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="text-center"
+                className="mt-8 text-center space-y-2"
               >
-                <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-gray-200/30 dark:border-gray-700/30 max-w-lg mx-auto">
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                      Need Help?
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">
-                      If this error persists, please contact our support team with the error ID above.
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-3">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open('/help', '_blank')}
-                        className="text-blue-600 dark:text-blue-400"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Help Center
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open('/contact', '_blank')}
-                        className="text-blue-600 dark:text-blue-400"
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        Contact Support
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Quick Stats */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                className="mt-8 text-center"
-              >
-                <div className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Shield className="w-4 h-4" />
-                  <span>Your data is safe • Error reported automatically • Response time &lt; 24h</span>
+                  <span>SportsBuddy Error Tracking • Your data is secure</span>
+                </div>
+                <div className="text-xs text-muted-foreground/70">
+                  Error logged and reported automatically
                 </div>
               </motion.div>
             </motion.div>
           </div>
-
-          {/* Decorative Elements */}
-          <motion.div
-            className="absolute top-10 right-10 w-20 h-20 bg-gradient-to-br from-red-400/20 to-pink-400/20 rounded-full blur-xl"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{ duration: 4, repeat: Infinity }}
-          />
-
-          <motion.div
-            className="absolute bottom-10 left-10 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full blur-xl"
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.2, 0.5, 0.2],
-            }}
-            transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-          />
         </div>
       );
     }

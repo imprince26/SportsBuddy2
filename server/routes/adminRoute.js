@@ -18,6 +18,7 @@ import {
     exportEvents,
     getEventStats,
     adminSearch,
+    getAllVenueBookings,
 } from '../controllers/adminController.js';
 import { isAuthenticated, isAdmin } from '../middleware/authMiddleware.js';
 
@@ -71,6 +72,12 @@ router.route('/events/:id/reject').put(rejectEvent);
 router.route('/search').get(
   cacheMiddleware((req) => `admin:search:${req.query.query}:${req.query.type}`, adminTTL / 2),
   adminSearch
+);
+
+// Venue Bookings
+router.route('/venue-bookings').get(
+  cacheMiddleware((req) => `admin:venue-bookings:${req.query.status || 'all'}`, adminTTL / 2),
+  getAllVenueBookings
 );
 
 export default router;

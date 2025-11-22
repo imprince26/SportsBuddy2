@@ -3,7 +3,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeProvider';
 import {
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   Loader2,
   AlertTriangle,
@@ -12,62 +12,64 @@ import {
   Trophy,
   Zap,
   Heart,
-  Star
+  Star,
+  Sparkles,
+  Target
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Enhanced toast animation variants
+// Premium toast animation variants
 const toastVariants = {
   initial: {
     opacity: 0,
+    y: -20,
     x: 100,
-    scale: 0.8,
-    rotateY: 90
+    scale: 0.9,
   },
   animate: {
     opacity: 1,
+    y: 0,
     x: 0,
     scale: 1,
-    rotateY: 0,
     transition: {
       type: "spring",
-      stiffness: 200,
-      damping: 20
+      stiffness: 260,
+      damping: 20,
     }
   },
   exit: {
     opacity: 0,
+    y: -10,
     x: 100,
-    scale: 0.8,
-    rotateY: -90,
+    scale: 0.95,
     transition: {
-      duration: 0.3,
+      duration: 0.2,
       ease: "easeInOut"
     }
   },
 };
 
-const iconBounceVariants = {
-  initial: { scale: 0, rotate: -180 },
+const iconVariants = {
+  initial: { scale: 0, rotate: -90 },
   animate: {
     scale: 1,
     rotate: 0,
     transition: {
       type: "spring",
-      stiffness: 300,
+      stiffness: 400,
       damping: 15,
-      delay: 0.1
+      delay: 0.05
     }
   }
 };
 
-const progressVariants = {
-  initial: { width: "100%" },
+const shimmerVariants = {
   animate: {
-    width: "0%",
+    backgroundPosition: ['200% 0', '-200% 0'],
     transition: {
       duration: 3,
-      ease: "linear"
+      ease: 'linear',
+      repeat: Infinity,
     }
   }
 };
@@ -85,7 +87,7 @@ const CustomToast = () => {
   const getToastIcon = (type) => {
     switch (type) {
       case 'success':
-        return CheckCircle;
+        return CheckCircle2;
       case 'error':
         return XCircle;
       case 'loading':
@@ -103,68 +105,122 @@ const CustomToast = () => {
     }
   };
 
-  const getToastStyles = (type, theme) => {
-    // Unified Dark Theme Styles (SaaS Premium Look)
-    const baseStyles = "relative overflow-hidden backdrop-blur-xl border shadow-2xl bg-slate-950/95 dark:bg-black/95";
+  const getToastStyles = (type, currentTheme) => {
+    const isDark = currentTheme === 'dark';
+    
+    // Base styles for both themes
+    const baseLight = "bg-white/95 backdrop-blur-xl border shadow-xl";
+    const baseDark = "bg-slate-900/95 backdrop-blur-xl border shadow-2xl";
+    const base = isDark ? baseDark : baseLight;
 
     switch (type) {
       case 'success':
-        return `${baseStyles} border-green-500/20 text-green-50 shadow-green-900/20`;
+        return cn(
+          base,
+          isDark 
+            ? 'border-green-500/30 shadow-green-500/10' 
+            : 'border-green-200/60 shadow-green-100/50'
+        );
       case 'error':
-        return `${baseStyles} border-red-500/20 text-red-50 shadow-red-900/20`;
+        return cn(
+          base,
+          isDark 
+            ? 'border-red-500/30 shadow-red-500/10' 
+            : 'border-red-200/60 shadow-red-100/50'
+        );
       case 'warning':
-        return `${baseStyles} border-yellow-500/20 text-yellow-50 shadow-yellow-900/20`;
+        return cn(
+          base,
+          isDark 
+            ? 'border-yellow-500/30 shadow-yellow-500/10' 
+            : 'border-yellow-200/60 shadow-yellow-100/50'
+        );
       case 'info':
-        return `${baseStyles} border-blue-500/20 text-blue-50 shadow-blue-900/20`;
+        return cn(
+          base,
+          isDark 
+            ? 'border-blue-500/30 shadow-blue-500/10' 
+            : 'border-blue-200/60 shadow-blue-100/50'
+        );
       case 'loading':
-        return `${baseStyles} border-slate-700/30 text-slate-200 shadow-slate-900/20`;
+        return cn(
+          base,
+          isDark 
+            ? 'border-slate-700/40 shadow-slate-900/20' 
+            : 'border-slate-200/60 shadow-slate-100/50'
+        );
       case 'achievement':
-        return `${baseStyles} border-purple-500/20 text-purple-50 shadow-purple-900/20`;
+        return cn(
+          base,
+          isDark 
+            ? 'border-purple-500/30 shadow-purple-500/10' 
+            : 'border-purple-200/60 shadow-purple-100/50'
+        );
       case 'sports':
-        return `${baseStyles} border-blue-500/20 text-blue-50 shadow-blue-900/20`;
+        return cn(
+          base,
+          isDark 
+            ? 'border-primary/30 shadow-primary/10' 
+            : 'border-primary/30 shadow-primary/20'
+        );
       default:
-        return `${baseStyles} border-slate-700/30 text-slate-200 shadow-slate-900/20`;
+        return cn(
+          base,
+          isDark 
+            ? 'border-slate-700/40 shadow-slate-900/20' 
+            : 'border-slate-200/60 shadow-slate-100/50'
+        );
     }
   };
 
-  const getIconStyles = (type, theme) => {
-    // Unified Icon Colors
+  const getIconWrapperStyles = (type, currentTheme) => {
+    const isDark = currentTheme === 'dark';
+    
     switch (type) {
       case 'success':
-        return 'text-green-400';
+        return isDark 
+          ? 'bg-green-500/15 text-green-400' 
+          : 'bg-green-50 text-green-600';
       case 'error':
-        return 'text-red-400';
+        return isDark 
+          ? 'bg-red-500/15 text-red-400' 
+          : 'bg-red-50 text-red-600';
       case 'warning':
-        return 'text-yellow-400';
+        return isDark 
+          ? 'bg-yellow-500/15 text-yellow-400' 
+          : 'bg-yellow-50 text-yellow-600';
       case 'info':
-        return 'text-blue-400';
+        return isDark 
+          ? 'bg-blue-500/15 text-blue-400' 
+          : 'bg-blue-50 text-blue-600';
       case 'loading':
-        return 'text-slate-400';
+        return isDark 
+          ? 'bg-slate-700/30 text-slate-400' 
+          : 'bg-slate-100 text-slate-600';
       case 'achievement':
-        return 'text-purple-400';
+        return isDark 
+          ? 'bg-purple-500/15 text-purple-400' 
+          : 'bg-purple-50 text-purple-600';
       case 'sports':
-        return 'text-blue-400';
+        return isDark 
+          ? 'bg-primary/15 text-primary' 
+          : 'bg-primary/10 text-primary';
       default:
-        return 'text-slate-400';
+        return isDark 
+          ? 'bg-slate-700/30 text-slate-400' 
+          : 'bg-slate-100 text-slate-600';
     }
   };
 
-  const getProgressBarColor = (type, theme) => {
+  const getAccentColor = (type) => {
     switch (type) {
-      case 'success':
-        return 'bg-green-500';
-      case 'error':
-        return 'bg-red-500';
-      case 'warning':
-        return 'bg-yellow-500';
-      case 'info':
-        return 'bg-blue-500';
-      case 'achievement':
-        return 'bg-purple-500';
-      case 'sports':
-        return 'bg-gradient-to-r from-blue-500 to-purple-500';
-      default:
-        return 'bg-slate-500';
+      case 'success': return 'from-green-500 to-emerald-500';
+      case 'error': return 'from-red-500 to-rose-500';
+      case 'warning': return 'from-yellow-500 to-orange-500';
+      case 'info': return 'from-blue-500 to-cyan-500';
+      case 'achievement': return 'from-purple-500 to-pink-500';
+      case 'sports': return 'from-primary to-blue-600';
+      default: return 'from-slate-500 to-slate-600';
     }
   };
 
@@ -172,18 +228,19 @@ const CustomToast = () => {
     <Toaster
       position="top-right"
       containerStyle={{
-        top: 20,
-        right: 20,
+        top: 24,
+        right: 24,
         zIndex: 9999,
       }}
+      gutter={12}
       toastOptions={{
-        duration: 3000,
+        duration: 4000,
         style: {
           background: 'transparent',
           boxShadow: 'none',
           padding: '0',
-          margin: '0 0 16px 0',
-          maxWidth: '420px',
+          margin: '0',
+          maxWidth: '450px',
           width: '100%',
         },
       }}
@@ -198,154 +255,170 @@ const CustomToast = () => {
             exit="exit"
             layout
             className={cn(
-              'rounded-2xl p-4 min-w-[320px] max-w-[420px] relative group cursor-pointer',
+              'rounded-2xl p-4 min-w-[340px] max-w-[450px] relative overflow-hidden group cursor-pointer',
               getToastStyles(t.type, theme)
             )}
             onClick={() => toast.dismiss(t.id)}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.01, y: -2 }}
+            whileTap={{ scale: 0.99 }}
           >
-            {/* Background Pattern */}
-            <div className="absolute inset-0 rounded-2xl opacity-10">
-              <div
-                className="w-full h-full rounded-2xl"
-                style={{
-                  backgroundImage: `
-                    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)
-                  `
-                }}
-              />
-            </div>
+            {/* Top accent bar with gradient */}
+            <div className={cn(
+              'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r',
+              getAccentColor(t.type)
+            )} />
 
-            {/* Content */}
-            <div className="relative z-10 flex items-start gap-4">
-              {/* Icon */}
+            {/* Shimmer effect on hover */}
+            <motion.div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              style={{
+                background: `linear-gradient(90deg, 
+                  transparent 0%, 
+                  ${theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'} 50%, 
+                  transparent 100%)`,
+                backgroundSize: '200% 100%',
+              }}
+              variants={shimmerVariants}
+              animate="animate"
+            />
+
+            {/* Main content */}
+            <div className="relative z-10 flex items-start gap-3.5">
+              {/* Icon container */}
               <motion.div
-                variants={iconBounceVariants}
+                variants={iconVariants}
                 initial="initial"
                 animate="animate"
                 className={cn(
-                  'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center',
-                  theme === 'dark' ? 'bg-white/10' : 'bg-black/10'
+                  'flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center relative',
+                  getIconWrapperStyles(t.type, theme)
                 )}
               >
+                {/* Icon glow effect */}
+                <div className={cn(
+                  'absolute inset-0 rounded-xl blur-xl opacity-40',
+                  getIconWrapperStyles(t.type, theme)
+                )} />
+                
                 {(() => {
                   const IconComponent = getToastIcon(t.type);
                   return (
                     <IconComponent
                       className={cn(
-                        'w-6 h-6',
-                        getIconStyles(t.type, theme),
+                        'w-5 h-5 relative z-10',
                         t.type === 'loading' && 'animate-spin'
                       )}
+                      strokeWidth={2.5}
                     />
                   );
                 })()}
+
+                {/* Pulsing ring for loading */}
+                {t.type === 'loading' && (
+                  <motion.div
+                    className="absolute inset-0 rounded-xl border-2 border-current opacity-30"
+                    animate={{
+                      scale: [1, 1.3, 1],
+                      opacity: [0.3, 0, 0.3],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                )}
               </motion.div>
 
-              {/* Message Content */}
-              <div className="flex-1 min-w-0">
+              {/* Message content */}
+              <div className="flex-1 min-w-0 pt-0.5">
                 {typeof t.message === 'string' ? (
                   <motion.p
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-sm font-semibold leading-relaxed"
+                    transition={{ delay: 0.08 }}
+                    className={cn(
+                      'text-[15px] font-semibold leading-relaxed',
+                      theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+                    )}
                   >
                     {t.message}
                   </motion.p>
                 ) : (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
+                    transition={{ delay: 0.08 }}
+                    className={theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}
                   >
                     {t.message}
                   </motion.div>
                 )}
               </div>
 
-              {/* Close Button */}
+              {/* Close button */}
               {t.type !== 'loading' && (
                 <motion.button
-                  initial={{ opacity: 0, scale: 0 }}
+                  initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
+                  transition={{ delay: 0.15 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={(e) => {
                     e.stopPropagation();
                     toast.dismiss(t.id);
                   }}
                   className={cn(
-                    'flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
+                    'flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
                     theme === 'dark'
-                      ? 'hover:bg-white/10 text-white/60 hover:text-white'
-                      : 'hover:bg-black/10 text-black/60 hover:text-black'
+                      ? 'hover:bg-white/10 text-slate-400 hover:text-slate-200'
+                      : 'hover:bg-black/5 text-slate-500 hover:text-slate-700'
                   )}
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" strokeWidth={2.5} />
                 </motion.button>
               )}
             </div>
 
-            {/* Progress Bar */}
-            <motion.div
-              className={cn(
-                'absolute bottom-0 left-0 h-1 rounded-b-2xl',
-                getProgressBarColor(t.type, theme)
-              )}
-              variants={progressVariants}
-              initial="initial"
-              animate="animate"
-            />
-
-            {/* Floating Sports Icons for Achievement/Sports toasts */}
+            {/* Decorative particles for achievement/sports */}
             {(t.type === 'achievement' || t.type === 'sports') && (
-              <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-                {[...Array(3)].map((_, i) => (
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {[...Array(5)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="absolute text-2xl opacity-20"
+                    className={cn(
+                      'absolute w-1.5 h-1.5 rounded-full',
+                      theme === 'dark' ? 'bg-white/20' : 'bg-black/10'
+                    )}
                     initial={{
-                      x: Math.random() * 300,
-                      y: Math.random() * 100,
+                      x: Math.random() * 400,
+                      y: Math.random() * 80,
                       scale: 0,
-                      rotate: 0
+                      opacity: 0,
                     }}
                     animate={{
-                      y: [null, -20, null],
+                      y: [null, Math.random() * -30],
                       scale: [0, 1, 0],
-                      rotate: [0, 180, 360],
+                      opacity: [0, 1, 0],
                     }}
                     transition={{
-                      duration: 2,
-                      delay: i * 0.3,
-                      ease: "easeInOut"
+                      duration: 1.5 + Math.random(),
+                      delay: i * 0.15,
+                      ease: "easeOut"
                     }}
-                  >
-                    {t.type === 'achievement' ? '🏆' : ['⚽', '🏀', '🎾'][i]}
-                  </motion.div>
+                  />
                 ))}
               </div>
             )}
 
-            {/* Shine Effect */}
-            <motion.div
-              className="absolute inset-0 rounded-2xl"
-              style={{
-                background: `linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)`,
-                transform: 'translateX(-100%)',
-              }}
-              animate={{
-                transform: ['translateX(-100%)', 'translateX(100%)'],
-              }}
-              transition={{
-                duration: 2,
-                delay: 0.5,
-                ease: "easeInOut"
-              }}
+            {/* Gradient overlay for depth */}
+            <div 
+              className={cn(
+                'absolute inset-0 rounded-2xl pointer-events-none',
+                theme === 'dark'
+                  ? 'bg-gradient-to-br from-white/[0.02] to-transparent'
+                  : 'bg-gradient-to-br from-white/40 to-transparent'
+              )}
             />
           </motion.div>
         </AnimatePresence>
@@ -358,27 +431,27 @@ const CustomToast = () => {
 export const showToast = {
   success: (message, options = {}) =>
     toast.success(message, {
-      duration: 3000,
+      duration: 4000,
       ...options,
     }),
 
   error: (message, options = {}) =>
     toast.error(message, {
-      duration: 4000,
+      duration: 5000,
       ...options,
     }),
 
   warning: (message, options = {}) =>
     toast(message, {
       type: 'warning',
-      duration: 4000,
+      duration: 4500,
       ...options,
     }),
 
   info: (message, options = {}) =>
     toast(message, {
       type: 'info',
-      duration: 3500,
+      duration: 4000,
       ...options,
     }),
 
@@ -399,28 +472,16 @@ export const showToast = {
   sports: (message, options = {}) =>
     toast(message, {
       type: 'sports',
-      duration: 4000,
+      duration: 4500,
       ...options,
     }),
 
   // Rich content toasts
   richSuccess: (title, description, options = {}) =>
     toast.success(
-      <div>
-        <div className="font-bold text-base mb-1">{title}</div>
-        <div className="text-sm opacity-90">{description}</div>
-      </div>,
-      {
-        duration: 4000,
-        ...options,
-      }
-    ),
-
-  richError: (title, description, options = {}) =>
-    toast.error(
-      <div>
-        <div className="font-bold text-base mb-1">{title}</div>
-        <div className="text-sm opacity-90">{description}</div>
+      <div className="space-y-1">
+        <div className="font-bold text-base leading-tight">{title}</div>
+        <div className="text-sm opacity-75 leading-snug">{description}</div>
       </div>,
       {
         duration: 5000,
@@ -428,38 +489,113 @@ export const showToast = {
       }
     ),
 
+  richError: (title, description, options = {}) =>
+    toast.error(
+      <div className="space-y-1">
+        <div className="font-bold text-base leading-tight">{title}</div>
+        <div className="text-sm opacity-75 leading-snug">{description}</div>
+      </div>,
+      {
+        duration: 6000,
+        ...options,
+      }
+    ),
+
+  richInfo: (title, description, options = {}) =>
+    toast(
+      <div className="space-y-1">
+        <div className="font-bold text-base leading-tight">{title}</div>
+        <div className="text-sm opacity-75 leading-snug">{description}</div>
+      </div>,
+      {
+        type: 'info',
+        duration: 5000,
+        ...options,
+      }
+    ),
+
+  richWarning: (title, description, options = {}) =>
+    toast(
+      <div className="space-y-1">
+        <div className="font-bold text-base leading-tight">{title}</div>
+        <div className="text-sm opacity-75 leading-snug">{description}</div>
+      </div>,
+      {
+        type: 'warning',
+        duration: 5000,
+        ...options,
+      }
+    ),
+
+  // SportsBuddy specific rich toasts
   eventJoined: (eventName, options = {}) =>
     toast(
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-          <Heart className="w-4 h-4 text-white" />
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-500/20">
+          <Heart className="w-5 h-5 text-white" strokeWidth={2.5} fill="white" />
         </div>
-        <div>
-          <div className="font-bold text-base">Event Joined!</div>
-          <div className="text-sm opacity-90">You're now part of {eventName}</div>
+        <div className="flex-1 space-y-0.5">
+          <div className="font-bold text-base leading-tight">Event Joined!</div>
+          <div className="text-sm opacity-75 leading-snug">You're now part of {eventName}</div>
         </div>
       </div>,
       {
         type: 'sports',
-        duration: 4000,
+        duration: 5000,
         ...options,
       }
     ),
 
   eventCreated: (eventName, options = {}) =>
     toast(
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-          <Star className="w-4 h-4 text-white" />
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
+          <Sparkles className="w-5 h-5 text-white" strokeWidth={2.5} />
         </div>
-        <div>
-          <div className="font-bold text-base">Event Created!</div>
-          <div className="text-sm opacity-90">{eventName} is ready for participants</div>
+        <div className="flex-1 space-y-0.5">
+          <div className="font-bold text-base leading-tight">Event Created!</div>
+          <div className="text-sm opacity-75 leading-snug">{eventName} is ready for participants</div>
         </div>
       </div>,
       {
         type: 'achievement',
-        duration: 4000,
+        duration: 5000,
+        ...options,
+      }
+    ),
+
+  goalAchieved: (goalName, options = {}) =>
+    toast(
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-yellow-500/20">
+          <Target className="w-5 h-5 text-white" strokeWidth={2.5} />
+        </div>
+        <div className="flex-1 space-y-0.5">
+          <div className="font-bold text-base leading-tight">Goal Achieved! 🎯</div>
+          <div className="text-sm opacity-75 leading-snug">{goalName}</div>
+        </div>
+      </div>,
+      {
+        type: 'achievement',
+        duration: 5000,
+        ...options,
+      }
+    ),
+
+  newAchievement: (achievementName, options = {}) =>
+    toast(
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
+          <Trophy className="w-5 h-5 text-white" strokeWidth={2.5} />
+        </div>
+        <div className="flex-1 space-y-0.5">
+          <div className="font-bold text-base leading-tight">New Achievement! 🏆</div>
+          <div className="text-sm opacity-75 leading-snug">{achievementName}</div>
+        </div>
+      </div>,
+      {
+        type: 'achievement',
+        duration: 6000,
         ...options,
       }
     ),

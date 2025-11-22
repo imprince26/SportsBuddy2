@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import {
   MapPin,
   Users,
@@ -44,6 +44,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import PostCard from '@/components/community/PostCard';
+import ImageGalleryModal from '@/components/community/ImageGalleryModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,9 +99,12 @@ const CommunityDetails = () => {
     joinCommunity,
     leaveCommunity,
     deleteCommunity,
-    createPost,
-    toggleLike,
-    addComment
+    createCommunityPost,
+    updateCommunityPost,
+    likeCommunityPost,
+    addCommentToPost,
+    sharePost,
+    deleteCommunityPost
   } = useCommunity();
 
   // State management
@@ -107,7 +112,11 @@ const CommunityDetails = () => {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeletePostDialog, setShowDeletePostDialog] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showEditPost, setShowEditPost] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
   const [joinMessage, setJoinMessage] = useState('');
   const [postContent, setPostContent] = useState('');
   const [postImages, setPostImages] = useState([]);
@@ -116,6 +125,9 @@ const CommunityDetails = () => {
   const [showAllRules, setShowAllRules] = useState(false);
   const [showAllMembers, setShowAllMembers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   // Refs
   const fileInputRef = useRef(null);
@@ -125,7 +137,13 @@ const CommunityDetails = () => {
   useEffect(() => {
     if (id) {
       fetchCommunity(id);
-      getCommunityPosts({ communityId: id, sortBy });
+    }
+  }, [id]);
+
+  // Refresh posts when sortBy changes
+  useEffect(() => {
+    if (id) {
+      getCommunityPosts({ communityId: id, sortBy }, 1);
     }
   }, [id, sortBy]);
 
@@ -136,7 +154,7 @@ const CommunityDetails = () => {
 
       socket.on('new-post', (post) => {
         if (post.community === id) {
-          getCommunityPosts({ communityId: id, sortBy });
+          getCommunityPosts({ communityId: id, sortBy }, 1);
         }
       });
 
@@ -220,27 +238,129 @@ const CommunityDetails = () => {
     }
 
     setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append('content', postContent);
-    formData.append('community', id);
-    formData.append('type', postType);
 
-    postImages.forEach((image, index) => {
-      formData.append('images', image);
-    });
+    const postData = {
+      content: postContent,
+      communityId: id,
+      images: postImages
+    };
 
     try {
-      await createPost(formData);
-      setPostContent('');
-      setPostImages([]);
-      setPostType('text');
-      setShowCreatePost(false);
-      getCommunityPosts({ communityId: id, sortBy });
+      const result = await createCommunityPost(postData);
+      if (result.success) {
+        setPostContent('');
+        setPostImages([]);
+        setPostType('text');
+        setShowCreatePost(false);
+        // Refresh posts
+        await getCommunityPosts({ communityId: id, sortBy }, 1);
+      }
     } catch (error) {
-      // Error already handled in hook
+      console.error('Error creating post:', error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleLikePost = async (postId) => {
+    try {
+      await likeCommunityPost(postId);
+      // Refresh posts to get updated likes
+      await getCommunityPosts({ communityId: id, sortBy }, 1);
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
+  };
+
+  const handleAddComment = async (postId, comment) => {
+    try {
+      await addCommentToPost(postId, comment);
+      // Refresh posts to get updated comments
+      await getCommunityPosts({ communityId: id, sortBy }, 1);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
+  };
+
+  const handleSharePost = async (postId) => {
+    try {
+      await sharePost(postId);
+      const url = `${window.location.origin}/community/post/${postId}`;
+      await navigator.clipboard.writeText(url);
+      toast.success('Link copied to clipboard!');
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      toast.error('Failed to share post');
+    }
+  };
+
+  const handleEditPost = (post) => {
+    setEditingPost(post);
+    setPostContent(post.content);
+    setPostType(post.type || 'text');
+    setPostImages([]);
+    setShowEditPost(true);
+  };
+
+  const handleUpdatePost = async () => {
+    if (!postContent.trim() && postImages.length === 0) {
+      toast.error('Post content or images required');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const updateData = {
+        content: postContent,
+        type: postType
+      };
+
+      if (postImages.length > 0) {
+        updateData.images = postImages;
+      }
+
+      const result = await updateCommunityPost(editingPost._id, updateData);
+      
+      if (result.success) {
+        setShowEditPost(false);
+        setEditingPost(null);
+        setPostContent('');
+        setPostImages([]);
+        setPostType('text');
+        await getCommunityPosts({ communityId: id, sortBy }, 1);
+      }
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast.error('Failed to update post');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    setPostToDelete(postId);
+    setShowDeletePostDialog(true);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!postToDelete) return;
+    
+    try {
+      await deleteCommunityPost(postToDelete);
+      toast.success('Post deleted successfully');
+      await getCommunityPosts({ communityId: id, sortBy }, 1);
+      setShowDeletePostDialog(false);
+      setPostToDelete(null);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast.error('Failed to delete post');
+    }
+  };
+
+  const handleImageClick = (images, index) => {
+    setGalleryImages(images);
+    setGalleryIndex(index);
+    setGalleryOpen(true);
   };
 
   const handleImageUpload = (e) => {
@@ -289,7 +409,7 @@ const CommunityDetails = () => {
   // Render error state
   if (error || !currentCommunity) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="text-center p-8">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -315,7 +435,7 @@ const CommunityDetails = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="min-h-screen bg-gray-50 dark:bg-gray-900"
+      className="min-h-screen bg-background"
     >
       {/* Hero Section */}
       <motion.div variants={itemVariants} className="relative">
@@ -481,11 +601,17 @@ const CommunityDetails = () => {
             {/* Tabs */}
             <motion.div variants={itemVariants}>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full grid grid-cols-3 lg:grid-cols-4">
+                <TabsList className={`w-full grid ${community.isMember ? 'grid-cols-4 lg:grid-cols-5' : 'grid-cols-3 lg:grid-cols-4'}`}>
                   <TabsTrigger value="posts" className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
                     <span className="hidden sm:inline">Posts</span>
                   </TabsTrigger>
+                  {community.isMember && (
+                    <TabsTrigger value="my-posts" className="flex items-center gap-2">
+                      <Star className="w-4 h-4" />
+                      <span className="hidden sm:inline">My Posts</span>
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="events" className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span className="hidden sm:inline">Events</span>
@@ -494,7 +620,7 @@ const CommunityDetails = () => {
                     <Users className="w-4 h-4" />
                     <span className="hidden sm:inline">Members</span>
                   </TabsTrigger>
-                  <TabsTrigger value="about" className="flex items-center gap-2 hidden lg:flex">
+                  <TabsTrigger value="about" className="items-center gap-2 hidden lg:flex">
                     <FileText className="w-4 h-4" />
                     <span className="hidden sm:inline">About</span>
                   </TabsTrigger>
@@ -562,26 +688,129 @@ const CommunityDetails = () => {
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Community Posts</h3>
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="latest">Latest</SelectItem>
-                        <SelectItem value="popular">Popular</SelectItem>
+                        <SelectItem value="popular">Most Liked</SelectItem>
+                        <SelectItem value="comments">Most Discussed</SelectItem>
                         <SelectItem value="oldest">Oldest</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   {/* Posts List */}
-                  <PostsList
-                    posts={posts}
-                    currentUser={user}
-                    onLike={toggleLike}
-                    onComment={addComment}
-                    loading={loading}
-                  />
+                  <div className="space-y-0">
+                    {loading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <Card key={i} className="border-x-0 border-t-0 rounded-none">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3 mb-4">
+                                <Skeleton className="w-10 h-10 rounded-full" />
+                                <div className="space-y-2">
+                                  <Skeleton className="h-4 w-32" />
+                                  <Skeleton className="h-3 w-24" />
+                                </div>
+                              </div>
+                              <Skeleton className="h-20 w-full mb-4" />
+                              <div className="flex items-center gap-4">
+                                <Skeleton className="h-8 w-16" />
+                                <Skeleton className="h-8 w-20" />
+                                <Skeleton className="h-8 w-16" />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : !posts || posts.length === 0 ? (
+                      <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md">
+                        <CardContent className="text-center py-12">
+                          <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+                          <p className="text-muted-foreground">
+                            Be the first to share something with this community!
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      posts.map((post) => (
+                        <PostCard
+                          key={post._id}
+                          post={post}
+                          currentUser={user}
+                          onLike={handleLikePost}
+                          onShare={handleSharePost}
+                          onEdit={handleEditPost}
+                          onDelete={handleDeletePost}
+                          onImageClick={handleImageClick}
+                        />
+                      ))
+                    )}
+                  </div>
                 </TabsContent>
+
+                {/* My Posts Tab */}
+                {community.isMember && (
+                  <TabsContent value="my-posts" className="mt-6">
+                    <div className="space-y-0">
+                      {loading ? (
+                        <div className="space-y-4">
+                          {[1, 2, 3].map((i) => (
+                            <Card key={i} className="border-x-0 border-t-0 rounded-none">
+                              <CardContent className="p-4">
+                                <div className="flex items-center gap-3 mb-4">
+                                  <Skeleton className="w-10 h-10 rounded-full" />
+                                  <div className="space-y-2">
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-3 w-24" />
+                                  </div>
+                                </div>
+                                <Skeleton className="h-20 w-full mb-4" />
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        (() => {
+                          const myPosts = posts?.filter(post => 
+                            post.author?._id === user?.id || post.author?.id === user?.id
+                          ) || [];
+                          
+                          return myPosts.length === 0 ? (
+                            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md">
+                              <CardContent className="text-center py-12">
+                                <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+                                <p className="text-muted-foreground mb-4">
+                                  You haven't created any posts in this community yet.
+                                </p>
+                                <Button onClick={() => setShowCreatePost(true)}>
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Create Your First Post
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          ) : (
+                            myPosts.map((post) => (
+                              <PostCard
+                                key={post._id}
+                                post={post}
+                                currentUser={user}
+                                onLike={handleLikePost}
+                                onShare={handleSharePost}
+                                onEdit={handleEditPost}
+                                onDelete={handleDeletePost}
+                                onImageClick={handleImageClick}
+                              />
+                            ))
+                          );
+                        })()
+                      )}
+                    </div>
+                  </TabsContent>
+                )}
 
                 {/* Events Tab */}
                 <TabsContent value="events" className="mt-6">
@@ -884,13 +1113,188 @@ const CommunityDetails = () => {
         isSubmitting={isSubmitting}
         fileInputRef={fileInputRef}
       />
+
+      {/* Edit Post Dialog */}
+      <Dialog open={showEditPost} onOpenChange={setShowEditPost}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Post</DialogTitle>
+            <DialogDescription>
+              Update your post content
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Post Type Selector */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={postType === 'text' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPostType('text')}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Text
+              </Button>
+              <Button
+                variant={postType === 'image' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPostType('image')}
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Photo
+              </Button>
+              <Button
+                variant={postType === 'video' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPostType('video')}
+              >
+                <Video className="w-4 h-4 mr-2" />
+                Video
+              </Button>
+            </div>
+
+            {/* Content Input */}
+            <Textarea
+              placeholder="What's on your mind?"
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+              rows={4}
+              className="resize-none"
+            />
+
+            {/* Existing Images */}
+            {editingPost?.images && editingPost.images.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Current Images</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {editingPost.images.map((image, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                      <img
+                        src={image.url}
+                        alt={`Image ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* New Image Upload */}
+            {(postType === 'image' || postImages.length > 0) && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Add New Images</h4>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={postImages.length >= 5}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Images
+                  </Button>
+                </div>
+
+                {/* New Image Previews */}
+                {postImages.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {postImages.map((image, index) => (
+                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 w-6 h-6 p-0"
+                          onClick={() => removeImage(index)}
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowEditPost(false);
+              setEditingPost(null);
+              setPostContent('');
+              setPostImages([]);
+              setPostType('text');
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdatePost} disabled={isSubmitting || (!postContent.trim() && postImages.length === 0)}>
+              {isSubmitting ? 'Updating...' : 'Update Post'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Post Confirmation Dialog */}
+      <Dialog open={showDeletePostDialog} onOpenChange={setShowDeletePostDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="w-5 h-5" />
+              Delete Post
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeletePostDialog(false);
+                setPostToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDeletePost}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Post
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Gallery Modal */}
+      <ImageGalleryModal
+        images={galleryImages}
+        initialIndex={galleryIndex}
+        isOpen={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+      />
     </motion.div>
   );
 };
 
 // Skeleton Loading Component
 const CommunityDetailsSkeleton = () => (
-  <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div className="min-h-screen bg-background">
     {/* Hero Skeleton */}
     <div className="h-48 md:h-64 lg:h-80 bg-gray-200 dark:bg-gray-800 relative">
       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 lg:p-8">

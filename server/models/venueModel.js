@@ -83,7 +83,7 @@ const venueSchema = new mongoose.Schema(
       },
       currency: {
         type: String,
-        default: "USD",
+        default: "INR",
       },
     },
     availability: [{
@@ -150,6 +150,9 @@ const venueSchema = new mongoose.Schema(
         default: "pending",
       },
       amount: Number,
+      totalAmount: Number,
+      duration: Number, // in hours
+      notes: String,
       bookingDate: {
         type: Date,
         default: Date.now,

@@ -573,8 +573,8 @@ const PublicProfile = () => {
 
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <div className="sticky top-0 z-30 bg-gray-50/95 dark:bg-gray-950/95 backdrop-blur-sm pb-4 pt-2">
-              <TabsList className="w-full justify-start h-auto p-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-xl">
+            <div className="sticky top-0 z-30 bg-gray-50/95 dark:bg-gray-950/95 backdrop-blur-sm pb-4 pt-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700">
+              <TabsList className="inline-flex min-w-max justify-start h-auto p-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-xl">
                 <TabsTrigger 
                   value="overview" 
                   className="rounded-lg px-6 py-2.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm transition-all"

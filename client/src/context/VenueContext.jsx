@@ -147,20 +147,14 @@ export const VenueProvider = ({ children }) => {
             formData.append('images', file);
           });
         } else if (key === 'amenities' && Array.isArray(value)) {
-          // Convert amenities array to proper format
-          const amenitiesObjects = value.map(name => ({ name, available: true }));
-          formData.append(key, JSON.stringify(amenitiesObjects));
-        } else if (key === 'pricing') {
-          // Format pricing object
-          const pricing = {
-            hourlyRate: venueData.pricePerHour || 0,
-            dayRate: (venueData.pricePerHour || 0) * 8,
-            currency: 'INR'
-          };
-          formData.append(key, JSON.stringify(pricing));
+          // Amenities are already in the correct format {name, available}
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'pricing' && typeof value === 'object') {
+          // Pricing object with hourlyRate, dayRate, currency
+          formData.append(key, JSON.stringify(value));
         } else if (typeof value === 'object' && value !== null) {
           formData.append(key, JSON.stringify(value));
-        } else if (key !== 'pricePerHour') {
+        } else {
           formData.append(key, value);
         }
       });
@@ -199,20 +193,14 @@ export const VenueProvider = ({ children }) => {
             formData.append('images', file);
           });
         } else if (key === 'amenities' && Array.isArray(value)) {
-          // Convert amenities array to proper format
-          const amenitiesObjects = value.map(name => ({ name, available: true }));
-          formData.append(key, JSON.stringify(amenitiesObjects));
-        } else if (key === 'pricing') {
-          // Format pricing object
-          const pricing = {
-            hourlyRate: updateData.pricePerHour || 0,
-            dayRate: (updateData.pricePerHour || 0) * 8,
-            currency: 'INR'
-          };
-          formData.append(key, JSON.stringify(pricing));
+          // Amenities are already in the correct format {name, available}
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'pricing' && typeof value === 'object') {
+          // Pricing object with hourlyRate, dayRate, currency
+          formData.append(key, JSON.stringify(value));
         } else if (typeof value === 'object' && value !== null) {
           formData.append(key, JSON.stringify(value));
-        } else if (key !== 'pricePerHour') {
+        } else {
           formData.append(key, value);
         }
       });
@@ -339,13 +327,8 @@ export const VenueProvider = ({ children }) => {
       });
 
       if (response.data.success) {
-        if (currentVenue?._id === venueId) {
-          setCurrentVenue(prev => ({
-            ...prev,
-            totalReviews: prev.totalReviews + 1,
-            recentReviews: [response.data.data, ...prev.recentReviews.slice(0, 4)]
-          }));
-        }
+        // Invalidate cache by refetching the venue
+        await getVenueById(venueId);
         toast.success('Review added successfully!', { id: toastId });
         return { success: true, data: response.data.data };
       }

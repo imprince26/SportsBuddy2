@@ -16,21 +16,23 @@ export const CommunityProvider = ({ children }) => {
   const [followingPosts, setFollowingPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
   const [currentCommunity, setCurrentCommunity] = useState(null);
+  const [communities, setCommunities] = useState([]);
+  const [myCommunities, setMyCommunities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
+    page: 1,
+    pages: 1,
     total: 0,
     hasNext: false,
     hasPrev: false,
-    limit: 10
+    limit: 12
   });
   const [filters, setFilters] = useState({
     category: 'all',
     search: '',
-    sortBy: 'latest',
-    communityId: ''
+    sortBy: 'members:desc',
+    location: ''
   });
 
   // Socket event handlers
@@ -405,7 +407,195 @@ export const CommunityProvider = ({ children }) => {
       console.error('Error fetching community:', error);
       return null;
     }
-  }
+  };
+
+  // Get all communities with filters
+  const getCommunities = async (newFilters = null, page = 1) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const currentFilters = newFilters || filters;
+      if (newFilters) {
+        setFilters(newFilters);
+      }
+
+      const queryParams = new URLSearchParams();
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (value && value !== 'all') queryParams.append(key, value);
+      });
+
+      queryParams.append('page', page);
+      queryParams.append('limit', pagination.limit);
+
+      const response = await api.get(`/community?${queryParams}`);
+
+      if (response.data.success) {
+        setCommunities(response.data.data);
+        setPagination(response.data.pagination);
+        return response.data.data;
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch communities';
+      setError(message);
+      toast.error(message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get user's communities
+  const getMyCommunities = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.get('/community/my-communities');
+
+      if (response.data.success) {
+        setMyCommunities(response.data.data);
+        return response.data.data;
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch your communities';
+      setError(message);
+      toast.error(message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Create new community
+  const createCommunity = async (communityData) => {
+    setLoading(true);
+    const toastId = toast.loading('Creating community...');
+
+    try {
+      const formData = new FormData();
+      
+      Object.entries(communityData).forEach(([key, value]) => {
+        if (key === 'image' && value instanceof File) {
+          formData.append('image', value);
+        } else if (key === 'rules' && Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'location' && typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'settings' && typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await api.post('/community', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        toast.success('Community created successfully!', { id: toastId });
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      console.error('Create community error:', error.response?.data);
+      const message = error.response?.data?.errors 
+        ? error.response.data.errors.join(', ')
+        : error.response?.data?.message || 'Failed to create community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update community
+  const updateCommunity = async (communityId, updateData) => {
+    setLoading(true);
+    const toastId = toast.loading('Updating community...');
+
+    try {
+      const formData = new FormData();
+      
+      Object.entries(updateData).forEach(([key, value]) => {
+        if (key === 'image' && value instanceof File) {
+          formData.append('image', value);
+        } else if (key === 'rules' && Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'location' && typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else if (key === 'settings' && typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await api.put(`/community/${communityId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        const updated = response.data.data;
+        setCommunities(prev => prev.map(c => c._id === communityId ? updated : c));
+        setMyCommunities(prev => prev.map(c => c._id === communityId ? updated : c));
+        if (currentCommunity?._id === communityId) {
+          setCurrentCommunity(updated);
+        }
+        toast.success('Community updated successfully!', { id: toastId });
+        return { success: true, data: updated };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Join community
+  const joinCommunity = async (communityId) => {
+    const toastId = toast.loading('Joining community...');
+
+    try {
+      const response = await api.post(`/community/${communityId}/join`);
+
+      if (response.data.success) {
+        toast.success(response.data.message || 'Successfully joined community!', { id: toastId });
+        // Refresh communities to update join status
+        getMyCommunities();
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to join community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    }
+  };
+
+  // Leave community
+  const leaveCommunity = async (communityId) => {
+    const toastId = toast.loading('Leaving community...');
+
+    try {
+      const response = await api.post(`/community/${communityId}/leave`);
+
+      if (response.data.success) {
+        toast.success('Successfully left community!', { id: toastId });
+        setMyCommunities(prev => prev.filter(c => c._id !== communityId));
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to leave community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    }
+  };
 
   // Clear current post
   const clearCurrentPost = () => {
@@ -422,6 +612,136 @@ export const CommunityProvider = ({ children }) => {
     });
   };
 
+  // Increment post view
+  const incrementPostView = async (postId) => {
+    try {
+      await api.post(`/community/posts/${postId}/view`);
+    } catch (error) {
+      console.error('Error incrementing view:', error);
+    }
+  };
+
+  // Share post
+  const sharePost = async (postId) => {
+    try {
+      const response = await api.post(`/community/posts/${postId}/share`);
+      return response.data;
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      return null;
+    }
+  };
+
+  // Like comment
+  const likeComment = async (postId, commentId) => {
+    try {
+      const response = await api.post(`/community/posts/${postId}/comments/${commentId}/like`);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to like comment';
+      toast.error(message);
+      return null;
+    }
+  };
+
+  // Reply to comment
+  const replyToComment = async (postId, commentId, content) => {
+    try {
+      const response = await api.post(`/community/posts/${postId}/comments/${commentId}/replies`, {
+        content
+      });
+
+      if (response.data.success) {
+        toast.success('Reply added successfully!');
+        return response.data.data;
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to add reply';
+      toast.error(message);
+      return null;
+    }
+  };
+
+  // Like reply
+  const likeReply = async (postId, commentId, replyId) => {
+    try {
+      const response = await api.post(`/community/posts/${postId}/comments/${commentId}/replies/${replyId}/like`);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to like reply';
+      toast.error(message);
+      return null;
+    }
+  };
+
+  // Update comment
+  const updateCommentContent = async (postId, commentId, content) => {
+    try {
+      const response = await api.put(`/community/posts/${postId}/comments/${commentId}`, {
+        content
+      });
+
+      if (response.data.success) {
+        toast.success('Comment updated successfully');
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update comment';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Delete comment
+  const deleteCommentContent = async (postId, commentId) => {
+    try {
+      const response = await api.delete(`/community/posts/${postId}/comments/${commentId}`);
+
+      if (response.data.success) {
+        toast.success('Comment deleted successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete comment';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Update reply
+  const updateReplyContent = async (postId, commentId, replyId, content) => {
+    try {
+      const response = await api.put(`/community/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+        content
+      });
+
+      if (response.data.success) {
+        toast.success('Reply updated successfully');
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update reply';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Delete reply
+  const deleteReplyContent = async (postId, commentId, replyId) => {
+    try {
+      const response = await api.delete(`/community/posts/${postId}/comments/${commentId}/replies/${replyId}`);
+
+      if (response.data.success) {
+        toast.success('Reply deleted successfully');
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete reply';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
   const value = {
     // State
     posts,
@@ -433,8 +753,19 @@ export const CommunityProvider = ({ children }) => {
     pagination,
     filters,
     currentCommunity,
+    communities,
+    myCommunities,
     
-    // Actions
+    // Community Actions
+    getCommunities,
+    getMyCommunities,
+    createCommunity,
+    updateCommunity,
+    joinCommunity,
+    leaveCommunity,
+    fetchCommunity,
+    
+    // Post Actions
     getCommunityPosts,
     createCommunityPost,
     getCommunityPostById,
@@ -448,7 +779,15 @@ export const CommunityProvider = ({ children }) => {
     clearCurrentPost,
     resetFilters,
     setFilters,
-    fetchCommunity
+    incrementPostView,
+    sharePost,
+    likeComment,
+    replyToComment,
+    likeReply,
+    updateCommentContent,
+    deleteCommentContent,
+    updateReplyContent,
+    deleteReplyContent,
   };
 
   return (

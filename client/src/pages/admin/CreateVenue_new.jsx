@@ -56,7 +56,7 @@ const venueSchema = z.object({
   pricing: z.object({
     hourlyRate: z.number().min(0, 'Hourly rate cannot be negative'),
     dayRate: z.number().min(0, 'Day rate cannot be negative'),
-    currency: z.string().default('INR'),
+    currency: z.string().default('USD'),
   }),
   amenities: z.array(z.object({
     name: z.string(),
@@ -114,7 +114,7 @@ const CreateVenue = () => {
       pricing: {
         hourlyRate: 0,
         dayRate: 0,
-        currency: 'INR',
+        currency: 'USD',
       },
       amenities: amenitiesOptions.map(name => ({ name, available: true })),
       availability: daysOfWeek.map(day => ({

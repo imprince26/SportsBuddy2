@@ -26,6 +26,8 @@ import Help from './pages/public/Help';
 import NotFound from './pages/NotFound';
 import Venues from './pages/venues/Venues';
 import VenueDetails from './pages/venues/VenueDetails';
+import VenueBooking from './pages/venues/VenueBooking';
+import MyBookings from './pages/venues/MyBookings';
 import Leaderboard from './pages/leaderboard/Leaderboard';
 // import Community from './pages/community/Community';
 import Athletes from './pages/athletes/Athletes';
@@ -43,8 +45,11 @@ import FollowersFollowing from './pages/FollowerFollowing';
 // import MyEvents from './pages/MyEvents';
 // import Bookmarks from './pages/Bookmarks';
 import Community from './pages/community/Community';
+import Communities from './pages/community/Communities';
 import CreateCommunity from './pages/community/CreateCommunity';
+import EditCommunity from './pages/community/EditCommunity';
 import CommunityDetails from './pages/community/CommunityDetails';
+import PostDetail from './pages/community/PostDetail';
 // import CreateVenue from './pages/venue/CreateVenue';
 // import EditVenue from './pages/venue/EditVenue';
 // import UserProfile from './pages/UserProfile';
@@ -56,6 +61,8 @@ import ManageEvents from './pages/admin/ManageEvents';
 import AdminVenues from './pages/admin/AdminVenues';
 import CreateVenue from './pages/admin/CreateVenue';
 import EditVenue from './pages/admin/EditVenue';
+import VenueBookings from './pages/admin/VenueBookings';
+import AllVenueBookings from './pages/admin/AllVenueBookings';
 import AdminSearch from './pages/admin/AdminSearch';
 import AdminMessages from './pages/admin/AdminMessages';
 import AdminSettings from './pages/admin/AdminSettings';
@@ -146,10 +153,13 @@ function App() {
             <Route path="search" element={<PublicRoute title="Search"><Search /></PublicRoute>} />
             <Route path="venues" element={<PublicRoute title="Sports Venues"><Venues /></PublicRoute>} />
             <Route path="venues/:id" element={<PublicRoute title="Venue Details"><VenueDetails /></PublicRoute>} />
+            <Route path="venues/:id/book" element={<ProtectedRoute title="Book Venue"><VenueBooking /></ProtectedRoute>} />
+            <Route path="my-bookings" element={<ProtectedRoute title="My Bookings"><MyBookings /></ProtectedRoute>} />
             <Route path="athletes" element={<PublicRoute title="Athletes"><Athletes /></PublicRoute>} />
             <Route path="leaderboard" element={<PublicRoute title="Leaderboard"><Leaderboard /></PublicRoute>} />
-            <Route path="community" element={<PublicRoute title="Community"><Community /></PublicRoute>} />
+            <Route path="community" element={<PublicRoute title="Community"><Communities /></PublicRoute>} />
             <Route path="community/:id" element={<PublicRoute title="Community Details"><CommunityDetails /></PublicRoute>} />
+            <Route path="community/post/:postId" element={<PublicRoute title="Post Details"><PostDetail /></PublicRoute>} />
             <Route path="about" element={<PublicRoute title="About Us"><About /></PublicRoute>} />
             <Route path="contact" element={<PublicRoute title="Contact Us"><Contact /></PublicRoute>} />
             <Route path="privacy" element={<PublicRoute title="Privacy Policy"><Privacy /></PublicRoute>} />
@@ -172,6 +182,7 @@ function App() {
             <Route path="users/:id/followers" element={<ProtectedRoute title="Followers"><FollowersFollowing type="followers" /></ProtectedRoute>} />
             <Route path="users/:id/following" element={<ProtectedRoute title="Following"><FollowersFollowing type="following" /></ProtectedRoute>} />
             <Route path="community/create" element={<ProtectedRoute title="Create Community"><CreateCommunity /></ProtectedRoute>} />
+            <Route path="community/:id/edit" element={<ProtectedRoute title="Edit Community"><EditCommunity /></ProtectedRoute>} />
             {/* <Route path="venues/create" element={<ProtectedRoute title="Create Venue"><CreateVenue /></ProtectedRoute>} />
             <Route path="venues/:id/edit" element={<ProtectedRoute title="Edit Venue"><EditVenue /></ProtectedRoute>} /> */}
           </Route>
@@ -182,6 +193,8 @@ function App() {
             <Route path="users" element={<ProtectedRoute adminOnly title="Manage Users"><ManageUsers /></ProtectedRoute>} />
             <Route path="events" element={<ProtectedRoute adminOnly title="Manage Events"><ManageEvents /></ProtectedRoute>} />
             <Route path="venues" element={<ProtectedRoute adminOnly title="Manage Venues"><AdminVenues /></ProtectedRoute>} />
+            <Route path="venues/:id/bookings" element={<ProtectedRoute adminOnly title="Venue Bookings"><VenueBookings /></ProtectedRoute>} />
+            <Route path="venue-bookings" element={<ProtectedRoute adminOnly title="All Venue Bookings"><AllVenueBookings /></ProtectedRoute>} />
             <Route path="create-venue" element={<ProtectedRoute adminOnly title="Create Venue"><CreateVenue /></ProtectedRoute>} />
             <Route path="edit-venue/:id" element={<ProtectedRoute adminOnly title="Edit Venue"><EditVenue /></ProtectedRoute>} />
             <Route path="notifications" element={<ProtectedRoute adminOnly title="Admin Notifications"><NotificationsPage /></ProtectedRoute>} />

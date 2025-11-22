@@ -1860,3 +1860,54 @@ export const generateSearchSuggestions = async (type, query) => {
         return [];
     }
 };
+
+// Get all venue bookings for admin
+export const getAllVenueBookings = asyncHandler(async (req, res) => {
+    try {
+        const { status } = req.query;
+        const Venue = (await import('../models/venueModel.js')).default;
+
+        // Get all venues with their bookings
+        const venues = await Venue.find({})
+            .populate('bookings.user', 'name email phone avatar')
+            .populate('bookings.event', 'name date')
+            .lean();
+
+        // Extract all bookings from all venues
+        let allBookings = [];
+        venues.forEach(venue => {
+            if (venue.bookings && venue.bookings.length > 0) {
+                venue.bookings.forEach(booking => {
+                    allBookings.push({
+                        ...booking,
+                        venue: {
+                            _id: venue._id,
+                            name: venue.name,
+                            location: venue.location
+                        }
+                    });
+                });
+            }
+        });
+
+        // Filter by status if provided
+        if (status && status !== 'all') {
+            allBookings = allBookings.filter(booking => booking.status === status);
+        }
+
+        // Sort by most recent bookings first
+        allBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.json({
+            success: true,
+            data: allBookings,
+            count: allBookings.length
+        });
+    } catch (error) {
+        console.error('Get all venue bookings error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to fetch venue bookings'
+        });
+    }
+});

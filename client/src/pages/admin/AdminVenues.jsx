@@ -16,7 +16,8 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
-  Star
+  Star,
+  CalendarCheck
 } from 'lucide-react';
 import { useVenue } from '@/hooks/useVenue';
 import { Button } from '@/components/ui/button';
@@ -112,9 +113,10 @@ const AdminVenues = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
       className="group"
     >
-      <Card className="border-border hover:shadow-lg transition-all duration-300 overflow-hidden">
+      <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 overflow-hidden">
         {/* Venue Image */}
         <div className="relative h-48 overflow-hidden bg-muted">
           {venue.images && venue.images.length > 0 ? (
@@ -129,9 +131,15 @@ const AdminVenues = () => {
             </div>
           )}
           <div className="absolute top-2 right-2 flex gap-2">
-            <Badge variant={venue.status === 'active' ? 'default' : 'secondary'} className="bg-background/90 backdrop-blur">
-              {venue.status || 'active'}
+            <Badge variant={venue.isActive !== false ? 'default' : 'secondary'} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur shadow-sm">
+              {venue.isActive !== false ? 'Active' : 'Inactive'}
             </Badge>
+            {venue.isVerified && (
+              <Badge variant="default" className="bg-green-500/90 text-white backdrop-blur shadow-sm">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Verified
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -178,7 +186,7 @@ const AdminVenues = () => {
                 <DollarSign className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">Per Hour</p>
-                  <p className="font-semibold text-foreground">${venue.pricePerHour}</p>
+                  <p className="font-semibold text-foreground">₹{venue.pricing?.hourlyRate || 0}</p>
                 </div>
               </div>
             </div>
@@ -257,80 +265,114 @@ const AdminVenues = () => {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Building2 className="w-7 h-7 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Venue Management</h1>
-                <p className="text-muted-foreground mt-1">Manage all sports venues on the platform</p>
-              </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 sm:mb-8"
+        >
+          {/* Header with Gradient Background */}
+          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-4 sm:p-6 lg:p-8 text-white shadow-xl mb-6">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <defs>
+                  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                  </pattern>
+                </defs>
+                <rect width="100" height="100" fill="url(#grid)" />
+              </svg>
             </div>
-            <Button onClick={() => navigate('/admin/create-venue')}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Venue
-            </Button>
+
+            <div className="relative z-10 flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:justify-between lg:items-center">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-white/20 rounded-xl backdrop-blur-sm flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-1 leading-tight">Venue Management</h1>
+                  <p className="text-white/90 text-sm sm:text-base">Manage all sports venues on the platform</p>
+                </div>
+              </div>
+              <Button onClick={() => navigate('/admin/create-venue')} className="bg-white text-slate-900 hover:bg-white/90 shrink-0">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Venue
+              </Button>
+            </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Venues</p>
-                    <p className="text-2xl font-bold text-foreground">{venues.length}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Venues</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{venues.length}</p>
                   </div>
-                  <Building2 className="w-8 h-8 text-primary" />
+                  <div className="p-2 sm:p-3 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border border-blue-200/20 dark:border-blue-700/20">
+                    <Building2 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-border">
-              <CardContent className="p-6">
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Active</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {venues.filter(v => v.status === 'active').length}
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">
+                      {venues.filter(v => v.isActive !== false).length}
                     </p>
                   </div>
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+                  <div className="p-2 sm:p-3 rounded-lg bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 border border-green-200/20 dark:border-green-700/20">
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-border">
-              <CardContent className="p-6">
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Capacity</p>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Capacity</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {venues.reduce((sum, v) => sum + (v.capacity || 0), 0)}
                     </p>
                   </div>
-                  <Users className="w-8 h-8 text-primary" />
+                  <div className="p-2 sm:p-3 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 border border-indigo-200/20 dark:border-indigo-700/20">
+                    <Users className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-border">
-              <CardContent className="p-6">
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Avg Price/Hour</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      ${venues.length > 0 ? Math.round(venues.reduce((sum, v) => sum + (v.pricePerHour || 0), 0) / venues.length) : 0}
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Avg Price/Hour</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                      ₹{venues.length > 0 ? Math.round(venues.reduce((sum, v) => sum + (v.pricing?.hourlyRate || 0), 0) / venues.length) : 0}
                     </p>
                   </div>
-                  <DollarSign className="w-8 h-8 text-primary" />
+                  <div className="p-2 sm:p-3 rounded-lg bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 border border-orange-200/20 dark:border-orange-700/20">
+                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
+        </motion.div>
 
-          {/* Filters */}
+        {/* Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6"
+        >
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -374,11 +416,11 @@ const AdminVenues = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Venues List */}
         {viewMode === 'table' ? (
-          <Card className="border-border">
+          <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -453,13 +495,20 @@ const AdminVenues = () => {
                       <TableCell>
                         <div className="flex items-center gap-1 font-semibold">
                           <DollarSign className="w-4 h-4" />
-                          {venue.pricePerHour}
+                          ₹{venue.pricing?.hourlyRate || 0}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={venue.status === 'active' ? 'default' : 'secondary'}>
-                          {venue.status || 'active'}
-                        </Badge>
+                        <div className="flex gap-2">
+                          <Badge variant={venue.isActive !== false ? 'default' : 'secondary'}>
+                            {venue.isActive !== false ? 'Active' : 'Inactive'}
+                          </Badge>
+                          {venue.isVerified && (
+                            <Badge variant="outline" className="border-green-500 text-green-700 dark:text-green-400">
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -474,6 +523,12 @@ const AdminVenues = () => {
                             <DropdownMenuItem onClick={() => handleView(venue._id)}>
                               <Eye className="w-4 h-4 mr-2" />
                               View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/admin/venues/${venue._id}/bookings`}>
+                                <CalendarCheck className="w-4 h-4 mr-2" />
+                                View Bookings
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEdit(venue._id)}>
                               <Edit className="w-4 h-4 mr-2" />

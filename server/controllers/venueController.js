@@ -2,6 +2,7 @@ import Venue from '../models/venueModel.js';
 import User from '../models/userModel.js';
 import Event from '../models/eventModel.js';
 import { cloudinary } from '../config/cloudinary.js';
+import { invalidateVenueCaches, invalidateVenueLists } from '../cache/venueCache.js';
 
 // Get all venues with filters
 export const getAllVenues = async (req, res) => {
@@ -297,6 +298,9 @@ export const createVenue = async (req, res) => {
     const populatedVenue = await Venue.findById(venue._id)
       .populate("owner", "name avatar username");
 
+    // Invalidate venue caches
+    await invalidateVenueLists();
+
     res.status(201).json({
       success: true,
       message: "Venue created successfully",
@@ -318,6 +322,14 @@ export const rateVenue = async (req, res) => {
     const { rating, review } = req.body;
     const venueId = req.params.id;
 
+    // Validate rating
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Rating must be between 1 and 5"
+      });
+    }
+
     const venue = await Venue.findById(venueId);
     if (!venue) {
       return res.status(404).json({
@@ -327,34 +339,59 @@ export const rateVenue = async (req, res) => {
     }
 
     // Check if user already rated
-    const existingRating = venue.ratings.find(
+    const existingRatingIndex = venue.ratings.findIndex(
       r => r.user.toString() === req.user.id
     );
 
-    if (existingRating) {
-      existingRating.rating = rating;
-      existingRating.review = review;
-      existingRating.date = new Date();
+    if (existingRatingIndex !== -1) {
+      // Update existing rating
+      venue.ratings[existingRatingIndex].rating = rating;
+      venue.ratings[existingRatingIndex].review = review || '';
+      venue.ratings[existingRatingIndex].date = new Date();
     } else {
+      // Add new rating
       venue.ratings.push({
         user: req.user.id,
-        rating,
-        review,
+        rating: Number(rating),
+        review: review || '',
         date: new Date()
       });
     }
 
     await venue.save();
 
+    // Invalidate venue caches
+    await invalidateVenueCaches(venueId);
+
+    // Fetch updated venue with all populated fields
     const updatedVenue = await Venue.findById(venueId)
-      .populate("ratings.user", "name avatar username");
+      .populate("owner", "name avatar username email")
+      .populate("ratings.user", "name avatar username")
+      .populate("bookings.user", "name avatar username")
+      .populate("eventsHosted")
+      .lean();
+
+    // Calculate metrics
+    const averageRating = updatedVenue.ratings.length > 0 
+      ? (updatedVenue.ratings.reduce((acc, r) => acc + r.rating, 0) / updatedVenue.ratings.length).toFixed(1)
+      : 0;
+
+    const recentReviews = updatedVenue.ratings
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 5);
 
     res.json({
       success: true,
-      message: "Rating submitted successfully",
-      data: updatedVenue
+      message: existingRatingIndex !== -1 ? "Rating updated successfully" : "Rating submitted successfully",
+      data: {
+        ...updatedVenue,
+        averageRating,
+        totalReviews: updatedVenue.ratings.length,
+        recentReviews
+      }
     });
   } catch (error) {
+    console.error('Rate venue error:', error);
     res.status(500).json({
       success: false,
       message: "Error rating venue",
@@ -366,7 +403,7 @@ export const rateVenue = async (req, res) => {
 // Book venue
 export const bookVenue = async (req, res) => {
   try {
-    const { startTime, endTime, eventId } = req.body;
+    const { startTime, endTime, eventId, notes } = req.body;
     const venueId = req.params.id;
 
     const venue = await Venue.findById(venueId);
@@ -396,9 +433,10 @@ export const bookVenue = async (req, res) => {
       });
     }
 
-    // Calculate amount (simplified calculation)
-    const hours = (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60);
-    const amount = hours * venue.pricing.hourlyRate;
+    // Calculate amount
+    const hours = Math.ceil((new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60));
+    const amount = venue.pricing.hourlyRate * hours;
+    const totalAmount = amount; // Can add taxes, fees, etc. here
 
     venue.bookings.push({
       user: req.user.id,
@@ -406,17 +444,33 @@ export const bookVenue = async (req, res) => {
       startTime,
       endTime,
       amount,
+      totalAmount,
+      duration: hours,
+      notes: notes || '',
       status: "confirmed" // In real app, might be "pending" pending payment
     });
 
     await venue.save();
 
+    // Invalidate venue caches
+    await invalidateVenueCaches(venueId);
+
+    const booking = venue.bookings[venue.bookings.length - 1];
+
     res.json({
       success: true,
       message: "Venue booked successfully",
-      data: venue
+      data: {
+        booking,
+        venue: {
+          _id: venue._id,
+          name: venue.name,
+          location: venue.location
+        }
+      }
     });
   } catch (error) {
+    console.error('Book venue error:', error);
     res.status(500).json({
       success: false,
       message: "Error booking venue",
@@ -586,6 +640,9 @@ export const updateVenue = async (req, res) => {
     const updatedVenue = await Venue.findById(venueId)
       .populate("owner", "name avatar username");
 
+    // Invalidate venue caches
+    await invalidateVenueCaches(venueId);
+
     res.json({
       success: true,
       message: "Venue updated successfully",
@@ -597,6 +654,7 @@ export const updateVenue = async (req, res) => {
       message: "Error updating venue",
       error: error.message
     });
+    console.log(error)
   }
 };
 
@@ -646,6 +704,9 @@ export const deleteVenue = async (req, res) => {
     }
 
     await Venue.findByIdAndDelete(venueId);
+
+    // Invalidate venue caches
+    await invalidateVenueCaches(venueId);
 
     res.json({
       success: true,

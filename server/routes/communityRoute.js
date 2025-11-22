@@ -21,7 +21,16 @@ import {
   addCommentToPost,
   getCommunityStats,
   getTrendingPosts,
-  getFollowingPosts
+  getFollowingPosts,
+  incrementPostView,
+  sharePost,
+  likeComment,
+  replyToComment,
+  likeReply,
+  updateComment,
+  deleteComment,
+  updateReply,
+  deleteReply
 } from '../controllers/communityController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
 import { upload } from '../config/cloudinary.js';
@@ -66,24 +75,29 @@ router.get('/posts/:id',
   getCommunityPostById
 );
 
+// Protected routes
+router.use(isAuthenticated);
+
+// User communities (must be before /:id to avoid conflicts)
+router.get('/my-communities', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.user.id), communityTTL),
+  getUserCommunities
+);
+router.get('/user/:userId', 
+  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.params.userId), communityTTL),
+  getUserCommunities
+);
+
+// Community detail (after specific routes)
 router.get('/:id', 
   cacheMiddleware((req) => CacheKeys.COMMUNITY.DETAIL(req.params.id), communityTTL),
   getCommunity
 );
 
-// Protected routes
-router.use(isAuthenticated);
-
 // Community CRUD
 router.post('/', upload.array('image', 1), createCommunity);
 router.put('/:id', upload.array('image', 1), updateCommunity);
 router.delete('/:id', deleteCommunity);
-
-// User communities
-router.get('/user/:userId', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.params.userId), communityTTL),
-  getUserCommunities
-);
 
 // Community membership
 router.post('/:id/join', joinCommunity);
@@ -94,7 +108,16 @@ router.post('/posts', upload.array('images', 5), createCommunityPost);
 router.put('/posts/:id', upload.array('images', 5), updateCommunityPost);
 router.delete('/posts/:id', deleteCommunityPost);
 router.post('/posts/:id/like', likeCommunityPost);
+router.post('/posts/:id/view', incrementPostView);
+router.post('/posts/:id/share', sharePost);
 router.post('/posts/:id/comments', addCommentToPost);
+router.put('/posts/:postId/comments/:commentId', updateComment);
+router.delete('/posts/:postId/comments/:commentId', deleteComment);
+router.post('/posts/:postId/comments/:commentId/like', likeComment);
+router.post('/posts/:postId/comments/:commentId/replies', replyToComment);
+router.put('/posts/:postId/comments/:commentId/replies/:replyId', updateReply);
+router.delete('/posts/:postId/comments/:commentId/replies/:replyId', deleteReply);
+router.post('/posts/:postId/comments/:commentId/replies/:replyId/like', likeReply);
 router.get('/posts/following/feed', getFollowingPosts);
 
 export default router;

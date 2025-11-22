@@ -1,5 +1,6 @@
 import User from "../models/userModel.js";
 import Event from "../models/eventModel.js";
+import Venue from "../models/venueModel.js";
 
 // Get user profile
 export const getUserProfile = async (req, res) => {
@@ -317,6 +318,64 @@ export const updatePreferences = async (req, res) => {
       success: false,
       message: "Error updating preferences",
       error: error.message
+    });
+  }
+};
+
+// Get user bookings
+export const getUserBookings = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { status } = req.query;
+
+    // Find all venues that have bookings from this user
+    const venues = await Venue.find({
+      'bookings.user': userId
+    })
+      .populate('bookings.user', 'name email phone avatar')
+      .populate('bookings.event', 'name date')
+      .lean();
+
+    // Extract user's bookings from all venues
+    let userBookings = [];
+    venues.forEach(venue => {
+      if (venue.bookings && venue.bookings.length > 0) {
+        venue.bookings.forEach(booking => {
+          const bookingUserId = typeof booking.user === 'object' ? booking.user._id : booking.user;
+          if (bookingUserId?.toString() === userId.toString()) {
+            userBookings.push({
+              ...booking,
+              venue: {
+                _id: venue._id,
+                name: venue.name,
+                location: venue.location,
+                contactInfo: venue.contactInfo,
+                images: venue.images || []
+              }
+            });
+          }
+        });
+      }
+    });
+
+    // Filter by status if provided
+    if (status && status !== 'all') {
+      userBookings = userBookings.filter(booking => booking.status === status);
+    }
+
+    // Sort by start time (most recent first)
+    userBookings.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
+    res.json({
+      success: true,
+      data: userBookings,
+      count: userBookings.length
+    });
+  } catch (error) {
+    console.error('Get user bookings error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch bookings'
     });
   }
 };

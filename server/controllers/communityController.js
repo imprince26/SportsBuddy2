@@ -1,6 +1,7 @@
 import Community from '../models/communityModel.js';
 import User from '../models/userModel.js';
 import { cloudinary } from '../config/cloudinary.js';
+import { deleteCachePattern } from '../config/redis.js';
 
 // Get all communities
 export const getCommunities = async (req, res) => {
@@ -164,6 +165,7 @@ export const getCommunity = async (req, res) => {
       .populate("members.user", "name avatar username location.city")
       .populate("posts.author", "name avatar username")
       .populate("posts.comments.author", "name avatar username")
+      .populate("posts.comments.replies.author", "name avatar username")
       .populate("events")
       .lean();
 
@@ -230,10 +232,32 @@ export const createCommunity = async (req, res) => {
       settings
     } = req.body;
 
+    // Validation
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Community name is required"
+      });
+    }
+
+    if (!description || !description.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Community description is required"
+      });
+    }
+
+    if (!category) {
+      return res.status(400).json({
+        success: false,
+        message: "Community category is required"
+      });
+    }
+
     let uploadedImage = null;
 
     // Handle image upload
-    if (req.files) {
+    if (req.files && req.files.length > 0) {
       try {
         const result = await cloudinary.uploader.upload(req.files[0].path, {
           folder: "communities",
@@ -248,17 +272,18 @@ export const createCommunity = async (req, res) => {
           public_id: result.public_id
         };
       } catch (uploadError) {
+        console.error("Image upload error:", uploadError);
         throw new Error("Image upload failed: " + uploadError.message);
       }
     }
 
     const community = new Community({
-      name,
-      description,
+      name: name.trim(),
+      description: description.trim(),
       category,
       location: typeof location === "string" ? JSON.parse(location) : location,
       rules: Array.isArray(rules) ? rules : JSON.parse(rules || "[]"),
-      isPrivate: isPrivate === "true",
+      isPrivate: isPrivate === "true" || isPrivate === true,
       settings: typeof settings === "string" ? JSON.parse(settings) : settings,
       image: uploadedImage,
       creator: req.user.id,
@@ -282,10 +307,21 @@ export const createCommunity = async (req, res) => {
       data: populatedCommunity
     });
   } catch (error) {
+    console.error("Error creating community:", error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      message: "Error creating community",
-      error: error.message
+      message: error.message || "Error creating community"
     });
   }
 };
@@ -504,6 +540,9 @@ export const deleteCommunity = async (req, res) => {
     community.deletedAt = new Date();
     community.deletedBy = req.user.id;
     await community.save();
+
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:*`);
 
     // For hard delete, uncomment below:
     // await Community.findByIdAndDelete(id);
@@ -1014,6 +1053,8 @@ export const getCommunityPosts = async (req, res) => {
       communityId = ""
     } = req.query;
 
+    console.log('getCommunityPosts called with:', { page, limit, category, search, sortBy, communityId });
+
     let query = {};
 
     // Filter by community
@@ -1055,8 +1096,14 @@ export const getCommunityPosts = async (req, res) => {
         sort = { createdAt: -1 };
     }
 
+    // Build query for finding communities
+    let communityQuery = {};
+    if (communityId) {
+      communityQuery._id = communityId;
+    }
+
     // Get posts from communities collection
-    const communities = await Community.find(query.communityId ? { _id: query.communityId } : {})
+    const communities = await Community.find(communityQuery)
       .populate({
         path: 'posts.author',
         select: 'name username avatar'
@@ -1064,7 +1111,16 @@ export const getCommunityPosts = async (req, res) => {
       .populate({
         path: 'posts.comments.author',
         select: 'name username avatar'
+      })
+      .populate({
+        path: 'posts.comments.replies.author',
+        select: 'name username avatar'
       });
+
+    console.log('Found communities:', communities.length);
+    communities.forEach(c => {
+      console.log(`Community ${c.name} has ${c.posts?.length || 0} posts`);
+    });
 
     let allPosts = [];
     communities.forEach(community => {
@@ -1111,6 +1167,8 @@ export const getCommunityPosts = async (req, res) => {
     // Pagination
     const total = allPosts.length;
     const paginatedPosts = allPosts.slice(skip, skip + parseInt(limit));
+
+    console.log('Total posts found:', total, 'Returning:', paginatedPosts.length);
 
     res.json({
       success: true,
@@ -1219,6 +1277,11 @@ export const createCommunityPost = async (req, res) => {
 
     const createdPost = updatedCommunity.posts[updatedCommunity.posts.length - 1];
 
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:*`);
+    await deleteCachePattern(`community:detail:${communityId}`);
+    await deleteCachePattern(`community:list:*`);
+
     res.status(201).json({
       success: true,
       message: "Post created successfully",
@@ -1252,7 +1315,8 @@ export const getCommunityPostById = async (req, res) => {
       { "posts.$": 1, name: 1, image: 1 }
     )
       .populate("posts.author", "name username avatar")
-      .populate("posts.comments.author", "name username avatar");
+      .populate("posts.comments.author", "name username avatar")
+      .populate("posts.comments.replies.author", "name username avatar");
 
     if (!community || !community.posts.length) {
       return res.status(404).json({
@@ -1272,9 +1336,11 @@ export const getCommunityPostById = async (req, res) => {
           name: community.name,
           image: community.image
         },
-        likesCount: post.likes.length,
-        commentsCount: post.comments.length,
-        isLiked: req.user ? post.likes.includes(req.user.id) : false
+        likesCount: post.likes?.length || 0,
+        commentsCount: post.comments?.length || 0,
+        viewsCount: post.views?.length || 0,
+        sharesCount: post.shares || 0,
+        isLiked: req.user ? post.likes.some(like => like.user?.toString() === req.user.id) : false
       }
     });
 
@@ -1348,9 +1414,16 @@ export const updateCommunityPost = async (req, res) => {
 
     await community.save();
 
-    // Return updated post
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${id}`);
+    await deleteCachePattern('community:posts:trending:*');
+
+    // Return updated post with all populated data
     const updatedCommunity = await Community.findOne({ "posts._id": id })
       .populate("posts.author", "name username avatar")
+      .populate("posts.comments.author", "name username avatar")
+      .populate("posts.comments.replies.author", "name username avatar")
       .select("posts name image");
 
     const updatedPost = updatedCommunity.posts.id(id);
@@ -1364,7 +1437,9 @@ export const updateCommunityPost = async (req, res) => {
           _id: updatedCommunity._id,
           name: updatedCommunity.name,
           image: updatedCommunity.image
-        }
+        },
+        likesCount: updatedPost.likes.length,
+        commentsCount: updatedPost.comments.length
       }
     });
 
@@ -1421,6 +1496,11 @@ export const deleteCommunityPost = async (req, res) => {
     community.stats.totalPosts -= 1;
     await community.save();
 
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:*`);
+    await deleteCachePattern(`community:detail:${community._id}`);
+    await deleteCachePattern(`community:list:*`);
+
     res.json({
       success: true,
       message: "Post deleted successfully"
@@ -1453,23 +1533,28 @@ export const likeCommunityPost = async (req, res) => {
     const post = community.posts.id(id);
     const userId = req.user.id;
 
-    const isLiked = post.likes.includes(userId);
+    // Check if user already liked (using new schema with user object)
+    const likeIndex = post.likes.findIndex(like => like.user.toString() === userId);
 
-    if (isLiked) {
-      // Unlike
-      post.likes.pull(userId);
+    if (likeIndex > -1) {
+      // Unlike - remove the like
+      post.likes.splice(likeIndex, 1);
     } else {
-      // Like
-      post.likes.push(userId);
+      // Like - add new like
+      post.likes.push({ user: userId, createdAt: new Date() });
     }
 
     await community.save();
 
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:*`);
+    await deleteCachePattern(`community:detail:${community._id}`);
+
     res.json({
       success: true,
-      message: isLiked ? "Post unliked" : "Post liked",
+      message: likeIndex > -1 ? "Post unliked" : "Post liked",
       data: {
-        isLiked: !isLiked,
+        isLiked: likeIndex === -1,
         likesCount: post.likes.length
       }
     });
@@ -1516,6 +1601,12 @@ export const addCommentToPost = async (req, res) => {
 
     post.comments.push(newComment);
     await community.save();
+
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:*`); // All community post lists
+    await deleteCachePattern(`community:post:${id}`); // This specific post detail
+    await deleteCachePattern(`community:detail:${community._id}`); // Community detail
+    await deleteCachePattern(`community:posts:trending:*`); // Trending posts
 
     // Get updated post with populated comment
     const updatedCommunity = await Community.findOne({ "posts._id": id })
@@ -1763,3 +1854,561 @@ export const getFollowingPosts = async (req, res) => {
     });
   }
 };
+
+// Increment post view
+export const incrementPostView = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const community = await Community.findOne({ "posts._id": id });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(id);
+
+    // Check if user already viewed
+    const hasViewed = post.views.some(view => view.user.toString() === userId);
+
+    if (!hasViewed) {
+      post.views.push({ user: userId, viewedAt: new Date() });
+      await community.save();
+    }
+
+    res.json({
+      success: true,
+      data: {
+        viewsCount: post.views.length
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in incrementPostView:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error incrementing view",
+      error: error.message
+    });
+  }
+};
+
+// Share post
+export const sharePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const community = await Community.findOne({ "posts._id": id });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(id);
+    post.shares = (post.shares || 0) + 1;
+    await community.save();
+
+    res.json({
+      success: true,
+      data: {
+        shares: post.shares
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in sharePost:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error sharing post",
+      error: error.message
+    });
+  }
+};
+
+// Like comment
+export const likeComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const userId = req.user.id;
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const likeIndex = comment.likes.findIndex(like => like.user.toString() === userId);
+
+    if (likeIndex > -1) {
+      comment.likes.splice(likeIndex, 1);
+    } else {
+      comment.likes.push({ user: userId, createdAt: new Date() });
+    }
+
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:*`);
+
+    res.json({
+      success: true,
+      message: likeIndex > -1 ? "Comment unliked" : "Comment liked",
+      data: {
+        isLiked: likeIndex === -1,
+        likesCount: comment.likes.length
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in likeComment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error liking comment",
+      error: error.message
+    });
+  }
+};
+
+// Reply to comment
+export const replyToComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const { content } = req.body;
+    const userId = req.user.id;
+
+    if (!content || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Reply content is required"
+      });
+    }
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const newReply = {
+      author: userId,
+      content: content.trim(),
+      createdAt: new Date(),
+      likes: []
+    };
+
+    if (!comment.replies) {
+      comment.replies = [];
+    }
+
+    comment.replies.push(newReply);
+    await community.save();
+
+    // Get updated data with populated author
+    const updatedCommunity = await Community.findById(community._id)
+      .populate('posts.comments.replies.author', 'name username avatar');
+
+    const updatedPost = updatedCommunity.posts.id(postId);
+    const updatedComment = updatedPost.comments.id(commentId);
+    const createdReply = updatedComment.replies[updatedComment.replies.length - 1];
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:*`); // All community post lists
+    await deleteCachePattern(`community:post:${postId}`); // This specific post detail
+    await deleteCachePattern(`community:detail:${community._id}`); // Community detail
+    await deleteCachePattern(`community:posts:trending:*`); // Trending posts
+
+    res.status(201).json({
+      success: true,
+      message: "Reply added successfully",
+      data: createdReply
+    });
+
+  } catch (error) {
+    console.error("Error in replyToComment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error adding reply",
+      error: error.message
+    });
+  }
+};
+
+// Like reply
+export const likeReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const userId = req.user.id;
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const reply = comment.replies.id(replyId);
+
+    if (!reply) {
+      return res.status(404).json({
+        success: false,
+        message: "Reply not found"
+      });
+    }
+
+    const likeIndex = reply.likes.findIndex(like => like.user.toString() === userId);
+
+    if (likeIndex > -1) {
+      reply.likes.splice(likeIndex, 1);
+    } else {
+      reply.likes.push({ user: userId, createdAt: new Date() });
+    }
+
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:*`);
+
+    res.json({
+      success: true,
+      message: likeIndex > -1 ? "Reply unliked" : "Reply liked",
+      data: {
+        isLiked: likeIndex === -1,
+        likesCount: reply.likes.length
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in likeReply:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error liking reply",
+      error: error.message
+    });
+  }
+};
+
+// Update comment
+export const updateComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment content is required"
+      });
+    }
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    // Check if user is the comment author
+    if (comment.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this comment"
+      });
+    }
+
+    comment.content = content.trim();
+    comment.updatedAt = new Date();
+
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${postId}`);
+
+    // Return updated comment
+    const updatedCommunity = await Community.findOne({ "posts._id": postId })
+      .populate("posts.comments.author", "name username avatar");
+
+    const updatedPost = updatedCommunity.posts.id(postId);
+    const updatedComment = updatedPost.comments.id(commentId);
+
+    res.json({
+      success: true,
+      message: "Comment updated successfully",
+      data: updatedComment
+    });
+
+  } catch (error) {
+    console.error("Error in updateComment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating comment",
+      error: error.message
+    });
+  }
+};
+
+// Delete comment
+export const deleteComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    // Check if user is the comment author, post author, or community admin
+    if (comment.author.toString() !== req.user.id &&
+        post.author.toString() !== req.user.id &&
+        !community.admins.includes(req.user.id) &&
+        !community.moderators.includes(req.user.id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this comment"
+      });
+    }
+
+    // Remove the comment
+    post.comments.pull(commentId);
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${postId}`);
+
+    res.json({
+      success: true,
+      message: "Comment deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error in deleteComment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting comment",
+      error: error.message
+    });
+  }
+};
+
+// Update reply
+export const updateReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Reply content is required"
+      });
+    }
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const reply = comment.replies.id(replyId);
+
+    if (!reply) {
+      return res.status(404).json({
+        success: false,
+        message: "Reply not found"
+      });
+    }
+
+    // Check if user is the reply author
+    if (reply.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this reply"
+      });
+    }
+
+    reply.content = content.trim();
+    reply.updatedAt = new Date();
+
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${postId}`);
+
+    // Return updated reply
+    const updatedCommunity = await Community.findOne({ "posts._id": postId })
+      .populate("posts.comments.replies.author", "name username avatar");
+
+    const updatedPost = updatedCommunity.posts.id(postId);
+    const updatedComment = updatedPost.comments.id(commentId);
+    const updatedReply = updatedComment.replies.id(replyId);
+
+    res.json({
+      success: true,
+      message: "Reply updated successfully",
+      data: updatedReply
+    });
+
+  } catch (error) {
+    console.error("Error in updateReply:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating reply",
+      error: error.message
+    });
+  }
+};
+
+// Delete reply
+export const deleteReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const reply = comment.replies.id(replyId);
+
+    if (!reply) {
+      return res.status(404).json({
+        success: false,
+        message: "Reply not found"
+      });
+    }
+
+    // Check if user is the reply author, comment author, post author, or community admin
+    if (reply.author.toString() !== req.user.id &&
+        comment.author.toString() !== req.user.id &&
+        post.author.toString() !== req.user.id &&
+        !community.admins.includes(req.user.id) &&
+        !community.moderators.includes(req.user.id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this reply"
+      });
+    }
+
+    // Remove the reply
+    comment.replies.pull(replyId);
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:${community._id}:*`);
+    await deleteCachePattern(`community:post:${postId}`);
+
+    res.json({
+      success: true,
+      message: "Reply deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error in deleteReply:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting reply",
+      error: error.message
+    });
+  }
+};
+

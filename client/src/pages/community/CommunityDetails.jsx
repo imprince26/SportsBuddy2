@@ -346,7 +346,7 @@ const CommunityDetails = () => {
   // Render error state
   if (error || !currentCommunity) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="text-center p-8">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -372,7 +372,7 @@ const CommunityDetails = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="min-h-screen bg-gray-50 dark:bg-gray-900"
+      className="min-h-screen bg-background"
     >
       {/* Hero Section */}
       <motion.div variants={itemVariants} className="relative">
@@ -538,11 +538,17 @@ const CommunityDetails = () => {
             {/* Tabs */}
             <motion.div variants={itemVariants}>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full grid grid-cols-3 lg:grid-cols-4">
+                <TabsList className={`w-full grid ${community.isMember ? 'grid-cols-4 lg:grid-cols-5' : 'grid-cols-3 lg:grid-cols-4'}`}>
                   <TabsTrigger value="posts" className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
                     <span className="hidden sm:inline">Posts</span>
                   </TabsTrigger>
+                  {community.isMember && (
+                    <TabsTrigger value="my-posts" className="flex items-center gap-2">
+                      <Star className="w-4 h-4" />
+                      <span className="hidden sm:inline">My Posts</span>
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="events" className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span className="hidden sm:inline">Events</span>
@@ -655,7 +661,7 @@ const CommunityDetails = () => {
                         ))}
                       </div>
                     ) : !posts || posts.length === 0 ? (
-                      <Card className="border-x-0 border-t-0 rounded-none">
+                      <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md">
                         <CardContent className="text-center py-12">
                           <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                           <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
@@ -679,6 +685,66 @@ const CommunityDetails = () => {
                     )}
                   </div>
                 </TabsContent>
+
+                {/* My Posts Tab */}
+                {community.isMember && (
+                  <TabsContent value="my-posts" className="mt-6">
+                    <div className="space-y-0">
+                      {loading ? (
+                        <div className="space-y-4">
+                          {[1, 2, 3].map((i) => (
+                            <Card key={i} className="border-x-0 border-t-0 rounded-none">
+                              <CardContent className="p-4">
+                                <div className="flex items-center gap-3 mb-4">
+                                  <Skeleton className="w-10 h-10 rounded-full" />
+                                  <div className="space-y-2">
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-3 w-24" />
+                                  </div>
+                                </div>
+                                <Skeleton className="h-20 w-full mb-4" />
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        (() => {
+                          const myPosts = posts?.filter(post => 
+                            post.author?._id === user?.id || post.author?.id === user?.id
+                          ) || [];
+                          
+                          return myPosts.length === 0 ? (
+                            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md">
+                              <CardContent className="text-center py-12">
+                                <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+                                <p className="text-muted-foreground mb-4">
+                                  You haven't created any posts in this community yet.
+                                </p>
+                                <Button onClick={() => setShowCreatePost(true)}>
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Create Your First Post
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          ) : (
+                            myPosts.map((post) => (
+                              <PostCard
+                                key={post._id}
+                                post={post}
+                                currentUser={user}
+                                onLike={handleLikePost}
+                                onShare={handleSharePost}
+                                onDelete={handleDeletePost}
+                                onImageClick={handleImageClick}
+                              />
+                            ))
+                          );
+                        })()
+                      )}
+                    </div>
+                  </TabsContent>
+                )}
 
                 {/* Events Tab */}
                 <TabsContent value="events" className="mt-6">
@@ -995,7 +1061,7 @@ const CommunityDetails = () => {
 
 // Skeleton Loading Component
 const CommunityDetailsSkeleton = () => (
-  <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div className="min-h-screen bg-background">
     {/* Hero Skeleton */}
     <div className="h-48 md:h-64 lg:h-80 bg-gray-200 dark:bg-gray-800 relative">
       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 lg:p-8">

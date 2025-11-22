@@ -540,6 +540,9 @@ export const deleteCommunity = async (req, res) => {
     community.deletedBy = req.user.id;
     await community.save();
 
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:*`);
+
     // For hard delete, uncomment below:
     // await Community.findByIdAndDelete(id);
 
@@ -1475,6 +1478,11 @@ export const deleteCommunityPost = async (req, res) => {
     community.posts.pull(id);
     community.stats.totalPosts -= 1;
     await community.save();
+
+    // Invalidate relevant caches
+    await deleteCachePattern(`community:posts:*`);
+    await deleteCachePattern(`community:detail:${community._id}`);
+    await deleteCachePattern(`community:list:*`);
 
     res.json({
       success: true,

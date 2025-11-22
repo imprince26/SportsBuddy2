@@ -64,7 +64,7 @@ const PostCard = ({
 
   return (
     <Card
-      className="hover:bg-accent/5 transition-colors cursor-pointer border-b border-x-0 border-t-0 rounded-none"
+      className="cursor-pointer border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg hover:border-primary/30 transition-all duration-300 mb-4"
       onClick={handleCardClick}
     >
       <div className="p-4">

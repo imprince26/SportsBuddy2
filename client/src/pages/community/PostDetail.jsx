@@ -14,7 +14,7 @@ import ImageGalleryModal from '../../components/community/ImageGalleryModal';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
-const CommentItem = ({ comment, currentUser, onLike, onReply, level = 0 }) => {
+const CommentItem = ({ comment, currentUser, onLike, onReply, level = 0, postId }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [isLiked, setIsLiked] = useState(
@@ -23,12 +23,12 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, level = 0 }) => {
 
   const handleLike = async () => {
     setIsLiked(!isLiked);
-    await onLike(comment._id);
+    await onLike(postId, comment._id);
   };
 
   const handleReply = async () => {
     if (!replyContent.trim()) return;
-    await onReply(comment._id, replyContent);
+    await onReply(postId, comment._id, replyContent);
     setReplyContent('');
     setShowReplyForm(false);
   };
@@ -47,7 +47,7 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, level = 0 }) => {
         </Link>
 
         <div className="flex-1">
-          <div className="bg-accent/50 rounded-lg p-3">
+          <div className="bg-card/80 border border-border/30 rounded-lg p-3 backdrop-blur-sm">
             <div className="flex items-center gap-2 mb-1">
               <Link
                 to={`/profile/${author._id || author.id}`}
@@ -110,6 +110,7 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, level = 0 }) => {
                   currentUser={currentUser}
                   onLike={onLike}
                   onReply={onReply}
+                  postId={postId}
                   level={level + 1}
                 />
               ))}
@@ -140,6 +141,7 @@ const PostDetail = () => {
   const [commentContent, setCommentContent] = useState('');
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [sharesCount, setSharesCount] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
@@ -158,6 +160,7 @@ const PostDetail = () => {
         currentPost.likes?.some(like => like.user === user?.id || like.user?._id === user?.id)
       );
       setLikesCount(currentPost.likes?.length || 0);
+      setSharesCount(currentPost.shares || 0);
     }
   }, [currentPost, user]);
 
@@ -175,10 +178,18 @@ const PostDetail = () => {
   };
 
   const handleShare = async () => {
-    await sharePost(postId);
-    const url = window.location.href;
-    await navigator.clipboard.writeText(url);
-    toast.success('Link copied to clipboard!');
+    try {
+      const result = await sharePost(postId);
+      if (result && result.success) {
+        setSharesCount(result.data.shares);
+        const url = window.location.href;
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      toast.error('Failed to share post');
+    }
   };
 
   const handleImageClick = (index) => {
@@ -207,9 +218,9 @@ const PostDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto pb-8">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50">
           <div className="flex items-center gap-4 p-4">
             <Button
               variant="ghost"
@@ -223,7 +234,7 @@ const PostDetail = () => {
         </div>
 
         {/* Post Content */}
-        <Card className="border-x-0 border-t-0 rounded-none">
+        <Card className="border-border/50 bg-card/80 backdrop-blur-xl shadow-xl mt-4 mx-4">
           <div className="p-6">
             {/* Author Info */}
             <div className="flex items-start gap-3 mb-4">
@@ -304,7 +315,7 @@ const PostDetail = () => {
                 <span className="text-muted-foreground">Views</span>
               </div>
               <div>
-                <span className="font-bold">{currentPost.shares || 0}</span>{' '}
+                <span className="font-bold">{sharesCount}</span>{' '}
                 <span className="text-muted-foreground">Shares</span>
               </div>
             </div>
@@ -339,7 +350,7 @@ const PostDetail = () => {
 
         {/* Comment Form */}
         {user && (
-          <Card className="border-x-0 border-t-0 rounded-none p-4">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md mt-4 mx-4 p-4">
             <div className="flex gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={user.avatar?.url} alt={user.name} />
@@ -364,7 +375,7 @@ const PostDetail = () => {
         )}
 
         {/* Comments */}
-        <Card className="border-x-0 border-t-0 rounded-none p-4">
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md mt-4 mx-4 p-4">
           <h3 className="font-semibold text-lg mb-4">
             Comments ({currentPost.comments?.length || 0})
           </h3>
@@ -377,6 +388,7 @@ const PostDetail = () => {
                   currentUser={user}
                   onLike={likeComment}
                   onReply={replyToComment}
+                  postId={postId}
                 />
               ))}
             </div>

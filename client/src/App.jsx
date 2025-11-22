@@ -49,6 +49,7 @@ import Communities from './pages/community/Communities';
 import CreateCommunity from './pages/community/CreateCommunity';
 import EditCommunity from './pages/community/EditCommunity';
 import CommunityDetails from './pages/community/CommunityDetails';
+import PostDetail from './pages/community/PostDetail';
 // import CreateVenue from './pages/venue/CreateVenue';
 // import EditVenue from './pages/venue/EditVenue';
 // import UserProfile from './pages/UserProfile';
@@ -158,6 +159,7 @@ function App() {
             <Route path="leaderboard" element={<PublicRoute title="Leaderboard"><Leaderboard /></PublicRoute>} />
             <Route path="community" element={<PublicRoute title="Community"><Communities /></PublicRoute>} />
             <Route path="community/:id" element={<PublicRoute title="Community Details"><CommunityDetails /></PublicRoute>} />
+            <Route path="community/post/:postId" element={<PublicRoute title="Post Details"><PostDetail /></PublicRoute>} />
             <Route path="about" element={<PublicRoute title="About Us"><About /></PublicRoute>} />
             <Route path="contact" element={<PublicRoute title="Contact Us"><Contact /></PublicRoute>} />
             <Route path="privacy" element={<PublicRoute title="Privacy Policy"><Privacy /></PublicRoute>} />

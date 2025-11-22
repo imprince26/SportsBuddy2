@@ -21,7 +21,12 @@ import {
   addCommentToPost,
   getCommunityStats,
   getTrendingPosts,
-  getFollowingPosts
+  getFollowingPosts,
+  incrementPostView,
+  sharePost,
+  likeComment,
+  replyToComment,
+  likeReply
 } from '../controllers/communityController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
 import { upload } from '../config/cloudinary.js';
@@ -99,7 +104,12 @@ router.post('/posts', upload.array('images', 5), createCommunityPost);
 router.put('/posts/:id', upload.array('images', 5), updateCommunityPost);
 router.delete('/posts/:id', deleteCommunityPost);
 router.post('/posts/:id/like', likeCommunityPost);
+router.post('/posts/:id/view', incrementPostView);
+router.post('/posts/:id/share', sharePost);
 router.post('/posts/:id/comments', addCommentToPost);
+router.post('/posts/:postId/comments/:commentId/like', likeComment);
+router.post('/posts/:postId/comments/:commentId/replies', replyToComment);
+router.post('/posts/:postId/comments/:commentId/replies/:replyId/like', likeReply);
 router.get('/posts/following/feed', getFollowingPosts);
 
 export default router;

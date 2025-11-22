@@ -612,6 +612,68 @@ export const CommunityProvider = ({ children }) => {
     });
   };
 
+  // Increment post view
+  const incrementPostView = async (postId) => {
+    try {
+      await api.post(`/community/posts/${postId}/view`);
+    } catch (error) {
+      console.error('Error incrementing view:', error);
+    }
+  };
+
+  // Share post
+  const sharePost = async (postId) => {
+    try {
+      const response = await api.post(`/community/posts/${postId}/share`);
+      return response.data;
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      return null;
+    }
+  };
+
+  // Like comment
+  const likeComment = async (postId, commentId) => {
+    try {
+      const response = await api.post(`/community/posts/${postId}/comments/${commentId}/like`);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to like comment';
+      toast.error(message);
+      return null;
+    }
+  };
+
+  // Reply to comment
+  const replyToComment = async (postId, commentId, content) => {
+    try {
+      const response = await api.post(`/community/posts/${postId}/comments/${commentId}/replies`, {
+        content
+      });
+
+      if (response.data.success) {
+        toast.success('Reply added successfully!');
+        return response.data.data;
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to add reply';
+      toast.error(message);
+      return null;
+    }
+  };
+
+  // Like reply
+  const likeReply = async (postId, commentId, replyId) => {
+    try {
+      const response = await api.post(`/community/posts/${postId}/comments/${commentId}/replies/${replyId}/like`);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to like reply';
+      toast.error(message);
+      return null;
+    }
+  };
+
   const value = {
     // State
     posts,
@@ -648,7 +710,12 @@ export const CommunityProvider = ({ children }) => {
     getCommunityStats,
     clearCurrentPost,
     resetFilters,
-    setFilters
+    setFilters,
+    incrementPostView,
+    sharePost,
+    likeComment,
+    replyToComment,
+    likeReply,
   };
 
   return (

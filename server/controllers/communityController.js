@@ -1508,14 +1508,15 @@ export const likeCommunityPost = async (req, res) => {
     const post = community.posts.id(id);
     const userId = req.user.id;
 
-    const isLiked = post.likes.includes(userId);
+    // Check if user already liked (using new schema with user object)
+    const likeIndex = post.likes.findIndex(like => like.user.toString() === userId);
 
-    if (isLiked) {
-      // Unlike
-      post.likes.pull(userId);
+    if (likeIndex > -1) {
+      // Unlike - remove the like
+      post.likes.splice(likeIndex, 1);
     } else {
-      // Like
-      post.likes.push(userId);
+      // Like - add new like
+      post.likes.push({ user: userId, createdAt: new Date() });
     }
 
     await community.save();
@@ -1526,9 +1527,9 @@ export const likeCommunityPost = async (req, res) => {
 
     res.json({
       success: true,
-      message: isLiked ? "Post unliked" : "Post liked",
+      message: likeIndex > -1 ? "Post unliked" : "Post liked",
       data: {
-        isLiked: !isLiked,
+        isLiked: likeIndex === -1,
         likesCount: post.likes.length
       }
     });
@@ -1826,3 +1827,278 @@ export const getFollowingPosts = async (req, res) => {
     });
   }
 };
+
+// Increment post view
+export const incrementPostView = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const community = await Community.findOne({ "posts._id": id });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(id);
+
+    // Check if user already viewed
+    const hasViewed = post.views.some(view => view.user.toString() === userId);
+
+    if (!hasViewed) {
+      post.views.push({ user: userId, viewedAt: new Date() });
+      await community.save();
+    }
+
+    res.json({
+      success: true,
+      data: {
+        viewsCount: post.views.length
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in incrementPostView:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error incrementing view",
+      error: error.message
+    });
+  }
+};
+
+// Share post
+export const sharePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const community = await Community.findOne({ "posts._id": id });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(id);
+    post.shares = (post.shares || 0) + 1;
+    await community.save();
+
+    res.json({
+      success: true,
+      data: {
+        shares: post.shares
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in sharePost:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error sharing post",
+      error: error.message
+    });
+  }
+};
+
+// Like comment
+export const likeComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const userId = req.user.id;
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const likeIndex = comment.likes.findIndex(like => like.user.toString() === userId);
+
+    if (likeIndex > -1) {
+      comment.likes.splice(likeIndex, 1);
+    } else {
+      comment.likes.push({ user: userId, createdAt: new Date() });
+    }
+
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:*`);
+
+    res.json({
+      success: true,
+      message: likeIndex > -1 ? "Comment unliked" : "Comment liked",
+      data: {
+        isLiked: likeIndex === -1,
+        likesCount: comment.likes.length
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in likeComment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error liking comment",
+      error: error.message
+    });
+  }
+};
+
+// Reply to comment
+export const replyToComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const { content } = req.body;
+    const userId = req.user.id;
+
+    if (!content || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Reply content is required"
+      });
+    }
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const newReply = {
+      author: userId,
+      content: content.trim(),
+      createdAt: new Date(),
+      likes: []
+    };
+
+    if (!comment.replies) {
+      comment.replies = [];
+    }
+
+    comment.replies.push(newReply);
+    await community.save();
+
+    // Get updated data with populated author
+    const updatedCommunity = await Community.findById(community._id)
+      .populate('posts.comments.replies.author', 'name username avatar');
+
+    const updatedPost = updatedCommunity.posts.id(postId);
+    const updatedComment = updatedPost.comments.id(commentId);
+    const createdReply = updatedComment.replies[updatedComment.replies.length - 1];
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:*`);
+
+    res.status(201).json({
+      success: true,
+      message: "Reply added successfully",
+      data: createdReply
+    });
+
+  } catch (error) {
+    console.error("Error in replyToComment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error adding reply",
+      error: error.message
+    });
+  }
+};
+
+// Like reply
+export const likeReply = async (req, res) => {
+  try {
+    const { postId, commentId, replyId } = req.params;
+    const userId = req.user.id;
+
+    const community = await Community.findOne({ "posts._id": postId });
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    const post = community.posts.id(postId);
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    const reply = comment.replies.id(replyId);
+
+    if (!reply) {
+      return res.status(404).json({
+        success: false,
+        message: "Reply not found"
+      });
+    }
+
+    const likeIndex = reply.likes.findIndex(like => like.user.toString() === userId);
+
+    if (likeIndex > -1) {
+      reply.likes.splice(likeIndex, 1);
+    } else {
+      reply.likes.push({ user: userId, createdAt: new Date() });
+    }
+
+    await community.save();
+
+    // Invalidate caches
+    await deleteCachePattern(`community:posts:*`);
+
+    res.json({
+      success: true,
+      message: likeIndex > -1 ? "Reply unliked" : "Reply liked",
+      data: {
+        isLiked: likeIndex === -1,
+        likesCount: reply.likes.length
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in likeReply:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error liking reply",
+      error: error.message
+    });
+  }
+};
+

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import {
   MapPin,
   Users,
@@ -44,6 +44,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import PostCard from '@/components/community/PostCard';
+import ImageGalleryModal from '@/components/community/ImageGalleryModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,7 +101,9 @@ const CommunityDetails = () => {
     deleteCommunity,
     createCommunityPost,
     likeCommunityPost,
-    addCommentToPost
+    addCommentToPost,
+    sharePost,
+    deleteCommunityPost
   } = useCommunity();
 
   // State management
@@ -116,6 +120,9 @@ const CommunityDetails = () => {
   const [showAllRules, setShowAllRules] = useState(false);
   const [showAllMembers, setShowAllMembers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   // Refs
   const fileInputRef = useRef(null);
@@ -262,6 +269,35 @@ const CommunityDetails = () => {
     } catch (error) {
       console.error('Error adding comment:', error);
     }
+  };
+
+  const handleSharePost = async (postId) => {
+    try {
+      await sharePost(postId);
+      const url = `${window.location.origin}/community/post/${postId}`;
+      await navigator.clipboard.writeText(url);
+      toast.success('Link copied to clipboard!');
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      toast.error('Failed to share post');
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      await deleteCommunityPost(postId);
+      toast.success('Post deleted successfully');
+      await getCommunityPosts({ communityId: id, sortBy }, 1);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast.error('Failed to delete post');
+    }
+  };
+
+  const handleImageClick = (images, index) => {
+    setGalleryImages(images);
+    setGalleryIndex(index);
+    setGalleryOpen(true);
   };
 
   const handleImageUpload = (e) => {
@@ -595,13 +631,53 @@ const CommunityDetails = () => {
                   </div>
 
                   {/* Posts List */}
-                  <PostsList
-                    posts={posts}
-                    currentUser={user}
-                    onLike={handleLikePost}
-                    onComment={handleAddComment}
-                    loading={loading}
-                  />
+                  <div className="space-y-0">
+                    {loading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <Card key={i} className="border-x-0 border-t-0 rounded-none">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3 mb-4">
+                                <Skeleton className="w-10 h-10 rounded-full" />
+                                <div className="space-y-2">
+                                  <Skeleton className="h-4 w-32" />
+                                  <Skeleton className="h-3 w-24" />
+                                </div>
+                              </div>
+                              <Skeleton className="h-20 w-full mb-4" />
+                              <div className="flex items-center gap-4">
+                                <Skeleton className="h-8 w-16" />
+                                <Skeleton className="h-8 w-20" />
+                                <Skeleton className="h-8 w-16" />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : !posts || posts.length === 0 ? (
+                      <Card className="border-x-0 border-t-0 rounded-none">
+                        <CardContent className="text-center py-12">
+                          <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+                          <p className="text-muted-foreground">
+                            Be the first to share something with this community!
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      posts.map((post) => (
+                        <PostCard
+                          key={post._id}
+                          post={post}
+                          currentUser={user}
+                          onLike={handleLikePost}
+                          onShare={handleSharePost}
+                          onDelete={handleDeletePost}
+                          onImageClick={handleImageClick}
+                        />
+                      ))
+                    )}
+                  </div>
                 </TabsContent>
 
                 {/* Events Tab */}
@@ -904,6 +980,14 @@ const CommunityDetails = () => {
         onRemoveImage={removeImage}
         isSubmitting={isSubmitting}
         fileInputRef={fileInputRef}
+      />
+
+      {/* Image Gallery Modal */}
+      <ImageGalleryModal
+        images={galleryImages}
+        initialIndex={galleryIndex}
+        isOpen={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
       />
     </motion.div>
   );

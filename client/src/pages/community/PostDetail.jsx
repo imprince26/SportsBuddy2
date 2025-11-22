@@ -16,6 +16,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../../components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
 import Loader from '../../components/Loader';
 import ImageGalleryModal from '../../components/community/ImageGalleryModal';
 import { formatDistanceToNow } from 'date-fns';
@@ -105,16 +113,17 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, onEdi
     }
   };
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this comment?')) {
-      try {
-        await onDelete(postId, level > 0 ? parentCommentId : null, comment._id);
-        setTimeout(async () => {
-          if (onRefresh) await onRefresh();
-        }, 300);
-      } catch (error) {
-        toast.error('Failed to delete comment');
-      }
+    try {
+      await onDelete(postId, level > 0 ? parentCommentId : null, comment._id);
+      setShowDeleteDialog(false);
+      setTimeout(async () => {
+        if (onRefresh) await onRefresh();
+      }, 300);
+    } catch (error) {
+      toast.error('Failed to delete comment');
     }
   };
 
@@ -159,7 +168,7 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, onEdi
                       <Edit2 className="h-3 w-3 mr-2" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                    <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive">
                       <Trash2 className="h-3 w-3 mr-2" />
                       Delete
                     </DropdownMenuItem>
@@ -255,6 +264,27 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, onEdi
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Comment</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -315,9 +345,18 @@ const PostDetail = () => {
 
   const handleComment = async () => {
     if (!commentContent.trim()) return;
-    await addCommentToPost(postId, commentContent);
-    setCommentContent('');
-    getCommunityPostById(postId);
+    
+    try {
+      const result = await addCommentToPost(postId, commentContent);
+      if (result && result.success) {
+        setCommentContent('');
+        // Refresh post data immediately to show new comment
+        await getCommunityPostById(postId);
+        toast.success('Comment added successfully!');
+      }
+    } catch (error) {
+      toast.error('Failed to add comment');
+    }
   };
 
   const handleShare = async () => {

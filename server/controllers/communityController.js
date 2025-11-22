@@ -1603,8 +1603,10 @@ export const addCommentToPost = async (req, res) => {
     await community.save();
 
     // Invalidate relevant caches
-    await deleteCachePattern(`community:posts:*`);
-    await deleteCachePattern(`community:detail:${community._id}`);
+    await deleteCachePattern(`community:posts:*`); // All community post lists
+    await deleteCachePattern(`community:post:${id}`); // This specific post detail
+    await deleteCachePattern(`community:detail:${community._id}`); // Community detail
+    await deleteCachePattern(`community:posts:trending:*`); // Trending posts
 
     // Get updated post with populated comment
     const updatedCommunity = await Community.findOne({ "posts._id": id })
@@ -2043,7 +2045,10 @@ export const replyToComment = async (req, res) => {
     const createdReply = updatedComment.replies[updatedComment.replies.length - 1];
 
     // Invalidate caches
-    await deleteCachePattern(`community:posts:*`);
+    await deleteCachePattern(`community:posts:*`); // All community post lists
+    await deleteCachePattern(`community:post:${postId}`); // This specific post detail
+    await deleteCachePattern(`community:detail:${community._id}`); // Community detail
+    await deleteCachePattern(`community:posts:trending:*`); // Trending posts
 
     res.status(201).json({
       success: true,

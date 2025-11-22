@@ -5,9 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'react-hot-toast';
 import { useVenue } from '@/hooks/useVenue';
+import { motion } from 'framer-motion';
 import {
   Building2, MapPin, Phone, Globe, Clock, Users, DollarSign, 
-  Upload, X, Plus, CheckCircle, ArrowLeft, Image as ImageIcon, Trash2
+  Upload, X, Plus, CheckCircle, ArrowLeft, Image as ImageIcon, Trash2, Shield, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,16 +31,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 
 const venueSchema = z.object({
-  name: z.string().min(3, 'Name must be at least 3 characters'),
-  description: z.string().min(20, 'Description must be at least 20 characters'),
+  name: z.string().min(3, 'Name must be at least 3 characters').max(100, 'Name cannot exceed 100 characters'),
+  description: z.string().min(20, 'Description must be at least 20 characters').max(1000, 'Description cannot exceed 1000 characters'),
   sports: z.array(z.string()).min(1, 'Select at least one sport'),
   location: z.object({
     address: z.string().min(5, 'Address is required'),
     city: z.string().min(2, 'City is required'),
     state: z.string().optional(),
-    zipCode: z.string().optional(),
+    country: z.string().min(2, 'Country is required'),
     coordinates: z.object({
       lat: z.number().optional(),
       lng: z.number().optional(),
@@ -47,18 +49,27 @@ const venueSchema = z.object({
   }),
   contactInfo: z.object({
     phone: z.string().min(10, 'Valid phone number required'),
-    email: z.string().email('Valid email required').optional(),
+    email: z.string().email('Valid email required').optional().or(z.literal('')),
     website: z.string().url().optional().or(z.literal('')),
   }),
-  capacity: z.number().min(1, 'Capacity must be at least 1'),
-  pricePerHour: z.number().min(0, 'Price cannot be negative'),
-  amenities: z.array(z.string()),
+  capacity: z.number().min(1, 'Capacity must be at least 1').max(10000, 'Capacity cannot exceed 10000'),
+  pricing: z.object({
+    hourlyRate: z.number().min(0, 'Hourly rate cannot be negative'),
+    dayRate: z.number().min(0, 'Day rate cannot be negative'),
+    currency: z.string().default('INR'),
+  }),
+  amenities: z.array(z.object({
+    name: z.string(),
+    available: z.boolean().default(true),
+  })),
   availability: z.array(z.object({
     day: z.string(),
     openTime: z.string(),
     closeTime: z.string(),
     isOpen: z.boolean(),
   })),
+  isVerified: z.boolean().default(false),
+  isActive: z.boolean().default(true),
 });
 
 const sportsOptions = [
@@ -96,22 +107,28 @@ const EditVenue = () => {
         address: '',
         city: '',
         state: '',
-        zipCode: '',
+        country: '',
       },
       contactInfo: {
         phone: '',
         email: '',
         website: '',
       },
-      capacity: 0,
-      pricePerHour: 0,
-      amenities: [],
+      capacity: 50,
+      pricing: {
+        hourlyRate: 0,
+        dayRate: 0,
+        currency: 'INR',
+      },
+      amenities: amenitiesOptions.map(name => ({ name, available: true })),
       availability: daysOfWeek.map(day => ({
         day,
         openTime: '09:00',
         closeTime: '21:00',
         isOpen: true,
       })),
+      isVerified: false,
+      isActive: true,
     },
   });
 
@@ -130,7 +147,7 @@ const EditVenue = () => {
             address: venueData.location?.address || '',
             city: venueData.location?.city || '',
             state: venueData.location?.state || '',
-            zipCode: venueData.location?.zipCode || '',
+            country: venueData.location?.country || '',
             coordinates: venueData.location?.coordinates || {},
           },
           contactInfo: {
@@ -138,15 +155,25 @@ const EditVenue = () => {
             email: venueData.contactInfo?.email || '',
             website: venueData.contactInfo?.website || '',
           },
-          capacity: venueData.capacity || 0,
-          pricePerHour: venueData.pricePerHour || 0,
-          amenities: venueData.amenities || [],
-          availability: venueData.availability || daysOfWeek.map(day => ({
-            day,
-            openTime: '09:00',
-            closeTime: '21:00',
-            isOpen: true,
-          })),
+          capacity: venueData.capacity || 50,
+          pricing: {
+            hourlyRate: venueData.pricing?.hourlyRate || 0,
+            dayRate: venueData.pricing?.dayRate || 0,
+            currency: venueData.pricing?.currency || 'USD',
+          },
+          amenities: venueData.amenities?.length > 0 
+            ? venueData.amenities 
+            : amenitiesOptions.map(name => ({ name, available: true })),
+          availability: venueData.availability?.length > 0
+            ? venueData.availability
+            : daysOfWeek.map(day => ({
+                day,
+                openTime: '09:00',
+                closeTime: '21:00',
+                isOpen: true,
+              })),
+          isVerified: venueData.isVerified || false,
+          isActive: venueData.isActive !== undefined ? venueData.isActive : true,
         });
 
         // Set existing images
@@ -242,10 +269,14 @@ const EditVenue = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className="min-h-screen bg-muted/30 pb-20">
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
         {/* Header */}
-        <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 sm:mb-8"
+        >
           <Button
             variant="ghost"
             onClick={() => navigate('/admin/venues')}
@@ -255,27 +286,47 @@ const EditVenue = () => {
             Back to Venues
           </Button>
           
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
-              <Building2 className="w-8 h-8 text-primary-foreground" />
+          {/* Header with Gradient Background */}
+          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-4 sm:p-6 lg:p-8 text-white shadow-xl">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <defs>
+                  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                  </pattern>
+                </defs>
+                <rect width="100" height="100" fill="url(#grid)" />
+              </svg>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Edit Venue</h1>
-              <p className="text-muted-foreground">Update venue information</p>
+
+            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 rounded-xl backdrop-blur-sm flex items-center justify-center shrink-0">
+                <Building2 className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-1 leading-tight">Edit Venue</h1>
+                <p className="text-white/90 text-sm sm:text-base">Update venue information</p>
+              </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Basic Information */}
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-primary" />
-                  Basic Information
-                </CardTitle>
-              </CardHeader>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <Building2 className="w-5 h-5 text-primary" />
+                    Basic Information
+                  </CardTitle>
+                </CardHeader>
               <CardContent className="space-y-6">
                 <FormField
                   control={form.control}
@@ -347,11 +398,17 @@ const EditVenue = () => {
                 />
               </CardContent>
             </Card>
+            </motion.div>
 
             {/* Location */}
-            <Card className="border-border">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                   <MapPin className="w-5 h-5 text-primary" />
                   Location Details
                 </CardTitle>
@@ -416,11 +473,17 @@ const EditVenue = () => {
                 </div>
               </CardContent>
             </Card>
+            </motion.div>
 
             {/* Contact Information */}
-            <Card className="border-border">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                   <Phone className="w-5 h-5 text-primary" />
                   Contact Information
                 </CardTitle>
@@ -469,43 +532,49 @@ const EditVenue = () => {
                 />
               </CardContent>
             </Card>
+            </motion.div>
 
             {/* Capacity & Pricing */}
-            <Card className="border-border">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-primary" />
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                  <DollarSign className="w-5 h-5 text-primary" />
                   Capacity & Pricing
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="capacity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Maximum Capacity *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="50" 
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <FormDescription>Maximum number of people</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={form.control}
+                  name="capacity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Maximum Capacity *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="50" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormDescription>Maximum number of people (1-10,000)</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
+                <div className="grid md:grid-cols-3 gap-6">
                   <FormField
                     control={form.control}
-                    name="pricePerHour"
+                    name="pricing.hourlyRate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Price Per Hour *</FormLabel>
+                        <FormLabel>Hourly Rate *</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -514,7 +583,52 @@ const EditVenue = () => {
                             onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                           />
                         </FormControl>
-                        <FormDescription>Hourly rental price</FormDescription>
+                        <FormDescription>Price per hour</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pricing.dayRate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Day Rate</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="500" 
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormDescription>Full day rental price</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pricing.currency"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Currency *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select currency" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="USD">USD ($)</SelectItem>
+                            <SelectItem value="EUR">EUR (€)</SelectItem>
+                            <SelectItem value="GBP">GBP (£)</SelectItem>
+                            <SelectItem value="INR">INR (₹)</SelectItem>
+                            <SelectItem value="AUD">AUD (A$)</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -522,11 +636,17 @@ const EditVenue = () => {
                 </div>
               </CardContent>
             </Card>
+            </motion.div>
 
             {/* Amenities */}
-            <Card className="border-border">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                   <CheckCircle className="w-5 h-5 text-primary" />
                   Amenities & Facilities
                 </CardTitle>
@@ -537,26 +657,22 @@ const EditVenue = () => {
                   name="amenities"
                   render={() => (
                     <FormItem>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {amenitiesOptions.map((amenity) => (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {form.watch('amenities').map((amenity, index) => (
                           <FormField
-                            key={amenity}
+                            key={amenity.name}
                             control={form.control}
-                            name="amenities"
+                            name={`amenities.${index}.available`}
                             render={({ field }) => (
                               <FormItem className="flex items-center space-x-2 space-y-0">
                                 <FormControl>
                                   <Checkbox
-                                    checked={field.value?.includes(amenity)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, amenity])
-                                        : field.onChange(field.value?.filter((value) => value !== amenity))
-                                    }}
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
                                   />
                                 </FormControl>
                                 <FormLabel className="font-normal cursor-pointer">
-                                  {amenity}
+                                  {amenity.name}
                                 </FormLabel>
                               </FormItem>
                             )}
@@ -569,11 +685,17 @@ const EditVenue = () => {
                 />
               </CardContent>
             </Card>
+            </motion.div>
 
             {/* Images */}
-            <Card className="border-border">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                   <ImageIcon className="w-5 h-5 text-primary" />
                   Venue Images
                 </CardTitle>
@@ -651,9 +773,74 @@ const EditVenue = () => {
                 )}
               </CardContent>
             </Card>
+            </motion.div>
+
+            {/* Venue Status */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <Shield className="w-5 h-5 text-primary" />
+                    Venue Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="isActive"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Active Status</FormLabel>
+                          <FormDescription>
+                            Make this venue visible and bookable on the platform
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isVerified"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Verified Status</FormLabel>
+                          <FormDescription>
+                            Mark this venue as verified (admin only)
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Submit Buttons */}
-            <div className="flex justify-end gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="flex justify-end gap-4"
+            >
               <Button
                 type="button"
                 variant="outline"
@@ -665,7 +852,7 @@ const EditVenue = () => {
               <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90">
                 {loading ? 'Updating...' : 'Update Venue'}
               </Button>
-            </div>
+            </motion.div>
           </form>
         </Form>
       </div>

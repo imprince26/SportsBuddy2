@@ -1909,47 +1909,101 @@ const EventDetails = () => {
 
       {/* Share Modal */}
       <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border">
+        <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <Share2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              Share Event
+              <div className="p-2 rounded-full bg-primary/10">
+                <Share2 className="w-5 h-5 text-primary" />
+              </div>
+              <span>Share Event</span>
             </DialogTitle>
-            <DialogDescription>Share this amazing event with your friends and community.</DialogDescription>
+            <DialogDescription>
+              Share this amazing event with your friends and community
+            </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-3 mt-6">
-            <Button
-              onClick={() => handleShare("copy")}
-              variant="outline"
-              className="flex flex-col items-center gap-2 h-20"
-            >
-              <Copy className="w-6 h-6" />
-              <span>Copy Link</span>
-            </Button>
-            <Button
-              onClick={() => handleShare("facebook")}
-              variant="outline"
-              className="flex flex-col items-center gap-2 h-20"
-            >
-              <div className="w-6 h-6 bg-blue-600 rounded"></div>
-              <span>Facebook</span>
-            </Button>
-            <Button
-              onClick={() => handleShare("twitter")}
-              variant="outline"
-              className="flex flex-col items-center gap-2 h-20"
-            >
-              <div className="w-6 h-6 bg-blue-400 rounded"></div>
-              <span>Twitter</span>
-            </Button>
-            <Button
-              onClick={() => handleShare("whatsapp")}
-              variant="outline"
-              className="flex flex-col items-center gap-2 h-20"
-            >
-              <div className="w-6 h-6 bg-green-500 rounded"></div>
-              <span>WhatsApp</span>
-            </Button>
+          <div className="space-y-4 mt-4">
+            {/* Event Preview Card */}
+            <div className="p-4 rounded-lg bg-muted/50 border border-border">
+              <div className="flex gap-3">
+                {event.images && event.images[0] && (
+                  <img 
+                    src={event.images[0].url} 
+                    alt={event.name}
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm line-clamp-1">{event.name}</h4>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                    <Calendar className="w-3 h-3" />
+                    <span>{format(new Date(event.date), "MMM dd, yyyy")}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Share Options Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={() => handleShare("copy")}
+                variant="outline"
+                className="flex flex-col items-center gap-3 h-24 hover:bg-primary/5 hover:border-primary/50 transition-all"
+              >
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Copy className="w-5 h-5 text-primary" />
+                </div>
+                <span className="text-sm font-medium">Copy Link</span>
+              </Button>
+              <Button
+                onClick={() => handleShare("whatsapp")}
+                variant="outline"
+                className="flex flex-col items-center gap-3 h-24 hover:bg-green-50 dark:hover:bg-green-950 hover:border-green-500/50 transition-all"
+              >
+                <div className="p-2 rounded-full bg-green-500">
+                  <MessageSquare className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-sm font-medium">WhatsApp</span>
+              </Button>
+              <Button
+                onClick={() => handleShare("facebook")}
+                variant="outline"
+                className="flex flex-col items-center gap-3 h-24 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-500/50 transition-all"
+              >
+                <div className="p-2 rounded-full bg-blue-600">
+                  <Share2 className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-sm font-medium">Facebook</span>
+              </Button>
+              <Button
+                onClick={() => handleShare("twitter")}
+                variant="outline"
+                className="flex flex-col items-center gap-3 h-24 hover:bg-sky-50 dark:hover:bg-sky-950 hover:border-sky-500/50 transition-all"
+              >
+                <div className="p-2 rounded-full bg-sky-500">
+                  <MessageSquare className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-sm font-medium">Twitter</span>
+              </Button>
+            </div>
+
+            {/* URL Display */}
+            <div className="p-3 rounded-lg bg-muted border border-border">
+              <p className="text-xs text-muted-foreground break-all font-mono">
+                {window.location.href}
+              </p>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="flex items-center justify-center gap-6 pt-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Eye className="w-3 h-3" />
+                <span>{event.analytics?.views || 0} views</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                <span>{event.participants?.length || 0} joined</span>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -42,14 +42,14 @@ const AthleteCard = ({ athlete, onFollow, isFollowing, currentUser }) => {
       className="group relative"
     >
       <Card className="overflow-hidden border-0 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl h-full flex flex-col">
-        <div className="h-24 bg-primary relative overflow-hidden">
+        <div className="h-24 bg-primary relative">
           <div className="absolute inset-0 bg-black/10" />
           <div className="absolute -bottom-10 left-6">
             <div className="relative">
               <Avatar className="w-20 h-20 border-4 border-white dark:border-gray-900 shadow-md">
                 <AvatarImage src={athlete.avatar?.url} alt={athlete.name} className="object-cover" />
                 <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-bold text-xl">
-                  {athlete.name?.charAt(0)}
+                  {athlete.name?.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               {athlete.isOnline && (

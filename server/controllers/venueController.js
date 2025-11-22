@@ -2,6 +2,7 @@ import Venue from '../models/venueModel.js';
 import User from '../models/userModel.js';
 import Event from '../models/eventModel.js';
 import { cloudinary } from '../config/cloudinary.js';
+import { invalidateVenueCaches, invalidateVenueLists } from '../cache/venueCache.js';
 
 // Get all venues with filters
 export const getAllVenues = async (req, res) => {
@@ -297,6 +298,9 @@ export const createVenue = async (req, res) => {
     const populatedVenue = await Venue.findById(venue._id)
       .populate("owner", "name avatar username");
 
+    // Invalidate venue caches
+    await invalidateVenueLists();
+
     res.status(201).json({
       success: true,
       message: "Venue created successfully",
@@ -586,6 +590,9 @@ export const updateVenue = async (req, res) => {
     const updatedVenue = await Venue.findById(venueId)
       .populate("owner", "name avatar username");
 
+    // Invalidate venue caches
+    await invalidateVenueCaches(venueId);
+
     res.json({
       success: true,
       message: "Venue updated successfully",
@@ -597,6 +604,7 @@ export const updateVenue = async (req, res) => {
       message: "Error updating venue",
       error: error.message
     });
+    console.log(error)
   }
 };
 
@@ -646,6 +654,9 @@ export const deleteVenue = async (req, res) => {
     }
 
     await Venue.findByIdAndDelete(venueId);
+
+    // Invalidate venue caches
+    await invalidateVenueCaches(venueId);
 
     res.json({
       success: true,

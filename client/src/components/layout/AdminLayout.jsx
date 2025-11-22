@@ -31,6 +31,7 @@ import {
   Maximize2,
   Minimize2,
   Building2,
+  CalendarCheck
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
@@ -125,6 +126,13 @@ const AdminLayout = () => {
           icon: Building2,
           badge: null,
           description: "Venue management",
+        },
+        {
+          name: "Venue Bookings",
+          path: "/admin/venue-bookings",
+          icon: CalendarCheck,
+          badge: null,
+          description: "Manage venue bookings",
         },
         {
           name: "Analytics",

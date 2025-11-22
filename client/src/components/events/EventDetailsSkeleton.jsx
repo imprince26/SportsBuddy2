@@ -3,14 +3,11 @@ import { Card, CardContent, CardHeader } from "../ui/card"
 
 const EventDetailsSkeleton = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-950">
+    <div className="min-h-screen bg-background relative">
 
       <div className="relative z-10">
         {/* Hero Section Skeleton */}
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950" />
-          </div>
+        <div className="relative overflow-hidden border-b border-border bg-background/50 backdrop-blur-sm">
 
           <div className="relative container mx-auto px-4 py-8 sm:py-12 lg:py-16">
             {/* Breadcrumb Skeleton */}
@@ -35,7 +32,7 @@ const EventDetailsSkeleton = () => {
                 {/* Quick Stats Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="relative p-4 bg-white/10 backdrop-blur-xl rounded-xl border border-white/20">
+                    <div key={i} className="relative p-4 bg-card/50 backdrop-blur-xl rounded-xl border border-border">
                       <Skeleton className="w-10 h-10 mx-auto mb-2 rounded-xl" />
                       <Skeleton className="h-6 w-16 mx-auto mb-1" />
                       <Skeleton className="h-4 w-20 mx-auto" />
@@ -52,7 +49,7 @@ const EventDetailsSkeleton = () => {
 
               {/* Right Content - Hero Image Skeleton */}
               <div className="relative">
-                <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/20 bg-white/10 backdrop-blur-sm">
+                <div className="relative aspect-video rounded-3xl overflow-hidden border border-border bg-card/50 backdrop-blur-sm">
                   <Skeleton className="w-full h-full" />
 
                   {/* Action Buttons Overlay */}
@@ -80,7 +77,7 @@ const EventDetailsSkeleton = () => {
             <div className="lg:col-span-2 space-y-6">
               {/* Tabs Skeleton */}
               <div className="w-full">
-                <div className="grid w-full grid-cols-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-1 shadow-lg mb-6">
+                <div className="grid w-full grid-cols-4 bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-1 shadow-lg mb-6">
                   {[...Array(4)].map((_, i) => (
                     <Skeleton key={i} className="h-10 rounded-xl" />
                   ))}
@@ -89,7 +86,7 @@ const EventDetailsSkeleton = () => {
                 {/* Tab Content - About Section */}
                 <div className="space-y-6">
                   {/* About Card */}
-                  <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+                  <Card className="bg-card/80 backdrop-blur-xl border-border shadow-xl">
                     <CardHeader>
                       <div className="flex items-center gap-3">
                         <Skeleton className="w-10 h-10 rounded-xl" />
@@ -106,7 +103,7 @@ const EventDetailsSkeleton = () => {
                   {/* Event Details Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {[...Array(2)].map((_, i) => (
-                      <Card key={i} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+                      <Card key={i} className="bg-card/80 backdrop-blur-xl border-border shadow-xl">
                         <CardHeader>
                           <div className="flex items-center gap-3">
                             <Skeleton className="w-10 h-10 rounded-xl" />
@@ -115,7 +112,7 @@ const EventDetailsSkeleton = () => {
                         </CardHeader>
                         <CardContent className="space-y-4">
                           {[...Array(3)].map((_, j) => (
-                            <div key={j} className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
+                            <div key={j} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div className="flex items-center gap-3">
                                 <Skeleton className="w-5 h-5 rounded" />
                                 <Skeleton className="h-4 w-24" />
@@ -131,7 +128,7 @@ const EventDetailsSkeleton = () => {
                   {/* Rules and Equipment Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {[...Array(2)].map((_, i) => (
-                      <Card key={i} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+                      <Card key={i} className="bg-card/80 backdrop-blur-xl border-border shadow-xl">
                         <CardHeader>
                           <div className="flex items-center gap-3">
                             <Skeleton className="w-10 h-10 rounded-xl" />
@@ -140,7 +137,7 @@ const EventDetailsSkeleton = () => {
                         </CardHeader>
                         <CardContent className="space-y-3">
                           {[...Array(3)].map((_, j) => (
-                            <div key={j} className="flex items-center gap-3 p-3 bg-gray-50/30 dark:bg-gray-800/30 rounded-lg">
+                            <div key={j} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
                               <Skeleton className="w-6 h-6 rounded-full" />
                               <Skeleton className="h-4 w-full" />
                             </div>
@@ -151,7 +148,7 @@ const EventDetailsSkeleton = () => {
                   </div>
 
                   {/* Location Card */}
-                  <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+                  <Card className="bg-card/80 backdrop-blur-xl border-border shadow-xl">
                     <CardHeader>
                       <div className="flex items-center gap-3">
                         <Skeleton className="w-10 h-10 rounded-xl" />
@@ -159,7 +156,7 @@ const EventDetailsSkeleton = () => {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="p-4 bg-indigo-50/30 dark:bg-indigo-900/10 rounded-xl">
+                      <div className="p-4 bg-muted/30 rounded-xl">
                         <Skeleton className="h-6 w-48 mb-2" />
                         <Skeleton className="h-4 w-full mb-1" />
                         <Skeleton className="h-4 w-2/3" />
@@ -177,7 +174,7 @@ const EventDetailsSkeleton = () => {
             {/* Sidebar Skeleton */}
             <div className="space-y-6">
               {/* Quick Actions Card */}
-              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+              <Card className="bg-card/80 backdrop-blur-xl border-border shadow-xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <Skeleton className="w-10 h-10 rounded-xl" />
@@ -192,7 +189,7 @@ const EventDetailsSkeleton = () => {
               </Card>
 
               {/* Event Organizer Card */}
-              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+              <Card className="bg-card/80 backdrop-blur-xl border-border shadow-xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <Skeleton className="w-10 h-10 rounded-xl" />
@@ -215,7 +212,7 @@ const EventDetailsSkeleton = () => {
               </Card>
 
               {/* Event Stats Card */}
-              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+              <Card className="bg-card/80 backdrop-blur-xl border-border shadow-xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <Skeleton className="w-10 h-10 rounded-xl" />
@@ -225,13 +222,13 @@ const EventDetailsSkeleton = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     {[...Array(4)].map((_, i) => (
-                      <div key={i} className="text-center p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
+                      <div key={i} className="text-center p-3 bg-muted/50 rounded-lg">
                         <Skeleton className="h-8 w-12 mx-auto mb-1" />
                         <Skeleton className="h-3 w-16 mx-auto" />
                       </div>
                     ))}
                   </div>
-                  <div className="border-t border-gray-200/50 dark:border-gray-700/50 pt-4 space-y-3">
+                  <div className="border-t border-border pt-4 space-y-3">
                     {[...Array(2)].map((_, i) => (
                       <div key={i} className="flex items-center justify-between">
                         <Skeleton className="h-4 w-24" />
@@ -243,7 +240,7 @@ const EventDetailsSkeleton = () => {
               </Card>
 
               {/* Similar Events Card */}
-              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+              <Card className="bg-card/80 backdrop-blur-xl border-border shadow-xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <Skeleton className="w-10 h-10 rounded-xl" />

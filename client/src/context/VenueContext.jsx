@@ -327,13 +327,8 @@ export const VenueProvider = ({ children }) => {
       });
 
       if (response.data.success) {
-        if (currentVenue?._id === venueId) {
-          setCurrentVenue(prev => ({
-            ...prev,
-            totalReviews: prev.totalReviews + 1,
-            recentReviews: [response.data.data, ...prev.recentReviews.slice(0, 4)]
-          }));
-        }
+        // Invalidate cache by refetching the venue
+        await getVenueById(venueId);
         toast.success('Review added successfully!', { id: toastId });
         return { success: true, data: response.data.data };
       }

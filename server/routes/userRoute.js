@@ -11,7 +11,8 @@ import {
   searchUsers,
   updatePreferences,
   userStats,
-  getUserEvents
+  getUserEvents,
+  getUserBookings
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -24,24 +25,27 @@ router.get("/search",
   searchUsers
 );
 
+// Protected routes - MUST come before /:userId to avoid route conflicts
+router.get("/my-bookings", isAuthenticated, getUserBookings);
+router.get("/events", isAuthenticated, getUserEvents);
+router.put("/preferences", isAuthenticated, updatePreferences);
+
+// Public profile route - comes after specific routes
 router.get("/:userId", 
   cacheMiddleware((req) => CacheKeys.USERS.PROFILE(req.params.userId), userTTL),
   getUserProfile
 );
 
-// Protected routes
-router.get("/events",isAuthenticated, getUserEvents);
-router.put("/preferences",isAuthenticated, updatePreferences);
+// User interaction routes
+router.post("/:userId/follow", isAuthenticated, followUser);
+router.delete("/:userId/follow", isAuthenticated, unfollowUser);
 
-router.post("/:userId/follow",isAuthenticated, followUser);
-router.delete("/:userId/follow",isAuthenticated, unfollowUser);
-
-router.get("/:userId/followers",isAuthenticated, 
+router.get("/:userId/followers", isAuthenticated,
   cacheMiddleware((req) => CacheKeys.USERS.FOLLOWERS(req.params.userId, req.query.page || 1), userTTL),
   getUserFollowers
 );
 
-router.get("/:userId/following",isAuthenticated, 
+router.get("/:userId/following", isAuthenticated,
   cacheMiddleware((req) => CacheKeys.USERS.FOLLOWING(req.params.userId, req.query.page || 1), userTTL),
   getUserFollowing
 );

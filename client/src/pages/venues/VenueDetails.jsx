@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { format } from 'date-fns';
 import { 
   MapPin, 
   Star, 
@@ -268,9 +269,9 @@ const VenueDetails = () => {
           </Link>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-8 container mx-auto">
+        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-8 container mx-auto z-30">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="space-y-2">
+            <div className="space-y-2 z-30">
               <div className="flex items-center gap-2 mb-2">
                 {currentVenue.isVerified && (
                   <Badge className="bg-primary text-primary-foreground border-0">
@@ -524,42 +525,63 @@ const VenueDetails = () => {
               </TabsContent>
 
               <TabsContent value="reviews" className="pt-6 space-y-6">
-                {currentVenue.reviews && currentVenue.reviews.length > 0 ? (
-                  currentVenue.reviews.map((review, idx) => (
-                    <div key={idx} className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={review.user?.avatar?.url} />
-                            <AvatarFallback>{review.user?.name?.[0] || 'U'}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h4 className="font-semibold text-gray-900 dark:text-white">{review.user?.name || 'Anonymous'}</h4>
-                            <p className="text-xs text-gray-500">{new Date(review.createdAt || review.date).toLocaleDateString()}</p>
+                {/* Write Review Button */}
+                {user && (
+                  <Button 
+                    className="w-full mb-4"
+                    onClick={() => setShowRatingDialog(true)}
+                  >
+                    <Star className="w-4 h-4 mr-2" />
+                    Write a Review
+                  </Button>
+                )}
+
+                {/* Reviews List */}
+                {currentVenue.ratings && currentVenue.ratings.length > 0 ? (
+                  <div className="space-y-4">
+                    {currentVenue.ratings.map((review, idx) => (
+                      <motion.div 
+                        key={idx} 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={review.user?.avatar?.url || review.user?.avatar} />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {review.user?.name?.[0]?.toUpperCase() || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">
+                                {review.user?.name || 'Anonymous User'}
+                              </h4>
+                              <p className="text-xs text-gray-500">
+                                {format(new Date(review.date), 'MMM dd, yyyy')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1.5 rounded-lg">
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                            <span className="font-bold text-yellow-700 dark:text-yellow-400">{review.rating}.0</span>
                           </div>
                         </div>
-                        <div className="flex items-center bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-lg">
-                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 mr-1" />
-                          <span className="font-bold text-yellow-700 dark:text-yellow-500">{review.rating}</span>
-                        </div>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-400">{review.review || review.comment}</p>
-                    </div>
-                  ))
+                        {review.review && (
+                          <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                            {review.review}
+                          </p>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
                 ) : (
-                  <div className="text-center py-12 bg-muted rounded-lg">
-                    <MessageSquare className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground text-lg">No reviews yet</p>
-                    <p className="text-sm text-muted-foreground mt-2">Be the first to review this venue!</p>
-                    {user && (
-                      <Button 
-                        className="mt-4"
-                        onClick={() => setShowRatingDialog(true)}
-                      >
-                        <Star className="w-4 h-4 mr-2" />
-                        Write a Review
-                      </Button>
-                    )}
+                  <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+                    <MessageSquare className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-700 dark:text-gray-300 text-lg font-medium">No reviews yet</p>
+                    <p className="text-sm text-gray-500 mt-2">Be the first to share your experience!</p>
                   </div>
                 )}
               </TabsContent>

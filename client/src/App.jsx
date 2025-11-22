@@ -27,6 +27,7 @@ import NotFound from './pages/NotFound';
 import Venues from './pages/venues/Venues';
 import VenueDetails from './pages/venues/VenueDetails';
 import VenueBooking from './pages/venues/VenueBooking';
+import MyBookings from './pages/venues/MyBookings';
 import Leaderboard from './pages/leaderboard/Leaderboard';
 // import Community from './pages/community/Community';
 import Athletes from './pages/athletes/Athletes';
@@ -150,6 +151,7 @@ function App() {
             <Route path="venues" element={<PublicRoute title="Sports Venues"><Venues /></PublicRoute>} />
             <Route path="venues/:id" element={<PublicRoute title="Venue Details"><VenueDetails /></PublicRoute>} />
             <Route path="venues/:id/book" element={<ProtectedRoute title="Book Venue"><VenueBooking /></ProtectedRoute>} />
+            <Route path="my-bookings" element={<ProtectedRoute title="My Bookings"><MyBookings /></ProtectedRoute>} />
             <Route path="athletes" element={<PublicRoute title="Athletes"><Athletes /></PublicRoute>} />
             <Route path="leaderboard" element={<PublicRoute title="Leaderboard"><Leaderboard /></PublicRoute>} />
             <Route path="community" element={<PublicRoute title="Community"><Community /></PublicRoute>} />

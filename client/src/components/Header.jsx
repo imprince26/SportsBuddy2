@@ -18,6 +18,10 @@ import {
   Settings,
   PlusCircle,
   Activity,
+  MapPin,
+  Trophy,
+  CalendarCheck,
+  UserPlus,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -263,6 +267,10 @@ const Header = () => {
                           {[
                             { icon: User, label: "Profile", path: "/profile" },
                             { icon: Activity, label: "Dashboard", path: "/dashboard" },
+                            { icon: MapPin, label: "Venues", path: "/venues" },
+                            { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
+                            { icon: CalendarCheck, label: "My Bookings", path: "/my-bookings" },
+                            { icon: UserPlus, label: "Find Players", path: "/players" },
                             { icon: Settings, label: "Settings", path: "/settings" },
                           ].map((item) => (
                             <Link
@@ -383,6 +391,11 @@ const Header = () => {
                   <div className="space-y-1">
                     {[
                       { icon: User, label: "Profile", path: "/profile" },
+                      { icon: Activity, label: "Dashboard", path: "/dashboard" },
+                      { icon: MapPin, label: "Venues", path: "/venues" },
+                      { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
+                      { icon: CalendarCheck, label: "My Bookings", path: "/my-bookings" },
+                      { icon: UserPlus, label: "Find Players", path: "/players" },
                       { icon: Settings, label: "Settings", path: "/settings" },
                       ...(user?.role === "admin" ? [{ icon: Shield, label: "Admin Panel", path: "/admin/dashboard" }] : [])
                     ].map((item) => (

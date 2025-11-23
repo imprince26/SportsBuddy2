@@ -426,7 +426,7 @@ export const CommunityProvider = ({ children }) => {
       });
 
       queryParams.append('page', page);
-      queryParams.append('limit', pagination.limit);
+      queryParams.append('limit', pagination.limit || 12);
 
       const response = await api.get(`/community?${queryParams}`);
 
@@ -597,6 +597,31 @@ export const CommunityProvider = ({ children }) => {
     }
   };
 
+  // Delete community
+  const deleteCommunity = async (communityId) => {
+    const toastId = toast.loading('Deleting community...');
+
+    try {
+      const response = await api.delete(`/community/${communityId}`, {
+        data: { confirmDelete: true }
+      });
+
+      if (response.data.success) {
+        toast.success('Community deleted successfully!', { id: toastId });
+        setCommunities(prev => prev.filter(c => c._id !== communityId));
+        setMyCommunities(prev => prev.filter(c => c._id !== communityId));
+        if (currentCommunity?._id === communityId) {
+          setCurrentCommunity(null);
+        }
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete community';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    }
+  };
+
   // Clear current post
   const clearCurrentPost = () => {
     setCurrentPost(null);
@@ -761,6 +786,7 @@ export const CommunityProvider = ({ children }) => {
     getMyCommunities,
     createCommunity,
     updateCommunity,
+    deleteCommunity,
     joinCommunity,
     leaveCommunity,
     fetchCommunity,

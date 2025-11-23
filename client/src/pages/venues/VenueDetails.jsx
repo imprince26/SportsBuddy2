@@ -25,8 +25,13 @@ import {
   Send,
   Copy,
   ImageIcon,
-  X
+  X,
+  Edit3,
+  Trash2,
+  MoreVertical,
+  
 } from 'lucide-react';
+import { FaMoneyBillWave } from "react-icons/fa";
 import { useVenue } from '@/hooks/useVenue';
 import { useAuth } from '@/hooks/useAuth';
 import { useEvents } from '@/hooks/useEvents';
@@ -43,7 +48,15 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from 'react-hot-toast';
 
 const VenueDetails = () => {
@@ -55,7 +68,8 @@ const VenueDetails = () => {
     getVenueById, 
     toggleVenueFavorite, 
     favoriteVenues,
-    addVenueReview
+    addVenueReview,
+    deleteVenue
   } = useVenue();
   const { user } = useAuth();
   const { getEvents } = useEvents();
@@ -69,6 +83,7 @@ const VenueDetails = () => {
   const [review, setReview] = useState('');
   const [hoveredRating, setHoveredRating] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -142,6 +157,14 @@ const VenueDetails = () => {
     }
   };
 
+  const handleDeleteVenue = async () => {
+    const result = await deleteVenue(id);
+    if (result.success) {
+      setShowDeleteDialog(false);
+      navigate('/venues');
+    }
+  };
+
   const handleShare = async (platform) => {
     const venueUrl = window.location.href;
     const venueTitle = currentVenue?.name || 'Sports Venue';
@@ -180,6 +203,9 @@ const VenueDetails = () => {
     setShowShareDialog(false);
   };
 
+  // Check if current user can edit/delete venue
+  const canManage = user && (user.role === 'admin' || currentVenue?.owner?._id === user.id);
+
   if (loading || !currentVenue) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-8">
@@ -210,7 +236,7 @@ const VenueDetails = () => {
             className="absolute inset-0"
           >
             <img 
-              src={currentVenue.images?.[activeImage]?.url || 'https://images.unsplash.com/photo-1519766304800-c64daf4681bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'} 
+              src={currentVenue.images?.length > 0 ? currentVenue.images?.[activeImage]?.url : '/venues/default-venue.png'} 
               alt={`${currentVenue.name} - Image ${activeImage + 1}`}
               className="w-full h-full object-cover"
             />
@@ -223,19 +249,19 @@ const VenueDetails = () => {
           <>
             <button
               onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
 
-            {/* Image Indicators */}
-            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+            {/* Image Indicators - Hidden on small screens */}
+            <div className="absolute bottom-24 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 hidden sm:flex gap-2">
               {currentVenue.images.map((_, idx) => (
                 <button
                   key={idx}
@@ -252,10 +278,11 @@ const VenueDetails = () => {
             {/* View All Images Button */}
             <button
               onClick={() => setShowImageGallery(true)}
-              className="absolute bottom-24 right-4 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
+              className="absolute lg:bottom-24 md:bottom-16 sm:bottom-8 right-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all"
             >
               <ImageIcon className="w-4 h-4" />
-              <span className="text-sm font-medium">View All ({currentVenue.images.length})</span>
+              <span className="text-sm font-medium hidden sm:inline">View All ({currentVenue.images.length})</span>
+              <span className="text-sm font-medium sm:hidden">{currentVenue.images.length}</span>
             </button>
           </>
         )}
@@ -263,65 +290,169 @@ const VenueDetails = () => {
         {/* Back Button */}
         <div className="absolute top-6 left-4 lg:left-8 z-20">
           <Link to="/venues">
-            <Button variant="secondary" size="sm" className="rounded-full backdrop-blur-md bg-white/20 hover:bg-white/30 text-white border-0">
+            <Button size="sm" className="rounded-full backdrop-blur-md bg-white/20 hover:bg-white/30 text-white border-0">
               <ChevronLeft className="w-4 h-4 mr-1" /> Back to Venues
             </Button>
           </Link>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-8 container mx-auto z-30">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="space-y-2 z-30">
-              <div className="flex items-center gap-2 mb-2">
-                {currentVenue.isVerified && (
-                  <Badge className="bg-primary text-primary-foreground border-0">
-                    <CheckCircle className="w-3 h-3 mr-1" /> Verified Venue
+        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-8 z-30">
+          <div className="container mx-auto">
+            {/* Mobile Layout */}
+            <div className="lg:hidden space-y-4">
+              {/* Title and Badges Section */}
+              <div className="flex space-y-3 space-x-4">
+               <div className="">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">{currentVenue.name}</h1>
+                  <div className="flex items-start text-white/90 text-sm">
+                    <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                    <span className="line-clamp-2">{currentVenue.location?.address}, {currentVenue.location?.city}</span>
+                  </div>
+               </div>
+                <div className="flex items-start gap-2 flex-wrap">
+                  {currentVenue.isVerified && (
+                    <Badge className="bg-primary text-primary-foreground border-0 flex-shrink-0">
+                      <CheckCircle className="w-3 h-3 mr-1" /> Verified
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="text-white border-white/30 bg-black/50 backdrop-blur-sm flex-shrink-0">
+                    {currentVenue.sports?.[0]}
                   </Badge>
-                )}
-                <Badge variant="outline" className="text-white border-white/30 bg-black/20 backdrop-blur-sm">
-                  {currentVenue.sports?.[0]}
-                </Badge>
+                </div>
               </div>
-              <h1 className="text-3xl lg:text-5xl font-bold text-white">{currentVenue.name}</h1>
-              <div className="flex items-center text-white/80 text-lg">
-                <MapPin className="w-5 h-5 mr-2" />
-                {currentVenue.location?.address}, {currentVenue.location?.city}
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  size="sm"
+                  className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                  onClick={() => toggleVenueFavorite(id)}
+                >
+                  <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                </Button>
+                {user && (
+                  <Button 
+                    size="sm"
+                    className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                    onClick={() => setShowRatingDialog(true)}
+                  >
+                    <Star className="w-4 h-4 mr-1" />
+                    <span className="hidden sm:inline">Rate</span>
+                  </Button>
+                )}
+                <Button 
+                  size="sm"
+                  className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                  onClick={() => setShowShareDialog(true)}
+                >
+                  <Share2 className="w-4 h-4" />
+                </Button>
+                {canManage && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        size="sm"
+                        className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => navigate(`/venues/${id}/edit`)}>
+                        <Edit3 className="w-4 h-4 mr-2" />
+                        Edit Venue
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => setShowDeleteDialog(true)}
+                        className="text-red-600 focus:text-red-600 dark:text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Venue
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="rounded-full w-12 h-12 bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
-                onClick={() => toggleVenueFavorite(id)}
-              >
-                <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-              </Button>
-              {user && (
+            {/* Desktop Layout */}
+            <div className="hidden lg:flex lg:items-end justify-between gap-6">
+              <div className="space-y-2 flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  {currentVenue.isVerified && (
+                    <Badge className="bg-primary text-primary-foreground border-0">
+                      <CheckCircle className="w-3 h-3 mr-1" /> Verified Venue
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="text-white border-white/30 bg-black/80 backdrop-blur-sm">
+                    {currentVenue.sports?.[0]}
+                  </Badge>
+                </div>
+                <h1 className="text-3xl lg:text-5xl font-bold text-white">{currentVenue.name}</h1>
+                <div className="flex items-center text-white/80 text-lg">
+                  <MapPin className="w-5 h-5 mr-2" />
+                  {currentVenue.location?.address}, {currentVenue.location?.city}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
                 <Button 
-                  variant="outline"
-                  className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
-                  onClick={() => setShowRatingDialog(true)}
+                  size="icon"
+                  className="rounded-full w-12 h-12 bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md"
+                  onClick={() => toggleVenueFavorite(id)}
                 >
-                  <Star className="w-4 h-4 mr-2" />
-                  Rate Venue
+                  <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                 </Button>
-              )}
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="rounded-full w-12 h-12 bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
-                onClick={() => setShowShareDialog(true)}
-              >
-                <Share2 className="w-5 h-5" />
-              </Button>
+                {user && (
+                  <Button 
+                    className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                    onClick={() => setShowRatingDialog(true)}
+                  >
+                    <Star className="w-4 h-4 mr-2" />
+                    Rate Venue
+                  </Button>
+                )}
+                <Button 
+                  size="icon"
+                  className="rounded-full w-12 h-12 bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                  onClick={() => setShowShareDialog(true)}
+                >
+                  <Share2 className="w-5 h-5" />
+                </Button>
+                {canManage && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                      >
+                        <MoreVertical className="w-4 h-4 mr-2" />
+                        Manage
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => navigate(`/venues/${id}/edit`)}>
+                        <Edit3 className="w-4 h-4 mr-2" />
+                        Edit Venue
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => setShowDeleteDialog(true)}
+                        className="text-red-600 focus:text-red-600 dark:text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Venue
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 -mt-8 relative z-20">
+      <div className="container mx-auto px-4 py-8 -mt-1 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
@@ -362,7 +493,7 @@ const VenueDetails = () => {
               <Card className="bg-white dark:bg-gray-900 border-0 shadow-lg hover:shadow-xl transition-shadow">
                 <CardContent className="p-4 flex flex-col items-center justify-center text-center">
                   <div className="p-3 rounded-full bg-purple-50 dark:bg-purple-900/20 mb-2">
-                    <DollarSign className="w-5 h-5 text-purple-500" />
+                    <FaMoneyBillWave className="w-5 h-5 text-purple-500" />
                   </div>
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">₹{currentVenue.pricing?.hourlyRate || 0}</span>
                   <span className="text-xs text-gray-500">Per Hour</span>
@@ -372,7 +503,7 @@ const VenueDetails = () => {
 
             {/* Tabs */}
             <Tabs defaultValue="about" className="w-full">
-              <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none p-0 h-auto">
+              <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none p-0 h-auto overflow-auto no-scrollbar">
                 <TabsTrigger 
                   value="about"
                   className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary text-base"
@@ -857,6 +988,36 @@ const VenueDetails = () => {
               {window.location.href}
             </p>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <Trash2 className="w-5 h-5" />
+              Delete Venue
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{currentVenue?.name}"? This action cannot be undone and will remove all associated bookings and reviews.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteVenue}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Venue
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

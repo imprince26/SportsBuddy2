@@ -62,8 +62,8 @@ router.get('/:id', getCommunity);
 
 // Community CRUD
 router.post('/', upload.array('image', 1), createCommunity);
-router.put('/:id', upload.array('image', 1), updateCommunity);
-router.delete('/:id', deleteCommunity);
+router.put('/:id', upload.array('image', 1), updateCommunity); // Creator or admin can update
+router.delete('/:id', deleteCommunity); // Creator or admin can delete
 
 // Community membership
 router.post('/:id/join', joinCommunity);

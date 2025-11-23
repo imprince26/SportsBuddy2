@@ -39,9 +39,9 @@ router.post('/:id/book', bookVenue);
 router.post('/:id/favorite', toggleVenueFavorite);
 router.get('/:id/bookings', getVenueBookings);
 
-// Admin routes
+// Admin and owner routes
 router.post('/', isAdmin, upload.array('images', 10), createVenue);
-router.put('/:id', isAdmin, upload.array('images', 10), updateVenue);
-router.delete('/:id', isAdmin, deleteVenue);
+router.put('/:id', upload.array('images', 10), updateVenue); // Owner or admin can update
+router.delete('/:id', deleteVenue); // Owner or admin can delete
 
 export default router;

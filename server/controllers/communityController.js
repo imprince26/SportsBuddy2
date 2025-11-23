@@ -1,6 +1,7 @@
 import Community from '../models/communityModel.js';
 import User from '../models/userModel.js';
 import { cloudinary } from '../config/cloudinary.js';
+import fs from 'fs';
 
 // Get all communities
 export const getCommunities = async (req, res) => {
@@ -13,6 +14,10 @@ export const getCommunities = async (req, res) => {
       page = 1,
       limit = 12
     } = req.query;
+
+    // Validate and sanitize numeric parameters
+    const validLimit = parseInt(limit) || 12;
+    const validPage = parseInt(page) || 1;
 
     const query = { isActive: true };
 
@@ -91,7 +96,7 @@ export const getCommunities = async (req, res) => {
         },
         { $sort: { memberCount: sortOrder === "desc" ? -1 : 1 } },
         { $skip: skip },
-        { $limit: parseInt(limit) }
+        { $limit: validLimit }
       ];
 
       communities = await Community.aggregate([
@@ -120,7 +125,7 @@ export const getCommunities = async (req, res) => {
       communities = await Community.find(query)
         .sort(sort)
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(validLimit)
         .populate("creator", "name avatar username")
         .select("-joinRequests -members.user")
         .lean();
@@ -138,11 +143,12 @@ export const getCommunities = async (req, res) => {
       success: true,
       data: communities,
       pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        currentPage: validPage,
+        totalPages: Math.ceil(total / validLimit),
         total,
-        hasNext: parseInt(page) < Math.ceil(total / parseInt(limit)),
-        hasPrev: parseInt(page) > 1
+        hasNext: validPage < Math.ceil(total / validLimit),
+        hasPrev: validPage > 1,
+        limit: validLimit
       }
     });
   } catch (error) {
@@ -339,6 +345,7 @@ export const updateCommunity = async (req, res) => {
       settings,
       removeImage
     } = req.body;
+    console.log(req.body)
 
     const community = await Community.findById(id);
 
@@ -566,7 +573,8 @@ export const getUserCommunities = async (req, res) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    let matchQuery = {
+    // Get communities where user is a member
+    let memberMatchQuery = {
       "members.user": userId,
       "members.isActive": true,
       isActive: true
@@ -574,12 +582,18 @@ export const getUserCommunities = async (req, res) => {
 
     // Filter by role
     if (role !== "all") {
-      matchQuery["members.role"] = role;
+      memberMatchQuery["members.role"] = role;
     }
 
-    const pipeline = [
+    // Get communities where user is creator
+    const creatorMatchQuery = {
+      creator: userId,
+      isActive: true
+    };
+
+    const memberPipeline = [
       {
-        $match: matchQuery
+        $match: memberMatchQuery
       },
       {
         $addFields: {
@@ -606,12 +620,11 @@ export const getUserCommunities = async (req, res) => {
               },
               0
             ]
-          }
+          },
+          isCreator: false
         }
       },
       { $sort: { "userRole.joinedAt": -1 } },
-      { $skip: skip },
-      { $limit: parseInt(limit) },
       {
         $lookup: {
           from: "users",
@@ -635,32 +648,87 @@ export const getUserCommunities = async (req, res) => {
           userRole: "$userRole.role",
           joinedAt: "$userRole.joinedAt",
           createdAt: 1,
-          stats: 1
+          stats: 1,
+          isCreator: 1
         }
       }
     ];
 
-    const communities = await Community.aggregate(pipeline);
-
-    // Get total count
-    const totalPipeline = [
-      { $match: matchQuery },
-      { $count: "total" }
+    const creatorPipeline = [
+      {
+        $match: creatorMatchQuery
+      },
+      {
+        $addFields: {
+          memberCount: {
+            $size: {
+              $filter: {
+                input: "$members",
+                cond: { $eq: ["$$this.isActive", true] }
+              }
+            }
+          },
+          userRole: "creator",
+          isCreator: true,
+          joinedAt: "$createdAt"
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "creator",
+          foreignField: "_id",
+          as: "creator",
+          pipeline: [{ $project: { name: 1, avatar: 1, username: 1 } }]
+        }
+      },
+      { $unwind: "$creator" },
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          category: 1,
+          location: 1,
+          image: 1,
+          isPrivate: 1,
+          creator: 1,
+          memberCount: 1,
+          userRole: 1,
+          joinedAt: 1,
+          createdAt: 1,
+          stats: 1,
+          isCreator: 1
+        }
+      }
     ];
 
-    const totalResult = await Community.aggregate(totalPipeline);
-    const total = totalResult.length > 0 ? totalResult[0].total : 0;
+    // Execute both pipelines
+    const [memberCommunities, creatorCommunities] = await Promise.all([
+      Community.aggregate(memberPipeline),
+      Community.aggregate(creatorPipeline)
+    ]);
+
+    // Merge and remove duplicates (user might be both creator and member)
+    const allCommunities = [...creatorCommunities, ...memberCommunities];
+    const uniqueCommunities = allCommunities.filter((community, index, self) =>
+      index === self.findIndex((c) => c._id.toString() === community._id.toString())
+    );
+
+    // Apply pagination to merged results
+    const paginatedCommunities = uniqueCommunities.slice(skip, skip + parseInt(limit));
+    const total = uniqueCommunities.length;
 
     res.json({
       success: true,
-      data: communities,
+      data: paginatedCommunities,
       pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        currentPage: validPage,
+        totalPages: Math.ceil(total / validLimit),
         total,
-        hasNext: parseInt(page) < Math.ceil(total / parseInt(limit)),
-        hasPrev: parseInt(page) > 1,
-        limit: parseInt(limit)
+        hasNext: validPage < Math.ceil(total / validLimit),
+        hasPrev: validPage > 1,
+        limit: validLimit
       }
     });
 

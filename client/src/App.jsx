@@ -183,8 +183,7 @@ function App() {
             <Route path="users/:id/following" element={<ProtectedRoute title="Following"><FollowersFollowing type="following" /></ProtectedRoute>} />
             <Route path="community/create" element={<ProtectedRoute title="Create Community"><CreateCommunity /></ProtectedRoute>} />
             <Route path="community/:id/edit" element={<ProtectedRoute title="Edit Community"><EditCommunity /></ProtectedRoute>} />
-            {/* <Route path="venues/create" element={<ProtectedRoute title="Create Venue"><CreateVenue /></ProtectedRoute>} />
-            <Route path="venues/:id/edit" element={<ProtectedRoute title="Edit Venue"><EditVenue /></ProtectedRoute>} /> */}
+            <Route path="venues/:id/edit" element={<ProtectedRoute title="Edit Venue"><EditVenue /></ProtectedRoute>} />
           </Route>
 
           {/* Admin Routes */}

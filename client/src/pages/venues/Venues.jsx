@@ -5,23 +5,12 @@ import {
   MapPin,
   Search,
   Filter,
-  Star,
-  Users,
-  Calendar,
-  ArrowRight,
-  Navigation,
-  Phone,
-  Globe,
-  Clock,
-  CheckCircle,
   X
 } from 'lucide-react';
 import { useVenue } from '@/hooks/useVenue';
 import VenueCard from '@/components/venues/VenueCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
@@ -30,8 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-
 
 const Venues = () => {
   const {

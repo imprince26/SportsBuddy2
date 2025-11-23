@@ -102,35 +102,33 @@ const Notifications = () => {
   // Actions
   const markAsRead = async (id) => {
     try {
-      await api.put("/auth/notifications/read");
+      await api.put(`/notifications/user/${id}/read`);
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
+      toast.success("Marked as read");
     } catch (error) {
+      console.error("Mark as read error:", error);
       toast.error("Failed to update");
     }
   };
 
   const markAllRead = async () => {
     try {
-      const token = localStorage.getItem("token");
-      await api.put("/auth/notifications/read-all", {
-        headers: { Authorization: Bearer },
-      });
+      await api.put("/notifications/user/read-all");
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       toast.success("All marked as read");
     } catch (error) {
+      console.error("Mark all as read error:", error);
       toast.error("Failed to update");
     }
   };
 
   const deleteNotification = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-      await api.delete("/auth/notifications", {
-        headers: { Authorization: Bearer},
-      });
+      await api.delete(`/notifications/user/${id}`);
       setNotifications(prev => prev.filter(n => n._id !== id));
       toast.success("Deleted");
     } catch (error) {
+      console.error("Delete notification error:", error);
       toast.error("Failed to delete");
     }
   };

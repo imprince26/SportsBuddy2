@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import HeroBg from '@/components/HeroBg';
 
 const SPORTS_CATEGORIES = [
   'Football',
@@ -234,45 +233,42 @@ const EditCommunity = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background relative pb-20">
-      <HeroBg />
-
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="border-b border-border bg-background/50 backdrop-blur-sm sticky top-0 z-20">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(-1)}
-                className="gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Edit Community</h1>
-                <p className="text-sm text-muted-foreground">
-                  Update your community settings
-                </p>
-              </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 relative pb-20">
+      {/* Header */}
+      <div className="border-b border-border bg-white dark:bg-gray-900 sticky top-0 z-20 shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Community</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Update your community settings
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
         {/* Form */}
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>
+            <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800">
+                <CardTitle className="text-gray-900 dark:text-white">Basic Information</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">
                   Essential details about your community
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-6">
                 {/* Community Image */}
                 <div>
                   <Label>Community Image</Label>
@@ -394,14 +390,14 @@ const EditCommunity = () => {
             </Card>
 
             {/* Location */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Location</CardTitle>
-                <CardDescription>
-                  Where is your community based? (Optional)
+            <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800">
+                <CardTitle className="text-gray-900 dark:text-white">Location</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">
+                  Where is your community based?
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="city">City</Label>
@@ -438,14 +434,14 @@ const EditCommunity = () => {
             </Card>
 
             {/* Community Rules */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Community Rules</CardTitle>
-                <CardDescription>
-                  Set guidelines for your community members <span className="text-red-500">*</span>
+            <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800">
+                <CardTitle className="text-gray-900 dark:text-white">Community Rules</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">
+                  Set guidelines for your community members
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-4 pt-6">
                 {formData.rules.map((rule, index) => (
                   <div key={index} className="flex gap-2">
                     <Input
@@ -482,14 +478,14 @@ const EditCommunity = () => {
             </Card>
 
             {/* Privacy & Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Privacy & Settings</CardTitle>
-                <CardDescription>
+            <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800">
+                <CardTitle className="text-gray-900 dark:text-white">Privacy & Settings</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">
                   Configure how your community works
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-6">
                 {/* Privacy */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -575,22 +571,33 @@ const EditCommunity = () => {
             </Card>
 
             {/* Submit Buttons */}
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate(`/community/${id}`)}
                 disabled={loading}
+                className="border-gray-300 dark:border-gray-700"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : 'Save Changes'}
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
               </Button>
             </div>
           </form>
         </div>
-      </div>
     </div>
   );
 };

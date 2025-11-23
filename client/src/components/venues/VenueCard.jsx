@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 const VenueCard = ({ venue }) => {
+    console.log(venue.images.length);
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -22,7 +23,7 @@ const VenueCard = ({ venue }) => {
             <Card className="h-full overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-900 rounded-2xl flex flex-col">
                 <div className="relative h-48 overflow-hidden">
                     <img
-                        src={venue.images?.[0]?.url || 'https://images.unsplash.com/photo-1519766304800-c64daf4681bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+                        src={venue.images.length > 0 ? venue.images[0].url : '/venues/default-venue.png'}
                         alt={venue.name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />

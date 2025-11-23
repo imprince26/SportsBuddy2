@@ -1,6 +1,4 @@
 import express from 'express';
-import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
-import { CacheKeys, getCacheTTL } from '../utils/cacheKeys.js';
 import {
   createCommunity,
   getCommunities,
@@ -37,62 +35,30 @@ import { upload } from '../config/cloudinary.js';
 
 const router = express.Router();
 
-const communityTTL = getCacheTTL('community');
+// Public routes
+router.get('/', getCommunities);
 
-// Public routes with caching
-router.get('/', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.LIST(req.query.page || 1), communityTTL),
-  getCommunities
-);
+router.get('/featured', getFeaturedCommunities);
 
-router.get('/featured', 
-  cacheMiddleware(() => CacheKeys.COMMUNITY.FEATURED(), communityTTL * 2),
-  getFeaturedCommunities
-);
+router.get('/search', searchCommunities);
 
-router.get('/search', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.SEARCH(req.query.search, req.query.page || 1), communityTTL),
-  searchCommunities
-);
+router.get('/stats', getCommunityStats);
 
-router.get('/stats', 
-  cacheMiddleware(() => CacheKeys.COMMUNITY.STATS(), communityTTL * 2),
-  getCommunityStats
-);
+router.get('/posts', getCommunityPosts);
 
-router.get('/posts', 
-  cacheMiddleware((req) => `community:posts:all:page:${req.query.page || 1}`, communityTTL / 2),
-  getCommunityPosts
-);
+router.get('/posts/trending', getTrendingPosts);
 
-router.get('/posts/trending', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.TRENDING_POSTS(req.query.page || 1), communityTTL / 2),
-  getTrendingPosts
-);
-
-router.get('/posts/:id', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.POST_DETAIL(req.params.id), communityTTL),
-  getCommunityPostById
-);
+router.get('/posts/:id', getCommunityPostById);
 
 // Protected routes
 router.use(isAuthenticated);
 
 // User communities (must be before /:id to avoid conflicts)
-router.get('/my-communities', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.user.id), communityTTL),
-  getUserCommunities
-);
-router.get('/user/:userId', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.USER_COMMUNITIES(req.params.userId), communityTTL),
-  getUserCommunities
-);
+router.get('/my-communities', getUserCommunities);
+router.get('/user/:userId', getUserCommunities);
 
 // Community detail (after specific routes)
-router.get('/:id', 
-  cacheMiddleware((req) => CacheKeys.COMMUNITY.DETAIL(req.params.id), communityTTL),
-  getCommunity
-);
+router.get('/:id', getCommunity);
 
 // Community CRUD
 router.post('/', upload.array('image', 1), createCommunity);

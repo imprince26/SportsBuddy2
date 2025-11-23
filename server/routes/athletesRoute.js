@@ -1,6 +1,4 @@
 import express from 'express';
-import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
-import { CacheKeys, getCacheTTL } from '../utils/cacheKeys.js';
 import {
     getAllAthletes,
     getAthleteById,
@@ -13,33 +11,16 @@ import { isAuthenticated } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-const athletesTTL = getCacheTTL('athletes');
+// Public routes
+router.get('/', getAllAthletes);
 
-// Public routes with caching
-router.get('/', 
-  cacheMiddleware((req) => CacheKeys.ATHLETES.LIST(req.query.page || 1, req.query), athletesTTL),
-  getAllAthletes
-);
+router.get('/search', searchAthletes);
 
-router.get('/search', 
-  cacheMiddleware((req) => CacheKeys.ATHLETES.SEARCH(req.query.search, req.query.page || 1), athletesTTL),
-  searchAthletes
-);
+router.get('/top', getTopAthletes);
 
-router.get('/top', 
-  cacheMiddleware(() => CacheKeys.ATHLETES.TOP(), athletesTTL),
-  getTopAthletes
-);
+router.get('/:id', getAthleteById);
 
-router.get('/:id', 
-  cacheMiddleware((req) => CacheKeys.ATHLETES.DETAIL(req.params.id), athletesTTL),
-  getAthleteById
-);
-
-router.get('/:id/achievements', 
-  cacheMiddleware((req) => CacheKeys.ATHLETES.ACHIEVEMENTS(req.params.id), athletesTTL * 2),
-  getAthleteAchievements
-);
+router.get('/:id/achievements', getAthleteAchievements);
 
 // Protected routes
 router.use(isAuthenticated);

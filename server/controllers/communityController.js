@@ -1,7 +1,6 @@
 import Community from '../models/communityModel.js';
 import User from '../models/userModel.js';
 import { cloudinary } from '../config/cloudinary.js';
-import { deleteCachePattern } from '../config/redis.js';
 
 // Get all communities
 export const getCommunities = async (req, res) => {
@@ -540,9 +539,6 @@ export const deleteCommunity = async (req, res) => {
     community.deletedAt = new Date();
     community.deletedBy = req.user.id;
     await community.save();
-
-    // Invalidate relevant caches
-    await deleteCachePattern(`community:*`);
 
     // For hard delete, uncomment below:
     // await Community.findByIdAndDelete(id);
@@ -1277,11 +1273,6 @@ export const createCommunityPost = async (req, res) => {
 
     const createdPost = updatedCommunity.posts[updatedCommunity.posts.length - 1];
 
-    // Invalidate relevant caches
-    await deleteCachePattern(`community:posts:*`);
-    await deleteCachePattern(`community:detail:${communityId}`);
-    await deleteCachePattern(`community:list:*`);
-
     res.status(201).json({
       success: true,
       message: "Post created successfully",
@@ -1414,11 +1405,6 @@ export const updateCommunityPost = async (req, res) => {
 
     await community.save();
 
-    // Invalidate relevant caches
-    await deleteCachePattern(`community:posts:${community._id}:*`);
-    await deleteCachePattern(`community:post:${id}`);
-    await deleteCachePattern('community:posts:trending:*');
-
     // Return updated post with all populated data
     const updatedCommunity = await Community.findOne({ "posts._id": id })
       .populate("posts.author", "name username avatar")
@@ -1496,11 +1482,6 @@ export const deleteCommunityPost = async (req, res) => {
     community.stats.totalPosts -= 1;
     await community.save();
 
-    // Invalidate relevant caches
-    await deleteCachePattern(`community:posts:*`);
-    await deleteCachePattern(`community:detail:${community._id}`);
-    await deleteCachePattern(`community:list:*`);
-
     res.json({
       success: true,
       message: "Post deleted successfully"
@@ -1545,10 +1526,6 @@ export const likeCommunityPost = async (req, res) => {
     }
 
     await community.save();
-
-    // Invalidate relevant caches
-    await deleteCachePattern(`community:posts:*`);
-    await deleteCachePattern(`community:detail:${community._id}`);
 
     res.json({
       success: true,
@@ -1601,12 +1578,6 @@ export const addCommentToPost = async (req, res) => {
 
     post.comments.push(newComment);
     await community.save();
-
-    // Invalidate relevant caches
-    await deleteCachePattern(`community:posts:*`); // All community post lists
-    await deleteCachePattern(`community:post:${id}`); // This specific post detail
-    await deleteCachePattern(`community:detail:${community._id}`); // Community detail
-    await deleteCachePattern(`community:posts:trending:*`); // Trending posts
 
     // Get updated post with populated comment
     const updatedCommunity = await Community.findOne({ "posts._id": id })
@@ -1967,9 +1938,6 @@ export const likeComment = async (req, res) => {
 
     await community.save();
 
-    // Invalidate caches
-    await deleteCachePattern(`community:posts:*`);
-
     res.json({
       success: true,
       message: likeIndex > -1 ? "Comment unliked" : "Comment liked",
@@ -2044,12 +2012,6 @@ export const replyToComment = async (req, res) => {
     const updatedComment = updatedPost.comments.id(commentId);
     const createdReply = updatedComment.replies[updatedComment.replies.length - 1];
 
-    // Invalidate caches
-    await deleteCachePattern(`community:posts:*`); // All community post lists
-    await deleteCachePattern(`community:post:${postId}`); // This specific post detail
-    await deleteCachePattern(`community:detail:${community._id}`); // Community detail
-    await deleteCachePattern(`community:posts:trending:*`); // Trending posts
-
     res.status(201).json({
       success: true,
       message: "Reply added successfully",
@@ -2109,9 +2071,6 @@ export const likeReply = async (req, res) => {
     }
 
     await community.save();
-
-    // Invalidate caches
-    await deleteCachePattern(`community:posts:*`);
 
     res.json({
       success: true,
@@ -2177,10 +2136,6 @@ export const updateComment = async (req, res) => {
 
     await community.save();
 
-    // Invalidate caches
-    await deleteCachePattern(`community:posts:${community._id}:*`);
-    await deleteCachePattern(`community:post:${postId}`);
-
     // Return updated comment
     const updatedCommunity = await Community.findOne({ "posts._id": postId })
       .populate("posts.comments.author", "name username avatar");
@@ -2242,10 +2197,6 @@ export const deleteComment = async (req, res) => {
     // Remove the comment
     post.comments.pull(commentId);
     await community.save();
-
-    // Invalidate caches
-    await deleteCachePattern(`community:posts:${community._id}:*`);
-    await deleteCachePattern(`community:post:${postId}`);
 
     res.json({
       success: true,
@@ -2315,10 +2266,6 @@ export const updateReply = async (req, res) => {
     reply.updatedAt = new Date();
 
     await community.save();
-
-    // Invalidate caches
-    await deleteCachePattern(`community:posts:${community._id}:*`);
-    await deleteCachePattern(`community:post:${postId}`);
 
     // Return updated reply
     const updatedCommunity = await Community.findOne({ "posts._id": postId })
@@ -2392,10 +2339,6 @@ export const deleteReply = async (req, res) => {
     // Remove the reply
     comment.replies.pull(replyId);
     await community.save();
-
-    // Invalidate caches
-    await deleteCachePattern(`community:posts:${community._id}:*`);
-    await deleteCachePattern(`community:post:${postId}`);
 
     res.json({
       success: true,

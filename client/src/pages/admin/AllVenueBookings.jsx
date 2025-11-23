@@ -20,6 +20,7 @@ import {
   XCircle,
   AlertCircle
 } from 'lucide-react';
+import { FaMoneyBillWave } from "react-icons/fa";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -238,7 +239,7 @@ const AllVenueBookings = () => {
                   <p className="text-3xl font-bold mt-2">₹{stats.revenue.toLocaleString()}</p>
                 </div>
                 <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/20">
-                  <DollarSign className="w-6 h-6 text-purple-600" />
+                  <FaMoneyBillWave className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>

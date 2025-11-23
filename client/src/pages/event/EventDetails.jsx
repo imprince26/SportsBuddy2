@@ -43,7 +43,8 @@ import {
   Bike,
   Waves
 } from "lucide-react"
-
+import { FaMoneyBillWave, FaTools, FaUserTie } from "react-icons/fa";
+import { IoStatsChart } from "react-icons/io5";
 import { useAuth } from "@/hooks/useAuth"
 import { useSocket } from "@/hooks/useSocket"
 import { useEvents } from "@/hooks/useEvents"
@@ -640,9 +641,9 @@ const EventDetails = () => {
                           : event.averageRating > 0
                             ? event.averageRating.toFixed(1)
                             : "N/A",
-                      icon: event.registrationFee > 0 ? IndianRupee : Star,
-                      color: "text-orange-600 dark:text-orange-400",
-                      bg: "bg-orange-50 dark:bg-orange-900/20",
+                      icon: event.registrationFee > 0 ? FaMoneyBillWave : Star,
+                      color: "text-green-600 dark:text-green-400",
+                      bg: "bg-green-50 dark:bg-green-900/20",
                     },
                   ].map((stat, index) => (
                     <div
@@ -937,7 +938,7 @@ const EventDetails = () => {
                               {event.registrationFee > 0 && (
                                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                                   <div className="flex items-center gap-3">
-                                    <IndianRupee className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                    <FaMoneyBillWave className="w-5 h-5 text-green-600 dark:text-green-400" />
                                     <span className="font-medium text-muted-foreground">
                                       Registration Fee
                                     </span>
@@ -1062,7 +1063,7 @@ const EventDetails = () => {
                                         style={{ animationDelay: `${index * 100}ms` }}
                                       >
                                         <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                                          <Target className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                                          <FaTools className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                                         </div>
                                         <span className="text-muted-foreground font-medium">
                                           {typeof equipmentItem === "object"
@@ -1500,7 +1501,7 @@ const EventDetails = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-foreground">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                        <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        <FaUserTie className="w-5 h-5 text-green-600 dark:text-green-400" />
                       </div>
                       Event Organizer
                     </CardTitle>
@@ -1545,7 +1546,7 @@ const EventDetails = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-foreground">
                       <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <IoStatsChart className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       </div>
                       Event Statistics
                     </CardTitle>

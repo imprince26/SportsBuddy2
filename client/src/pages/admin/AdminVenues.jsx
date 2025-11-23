@@ -6,6 +6,7 @@ import {
   MapPin,
   Users,
   DollarSign,
+  IndianRupee,
   Edit,
   Trash2,
   Plus,
@@ -20,6 +21,7 @@ import {
   CalendarCheck,
   Download
 } from 'lucide-react';
+import { FaMoneyBillWave } from "react-icons/fa";
 import { useVenue } from '@/hooks/useVenue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -404,7 +406,7 @@ const AdminVenues = () => {
                     </p>
                   </div>
                   <div className="p-2 sm:p-3 rounded-lg bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 border border-orange-200/20 dark:border-orange-700/20">
-                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+                    <FaMoneyBillWave className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
                   </div>
                 </div>
               </CardContent>
@@ -540,7 +542,6 @@ const AdminVenues = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 font-semibold">
-                          <DollarSign className="w-4 h-4" />
                           ₹{venue.pricing?.hourlyRate || 0}
                         </div>
                       </TableCell>

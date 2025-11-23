@@ -6,6 +6,7 @@ import {
   Clock,
   User,
   DollarSign,
+  IndianRupee,
   MapPin,
   Filter,
   Search,
@@ -188,10 +189,22 @@ const VenueBookings = () => {
             Back to Venues
           </Button>
 
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Venue Bookings</h1>
+          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-4 sm:p-6 lg:p-8 text-white shadow-xl">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <defs>
+                  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                  </pattern>
+                </defs>
+                <rect width="100" height="100" fill="url(#grid)" />
+              </svg>
+            </div>
+
+            <div className="relative z-10 flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:justify-between lg:items-center">
+              <div className="flex-1">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Venue Bookings</h1>
                 <div className="flex items-center gap-2 text-white/90">
                   <MapPin className="w-4 h-4" />
                   <span>{currentVenue.name}</span>
@@ -265,7 +278,7 @@ const VenueBookings = () => {
                   <p className="text-2xl font-bold text-purple-600">₹{stats?.totalRevenue || 0}</p>
                 </div>
                 <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-full">
-                  <DollarSign className="w-5 h-5 text-purple-600" />
+                  <IndianRupee className="w-5 h-5 text-purple-600" />
                 </div>
               </div>
             </CardContent>

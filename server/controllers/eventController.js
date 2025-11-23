@@ -404,9 +404,7 @@ export const getAllEvents = async (req, res) => {
 export const getEventById = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    console.log(`Cache MISS: ${cacheKey}`);
-    
+        
     const event = await Event.findById(id)
       .populate("createdBy", "name avatar username email")
       .populate("participants.user", "name avatar username")
@@ -422,42 +420,17 @@ export const getEventById = async (req, res) => {
       });
     }
 
-    // Add metadata
-    const now = new Date();
-    const eventWithMetadata = {
-      ...event.toObject(),
-      participantCount: event.participants?.length || 0,
-      spotsLeft: event.maxParticipants - (event.participants?.length || 0),
-      averageRating: event.ratings?.length > 0 
-        ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length 
-        : 0,
-      isUpcoming: new Date(event.date) > now,
-      daysUntilEvent: Math.ceil((new Date(event.date) - now) / (1000 * 60 * 60 * 24))
-    };
-
-    res.set({
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    });
-
-    const response = {
+    res.status(200).json({
       success: true,
-      data: eventWithMetadata
-    };
-    
-    // Cache for 1 hour
-    const ttl = parseInt(process.env.CACHE_EVENTS_TTL) || 1800;
-    await setCache(cacheKey, response, ttl * 2);
-    console.log(`Cached event: ${cacheKey} (TTL: ${ttl * 2}s)`);
-
-    res.status(200).json(response);
+      data: event
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Error fetching event",
       error: error.message,
     });
+    console.log(error);
   }
 };
 

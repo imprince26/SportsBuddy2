@@ -12,6 +12,7 @@ import {
   FileText, Settings, ArrowRight, Star, Trophy, DollarSign, AlertTriangle,
   MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers, Loader2, Zap, Flame, Building2
 } from 'lucide-react'
+import { VenueSelector } from "@/components/events/VenueSelector"
 import {
   Form,
   FormControl,
@@ -38,7 +39,7 @@ import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 import { eventSchema, defaultEventValues } from "@/schemas/eventSchema"
 
-import HeroBg from "@/components/HeroBg"
+
 
 const EditEvent = () => {
   const { id } = useParams()
@@ -58,7 +59,6 @@ const EditEvent = () => {
   const [hasChanges, setHasChanges] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [selectedVenue, setSelectedVenue] = useState(null)
-  const [venueSearch, setVenueSearch] = useState("")
 
   const form = useForm({
     resolver: zodResolver(eventSchema),
@@ -158,12 +158,12 @@ const EditEvent = () => {
             equipment: eventData.equipment || [],
           })
           setExistingImages(eventData.images || [])
-          
+
           // Set selected venue if event has one
           if (eventData.venue) {
             setSelectedVenue(eventData.venue)
           }
-          
+
           document.title = `Edit Event - ${eventData.name || "Untitled Event"}`
           setHasChanges(false)
           calculateProgress()
@@ -429,7 +429,7 @@ const EditEvent = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      <HeroBg />
+
 
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="animate-in fade-in duration-500">
@@ -717,93 +717,22 @@ const EditEvent = () => {
                             </div>
 
                             {/* Venue Selection */}
-                            <div className="space-y-4 p-4 bg-accent rounded-lg border border-border">
+                            <div className="space-y-4 p-4 bg-accent/50 rounded-lg border border-border">
                               <div className="flex items-center gap-2">
                                 <Building2 className="w-5 h-5 text-primary" />
                                 <h4 className="font-semibold text-foreground">Select Venue (Optional)</h4>
                               </div>
-                              
-                              {selectedVenue ? (
-                                <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-primary/30">
-                                  <div className="flex items-center gap-3">
-                                    {selectedVenue.images?.[0]?.url || selectedVenue.images?.[0] ? (
-                                      <img 
-                                        src={selectedVenue.images[0]?.url || selectedVenue.images[0]} 
-                                        alt={selectedVenue.name}
-                                        className="w-12 h-12 rounded-lg object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                                        <Building2 className="w-6 h-6 text-primary" />
-                                      </div>
-                                    )}
-                                    <div>
-                                      <p className="font-semibold text-foreground">{selectedVenue.name}</p>
-                                      <p className="text-sm text-muted-foreground">{selectedVenue.location?.city}</p>
-                                    </div>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setSelectedVenue(null)}
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="space-y-3">
-                                  <Input
-                                    placeholder="Search venues by name or location..."
-                                    value={venueSearch}
-                                    onChange={(e) => setVenueSearch(e.target.value)}
-                                    className="bg-background"
-                                  />
-                                  <div className="max-h-48 overflow-y-auto space-y-2">
-                                    {venues
-                                      ?.filter(v => 
-                                        v.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
-                                        v.location?.city.toLowerCase().includes(venueSearch.toLowerCase())
-                                      )
-                                      .slice(0, 5)
-                                      .map(venue => (
-                                        <button
-                                          key={venue._id}
-                                          type="button"
-                                          onClick={() => {
-                                            setSelectedVenue(venue)
-                                            form.setValue('location.address', venue.location?.address || '')
-                                            form.setValue('location.city', venue.location?.city || '')
-                                            form.setValue('location.state', venue.location?.state || '')
-                                          }}
-                                          className="w-full flex items-center gap-3 p-3 bg-card hover:bg-accent rounded-lg border border-border transition-colors text-left"
-                                        >
-                                          {venue.images?.[0]?.url || venue.images?.[0] ? (
-                                            <img 
-                                              src={venue.images[0]?.url || venue.images[0]} 
-                                              alt={venue.name}
-                                              className="w-10 h-10 rounded object-cover"
-                                            />
-                                          ) : (
-                                            <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
-                                              <Building2 className="w-5 h-5 text-primary" />
-                                            </div>
-                                          )}
-                                          <div className="flex-1">
-                                            <p className="font-medium text-foreground text-sm">{venue.name}</p>
-                                            <p className="text-xs text-muted-foreground">{venue.location?.city}</p>
-                                          </div>
-                                        </button>
-                                      ))}
-                                    {venueSearch && venues?.filter(v => 
-                                      v.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
-                                      v.location?.city.toLowerCase().includes(venueSearch.toLowerCase())
-                                    ).length === 0 && (
-                                      <p className="text-sm text-muted-foreground text-center py-4">No venues found</p>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
+
+                              <VenueSelector
+                                venues={venues}
+                                selectedVenue={selectedVenue}
+                                onSelect={(venue) => {
+                                  setSelectedVenue(venue)
+                                  form.setValue('location.address', venue.location?.address || '')
+                                  form.setValue('location.city', venue.location?.city || '')
+                                  form.setValue('location.state', venue.location?.state || '')
+                                }}
+                              />
                             </div>
 
                             <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
@@ -1131,25 +1060,25 @@ const EditEvent = () => {
                                   Current Images
                                 </h4>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                    {existingImages.map((image, index) => (
-                                      <div
-                                        key={index}
-                                        className="relative group animate-in fade-in zoom-in-95 duration-300"
+                                  {existingImages.map((image, index) => (
+                                    <div
+                                      key={index}
+                                      className="relative group animate-in fade-in zoom-in-95 duration-300"
+                                    >
+                                      <img
+                                        src={image.url || "/placeholder.svg?height=200&width=200"}
+                                        alt={`Event ${index}`}
+                                        className="w-full h-32 object-cover rounded-xl border border-border shadow-sm group-hover:shadow-md transition-all duration-200"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => removeExistingImage(index)}
+                                        className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-md"
                                       >
-                                        <img
-                                          src={image.url || "/placeholder.svg?height=200&width=200"}
-                                          alt={`Event ${index}`}
-                                          className="w-full h-32 object-cover rounded-xl border border-border shadow-sm group-hover:shadow-md transition-all duration-200"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={() => removeExistingImage(index)}
-                                          className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-md"
-                                        >
-                                          <X className="w-4 h-4" />
-                                        </button>
-                                      </div>
-                                    ))}
+                                        <X className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
                             )}
@@ -1262,43 +1191,43 @@ const EditEvent = () => {
                                 </div>
 
                                 {form.getValues("rules")?.length > 0 ? (
-                                    <div className="space-y-3">
-                                      {form.getValues("rules").map((rule, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-start gap-4 p-4 rounded-lg bg-muted border border-border animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                        >
-                                          <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center flex-shrink-0 mt-1">
-                                            <span className="text-sm font-bold text-foreground">
-                                              {index + 1}
-                                            </span>
-                                          </div>
-                                          <p className="flex-1 text-foreground text-lg leading-relaxed">
-                                            {rule}
-                                          </p>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeRule(index)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
-                                          >
-                                            <Trash2 className="w-4 h-4" />
-                                          </Button>
+                                  <div className="space-y-3">
+                                    {form.getValues("rules").map((rule, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-start gap-4 p-4 rounded-lg bg-muted border border-border animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                      >
+                                        <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center flex-shrink-0 mt-1">
+                                          <span className="text-sm font-bold text-foreground">
+                                            {index + 1}
+                                          </span>
                                         </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
-                                      <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                                      <h4 className="text-lg font-medium text-foreground mb-2">
-                                        No Rules Added Yet
-                                      </h4>
-                                      <p className="text-muted-foreground">
-                                        Add rules to help participants understand expectations and guidelines.
-                                      </p>
-                                    </div>
-                                  )}
+                                        <p className="flex-1 text-foreground text-lg leading-relaxed">
+                                          {rule}
+                                        </p>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => removeRule(index)}
+                                          className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
+                                    <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                                    <h4 className="text-lg font-medium text-foreground mb-2">
+                                      No Rules Added Yet
+                                    </h4>
+                                    <p className="text-muted-foreground">
+                                      Add rules to help participants understand expectations and guidelines.
+                                    </p>
+                                  </div>
+                                )}
                               </CardContent>
                             </Card>
                           </div>
@@ -1352,46 +1281,46 @@ const EditEvent = () => {
                                 </div>
 
                                 {form.getValues("equipment")?.length > 0 ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                      {form.getValues("equipment").map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-center justify-between p-4 rounded-lg bg-muted border border-border animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                        >
-                                          <div className="flex items-center gap-3">
-                                            <CheckCircle className="w-5 h-5 text-foreground" />
-                                            <span className="text-foreground font-medium">
-                                              {item.item}
-                                            </span>
-                                            {item.required && (
-                                              <Badge variant="destructive" className="text-xs">
-                                                Required
-                                              </Badge>
-                                            )}
-                                          </div>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeEquipment(index)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
-                                          >
-                                            <Trash2 className="w-4 h-4" />
-                                          </Button>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {form.getValues("equipment").map((item, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-center justify-between p-4 rounded-lg bg-muted border border-border animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <CheckCircle className="w-5 h-5 text-foreground" />
+                                          <span className="text-foreground font-medium">
+                                            {item.item}
+                                          </span>
+                                          {item.required && (
+                                            <Badge variant="destructive" className="text-xs">
+                                              Required
+                                            </Badge>
+                                          )}
                                         </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
-                                      <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                                      <h4 className="text-lg font-medium text-foreground mb-2">
-                                        No Equipment Listed
-                                      </h4>
-                                      <p className="text-muted-foreground">
-                                        List any equipment or gear participants should bring to the event.
-                                      </p>
-                                    </div>
-                                  )}
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => removeEquipment(index)}
+                                          className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
+                                    <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                                    <h4 className="text-lg font-medium text-foreground mb-2">
+                                      No Equipment Listed
+                                    </h4>
+                                    <p className="text-muted-foreground">
+                                      List any equipment or gear participants should bring to the event.
+                                    </p>
+                                  </div>
+                                )}
                               </CardContent>
                             </Card>
                           </div>

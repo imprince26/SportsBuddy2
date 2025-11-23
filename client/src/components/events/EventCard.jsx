@@ -13,6 +13,8 @@ import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const EventCard = ({ event, index, categories, viewMode = "grid", featured = false }) => {
+  const isFeatured = featured || event.isFeatured
+
   const [isLiked, setIsLiked] = useState(false)
 
   // Get category info
@@ -56,7 +58,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                     <span className="text-4xl text-muted-foreground">🏆</span>
                   </div>
                 )}
-                
+
                 {/* Date Badge (Mobile) */}
                 <div className="absolute top-3 left-3 z-20 sm:hidden">
                   <div className="bg-background/90 backdrop-blur-md rounded-lg p-2 text-center shadow-sm border border-border/50">
@@ -78,7 +80,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                       <Badge variant="secondary" className="rounded-md font-medium bg-primary/10 text-primary hover:bg-primary/20 border-0">
                         {getCategoryInfo(event.category).label}
                       </Badge>
-                      {featured && (
+                      {isFeatured && (
                         <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-0">
                           <Sparkles className="w-3 h-3 mr-1" /> Featured
                         </Badge>
@@ -165,7 +167,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
           {/* Image Container */}
           <div className="relative h-48 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
-            
+
             {event.images && event.images.length > 0 ? (
               <img
                 src={event.images[0].url || "/placeholder.svg"}
@@ -213,6 +215,11 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                     <Zap className="w-3 h-3 mr-1" /> Few Spots
                   </Badge>
                 )}
+                {isFeatured && (
+                  <Badge className="bg-yellow-500/90 hover:bg-yellow-500 text-white backdrop-blur-md border-0">
+                    <Sparkles className="w-3 h-3 mr-1" /> Featured
+                  </Badge>
+                )}
               </div>
               <h3 className="text-xl font-bold text-white line-clamp-1 mb-1 group-hover:text-primary transition-colors">
                 {event.name}
@@ -247,7 +254,7 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                   </span>
                 </div>
                 <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full rounded-full transition-all duration-500 bg-primary"
                     style={{ width: `${fillPercentage}%` }}
                   />

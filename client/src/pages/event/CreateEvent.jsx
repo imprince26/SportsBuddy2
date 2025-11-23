@@ -11,6 +11,7 @@ import {
   FileText, Settings, ArrowRight, Star, Trophy, AlertTriangle,
   MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers, IndianRupee, Building2, Zap, Flame
 } from 'lucide-react'
+import { VenueSelector } from "@/components/events/VenueSelector"
 
 import {
   Form,
@@ -43,7 +44,6 @@ const CreateEventForm = () => {
   const [completionProgress, setCompletionProgress] = useState(0)
   const [activeTab, setActiveTab] = useState("basic")
   const [selectedVenue, setSelectedVenue] = useState(null)
-  const [venueSearch, setVenueSearch] = useState("")
 
   const form = useForm({
     resolver: zodResolver(eventSchema),
@@ -193,8 +193,8 @@ const CreateEventForm = () => {
   const onSubmit = async (formData) => {
     try {
       setIsLoading(true)
-      const data = { 
-        ...formData, 
+      const data = {
+        ...formData,
         images: images,
         venue: selectedVenue?._id || null
       }
@@ -242,10 +242,7 @@ const CreateEventForm = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Background Effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-blue-500/5 rounded-full blur-3xl" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-purple-500/5 rounded-full blur-3xl" />
-      </div>
+      {/* Background Effects Removed */}
 
       <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="animate-in fade-in duration-500">
@@ -533,94 +530,22 @@ const CreateEventForm = () => {
                             </div>
 
                             {/* Venue Selection */}
-                            <div className="space-y-4 p-4 bg-accent rounded-lg border border-border">
+                            <div className="space-y-4 p-4 bg-accent/50 rounded-lg border border-border">
                               <div className="flex items-center gap-2">
                                 <Building2 className="w-5 h-5 text-primary" />
                                 <h4 className="font-semibold text-foreground">Select Venue (Optional)</h4>
                               </div>
-                              
-                              {selectedVenue ? (
-                                <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-primary/30">
-                                  <div className="flex items-center gap-3">
-                                    {selectedVenue.images?.[0]?.url || selectedVenue.images?.[0] ? (
-                                      <img 
-                                        src={selectedVenue.images[0]?.url || selectedVenue.images[0]} 
-                                        alt={selectedVenue.name}
-                                        className="w-12 h-12 rounded-lg object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                                        <Building2 className="w-6 h-6 text-primary" />
-                                      </div>
-                                    )}
-                                    <div>
-                                      <p className="font-semibold text-foreground">{selectedVenue.name}</p>
-                                      <p className="text-sm text-muted-foreground">{selectedVenue.location?.city}</p>
-                                    </div>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setSelectedVenue(null)}
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="space-y-3">
-                                  <Input
-                                    placeholder="Search venues by name or location..."
-                                    value={venueSearch}
-                                    onChange={(e) => setVenueSearch(e.target.value)}
-                                    className="bg-background"
-                                  />
-                                  <div className="max-h-48 overflow-y-auto space-y-2">
-                                    {venues
-                                      .filter(v => 
-                                        v.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
-                                        v.location?.city.toLowerCase().includes(venueSearch.toLowerCase())
-                                      )
-                                      .slice(0, 5)
-                                      .map(venue => (
-                                        <button
-                                          key={venue._id}
-                                          type="button"
-                                          onClick={() => {
-                                            setSelectedVenue(venue)
-                                            // Auto-fill location fields
-                                            form.setValue('location.address', venue.location?.address || '')
-                                            form.setValue('location.city', venue.location?.city || '')
-                                            form.setValue('location.state', venue.location?.state || '')
-                                          }}
-                                          className="w-full flex items-center gap-3 p-3 bg-card hover:bg-accent rounded-lg border border-border transition-colors text-left"
-                                        >
-                                          {venue.images?.[0]?.url || venue.images?.[0] ? (
-                                            <img 
-                                              src={venue.images[0]?.url || venue.images[0]} 
-                                              alt={venue.name}
-                                              className="w-10 h-10 rounded object-cover"
-                                            />
-                                          ) : (
-                                            <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
-                                              <Building2 className="w-5 h-5 text-primary" />
-                                            </div>
-                                          )}
-                                          <div className="flex-1">
-                                            <p className="font-medium text-foreground text-sm">{venue.name}</p>
-                                            <p className="text-xs text-muted-foreground">{venue.location?.city}</p>
-                                          </div>
-                                        </button>
-                                      ))}
-                                    {venueSearch && venues.filter(v => 
-                                      v.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
-                                      v.location?.city.toLowerCase().includes(venueSearch.toLowerCase())
-                                    ).length === 0 && (
-                                      <p className="text-sm text-muted-foreground text-center py-4">No venues found</p>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
+
+                              <VenueSelector
+                                venues={venues}
+                                selectedVenue={selectedVenue}
+                                onSelect={(venue) => {
+                                  setSelectedVenue(venue)
+                                  form.setValue('location.address', venue.location?.address || '')
+                                  form.setValue('location.city', venue.location?.city || '')
+                                  form.setValue('location.state', venue.location?.state || '')
+                                }}
+                              />
                             </div>
 
                             <div className="grid md:grid-cols-2 grid-cols-1 gap-4 sm:gap-6">
@@ -971,32 +896,32 @@ const CreateEventForm = () => {
                                 <span className="text-base sm:text-lg font-medium">Choose Images</span>
                               </label>
                             </div>
-                              {imagePreview.length > 0 && (
-                                <div
-                                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
-                                >
-                                  {imagePreview.map((src, index) => (
-                                    <div
-                                      key={index}
-                                      className="relative group animate-in fade-in zoom-in-95 duration-300"
-                                      style={{ animationDelay: `${index * 100}ms` }}
+                            {imagePreview.length > 0 && (
+                              <div
+                                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                              >
+                                {imagePreview.map((src, index) => (
+                                  <div
+                                    key={index}
+                                    className="relative group animate-in fade-in zoom-in-95 duration-300"
+                                    style={{ animationDelay: `${index * 100}ms` }}
+                                  >
+                                    <img
+                                      src={src || "/placeholder.svg"}
+                                      alt={`Preview ${index}`}
+                                      className="w-full h-24 sm:h-32 object-cover rounded-lg sm:rounded-xl border-2 border-border shadow-sm sm:shadow-md group-hover:shadow-lg transition-all duration-200"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage(index)}
+                                      className="absolute -top-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-md"
                                     >
-                                      <img
-                                        src={src || "/placeholder.svg"}
-                                        alt={`Preview ${index}`}
-                                        className="w-full h-24 sm:h-32 object-cover rounded-lg sm:rounded-xl border-2 border-border shadow-sm sm:shadow-md group-hover:shadow-lg transition-all duration-200"
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() => removeImage(index)}
-                                        className="absolute -top-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 shadow-md"
-                                      >
-                                        <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
+                                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                           {/* Rules Section */}
                           <div className="space-y-4 sm:space-y-6">
@@ -1025,42 +950,42 @@ const CreateEventForm = () => {
                                     Add Rule
                                   </Button>
                                 </div>
-                                  {form.getValues("rules")?.length > 0 ? (
-                                    <div className="space-y-2 sm:space-y-3">
-                                      {form.getValues("rules").map((rule, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                        >
-                                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
-                                            <span className="text-xs sm:text-sm font-bold text-white">{index + 1}</span>
-                                          </div>
-                                          <p className="flex-1 text-foreground text-base sm:text-lg leading-relaxed">
-                                            {rule}
-                                          </p>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeRule(index)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
-                                          >
-                                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                          </Button>
+                                {form.getValues("rules")?.length > 0 ? (
+                                  <div className="space-y-2 sm:space-y-3">
+                                    {form.getValues("rules").map((rule, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                      >
+                                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
+                                          <span className="text-xs sm:text-sm font-bold text-white">{index + 1}</span>
                                         </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
-                                      <Shield className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-                                      <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
-                                        No Rules Added Yet
-                                      </h4>
-                                      <p className="text-muted-foreground text-xs sm:text-sm">
-                                        Add rules to help participants understand expectations and guidelines.
-                                      </p>
-                                    </div>
-                                  )}
+                                        <p className="flex-1 text-foreground text-base sm:text-lg leading-relaxed">
+                                          {rule}
+                                        </p>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => removeRule(index)}
+                                          className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                        >
+                                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
+                                    <Shield className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                                    <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
+                                      No Rules Added Yet
+                                    </h4>
+                                    <p className="text-muted-foreground text-xs sm:text-sm">
+                                      Add rules to help participants understand expectations and guidelines.
+                                    </p>
+                                  </div>
+                                )}
                               </CardContent>
                             </Card>
                           </div>
@@ -1106,45 +1031,45 @@ const CreateEventForm = () => {
                                     Add
                                   </Button>
                                 </div>
-                                  {form.getValues("equipment")?.length > 0 ? (
-                                    <div className="grid grid-cols-1 gap-2 sm:gap-3">
-                                      {form.getValues("equipment").map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-center justify-between p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                        >
-                                          <div className="flex items-center gap-2 sm:gap-3">
-                                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                                            <span className="text-foreground font-medium text-sm sm:text-base">
-                                              {item.item}
-                                            </span>
-                                            {item.required && (
-                                              <Badge variant="destructive" className="text-xs">Required</Badge>
-                                            )}
-                                          </div>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeEquipment(index)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
-                                          >
-                                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                          </Button>
+                                {form.getValues("equipment")?.length > 0 ? (
+                                  <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                                    {form.getValues("equipment").map((item, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-center justify-between p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                      >
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                          <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                                          <span className="text-foreground font-medium text-sm sm:text-base">
+                                            {item.item}
+                                          </span>
+                                          {item.required && (
+                                            <Badge variant="destructive" className="text-xs">Required</Badge>
+                                          )}
                                         </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
-                                      <Target className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-                                      <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
-                                        No Equipment Listed
-                                      </h4>
-                                      <p className="text-muted-foreground text-xs sm:text-sm">
-                                        List any equipment or gear participants should bring to the event.
-                                      </p>
-                                    </div>
-                                  )}
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => removeEquipment(index)}
+                                          className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                        >
+                                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
+                                    <Target className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                                    <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
+                                      No Equipment Listed
+                                    </h4>
+                                    <p className="text-muted-foreground text-xs sm:text-sm">
+                                      List any equipment or gear participants should bring to the event.
+                                    </p>
+                                  </div>
+                                )}
                               </CardContent>
                             </Card>
                           </div>

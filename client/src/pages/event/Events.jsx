@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, Suspense } from "react"
+import { useState, useEffect, useCallback, Suspense, useRef } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import {
   Plus, Grid3X3, List, ChevronLeft, ChevronRight,
@@ -152,6 +152,8 @@ const Events = () => {
     }
   }, [])
 
+
+
   // Initial fetch
   useEffect(() => {
     fetchEvents()
@@ -172,10 +174,24 @@ const Events = () => {
     fetchEvents(newFilters, 1)
   }
 
-  // Handle search
+  // Timer ref for debounce
+  const timerRef = useRef(null)
+
+  // Handle search with debounce
   const handleSearch = (e) => {
     const value = e.target.value
-    handleFilterChange("search", value)
+    // Update local filter state immediately for input display
+    setFilters(prev => ({ ...prev, search: value }))
+
+    // Clear existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+    }
+
+    // Set new timer
+    timerRef.current = setTimeout(() => {
+      handleFilterChange("search", value)
+    }, 500)
   }
 
   // Handle pagination
@@ -205,13 +221,12 @@ const Events = () => {
   // Refresh events
   const refreshEvents = () => {
     fetchEvents(filters, pagination.page)
-    fetchFeaturedEvents()
   }
 
   return (
     <div className="min-h-screen bg-background relative">
       <HeroBg />
-      
+
       {/* Modern Minimal Hero Section */}
       <div className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden border-b border-border/40 bg-background/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 relative z-10">
@@ -226,7 +241,7 @@ const Events = () => {
               <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl leading-relaxed">
                 Join a community of athletes. Find local games, tournaments, and training sessions tailored to your skill level.
               </p>
-              
+
               <div className="flex flex-wrap gap-4">
                 {isAuthenticated && (
                   <Link to="/events/create">
@@ -236,9 +251,9 @@ const Events = () => {
                     </Button>
                   </Link>
                 )}
-                <Button 
-                  variant="outline" 
-                  size="lg" 
+                <Button
+                  variant="outline"
+                  size="lg"
                   className="h-14 px-8 text-lg rounded-full border-2 hover:bg-secondary/50"
                   onClick={() => document.getElementById('events-feed').scrollIntoView({ behavior: 'smooth' })}
                 >
@@ -267,7 +282,7 @@ const Events = () => {
       </div>
 
       <div id="events-feed" className="container mx-auto px-4 pb-20">
-        
+
         {/* Filters Section */}
         <div className="z-30 bg-background/95 backdrop-blur-xl py-4 -mx-4 px-4 mb-8 border-y border-border/50 shadow-sm">
           <Suspense fallback={<EventsLoadingSkeleton type="filters" />}>
@@ -283,22 +298,7 @@ const Events = () => {
           </Suspense>
         </div>
 
-        {/* Featured Events Carousel/Grid */}
-        {featuredEvents.length > 0 && !filters.search && (
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold flex items-center gap-2 text-foreground">
-                <Trophy className="w-6 h-6 text-primary" />
-                Featured Events
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredEvents.slice(0, 3).map((event, index) => (
-                <EventCard key={event._id} event={event} categories={categories} index={index} featured />
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {/* Main Content Area */}
         <div className="flex flex-col gap-6">
@@ -307,7 +307,7 @@ const Events = () => {
             <h2 className="text-xl font-semibold text-foreground">
               {loading ? "Loading..." : `${pagination.total} Events Found`}
             </h2>
-            
+
             <div className="flex items-center bg-secondary/50 p-1 rounded-lg border border-border/50">
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
@@ -370,8 +370,8 @@ const Events = () => {
           {!loading && !error && events.length > 0 && (
             <div className={cn(
               "grid gap-6",
-              viewMode === "grid" 
-                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+              viewMode === "grid"
+                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 : "grid-cols-1 max-w-4xl mx-auto w-full"
             )}>
               {events.map((event, index) => (
@@ -381,6 +381,7 @@ const Events = () => {
                   categories={categories}
                   index={index}
                   viewMode={viewMode}
+                  featured={featuredEvents.some(e => e._id === event._id)}
                 />
               ))}
             </div>
@@ -399,7 +400,7 @@ const Events = () => {
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </Button>
-                
+
                 <div className="flex items-center gap-2 px-2">
                   {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
                     let pageNum = i + 1
@@ -407,7 +408,7 @@ const Events = () => {
                       if (pagination.page > 3) pageNum = pagination.page - 2 + i
                       if (pagination.page > pagination.pages - 2) pageNum = pagination.pages - 4 + i
                     }
-                    
+
                     if (pageNum > pagination.pages) return null
 
                     return (
@@ -418,8 +419,8 @@ const Events = () => {
                         onClick={() => handlePageChange(pageNum)}
                         className={cn(
                           "min-w-10 h-10 rounded-xl font-semibold text-base transition-all",
-                          pagination.page === pageNum 
-                            ? "shadow-md shadow-primary/30" 
+                          pagination.page === pageNum
+                            ? "shadow-md shadow-primary/30"
                             : "hover:border-primary/50"
                         )}
                       >
@@ -439,7 +440,7 @@ const Events = () => {
                   <ChevronRight className="w-5 h-5" />
                 </Button>
               </div>
-              
+
               <p className="text-sm font-medium text-muted-foreground">
                 Page <span className="text-foreground font-bold">{pagination.page}</span> of <span className="text-foreground font-bold">{pagination.pages}</span>
               </p>

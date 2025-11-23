@@ -17,7 +17,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import Events from './pages/event/Events';
 import EventDetails from './pages/event/EventDetails';
 import PublicProfile from './pages/PublicProfile';
-import Search from './pages/public/Search';
+import GlobalSearch from './pages/GlobalSearch';
 import About from './pages/public/About';
 import Contact from './pages/public/Contact';
 import Privacy from './pages/public/Privacy';
@@ -150,7 +150,7 @@ function App() {
             <Route path="events" element={<PublicRoute title="Events"><Events /></PublicRoute>} />
             <Route path="events/:id" element={<PublicRoute title="Event Details"><EventDetails /></PublicRoute>} />
             <Route path="profile/:userId" element={<PublicRoute title="Profile"><PublicProfile /></PublicRoute>} />
-            <Route path="search" element={<PublicRoute title="Search"><Search /></PublicRoute>} />
+            <Route path="search" element={<PublicRoute title="Search"><GlobalSearch /></PublicRoute>} />
             <Route path="venues" element={<PublicRoute title="Sports Venues"><Venues /></PublicRoute>} />
             <Route path="venues/:id" element={<PublicRoute title="Venue Details"><VenueDetails /></PublicRoute>} />
             <Route path="venues/:id/book" element={<ProtectedRoute title="Book Venue"><VenueBooking /></ProtectedRoute>} />

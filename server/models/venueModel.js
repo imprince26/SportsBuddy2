@@ -48,7 +48,7 @@ const venueSchema = new mongoose.Schema(
     },
     sports: [{
       type: String,
-      enum: ["Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket", "Other"],
+      enum: ["Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket", "Hockey", "Athletics", "Badminton", "Gymnastics", "Other"],
     }],
     amenities: [{
       name: String,
@@ -57,7 +57,7 @@ const venueSchema = new mongoose.Schema(
     capacity: {
       type: Number,
       min: [1, "Capacity must be at least 1"],
-      max: [10000, "Capacity cannot exceed 10000"],
+      max: [200000, "Capacity cannot exceed 200000"],
     },
     images: [{
       url: {

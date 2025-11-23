@@ -33,9 +33,9 @@ export const isAuthenticated = async (req, res, next) => {
     next();
   } catch (error) {
     return res.status(401).json({
-            success: false,
-            message: 'Not authorized to access this route'
-        });
+      success: false,
+      message: 'Not authorized to access this route'
+    });
   }
 };
 
@@ -62,5 +62,24 @@ export const isAdmin = async (req, res, next) => {
       message: "Admin verification failed",
       error: error.message,
     });
+  }
+};
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const token = getAuthToken(req);
+    if (!token) {
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (user) {
+      req.user = user;
+    }
+    next();
+  } catch (error) {
+    // If token is invalid, just proceed without user
+    next();
   }
 };

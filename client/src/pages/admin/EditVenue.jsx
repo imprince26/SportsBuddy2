@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import { useVenue } from '@/hooks/useVenue';
 import { motion } from 'framer-motion';
 import {
-  Building2, MapPin, Phone, Globe, Clock, Users, DollarSign, 
+  Building2, MapPin, Phone, Globe, Clock, Users, DollarSign,
   Upload, X, Plus, CheckCircle, ArrowLeft, Image as ImageIcon, Trash2, Shield, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -73,12 +73,12 @@ const venueSchema = z.object({
 });
 
 const sportsOptions = [
-  'Football', 'Basketball', 'Tennis', 'Cricket', 'Volleyball', 
+  'Football', 'Basketball', 'Tennis', 'Cricket', 'Volleyball',
   'Badminton', 'Swimming', 'Running', 'Cycling', 'Other'
 ];
 
 const amenitiesOptions = [
-  'Parking', 'Changing Rooms', 'Showers', 'First Aid', 
+  'Parking', 'Changing Rooms', 'Showers', 'First Aid',
   'Refreshments', 'Wi-Fi', 'Equipment Rental', 'Lockers',
   'Air Conditioning', 'Floodlights', 'CCTV', 'Seating Area'
 ];
@@ -136,7 +136,7 @@ const EditVenue = () => {
   useEffect(() => {
     const loadVenue = async () => {
       const venueData = await getVenueById(id);
-      
+
       if (venueData) {
         // Populate form with existing data
         form.reset({
@@ -159,19 +159,19 @@ const EditVenue = () => {
           pricing: {
             hourlyRate: venueData.pricing?.hourlyRate || 0,
             dayRate: venueData.pricing?.dayRate || 0,
-            currency: venueData.pricing?.currency || 'USD',
+            currency: venueData.pricing?.currency || 'INR',
           },
-          amenities: venueData.amenities?.length > 0 
-            ? venueData.amenities 
+          amenities: venueData.amenities?.length > 0
+            ? venueData.amenities
             : amenitiesOptions.map(name => ({ name, available: true })),
           availability: venueData.availability?.length > 0
             ? venueData.availability
             : daysOfWeek.map(day => ({
-                day,
-                openTime: '09:00',
-                closeTime: '21:00',
-                isOpen: true,
-              })),
+              day,
+              openTime: '09:00',
+              closeTime: '21:00',
+              isOpen: true,
+            })),
           isVerified: venueData.isVerified || false,
           isActive: venueData.isActive !== undefined ? venueData.isActive : true,
         });
@@ -195,7 +195,7 @@ const EditVenue = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length + images.length + existingImages.length - deletedImages.length > 10) {
       toast.error('Maximum 10 images allowed');
       return;
@@ -251,7 +251,7 @@ const EditVenue = () => {
     };
 
     const result = await updateVenue(id, formData);
-    
+
     if (result.success) {
       navigate('/admin/venues');
     }
@@ -285,7 +285,7 @@ const EditVenue = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Venues
           </Button>
-          
+
           {/* Header with Gradient Background */}
           <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-4 sm:p-6 lg:p-8 text-white shadow-xl">
             {/* Background Pattern */}
@@ -327,77 +327,77 @@ const EditVenue = () => {
                     Basic Information
                   </CardTitle>
                 </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Venue Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter venue name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Venue Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter venue name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description *</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Describe the venue, facilities, and features..." 
-                          rows={5}
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="sports"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Sports Available *</FormLabel>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {sportsOptions.map((sport) => (
-                          <FormField
-                            key={sport}
-                            control={form.control}
-                            name="sports"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(sport)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, sport])
-                                        : field.onChange(field.value?.filter((value) => value !== sport))
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">
-                                  {sport}
-                                </FormLabel>
-                              </FormItem>
-                            )}
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description *</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Describe the venue, facilities, and features..."
+                            rows={5}
+                            {...field}
                           />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="sports"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>Sports Available *</FormLabel>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {sportsOptions.map((sport) => (
+                            <FormField
+                              key={sport}
+                              control={form.control}
+                              name="sports"
+                              render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(sport)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, sport])
+                                          : field.onChange(field.value?.filter((value) => value !== sport))
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                    {sport}
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Location */}
@@ -406,73 +406,73 @@ const EditVenue = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  Location Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="location.address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Street address" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid md:grid-cols-3 gap-4">
+              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    Location Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="location.city"
+                    name="location.address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>City *</FormLabel>
+                        <FormLabel>Address *</FormLabel>
                         <FormControl>
-                          <Input placeholder="City" {...field} />
+                          <Input placeholder="Street address" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="location.state"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>State/Province</FormLabel>
-                        <FormControl>
-                          <Input placeholder="State" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="location.city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>City *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="City" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="location.zipCode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Zip Code</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Zip code" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                    <FormField
+                      control={form.control}
+                      name="location.state"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>State/Province</FormLabel>
+                          <FormControl>
+                            <Input placeholder="State" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="location.zipCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Zip Code</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Zip code" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Contact Information */}
@@ -481,57 +481,57 @@ const EditVenue = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                  <Phone className="w-5 h-5 text-primary" />
-                  Contact Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="contactInfo.phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="+1 234 567 8900" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <Phone className="w-5 h-5 text-primary" />
+                    Contact Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="contactInfo.phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="+1 234 567 8900" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="contactInfo.email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="venue@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="contactInfo.email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="venue@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="contactInfo.website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Website</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+                  <FormField
+                    control={form.control}
+                    name="contactInfo.website"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Website</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Capacity & Pricing */}
@@ -540,102 +540,102 @@ const EditVenue = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                  <DollarSign className="w-5 h-5 text-primary" />
-                  Capacity & Pricing
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Maximum Capacity *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="50" 
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormDescription>Maximum number of people (1-10,000)</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid md:grid-cols-3 gap-6">
+              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <DollarSign className="w-5 h-5 text-primary" />
+                    Capacity & Pricing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="pricing.hourlyRate"
+                    name="capacity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Hourly Rate *</FormLabel>
+                        <FormLabel>Maximum Capacity *</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="100" 
+                          <Input
+                            type="number"
+                            placeholder="50"
                             {...field}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                           />
                         </FormControl>
-                        <FormDescription>Price per hour</FormDescription>
+                        <FormDescription>Maximum number of people (1-10,000)</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="pricing.dayRate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Day Rate</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="500" 
-                            {...field}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <FormDescription>Full day rental price</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="pricing.currency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Currency *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="pricing.hourlyRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hourly Rate *</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select currency" />
-                            </SelectTrigger>
+                            <Input
+                              type="number"
+                              placeholder="100"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="USD">USD ($)</SelectItem>
-                            <SelectItem value="EUR">EUR (€)</SelectItem>
-                            <SelectItem value="GBP">GBP (£)</SelectItem>
-                            <SelectItem value="INR">INR (₹)</SelectItem>
-                            <SelectItem value="AUD">AUD (A$)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                          <FormDescription>Price per hour</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="pricing.dayRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Day Rate</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="500"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormDescription>Full day rental price</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="pricing.currency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Currency *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select currency" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="USD">USD ($)</SelectItem>
+                              <SelectItem value="EUR">EUR (€)</SelectItem>
+                              <SelectItem value="GBP">GBP (£)</SelectItem>
+                              <SelectItem value="INR">INR (₹)</SelectItem>
+                              <SelectItem value="AUD">AUD (A$)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Amenities */}
@@ -644,47 +644,47 @@ const EditVenue = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                  <CheckCircle className="w-5 h-5 text-primary" />
-                  Amenities & Facilities
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FormField
-                  control={form.control}
-                  name="amenities"
-                  render={() => (
-                    <FormItem>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {form.watch('amenities').map((amenity, index) => (
-                          <FormField
-                            key={amenity.name}
-                            control={form.control}
-                            name={`amenities.${index}.available`}
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">
-                                  {amenity.name}
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <CheckCircle className="w-5 h-5 text-primary" />
+                    Amenities & Facilities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FormField
+                    control={form.control}
+                    name="amenities"
+                    render={() => (
+                      <FormItem>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {form.watch('amenities').map((amenity, index) => (
+                            <FormField
+                              key={amenity.name}
+                              control={form.control}
+                              name={`amenities.${index}.available`}
+                              render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                    {amenity.name}
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Images */}
@@ -693,86 +693,86 @@ const EditVenue = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                  <ImageIcon className="w-5 h-5 text-primary" />
-                  Venue Images
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Existing Images */}
-                {existingImages.length > 0 && (
-                  <div>
-                    <p className="text-sm font-medium mb-2">Current Images</p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {existingImages.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={image.url}
-                            alt={`Existing ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-lg"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeExistingImage(index)}
-                            className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+              <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <ImageIcon className="w-5 h-5 text-primary" />
+                    Venue Images
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Existing Images */}
+                  {existingImages.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-2">Current Images</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {existingImages.map((image, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={image.url}
+                              alt={`Existing ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeExistingImage(index)}
+                              className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
+                  )}
+
+                  {/* Upload New Images */}
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                    <input
+                      type="file"
+                      id="venue-images"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="venue-images"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <Upload className="w-12 h-12 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Click to upload new images (Max 10 total, 5MB each)
+                      </p>
+                    </label>
                   </div>
-                )}
 
-                {/* Upload New Images */}
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                  <input
-                    type="file"
-                    id="venue-images"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="venue-images"
-                    className="cursor-pointer flex flex-col items-center gap-2"
-                  >
-                    <Upload className="w-12 h-12 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Click to upload new images (Max 10 total, 5MB each)
-                    </p>
-                  </label>
-                </div>
-
-                {/* New Image Previews */}
-                {imagePreviews.length > 0 && (
-                  <div>
-                    <p className="text-sm font-medium mb-2">New Images</p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={preview}
-                            alt={`New Preview ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-lg"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeNewImage(index)}
-                            className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                  {/* New Image Previews */}
+                  {imagePreviews.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-2">New Images</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={preview}
+                              alt={`New Preview ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeNewImage(index)}
+                              className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Venue Status */}

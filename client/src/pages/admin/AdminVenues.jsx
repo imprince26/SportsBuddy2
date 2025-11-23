@@ -17,7 +17,8 @@ import {
   XCircle,
   Calendar,
   Star,
-  CalendarCheck
+  CalendarCheck,
+  Download
 } from 'lucide-react';
 import { useVenue } from '@/hooks/useVenue';
 import { Button } from '@/components/ui/button';
@@ -107,6 +108,45 @@ const AdminVenues = () => {
 
   const handleView = (venueId) => {
     navigate(`/venues/${venueId}`);
+  };
+
+  const handleExportVenues = async () => {
+    try {
+      // Create CSV content
+      const headers = ["Name", "Location", "Sports", "Capacity", "Price/Hour", "Status", "Verified"];
+      const csvContent = [
+        headers.join(","),
+        ...venues.map((venue) =>
+          [
+            `"${venue.name || ""}"`,
+            `"${venue.location?.city || ""}, ${venue.location?.state || ""}"`,
+            `"${venue.sports?.join(", ") || ""}"`,
+            `"${venue.capacity || 0}"`,
+            `"${venue.pricing?.hourlyRate || 0}"`,
+            `"${venue.isActive !== false ? "Active" : "Inactive"}"`,
+            `"${venue.isVerified ? "Yes" : "No"}"`,
+          ].join(","),
+        ),
+      ].join("\n");
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `sportsbuddy-venues-${new Date().toISOString().split("T")[0]}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      toast.success("Venues exported successfully!");
+    } catch (err) {
+      console.error("Failed to export venues:", err);
+      toast.error("Failed to export venues");
+    }
   };
 
   const VenueCard = ({ venue }) => (
@@ -296,10 +336,16 @@ const AdminVenues = () => {
                   <p className="text-white/90 text-sm sm:text-base">Manage all sports venues on the platform</p>
                 </div>
               </div>
-              <Button onClick={() => navigate('/admin/create-venue')} className="bg-white text-slate-900 hover:bg-white/90 shrink-0">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Venue
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleExportVenues} variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white shrink-0">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+                <Button onClick={() => navigate('/admin/create-venue')} className="bg-white text-slate-900 hover:bg-white/90 shrink-0">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Venue
+                </Button>
+              </div>
             </div>
           </div>
 

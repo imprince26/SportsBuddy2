@@ -23,6 +23,11 @@ export const getAllVenues = async (req, res) => {
 
     const query = { isActive: true };
 
+    // Allow admins to see all venues
+    if (req.user && req.user.role === 'admin') {
+      delete query.isActive;
+    }
+
     // Search filter
     if (search && search.trim()) {
       query.$or = [
@@ -82,7 +87,7 @@ export const getAllVenues = async (req, res) => {
     // Sort configuration
     const [sortField, sortOrder] = sortBy.split(":");
     const sort = {};
-    
+
     switch (sortField) {
       case "name":
         sort.name = sortOrder === "desc" ? -1 : 1;
@@ -159,11 +164,11 @@ export const getAllVenues = async (req, res) => {
     // Add computed fields
     const venuesWithMetadata = venues.map(venue => ({
       ...venue,
-      averageRating: venue.ratings?.length > 0 
+      averageRating: venue.ratings?.length > 0
         ? (venue.ratings.reduce((acc, rating) => acc + rating.rating, 0) / venue.ratings.length).toFixed(1)
         : 0,
       totalBookings: venue.bookings?.length || 0,
-      upcomingEvents: venue.eventsHosted?.filter(event => 
+      upcomingEvents: venue.eventsHosted?.filter(event =>
         new Date(event.date) > new Date()
       ).length || 0
     }));
@@ -206,11 +211,11 @@ export const getVenueById = async (req, res) => {
     }
 
     // Calculate additional metrics
-    const averageRating = venue.ratings.length > 0 
+    const averageRating = venue.ratings.length > 0
       ? (venue.ratings.reduce((acc, rating) => acc + rating.rating, 0) / venue.ratings.length).toFixed(1)
       : 0;
 
-    const upcomingEvents = venue.eventsHosted.filter(event => 
+    const upcomingEvents = venue.eventsHosted.filter(event =>
       new Date(event.date) > new Date()
     );
 
@@ -365,7 +370,7 @@ export const rateVenue = async (req, res) => {
       .lean();
 
     // Calculate metrics
-    const averageRating = updatedVenue.ratings.length > 0 
+    const averageRating = updatedVenue.ratings.length > 0
       ? (updatedVenue.ratings.reduce((acc, r) => acc + r.rating, 0) / updatedVenue.ratings.length).toFixed(1)
       : 0;
 
@@ -410,7 +415,7 @@ export const bookVenue = async (req, res) => {
     // Check for conflicts
     const hasConflict = venue.bookings.some(booking => {
       if (booking.status === "cancelled") return false;
-      
+
       const bookingStart = new Date(booking.startTime);
       const bookingEnd = new Date(booking.endTime);
       const requestStart = new Date(startTime);
@@ -681,7 +686,7 @@ export const deleteVenue = async (req, res) => {
     // Delete images from cloudinary
     if (venue.images && venue.images.length > 0) {
       try {
-        const deletePromises = venue.images.map(img => 
+        const deletePromises = venue.images.map(img =>
           cloudinary.uploader.destroy(img.public_id)
         );
         await Promise.all(deletePromises);
@@ -744,7 +749,7 @@ export const getNearbyVenues = async (req, res) => {
       return {
         ...venue,
         distance: Math.round(distance * 100) / 100, // Round to 2 decimal places
-        averageRating: venue.ratings?.length > 0 
+        averageRating: venue.ratings?.length > 0
           ? (venue.ratings.reduce((acc, rating) => acc + rating.rating, 0) / venue.ratings.length).toFixed(1)
           : 0
       };
@@ -796,7 +801,7 @@ export const searchVenues = async (req, res) => {
     // Add metadata
     const venuesWithMetadata = venues.map(venue => ({
       ...venue,
-      averageRating: venue.ratings?.length > 0 
+      averageRating: venue.ratings?.length > 0
         ? (venue.ratings.reduce((acc, rating) => acc + rating.rating, 0) / venue.ratings.length).toFixed(1)
         : 0,
       totalBookings: venue.bookings?.length || 0
@@ -843,7 +848,7 @@ export const getVenueReviews = async (req, res) => {
       if (sortField === "rating") {
         return sortOrder === "desc" ? b.rating - a.rating : a.rating - b.rating;
       } else {
-        return sortOrder === "desc" 
+        return sortOrder === "desc"
           ? new Date(b.date) - new Date(a.date)
           : new Date(a.date) - new Date(b.date);
       }
@@ -855,7 +860,7 @@ export const getVenueReviews = async (req, res) => {
 
     // Calculate stats
     const ratingStats = {
-      average: venue.ratings.length > 0 
+      average: venue.ratings.length > 0
         ? (venue.ratings.reduce((acc, rating) => acc + rating.rating, 0) / venue.ratings.length).toFixed(1)
         : 0,
       total: venue.ratings.length,
@@ -980,7 +985,7 @@ export const getVenuesByCategory = async (req, res) => {
     // Add metadata
     const venuesWithMetadata = venues.map(venue => ({
       ...venue,
-      averageRating: venue.ratings?.length > 0 
+      averageRating: venue.ratings?.length > 0
         ? (venue.ratings.reduce((acc, rating) => acc + rating.rating, 0) / venue.ratings.length).toFixed(1)
         : 0,
       totalBookings: venue.bookings?.length || 0
@@ -1057,15 +1062,15 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c; // Distance in kilometers
   return d;
 }
 
 function deg2rad(deg) {
-  return deg * (Math.PI/180);
+  return deg * (Math.PI / 180);
 }

@@ -14,13 +14,13 @@ import {
     getVenuesByCategory,
     toggleVenueFavorite
 } from '../controllers/venueController.js';
-import { isAuthenticated, isAdmin } from '../middleware/authMiddleware.js';
+import { isAuthenticated, isAdmin, optionalAuth } from '../middleware/authMiddleware.js';
 import { upload } from '../config/cloudinary.js';
 
 const router = express.Router();
 
 // Public routes
-router.get('/', getAllVenues);
+router.get('/', optionalAuth, getAllVenues);
 
 router.get('/search', searchVenues);
 

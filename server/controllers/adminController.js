@@ -4,8 +4,6 @@ import asyncHandler from 'express-async-handler';
 import sendEmail from '../config/sendEmail.js';
 import { AdminSentEmailHtml } from '../utils/emailTemplate.js';
 import PDFDocument from 'pdfkit';
-import { deleteCachePattern } from '../config/redis.js';
-import { CacheKeys } from '../utils/cacheKeys.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -536,10 +534,6 @@ export const updateUser = asyncHandler(async (req, res) => {
         user.updatedAt = new Date();
 
         const updatedUser = await user.save();
-
-        // Invalidate admin cache
-        await deleteCachePattern(CacheKeys.ADMIN.ALL());
-        await deleteCachePattern(CacheKeys.USERS.ALL(req.params.id));
 
         res.json({
             success: true,

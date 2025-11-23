@@ -1,6 +1,4 @@
 import express from 'express';
-import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
-import { CacheKeys, getCacheTTL } from '../utils/cacheKeys.js';
 import {
     getAllVenues,
     getVenueById,
@@ -21,38 +19,18 @@ import { upload } from '../config/cloudinary.js';
 
 const router = express.Router();
 
-const venueTTL = getCacheTTL('venues');
+// Public routes
+router.get('/', getAllVenues);
 
-// Public routes with caching
-router.get('/', 
-  cacheMiddleware((req) => CacheKeys.VENUES.LIST(req.query.page || 1, req.query), venueTTL),
-  getAllVenues
-);
+router.get('/search', searchVenues);
 
-router.get('/search', 
-  cacheMiddleware((req) => CacheKeys.VENUES.SEARCH(req.query.search, req.query.page || 1), venueTTL),
-  searchVenues
-);
+router.get('/nearby', getNearbyVenues);
 
-router.get('/nearby', 
-  cacheMiddleware((req) => CacheKeys.VENUES.NEARBY(req.query.lat, req.query.lng, req.query.radius || 10), venueTTL),
-  getNearbyVenues
-);
+router.get('/category/:category', getVenuesByCategory);
 
-router.get('/category/:category', 
-  cacheMiddleware((req) => CacheKeys.VENUES.CATEGORY(req.params.category, req.query.page || 1), venueTTL),
-  getVenuesByCategory
-);
+router.get('/:id', getVenueById);
 
-router.get('/:id', 
-  cacheMiddleware((req) => CacheKeys.VENUES.DETAIL(req.params.id), venueTTL),
-  getVenueById
-);
-
-router.get('/:id/reviews', 
-  cacheMiddleware((req) => CacheKeys.VENUES.REVIEWS(req.params.id, req.query.page || 1), venueTTL / 2),
-  getVenueReviews
-);
+router.get('/:id/reviews', getVenueReviews);
 
 // Protected routes
 router.use(isAuthenticated);

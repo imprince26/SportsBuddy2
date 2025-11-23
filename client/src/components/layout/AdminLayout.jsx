@@ -31,7 +31,8 @@ import {
   Maximize2,
   Minimize2,
   Building2,
-  CalendarCheck
+  CalendarCheck,
+  UserCircle
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/hooks/useAuth"
@@ -119,6 +120,13 @@ const AdminLayout = () => {
           icon: Calendar,
           badge: `${analyticsData?.events?.total || 0}`,
           description: "Event management",
+        },
+        {
+          name: "Communities",
+          path: "/admin/communities",
+          icon: UserCircle,
+          badge: `${analyticsData?.communities?.totalCommunities || 0}`,
+          description: "Community management",
         },
         {
           name: "Venues",

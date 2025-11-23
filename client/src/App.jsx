@@ -58,6 +58,7 @@ import PostDetail from './pages/community/PostDetail';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageUsers from './pages/admin/ManageUsers';
 import ManageEvents from './pages/admin/ManageEvents';
+import ManageCommunities from './pages/admin/ManageCommunities';
 import AdminVenues from './pages/admin/AdminVenues';
 import CreateVenue from './pages/admin/CreateVenue';
 import EditVenue from './pages/admin/EditVenue';
@@ -187,10 +188,11 @@ function App() {
           </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<ProtectedRoute adminOnly title="Admin Dashboard"><AdminDashboard /></ProtectedRoute>} />
             <Route path="users" element={<ProtectedRoute adminOnly title="Manage Users"><ManageUsers /></ProtectedRoute>} />
             <Route path="events" element={<ProtectedRoute adminOnly title="Manage Events"><ManageEvents /></ProtectedRoute>} />
+            <Route path="communities" element={<ProtectedRoute adminOnly title="Manage Communities"><ManageCommunities /></ProtectedRoute>} />
             <Route path="venues" element={<ProtectedRoute adminOnly title="Manage Venues"><AdminVenues /></ProtectedRoute>} />
             <Route path="venues/:id/bookings" element={<ProtectedRoute adminOnly title="Venue Bookings"><VenueBookings /></ProtectedRoute>} />
             <Route path="venue-bookings" element={<ProtectedRoute adminOnly title="All Venue Bookings"><AllVenueBookings /></ProtectedRoute>} />

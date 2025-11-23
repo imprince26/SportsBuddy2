@@ -1,6 +1,4 @@
 import express from 'express';
-import { cacheMiddleware, noCacheMiddleware } from '../middleware/cacheMiddleware.js';
-import { CacheKeys, getCacheTTL } from '../utils/cacheKeys.js';
 const router = express.Router();
 import {
     getDashboardAnalytics,
@@ -17,67 +15,41 @@ import {
     rejectEvent,
     exportEvents,
     getEventStats,
+    manageCommunities,
+    getCommunityById,
+    updateCommunityAdmin,
+    deleteCommunityAdmin,
     adminSearch,
     getAllVenueBookings,
 } from '../controllers/adminController.js';
 import { isAuthenticated, isAdmin } from '../middleware/authMiddleware.js';
 
-const adminTTL = getCacheTTL('admin');
-
 router.use(isAuthenticated, isAdmin);
 
-// Dashboard & Analytics with caching
-router.route('/analytics').get(
-  cacheMiddleware(() => CacheKeys.ADMIN.ANALYTICS(), adminTTL),
-  getDashboardAnalytics
-);
+// Dashboard & Analytics
+router.route('/analytics').get(getDashboardAnalytics);
+router.route('/analytics/export').get(exportAnalyticsPDF);
 
-// Export PDF should not be cached
-router.route('/analytics/export').get(noCacheMiddleware(), exportAnalyticsPDF);
+// User Management
+router.route('/users').get(manageUsers);
+router.route('/users/:id').get(getUserById).put(updateUser).delete(deleteUser);
 
-// User Management with caching
-router.route('/users').get(
-  cacheMiddleware((req) => CacheKeys.ADMIN.USERS_LIST(req.query.page || 1, req.query), adminTTL),
-  manageUsers
-);
-
-router.route('/users/:id').get(
-  cacheMiddleware((req) => CacheKeys.ADMIN.USER_DETAIL(req.params.id), adminTTL),
-  getUserById
-).put(updateUser).delete(deleteUser);
-
-// Event Management with caching
-router.route('/events').get(
-  cacheMiddleware((req) => CacheKeys.ADMIN.EVENTS_LIST(req.query.page || 1, req.query), adminTTL),
-  manageEvents
-);
-
-router.route('/events/stats').get(
-  cacheMiddleware(() => CacheKeys.ADMIN.EVENT_STATS(), adminTTL * 2),
-  getEventStats
-);
-
-// Export events should not be cached
-router.route('/events/export').get(noCacheMiddleware(), exportEvents);
-
-router.route('/events/:id').get(
-  cacheMiddleware((req) => CacheKeys.ADMIN.EVENT_DETAIL(req.params.id), adminTTL),
-  getEventById
-).put(updateEvent).delete(deleteEvent);
-
+// Event Management
+router.route('/events').get(manageEvents);
+router.route('/events/stats').get(getEventStats);
+router.route('/events/export').get(exportEvents);
+router.route('/events/:id').get(getEventById).put(updateEvent).delete(deleteEvent);
 router.route('/events/:id/approve').put(approveEvent);
 router.route('/events/:id/reject').put(rejectEvent);
 
-// Search with caching
-router.route('/search').get(
-  cacheMiddleware((req) => `admin:search:${req.query.query}:${req.query.type}`, adminTTL / 2),
-  adminSearch
-);
+// Community Management
+router.route('/communities').get(manageCommunities);
+router.route('/communities/:id').get(getCommunityById).put(updateCommunityAdmin).delete(deleteCommunityAdmin);
+
+// Search
+router.route('/search').get(adminSearch);
 
 // Venue Bookings
-router.route('/venue-bookings').get(
-  cacheMiddleware((req) => `admin:venue-bookings:${req.query.status || 'all'}`, adminTTL / 2),
-  getAllVenueBookings
-);
+router.route('/venue-bookings').get(getAllVenueBookings);
 
 export default router;

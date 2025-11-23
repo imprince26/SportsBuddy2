@@ -522,6 +522,8 @@ export const CommunityProvider = ({ children }) => {
       Object.entries(updateData).forEach(([key, value]) => {
         if (key === 'image' && value instanceof File) {
           formData.append('image', value);
+        } else if (key === 'removeImage') {
+          formData.append('removeImage', value);
         } else if (key === 'rules' && Array.isArray(value)) {
           formData.append(key, JSON.stringify(value));
         } else if (key === 'location' && typeof value === 'object') {

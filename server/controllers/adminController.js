@@ -332,6 +332,35 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
         }
     });
 
+    // Community statistics
+    const Community = (await import('../models/communityModel.js')).default;
+    const totalCommunities = await Community.countDocuments();
+    const activeCommunities = await Community.countDocuments({ isActive: true });
+    const privateCommunities = await Community.countDocuments({ isPrivate: true });
+    
+    const communityStats = await Community.aggregate([
+        {
+            $project: {
+                memberCount: {
+                    $size: {
+                        $filter: {
+                            input: '$members',
+                            cond: { $eq: ['$$this.isActive', true] }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalMembers: { $sum: '$memberCount' }
+            }
+        }
+    ]);
+
+    const totalMembers = communityStats.length > 0 ? communityStats[0].totalMembers : 0;
+
     res.json({
         users: {
             total: totalUsers,
@@ -348,6 +377,12 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
             popular: popularEvents,
             thisMonth: eventsThisMonth,
             recent: recentEvents
+        },
+        communities: {
+            totalCommunities,
+            activeCommunities,
+            privateCommunities,
+            totalMembers
         }
     });
 });
@@ -1902,6 +1937,221 @@ export const getAllVenueBookings = asyncHandler(async (req, res) => {
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to fetch venue bookings'
+        });
+    }
+});
+
+// Manage Communities - Admin
+export const manageCommunities = asyncHandler(async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 12,
+            search = '',
+            category = '',
+            privacy = '',
+            sortBy = 'createdAt',
+            sortOrder = 'desc'
+        } = req.query;
+
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        // Build search query
+        let searchQuery = {};
+
+        // Add search filter
+        if (search && search.trim() !== '') {
+            const searchRegex = new RegExp(search.trim(), 'i');
+            searchQuery.$or = [
+                { name: searchRegex },
+                { description: searchRegex }
+            ];
+        }
+
+        // Add category filter
+        if (category && category !== 'all') {
+            searchQuery.category = category;
+        }
+
+        // Add privacy filter
+        if (privacy && privacy !== 'all') {
+            searchQuery.isPrivate = privacy === 'private';
+        }
+
+        // Build sort object
+        let sortObject = {};
+        if (sortBy === 'members') {
+            sortObject = { 'memberCount': sortOrder === 'desc' ? -1 : 1 };
+        } else {
+            sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
+        }
+
+        // Get total count
+        const Community = (await import('../models/communityModel.js')).default;
+        const totalCommunities = await Community.countDocuments(searchQuery);
+
+        // Build aggregation pipeline
+        const pipeline = [
+            { $match: searchQuery },
+            {
+                $addFields: {
+                    memberCount: {
+                        $size: {
+                            $filter: {
+                                input: '$members',
+                                cond: { $eq: ['$$this.isActive', true] }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'creator',
+                    foreignField: '_id',
+                    as: 'creator',
+                    pipeline: [
+                        { $project: { name: 1, email: 1, avatar: 1, username: 1 } }
+                    ]
+                }
+            },
+            {
+                $unwind: {
+                    path: '$creator',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            { $sort: sortObject },
+            { $skip: skip },
+            { $limit: limitNum },
+            {
+                $project: {
+                    joinRequests: 0,
+                    'members.user': 0,
+                    posts: 0
+                }
+            }
+        ];
+
+        const communities = await Community.aggregate(pipeline);
+
+        res.json({
+            success: true,
+            data: communities,
+            pagination: {
+                currentPage: pageNum,
+                totalPages: Math.ceil(totalCommunities / limitNum),
+                totalCommunities,
+                limit: limitNum
+            }
+        });
+    } catch (error) {
+        console.error('Manage communities error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to fetch communities'
+        });
+    }
+});
+
+// Get Community by ID - Admin
+export const getCommunityById = asyncHandler(async (req, res) => {
+    try {
+        const Community = (await import('../models/communityModel.js')).default;
+        const community = await Community.findById(req.params.id)
+            .populate('creator', 'name email avatar username')
+            .populate('admins', 'name email avatar username')
+            .populate('moderators', 'name email avatar username')
+            .select('-joinRequests -posts');
+
+        if (!community) {
+            return res.status(404).json({
+                success: false,
+                message: 'Community not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: community
+        });
+    } catch (error) {
+        console.error('Get community by ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to fetch community'
+        });
+    }
+});
+
+// Update Community - Admin
+export const updateCommunityAdmin = asyncHandler(async (req, res) => {
+    try {
+        const Community = (await import('../models/communityModel.js')).default;
+        const community = await Community.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        ).populate('creator', 'name email avatar username');
+
+        if (!community) {
+            return res.status(404).json({
+                success: false,
+                message: 'Community not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Community updated successfully',
+            data: community
+        });
+    } catch (error) {
+        console.error('Update community error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to update community'
+        });
+    }
+});
+
+// Delete Community - Admin
+export const deleteCommunityAdmin = asyncHandler(async (req, res) => {
+    try {
+        const Community = (await import('../models/communityModel.js')).default;
+        const community = await Community.findById(req.params.id);
+
+        if (!community) {
+            return res.status(404).json({
+                success: false,
+                message: 'Community not found'
+            });
+        }
+
+        // Delete community image from Cloudinary if exists
+        if (community.image?.public_id) {
+            const cloudinary = (await import('../config/cloudinary.js')).default;
+            try {
+                await cloudinary.uploader.destroy(community.image.public_id);
+            } catch (error) {
+                console.error('Error deleting community image:', error);
+            }
+        }
+
+        await community.deleteOne();
+
+        res.json({
+            success: true,
+            message: 'Community deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete community error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to delete community'
         });
     }
 });

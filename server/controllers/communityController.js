@@ -345,7 +345,6 @@ export const updateCommunity = async (req, res) => {
       settings,
       removeImage
     } = req.body;
-    console.log(req.body)
 
     const community = await Community.findById(id);
 

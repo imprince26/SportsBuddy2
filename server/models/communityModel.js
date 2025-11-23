@@ -229,6 +229,9 @@ communitySchema.virtual("memberCount").get(function () {
 
 // Virtual for recent activity
 communitySchema.virtual("recentActivity").get(function () {
+  if (!this.posts || !Array.isArray(this.posts)) {
+    return [];
+  }
   const recentPosts = this.posts
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, 5);

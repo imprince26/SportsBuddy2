@@ -112,6 +112,13 @@ export const CacheKeys = {
     },
     EVENT_DETAIL: (eventId) => `admin:event:${eventId}`,
     EVENT_STATS: () => 'admin:stats:events',
+    COMMUNITIES_LIST: (page = 1, filters = {}) => {
+      const filterStr = Object.keys(filters).length > 0 
+        ? `:${Object.entries(filters).map(([k, v]) => `${k}:${v}`).join(':')}` 
+        : '';
+      return `admin:communities:list:page:${page}${filterStr}`;
+    },
+    COMMUNITY_DETAIL: (communityId) => `admin:community:${communityId}`,
     ALL: () => 'admin:*',
   },
 

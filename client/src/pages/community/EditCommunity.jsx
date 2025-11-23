@@ -65,6 +65,7 @@ const EditCommunity = () => {
 
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [imageRemoved, setImageRemoved] = useState(false);
   const [errors, setErrors] = useState({});
   const [initializing, setInitializing] = useState(true);
 
@@ -170,6 +171,7 @@ const EditCommunity = () => {
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setImageRemoved(true);
   };
 
   const validateForm = () => {
@@ -211,6 +213,11 @@ const EditCommunity = () => {
       ...formData,
       rules: formData.rules.filter(r => r.trim())
     };
+
+    // Handle image removal
+    if (imageRemoved && !imageFile) {
+      submitData.removeImage = true;
+    }
 
     // Only include image if a new file was selected
     if (imageFile) {

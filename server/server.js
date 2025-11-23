@@ -75,6 +75,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// Health check route
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/events", upstashRateLimiters.api, eventRoute);
@@ -111,15 +120,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
-  });
-});
-
-// Health check route
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
   });
 });
 

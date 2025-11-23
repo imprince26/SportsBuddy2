@@ -41,7 +41,7 @@ const AthleteCard = ({ athlete, onFollow, isFollowing, currentUser }) => {
       transition={{ duration: 0.3 }}
       className="group relative"
     >
-      <Card className="overflow-hidden border-0 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl h-full flex flex-col">
+      <Card className="overflow-hidden border-0 bg-card shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl h-full flex flex-col">
         <div className="h-24 bg-primary relative">
           <div className="absolute inset-0 bg-black/10" />
           <div className="absolute -bottom-10 left-6">
@@ -118,9 +118,9 @@ const AthleteCard = ({ athlete, onFollow, isFollowing, currentUser }) => {
           </div>
         </CardContent>
 
-        <CardFooter className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex gap-3">
+        <CardFooter className="px-6 py-4 bg-secondary/10 border-t border-border flex gap-3">
           <Link to={`/profile/${athlete._id}`} className="flex-1">
-            <Button variant="outline" className="w-full text-xs h-9 border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">
+            <Button variant="secondary" className="w-full text-xs h-9 bg-secondary/50 hover:bg-secondary/30 border-0">
               View Profile
             </Button>
           </Link>

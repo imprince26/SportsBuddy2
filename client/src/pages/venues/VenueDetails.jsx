@@ -29,8 +29,9 @@ import {
   Edit3,
   Trash2,
   MoreVertical,
-  
 } from 'lucide-react';
+import { FaWhatsapp, FaFacebook  } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { FaMoneyBillWave } from "react-icons/fa";
 import { useVenue } from '@/hooks/useVenue';
 import { useAuth } from '@/hooks/useAuth';
@@ -174,7 +175,7 @@ const VenueDetails = () => {
       case 'copy':
         try {
           await navigator.clipboard.writeText(venueUrl);
-          toast.success('Link copied to clipboard! 📋');
+          toast.success('Link copied to clipboard!');
         } catch (err) {
           console.error('Failed to copy:', err);
           toast.error('Failed to copy link');
@@ -578,7 +579,7 @@ const VenueDetails = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-12 bg-muted rounded-lg">
+                    <div className="text-center py-12 bg-card rounded-lg">
                       <Trophy className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground text-lg">No events hosted at this venue yet</p>
                       <p className="text-sm text-muted-foreground mt-2">Be the first to create an event here!</p>
@@ -722,7 +723,7 @@ const VenueDetails = () => {
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-4">
-              <Card className="border-0 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
+              <Card className="border-0 shadow-xl bg-card/20 overflow-hidden">
                 <div className="bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground">
                   <div className="flex items-center gap-2 mb-2">
                     <Award className="w-5 h-5" />
@@ -771,7 +772,7 @@ const VenueDetails = () => {
               </Card>
 
               {/* Contact Card */}
-              <Card className="border-0 shadow-lg bg-white dark:bg-gray-900">
+              <Card className="border-0 shadow-lg bg-card/20">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Phone className="w-5 h-5 text-primary" />
@@ -958,29 +959,29 @@ const VenueDetails = () => {
               className="flex flex-col items-center gap-2 h-24 hover:bg-green-50 dark:hover:bg-green-950"
             >
               <div className="p-2 rounded-full bg-green-500">
-                <MessageSquare className="w-5 h-5 text-white" />
+                <FaWhatsapp className="w-5 h-5 text-white" />
               </div>
               <span className="text-sm font-medium">WhatsApp</span>
             </Button>
             <Button
               onClick={() => handleShare('facebook')}
               variant="outline"
-              className="flex flex-col items-center gap-2 h-24 hover:bg-blue-50 dark:hover:bg-blue-950"
+              className="flex flex-col items-center gap-2 h-24 hover:bg-blue-50 dark:hover:bg-blue-900"
             >
               <div className="p-2 rounded-full bg-blue-600">
-                <Share2 className="w-5 h-5 text-white" />
+                <FaFacebook className="w-5 h-5 text-white" />
               </div>
               <span className="text-sm font-medium">Facebook</span>
             </Button>
             <Button
               onClick={() => handleShare('twitter')}
               variant="outline"
-              className="flex flex-col items-center gap-2 h-24 hover:bg-sky-50 dark:hover:bg-sky-950"
+              className="flex flex-col items-center gap-2 h-24 hover:bg-black/5 dark:hover:bg-black/95"
             >
-              <div className="p-2 rounded-full bg-sky-500">
-                <MessageSquare className="w-5 h-5 text-white" />
+              <div className="p-2 rounded-full bg-black">
+                <FaXTwitter className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-medium">Twitter</span>
+              <span className="text-sm font-medium">X (Twitter)</span>
             </Button>
           </div>
           <div className="mt-4 p-3 bg-muted rounded-lg">

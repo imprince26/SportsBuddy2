@@ -81,7 +81,7 @@ const CallToAction = () => {
             <div className="grid lg:grid-cols-2 gap-8 items-start">
               {/* Main CTA */}
               <div className="space-y-6">
-                <div className="p-6 bg-background rounded-2xl border border-border shadow-sm">
+                <div className="p-6 bg-card rounded-2xl border border-border shadow-sm">
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
                       <Rocket className="w-6 h-6 text-primary-foreground" />
@@ -127,7 +127,7 @@ const CallToAction = () => {
               <div className="grid grid-cols-2 gap-4">
                 {userActions.map((action, index) => (
                   <Link key={index} to={action.path} className="block h-full">
-                    <div className="h-full p-6 bg-background rounded-xl border border-border hover:border-primary/50 hover:shadow-md transition-all duration-200 group">
+                    <div className="h-full p-6 bg-secondary/50 hover:bg-primary/5 rounded-xl border border-border hover:border-primary/50 hover:shadow-md transition-all duration-200 group">
                       <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                         <action.icon className="w-5 h-5 text-foreground group-hover:text-primary-foreground" />
                       </div>
@@ -148,6 +148,10 @@ const CallToAction = () => {
                 ))}
               </div>
             </div>
+             {/* Disclaimer at the end of the section */}
+          <div className="text-center mt-12 text-xs text-gray-500 dark:text-gray-400 opacity-80">
+            Disclaimer: All data shown here is for demonstration purposes only and may not reflect real or accurate statistics.
+          </div>
           </div>
         </div>
       </section>
@@ -210,7 +214,7 @@ const CallToAction = () => {
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
               {stats.map((stat, index) => (
-                <div key={index} className="p-4 bg-card rounded-xl border border-border shadow-sm">
+                <div key={index} className="p-4 bg-secondary/10 dark:bg-secondary/5 rounded-xl border border-border shadow-sm">
                   <div className="text-center">
                     <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-secondary flex items-center justify-center">
                       <stat.icon className="w-5 h-5 text-primary" />
@@ -234,8 +238,7 @@ const CallToAction = () => {
             </Link>
             
             <Link to="/events">
-              <button className="w-full sm:w-auto px-8 py-4 bg-card border border-border hover:bg-secondary text-foreground font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
-                <Globe className="w-5 h-5" />
+              <button className="w-full sm:w-auto px-8 py-4 bg-secondary/20 border border-border hover:bg-secondary text-foreground font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
                 <span>Explore Events</span>
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -245,7 +248,7 @@ const CallToAction = () => {
           {/* Features Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => (
-              <div key={index} className="group bg-card rounded-2xl p-6 text-center border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+              <div key={index} className="group bg-secondary/10 rounded-2xl p-6 text-center border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
                 <div className="w-12 h-12 rounded-xl bg-secondary border border-border flex items-center justify-center mx-auto mb-3 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                   <feature.icon className="w-6 h-6 text-foreground group-hover:text-primary-foreground" />
                 </div>
@@ -275,6 +278,10 @@ const CallToAction = () => {
               <Heart className="w-4 h-4 text-red-500 fill-red-500" />
               <span className="text-sm font-medium">15K+ Happy Users</span>
             </div>
+          </div>
+          {/* Disclaimer at the end of the section */}
+          <div className="text-center mt-12 text-xs text-gray-500 dark:text-gray-400 opacity-80">
+            Disclaimer: All data shown here is for demonstration purposes only and may not reflect real or accurate statistics.
           </div>
         </div>
       </div>

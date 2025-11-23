@@ -270,7 +270,7 @@ const Header = () => {
                             { icon: MapPin, label: "Venues", path: "/venues" },
                             { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
                             { icon: CalendarCheck, label: "My Bookings", path: "/my-bookings" },
-                            { icon: Search, label: "Search", path: "/athletes" },
+                            { icon: Search, label: "Athletes", path: "/athletes" },
                             { icon: Settings, label: "Settings", path: "/settings" },
                           ].map((item) => (
                             <Link
@@ -395,7 +395,7 @@ const Header = () => {
                       { icon: MapPin, label: "Venues", path: "/venues" },
                       { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
                       { icon: CalendarCheck, label: "My Bookings", path: "/my-bookings" },
-                      { icon: Search, label: "Search", path: "/athletes" },
+                      { icon: Search, label: "Athletes", path: "/athletes" },
                       { icon: Settings, label: "Settings", path: "/settings" },
                       ...(user?.role === "admin" ? [{ icon: Shield, label: "Admin Panel", path: "/admin/dashboard" }] : [])
                     ].map((item) => (

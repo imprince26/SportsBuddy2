@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Trophy, Users, TrendingUp, Sparkles, Zap, Calendar, MapPin } from 'lucide-react'
+import { IoFootballOutline } from "react-icons/io5";
+import { FaBasketball } from "react-icons/fa6";
+import { FaTableTennis, FaRunning  } from "react-icons/fa";
 
 const CategoriesSection = () => {
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -10,7 +13,7 @@ const CategoriesSection = () => {
     { 
       id: 'Football', 
       name: 'Football', 
-      icon: '⚽', 
+      icon: IoFootballOutline, 
       participants: '2.5K+',
       events: '450+',
       description: 'Join the world\'s most popular sport',
@@ -18,7 +21,7 @@ const CategoriesSection = () => {
     { 
       id: 'Basketball', 
       name: 'Basketball', 
-      icon: '🏀', 
+      icon: FaBasketball, 
       participants: '1.8K+',
       events: '320+',
       description: 'Dribble your way to new friendships',
@@ -26,7 +29,7 @@ const CategoriesSection = () => {
     { 
       id: 'Tennis', 
       name: 'Tennis', 
-      icon: '🎾', 
+      icon: FaTableTennis, 
       participants: '1.2K+',
       events: '280+',
       description: 'Serve up some competitive fun',
@@ -34,7 +37,7 @@ const CategoriesSection = () => {
     { 
       id: 'Running', 
       name: 'Running', 
-      icon: '🏃', 
+      icon: FaRunning , 
       participants: '3.2K+',
       events: '520+',
       description: 'Run towards your fitness goals',
@@ -74,7 +77,7 @@ const CategoriesSection = () => {
               className='group block p-6 rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300'
             >
               <div className='flex justify-between items-start mb-6'>
-                <span className='text-4xl filter drop-shadow-md'>{category.icon}</span>
+                < category.icon className='w-8 h-8 text-primary group-hover:text-primary/80 transition-colors' />
                 <div className='p-2 rounded-full bg-secondary border border-border group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300'>
                   <ArrowRight className='w-4 h-4 text-muted-foreground group-hover:text-white' />
                 </div>

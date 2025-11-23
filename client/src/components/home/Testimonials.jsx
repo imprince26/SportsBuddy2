@@ -88,77 +88,75 @@ const Testimonials = () => {
     return testimonials.slice(startIndex, endIndex)
   }
 
-    return (
-      <section className="py-24 bg-background relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+  return (
+    <section className="py-24 bg-background relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary mb-6">
+            <Quote className="w-4 h-4" />
+            <span className="text-sm font-bold">Community Stories</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold font-heading text-foreground mb-6">
+            Loved by Athletes <span className="text-gradient">Everywhere</span>
+          </h2>
+          <p className="text-base text-muted-foreground">
+            Join thousands of sports enthusiasts who have found their community through SportsBuddy.
+            Here's what they have to say about their experience.
+          </p>
         </div>
 
-        <div className="container mx-auto px-4">
-          {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary mb-6">
-              <Quote className="w-4 h-4" />
-              <span className="text-sm font-bold">Community Stories</span>
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl font-bold font-heading text-foreground mb-6">
-              Loved by Athletes <span className="text-gradient">Everywhere</span>
-            </h2>
-            
-            <p className="text-base text-muted-foreground">
-              Join thousands of sports enthusiasts who have found their community through SportsBuddy.
-              Here's what they have to say about their experience.
-            </p>
-          </div>
-
-          {/* Testimonials Grid */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={index}
-                className="bg-card p-8 rounded-2xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group relative"
-              >
-                {/* Quote Icon */}
-                <div className="absolute top-6 right-8 text-primary/10 group-hover:text-primary/20 transition-colors">
-                  <Quote className="w-12 h-12" />
+        {/* Testimonials Grid */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <div 
+              key={index}
+              className="bg-secondary/10 p-8 rounded-2xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group relative"
+            >
+              {/* Quote Icon */}
+              <div className="absolute top-6 right-8 text-primary/10 group-hover:text-primary/20 transition-colors">
+                <Quote className="w-12 h-12" />
+              </div>
+              {/* Stars */}
+              <div className="flex gap-1 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              {/* Content */}
+              <p className="text-muted-foreground mb-8 relative z-10 leading-relaxed">
+                "{testimonial.content}"
+              </p>
+              {/* Author */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-secondary p-1 border border-border">
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
                 </div>
-
-                {/* Stars */}
-                <div className="flex gap-1 mb-6">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-
-                {/* Content */}
-                <p className="text-muted-foreground mb-8 relative z-10 leading-relaxed">
-                  "{testimonial.content}"
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-secondary p-1 border border-border">
-                    <img 
-                      src={testimonial.image} 
-                      alt={testimonial.name}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="font-bold text-foreground">{testimonial.name}</div>
-                    <div className="text-sm text-primary">{testimonial.role}</div>
-                  </div>
+                <div>
+                  <div className="font-bold text-foreground">{testimonial.name}</div>
+                  <div className="text-sm text-primary">{testimonial.role}</div>
                 </div>
               </div>
-            ))}
-          </div>
-
+            </div>
+          ))}
         </div>
-      </section>
-    )
-  }
+        {/* Disclaimer at the end of the section */}
+        <div className="text-center mt-12 text-xs text-gray-500 dark:text-gray-400 opacity-80">
+          Note: These testimonials are not real and are for demonstration purposes only.
+        </div>
+      </div>
+    </section>
+  )
+}
   
   export default Testimonials

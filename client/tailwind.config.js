@@ -43,7 +43,7 @@ export default {
 				card: {
 					light: '#ffffff',
 					dark: '#1f2937',
-					DEFAULT: 'hsl(var(--card))',
+					DEFAULT: 'hsl(var(--card)/0.1)',
 					foreground: 'hsl(var(--card-foreground))',
 				},
 				popover: {

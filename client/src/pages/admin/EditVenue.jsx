@@ -7,9 +7,10 @@ import { toast } from 'react-hot-toast';
 import { useVenue } from '@/hooks/useVenue';
 import { motion } from 'framer-motion';
 import {
-  Building2, MapPin, Phone, Globe, Clock, Users, DollarSign,
+  Building2, MapPin, Phone, Globe, Clock, Users, IndianRupee,
   Upload, X, Plus, CheckCircle, ArrowLeft, Image as ImageIcon, Trash2, Shield, Calendar
 } from 'lucide-react';
+import { MdStadium } from "react-icons/md";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -279,7 +280,7 @@ const EditVenue = () => {
         >
           <Button
             variant="ghost"
-            onClick={() => navigate('/admin/venues')}
+            onClick={() => navigate('/venues')}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -302,7 +303,7 @@ const EditVenue = () => {
 
             <div className="relative z-10 flex items-start gap-3 sm:gap-4">
               <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 rounded-xl backdrop-blur-sm flex items-center justify-center shrink-0">
-                <Building2 className="w-6 h-6 sm:w-7 sm:h-7" />
+                <MdStadium className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-1 leading-tight">Edit Venue</h1>
@@ -323,7 +324,7 @@ const EditVenue = () => {
               <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                    <Building2 className="w-5 h-5 text-primary" />
+                    <MdStadium className="w-5 h-5 text-primary" />
                     Basic Information
                   </CardTitle>
                 </CardHeader>
@@ -543,7 +544,7 @@ const EditVenue = () => {
               <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/20 dark:border-gray-700/20">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                    <DollarSign className="w-5 h-5 text-primary" />
+                    <IndianRupee className="w-5 h-5 text-primary" />
                     Capacity & Pricing
                   </CardTitle>
                 </CardHeader>

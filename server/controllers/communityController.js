@@ -570,7 +570,9 @@ export const getUserCommunities = async (req, res) => {
     const { role = "all", page = 1, limit = 12 } = req.query;
     const userId = req.params.userId || req.user.id;
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const validPage = parseInt(page) || 1;
+    const validLimit = parseInt(limit) || 12;
+    const skip = (validPage - 1) * validLimit;
 
     // Get communities where user is a member
     let memberMatchQuery = {
@@ -715,7 +717,7 @@ export const getUserCommunities = async (req, res) => {
     );
 
     // Apply pagination to merged results
-    const paginatedCommunities = uniqueCommunities.slice(skip, skip + parseInt(limit));
+    const paginatedCommunities = uniqueCommunities.slice(skip, skip + validLimit);
     const total = uniqueCommunities.length;
 
     res.json({

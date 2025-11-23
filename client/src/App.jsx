@@ -44,7 +44,7 @@ import TeamManagement from './pages/TeamManagement';
 import FollowersFollowing from './pages/FollowerFollowing';
 // import MyEvents from './pages/MyEvents';
 // import Bookmarks from './pages/Bookmarks';
-import Community from './pages/community/Community';
+// import Community from './pages/community/Community';
 import Communities from './pages/community/Communities';
 import CreateCommunity from './pages/community/CreateCommunity';
 import EditCommunity from './pages/community/EditCommunity';

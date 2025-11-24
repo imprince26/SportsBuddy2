@@ -287,7 +287,7 @@ const Notifications = () => {
               </div>
             ))
           ) : filteredNotifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500">
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500 bg-card">
               <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
                 <Bell className="w-8 h-8 text-muted-foreground/50" />
               </div>
@@ -338,10 +338,14 @@ const Notifications = () => {
 
                   {/* Content */}
                   <div className="flex-1 min-w-0 pt-0.5">
-                    <div className="flex items-start justify-between gap-2">
+                    <div className={cn(
+                      "flex gap-2",
+                      notification.title ? "items-start justify-between" : "justify-end"
+                    )}>
                       <h4 className={cn(
                         "text-sm font-medium leading-none",
-                        !notification.read && "text-primary font-semibold"
+                        !notification.read && "text-primary font-semibold",
+                        notification.title ? "block" : "hidden"
                       )}>
                         {notification.title}
                       </h4>
@@ -350,7 +354,10 @@ const Notifications = () => {
                       </span>
                     </div>
                     
-                    <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">
+                    <p className={cn(
+                      "text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2",
+                      notification.title ? "" : "-mt-3"
+                    )}>
                       {notification.message}
                     </p>
 
@@ -383,7 +390,7 @@ const Notifications = () => {
                             <Check className="w-4 h-4 mr-2" /> Mark as read
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={() => deleteNotification(notification._id)} className="text-destructive focus:text-destructive">
+                        <DropdownMenuItem onClick={() => deleteNotification(notification._id)} className="text-red-600 focus:text-destructive">
                           <Trash2 className="w-4 h-4 mr-2" /> Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>

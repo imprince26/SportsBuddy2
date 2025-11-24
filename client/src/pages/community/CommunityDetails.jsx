@@ -440,7 +440,7 @@ const CommunityDetails = () => {
       {/* Hero Section */}
       <motion.div variants={itemVariants} className="relative">
         {/* Cover Image */}
-        <div className="h-48 md:h-64 lg:h-80 relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600">
+        <div className="h-48 md:h-64 lg:h-80 relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600">
           {community.image?.url ? (
             <img
               src={community.image.url}
@@ -448,7 +448,7 @@ const CommunityDetails = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center">
               <Users className="w-16 h-16 text-white opacity-50" />
             </div>
           )}
@@ -468,7 +468,7 @@ const CommunityDetails = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
                     <Users className="w-8 h-8 text-white" />
                   </div>
                 )}
@@ -603,25 +603,20 @@ const CommunityDetails = () => {
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className={`w-full grid ${community.isMember ? 'grid-cols-4 lg:grid-cols-5' : 'grid-cols-3 lg:grid-cols-4'}`}>
                   <TabsTrigger value="posts" className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4" />
                     <span className="hidden sm:inline">Posts</span>
                   </TabsTrigger>
                   {community.isMember && (
                     <TabsTrigger value="my-posts" className="flex items-center gap-2">
-                      <Star className="w-4 h-4" />
                       <span className="hidden sm:inline">My Posts</span>
                     </TabsTrigger>
                   )}
                   <TabsTrigger value="events" className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
                     <span className="hidden sm:inline">Events</span>
                   </TabsTrigger>
                   <TabsTrigger value="members" className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
                     <span className="hidden sm:inline">Members</span>
                   </TabsTrigger>
                   <TabsTrigger value="about" className="items-center gap-2 hidden lg:flex">
-                    <FileText className="w-4 h-4" />
                     <span className="hidden sm:inline">About</span>
                   </TabsTrigger>
                 </TabsList>
@@ -725,7 +720,7 @@ const CommunityDetails = () => {
                         ))}
                       </div>
                     ) : !posts || posts.length === 0 ? (
-                      <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md">
+                      <Card className="border-border/50 bg-card backdrop-blur-sm shadow-md">
                         <CardContent className="text-center py-12">
                           <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                           <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
@@ -779,7 +774,7 @@ const CommunityDetails = () => {
                           ) || [];
                           
                           return myPosts.length === 0 ? (
-                            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md">
+                            <Card className="border-border/50 bg-card backdrop-blur-sm shadow-md">
                               <CardContent className="text-center py-12">
                                 <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold mb-2">No posts yet</h3>

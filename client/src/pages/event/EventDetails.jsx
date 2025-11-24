@@ -43,6 +43,8 @@ import {
   Bike,
   Waves
 } from "lucide-react"
+import { FaWhatsapp, FaFacebook  } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { FaMoneyBillWave, FaTools, FaUserTie } from "react-icons/fa";
 import { IoStatsChart } from "react-icons/io5";
 import { useAuth } from "@/hooks/useAuth"
@@ -832,30 +834,30 @@ const EventDetails = () => {
                   <TabsList className="grid w-full grid-cols-4 bg-muted border border-border rounded-xl p-1">
                     <TabsTrigger
                       value="overview"
-                      className="data-[state=active]:bg-card data-[state=active]:text-foreground rounded-lg transition-all duration-300"
+                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300 "
                     >
-                      <Info className="w-4 h-4 mr-2" />
+                      {/* <Info className="w-4 h-4 mr-2" /> */}
                       Overview
                     </TabsTrigger>
                     <TabsTrigger
                       value="participants"
-                      className="data-[state=active]:bg-card data-[state=active]:text-foreground rounded-lg transition-all duration-300"
+                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300"
                     >
-                      <Users className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Participants</span>
-                      <span className="sm:hidden">({event.participantCount})</span>
+                      {/* <Users className="w-4 h-4 mr-2" /> */}
+                      <span className="">Participants</span>
+                      {/* <span className="sm:hidden">({event.participantCount})</span> */}
                     </TabsTrigger>
                     <TabsTrigger
                       value="reviews"
-                      className="data-[state=active]:bg-card data-[state=active]:text-foreground rounded-lg transition-all duration-300"
+                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300"
                     >
-                      <Star className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Reviews</span>
-                      <span className="sm:hidden">({event.ratings?.length || 0})</span>
+                      {/* <Star className="w-4 h-4 mr-2" /> */}
+                      <span className="">Reviews</span>
+                      {/* <span className="sm:hidden">({event.ratings?.length || 0})</span> */}
                     </TabsTrigger>
                     <TabsTrigger
                       value="chat"
-                      className="data-[state=active]:bg-card data-[state=active]:text-foreground rounded-lg transition-all duration-300"
+                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300"
                       onClick={() => {
                         if (isAuthenticated && isParticipant()) {
                           setShowChatModal(true)
@@ -866,7 +868,7 @@ const EventDetails = () => {
                         }
                       }}
                     >
-                      <MessageSquare className="w-4 h-4 mr-2" />
+                      {/* <MessageSquare className="w-4 h-4 mr-2" /> */}
                       Chat
                     </TabsTrigger>
                   </TabsList>
@@ -879,9 +881,9 @@ const EventDetails = () => {
                         <Card className="bg-card border-border shadow-sm">
                           <CardHeader>
                             <CardTitle className="flex items-center gap-3 text-foreground">
-                              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                              {/* <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                                 <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                              </div>
+                              </div> */}
                               About This Event
                             </CardTitle>
                           </CardHeader>
@@ -900,9 +902,9 @@ const EventDetails = () => {
                           <Card className="bg-card border-border shadow-sm">
                             <CardHeader>
                               <CardTitle className="flex items-center gap-3 text-foreground">
-                                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                                {/* <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                                   <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
-                                </div>
+                                </div> */}
                                 Event Information
                               </CardTitle>
                             </CardHeader>
@@ -955,9 +957,9 @@ const EventDetails = () => {
                           <Card className="bg-card border-border shadow-sm">
                             <CardHeader>
                               <CardTitle className="flex items-center gap-3 text-foreground">
-                                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                                {/* <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                                   <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                </div>
+                                </div> */}
                                 Participation
                               </CardTitle>
                             </CardHeader>
@@ -1013,9 +1015,9 @@ const EventDetails = () => {
                               <Card className="bg-card border-border shadow-sm">
                                 <CardHeader>
                                   <CardTitle className="flex items-center gap-3 text-foreground">
-                                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
+                                    {/* <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                                       <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
-                                    </div>
+                                    </div> */}
                                     Event Rules
                                   </CardTitle>
                                 </CardHeader>
@@ -1048,9 +1050,9 @@ const EventDetails = () => {
                               <Card className="bg-card border-border shadow-sm">
                                 <CardHeader>
                                   <CardTitle className="flex items-center gap-3 text-foreground">
-                                    <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
+                                    {/* <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
                                       <Target className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                                    </div>
+                                    </div> */}
                                     Required Equipment
                                   </CardTitle>
                                 </CardHeader>
@@ -1086,9 +1088,9 @@ const EventDetails = () => {
                         <Card className="bg-card border-border shadow-sm">
                           <CardHeader>
                             <CardTitle className="flex items-center gap-3 text-foreground">
-                              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
+                              {/* <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
                                 <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                              </div>
+                              </div> */}
                               Event Location
                             </CardTitle>
                           </CardHeader>
@@ -1141,9 +1143,9 @@ const EventDetails = () => {
                           <CardHeader>
                             <CardTitle className="flex items-center justify-between">
                               <div className="flex items-center gap-3 text-foreground">
-                                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                                {/* <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                                   <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                </div>
+                                </div> */}
                                 Event Participants ({event.participantCount})
                               </div>
                               <Badge
@@ -1252,9 +1254,9 @@ const EventDetails = () => {
                         <Card className="bg-card border-border shadow-sm">
                           <CardHeader>
                             <CardTitle className="flex items-center gap-3 text-foreground">
-                              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center">
+                              {/* <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center">
                                 <Star className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                              </div>
+                              </div> */}
                               Event Reviews
                               {event.averageRating > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
@@ -1418,9 +1420,9 @@ const EventDetails = () => {
                 <Card className="bg-card border-border shadow-sm">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-foreground">
-                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                      {/* <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                         <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      </div>
+                      </div> */}
                       Quick Actions
                     </CardTitle>
                   </CardHeader>
@@ -1500,9 +1502,9 @@ const EventDetails = () => {
                 <Card className="bg-card border-border shadow-sm">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-foreground">
-                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                      {/* <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                         <FaUserTie className="w-5 h-5 text-green-600 dark:text-green-400" />
-                      </div>
+                      </div> */}
                       Event Organizer
                     </CardTitle>
                   </CardHeader>
@@ -1545,9 +1547,9 @@ const EventDetails = () => {
                 <Card className="bg-card border-border shadow-sm">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-foreground">
-                      <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                      {/* <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                         <IoStatsChart className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      </div>
+                      </div> */}
                       Event Statistics
                     </CardTitle>
                   </CardHeader>
@@ -1600,9 +1602,9 @@ const EventDetails = () => {
                 <Card className="bg-card border-border shadow-sm">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-foreground">
-                      <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
+                      {/* <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
                         <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                      </div>
+                      </div> */}
                       Similar Events
                     </CardTitle>
                   </CardHeader>
@@ -1624,19 +1626,19 @@ const EventDetails = () => {
 
       {/* Chat Modal Dialog */}
       <Dialog open={showChatModal} onOpenChange={setShowChatModal}>
-        <DialogContent className="max-w-5xl h-[85vh] bg-card/95 backdrop-blur-xl border-border p-0 overflow-hidden">
-          <DialogHeader className="p-4 sm:p-6 pb-0 border-b border-border">
-            <DialogTitle className="flex items-center gap-3 text-foreground">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+        <DialogContent className="max-w-5xl h-[90vh] bg-gray-50 dark:bg-card/10 backdrop-blur-3xl border-border p-0 overflow-auto scrollbar-hide">
+          <DialogHeader className="px-4 md:mt-3 mt-6 sm:p-6 pb-0 border-b border-border">
+            <DialogTitle className="flex items-center  gap-3 text-foreground">
+              {/* <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-primary" />
-              </div>
+              </div> */}
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg font-semibold truncate">Event Chat</h3>
                 <p className="text-sm text-muted-foreground truncate">{event.name}</p>
               </div>
               <Badge
                 variant="secondary"
-                className="px-3 py-1"
+                className="px-2 py-1 md:flex hidden"
               >
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                 Participants Only
@@ -1649,14 +1651,14 @@ const EventDetails = () => {
 
           <div className="flex flex-col h-full overflow-hidden">
             {/* Chat Messages */}
-            <ScrollArea className="flex-1 px-4 sm:px-6">
+            <ScrollArea className="flex-1 px-8 sm:px-6">
               <div className="py-4 space-y-6">
                 {event.chat && event.chat.length > 0 ? (
                   groupMessagesByDate(event.chat).map((group, groupIndex) => (
                     <div key={groupIndex} className="space-y-4">
                       {/* Date Separator */}
                       <div className="flex items-center justify-center my-6">
-                        <div className="px-4 py-2 bg-muted rounded-full">
+                        <div className="px-2 py-1 bg-muted rounded-full">
                           <span className="text-xs font-medium text-muted-foreground">
                             {getDateLabel(group.date)}
                           </span>
@@ -1725,7 +1727,7 @@ const EventDetails = () => {
                               >
                                 {/* Message Content */}
                                 <div className={cn(
-                                  "text-sm leading-relaxed break-words",
+                                  "text-sm md:text-[1rem] leading-relaxed break-words",
                                   !isOwn && "text-card-foreground"
                                 )}>
                                   {msg.message}
@@ -1910,7 +1912,7 @@ const EventDetails = () => {
 
       {/* Share Modal */}
       <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
-        <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border">
+        <DialogContent className="sm:max-w-md bg-card/30 backdrop-blur-xl border-border">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <div className="p-2 rounded-full bg-primary/10">
@@ -1947,8 +1949,8 @@ const EventDetails = () => {
             <div className="grid grid-cols-2 gap-3">
               <Button
                 onClick={() => handleShare("copy")}
-                variant="outline"
-                className="flex flex-col items-center gap-3 h-24 hover:bg-primary/5 hover:border-primary/50 transition-all"
+                variant="secondary"
+                className="flex flex-col items-center gap-3 h-24 transition-all"
               >
                 <div className="p-2 rounded-full bg-primary/10">
                   <Copy className="w-5 h-5 text-primary" />
@@ -1957,33 +1959,33 @@ const EventDetails = () => {
               </Button>
               <Button
                 onClick={() => handleShare("whatsapp")}
-                variant="outline"
-                className="flex flex-col items-center gap-3 h-24 hover:bg-green-50 dark:hover:bg-green-950 hover:border-green-500/50 transition-all"
+                variant="secondary"
+                className="flex flex-col items-center gap-3 h-24 transition-all"
               >
                 <div className="p-2 rounded-full bg-green-500">
-                  <MessageSquare className="w-5 h-5 text-white" />
+                  <FaWhatsapp className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-sm font-medium">WhatsApp</span>
               </Button>
               <Button
                 onClick={() => handleShare("facebook")}
-                variant="outline"
-                className="flex flex-col items-center gap-3 h-24 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-500/50 transition-all"
+                variant="secondary"
+                className="flex flex-col items-center gap-3 h-24  transition-all"
               >
                 <div className="p-2 rounded-full bg-blue-600">
-                  <Share2 className="w-5 h-5 text-white" />
+                  <FaFacebook className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-sm font-medium">Facebook</span>
               </Button>
               <Button
                 onClick={() => handleShare("twitter")}
-                variant="outline"
-                className="flex flex-col items-center gap-3 h-24 hover:bg-sky-50 dark:hover:bg-sky-950 hover:border-sky-500/50 transition-all"
+                variant="secondary"
+                className="flex flex-col items-center gap-3 h-24 transition-all"
               >
-                <div className="p-2 rounded-full bg-sky-500">
-                  <MessageSquare className="w-5 h-5 text-white" />
+                <div className="p-2 rounded-full bg-black">
+                  <FaXTwitter className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-sm font-medium">Twitter</span>
+                <span className="text-sm font-medium">X (Twitter)</span>
               </Button>
             </div>
 
@@ -2011,7 +2013,7 @@ const EventDetails = () => {
 
       {/* Image Gallery Modal */}
       <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
-        <DialogContent className="max-w-4xl bg-black/95 border-0 p-0">
+        <DialogContent className="max-w-4xl bg-black/95 border-0 p-2 ">
           <div className="relative">
             {event.images && event.images[activeImageIndex] && (
               <img
@@ -2020,14 +2022,6 @@ const EventDetails = () => {
                 className="w-full h-auto max-h-[80vh] object-contain"
               />
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowImageModal(false)}
-              className="absolute top-4 right-4 text-white hover:bg-white/20"
-            >
-              <X className="w-6 h-6" />
-            </Button>
             {event.images && event.images.length > 1 && (
               <>
                 <Button

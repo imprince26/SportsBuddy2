@@ -13,9 +13,6 @@ import {
   Save,
   X,
   Camera,
-  Facebook,
-  Twitter,
-  Instagram,
   Dumbbell,
   Plus,
   Users,
@@ -43,6 +40,8 @@ import {
   Bike,
   Waves,
 } from "lucide-react"
+import { FaInstagram as Instagram, FaFacebook as Facebook  } from "react-icons/fa";
+import { FaXTwitter as Twitter } from "react-icons/fa6";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -579,10 +578,10 @@ const Profile = () => {
               {/* Stats */}
               <div className="flex justify-end gap-4 md:gap-8 mb-6 overflow-x-auto pb-2 md:pb-0">
                 {[
-                  { label: "Events Created", value: userStats?.eventsCreated || 0, icon: Trophy },
-                  { label: "Events Joined", value: userStats?.eventsParticipated || 0, icon: Target },
-                  { label: "Followers", value: userStats?.followers || 0, icon: Users, onClick: () => setFollowersDialogOpen(true) },
-                  { label: "Following", value: userStats?.following || 0, icon: UserPlus, onClick: () => setFollowingDialogOpen(true) },
+                  { label: "Events Created", value: userStats?.eventsCreated || 0},
+                  { label: "Events Joined", value: userStats?.eventsParticipated || 0 },
+                  { label: "Followers", value: userStats?.followers || 0, onClick: () => setFollowersDialogOpen(true) },
+                  { label: "Following", value: userStats?.following || 0, onClick: () => setFollowingDialogOpen(true) },
                 ].map((stat) => (
                   <div
                     key={stat.label}
@@ -590,7 +589,6 @@ const Profile = () => {
                     onClick={stat.onClick}
                   >
                     <div className="text-xl font-bold flex items-center justify-center gap-1.5">
-                      <stat.icon className="w-4 h-4 text-muted-foreground" />
                       {stat.value}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
@@ -653,11 +651,11 @@ const Profile = () => {
 
                       <div className="flex items-center gap-2 mb-4">
                         <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
-                          <Shield className="w-3 h-3 mr-1" />
+                          {/* <Shield className="w-3 h-3 mr-1" /> */}
                           Verified Athlete
                         </Badge>
                         <Badge variant="secondary" className="bg-muted text-foreground hover:bg-muted/80 border-border">
-                          <Check className="w-3 h-3 mr-1" />
+                          {/* <Check className="w-3 h-3 mr-1" /> */}
                           Active Member
                         </Badge>
                       </div>
@@ -716,8 +714,8 @@ const Profile = () => {
                 value={tab.value}
                 className="flex items-center gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
               >
-                <tab.icon className="w-4 h-4" />
-                <span className="hidden md:inline">{tab.label}</span>
+                {/* <tab.icon className="w-4 h-4" /> */}
+                <span className="inline">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -730,7 +728,7 @@ const Profile = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-primary" />
+                      {/* <TrendingUp className="w-5 h-5 text-primary" /> */}
                       Activity Overview
                     </CardTitle>
                   </CardHeader>
@@ -784,7 +782,7 @@ const Profile = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-primary" />
+                      {/* <Sparkles className="w-5 h-5 text-primary" /> */}
                       Recent Achievements
                     </CardTitle>
                   </CardHeader>
@@ -824,7 +822,7 @@ const Profile = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-primary" />
+                      {/* <Zap className="w-5 h-5 text-primary" /> */}
                       Quick Actions
                     </CardTitle>
                   </CardHeader>
@@ -858,7 +856,7 @@ const Profile = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <Dumbbell className="w-5 h-5 text-primary" />
+                    {/* <Dumbbell className="w-5 h-5 text-primary" /> */}
                     Sports Preferences
                   </CardTitle>
 
@@ -937,7 +935,7 @@ const Profile = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-primary" />
+                    {/* <Award className="w-5 h-5 text-primary" /> */}
                     Achievements & Milestones
                   </CardTitle>
                   {!editing && (
@@ -954,7 +952,7 @@ const Profile = () => {
               </CardHeader>
               <CardContent>
                 {user.achievements && user.achievements.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {user.achievements.map((achievement, index) => (
                       <div
                         key={index}
@@ -965,7 +963,7 @@ const Profile = () => {
                             <Award className="w-8 h-8" />
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-xl mb-2">{achievement.title}</h3>
+                            <h3 className="font-semibold text-lg mb-2">{achievement.title}</h3>
                             <p className="text-sm text-muted-foreground mb-3">
                               {format(new Date(achievement.earnedAt), "MMMM dd, yyyy")}
                             </p>
@@ -1003,7 +1001,7 @@ const Profile = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-primary" />
+                    {/* <MapPin className="w-5 h-5 text-primary" /> */}
                     Location Information
                   </CardTitle>
                 </CardHeader>
@@ -1067,7 +1065,7 @@ const Profile = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-primary" />
+                    {/* <Heart className="w-5 h-5 text-primary" /> */}
                     Social Media Links
                   </CardTitle>
                 </CardHeader>
@@ -1118,10 +1116,10 @@ const Profile = () => {
                           href={user.socialLinks.twitter}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-xl bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors dark:bg-sky-900/20 dark:text-sky-400 dark:hover:bg-sky-900/30"
+                          className="flex items-center gap-3 p-3 rounded-xl bg-black/5 text-black/60  dark:text-white transition-colors hover:bg-black/10 dark:bg-black/90 dark:hover:bg-black/60"
                         >
                           <Twitter className="w-5 h-5" />
-                          <span className="font-medium">Twitter</span>
+                          <span className="font-medium">X (Twitter)</span>
                           <ChevronRight className="w-4 h-4 ml-auto" />
                         </a>
                       )}

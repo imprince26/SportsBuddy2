@@ -88,7 +88,7 @@ const CommunityDetails = () => {
   const { user } = useAuth();
   const { socket } = useSocket();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  
+
   const {
     currentCommunity,
     posts,
@@ -202,11 +202,18 @@ const CommunityDetails = () => {
   // Handlers
   const handleJoinCommunity = async () => {
     setIsSubmitting(true);
-    const success = await joinCommunity(id, joinMessage);
-    if (success) {
+    const result = await joinCommunity(id, joinMessage);
+    if (result?.success) {
       setShowJoinDialog(false);
       setJoinMessage('');
       fetchCommunity(id);
+    } else {
+      // Show error message from backend if available
+      if (result?.message) {
+        toast.error(result.message);
+      } else {
+        toast.error('Failed to join community');
+      }
     }
     setIsSubmitting(false);
   };
@@ -320,7 +327,7 @@ const CommunityDetails = () => {
       }
 
       const result = await updateCommunityPost(editingPost._id, updateData);
-      
+
       if (result.success) {
         setShowEditPost(false);
         setEditingPost(null);
@@ -344,7 +351,7 @@ const CommunityDetails = () => {
 
   const confirmDeletePost = async () => {
     if (!postToDelete) return;
-    
+
     try {
       await deleteCommunityPost(postToDelete);
       toast.success('Post deleted successfully');
@@ -402,12 +409,12 @@ const CommunityDetails = () => {
   };
 
   // Render loading state
-  if (loading && !currentCommunity) {
+  if (loading || !currentCommunity) {
     return <CommunityDetailsSkeleton />;
   }
 
   // Render error state
-  if (error || !currentCommunity) {
+  if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
@@ -458,7 +465,7 @@ const CommunityDetails = () => {
         {/* Community Info Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 lg:p-8 text-white">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end gap-4">
+            <div className="flex items-end gap-4">
               {/* Community Avatar */}
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl border-4 border-white bg-white overflow-hidden flex-shrink-0">
                 {community.image?.url ? (
@@ -560,7 +567,9 @@ const CommunityDetails = () => {
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    ) : (
+                    ) : null}
+                    {/* Only show join button if user is not the creator */}
+                    {!community.isMember && community.creator && community.creator._id !== user._id && (
                       <Button
                         size="sm"
                         onClick={() => community.isPrivate ? setShowJoinDialog(true) : handleJoinCommunity()}
@@ -603,21 +612,21 @@ const CommunityDetails = () => {
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className={`w-full grid ${community.isMember ? 'grid-cols-4 lg:grid-cols-5' : 'grid-cols-3 lg:grid-cols-4'}`}>
                   <TabsTrigger value="posts" className="flex items-center gap-2">
-                    <span className="hidden sm:inline">Posts</span>
+                    Posts
                   </TabsTrigger>
                   {community.isMember && (
                     <TabsTrigger value="my-posts" className="flex items-center gap-2">
-                      <span className="hidden sm:inline">My Posts</span>
+                      My Posts
                     </TabsTrigger>
                   )}
                   <TabsTrigger value="events" className="flex items-center gap-2">
-                    <span className="hidden sm:inline">Events</span>
+                    Events
                   </TabsTrigger>
                   <TabsTrigger value="members" className="flex items-center gap-2">
-                    <span className="hidden sm:inline">Members</span>
+                    Members
                   </TabsTrigger>
                   <TabsTrigger value="about" className="items-center gap-2 hidden lg:flex">
-                    <span className="hidden sm:inline">About</span>
+                    About
                   </TabsTrigger>
                 </TabsList>
 
@@ -769,10 +778,10 @@ const CommunityDetails = () => {
                         </div>
                       ) : (
                         (() => {
-                          const myPosts = posts?.filter(post => 
+                          const myPosts = posts?.filter(post =>
                             post.author?._id === user?.id || post.author?.id === user?.id
                           ) || [];
-                          
+
                           return myPosts.length === 0 ? (
                             <Card className="border-border/50 bg-card backdrop-blur-sm shadow-md">
                               <CardContent className="text-center py-12">
@@ -890,7 +899,7 @@ const CommunityDetails = () => {
                           </p>
                         </div>
                       ))}
-                      
+
                       {community.rules.length > 3 && (
                         <Button
                           variant="ghost"
@@ -1256,8 +1265,8 @@ const CommunityDetails = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setShowDeletePostDialog(false);
                 setPostToDelete(null);
@@ -1265,8 +1274,8 @@ const CommunityDetails = () => {
             >
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={confirmDeletePost}
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -1453,9 +1462,9 @@ const PostsList = ({ posts, currentUser, onLike, onComment, loading }) => {
               {/* Post Images */}
               {post.images && post.images.length > 0 && (
                 <div className="mt-4 grid gap-2" style={{
-                  gridTemplateColumns: post.images.length === 1 ? '1fr' : 
-                                      post.images.length === 2 ? 'repeat(2, 1fr)' :
-                                      'repeat(3, 1fr)'
+                  gridTemplateColumns: post.images.length === 1 ? '1fr' :
+                    post.images.length === 2 ? 'repeat(2, 1fr)' :
+                      'repeat(3, 1fr)'
                 }}>
                   {post.images.slice(0, 3).map((image, index) => (
                     <div key={index} className="relative aspect-square rounded-lg overflow-hidden">

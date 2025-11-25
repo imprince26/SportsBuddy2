@@ -115,7 +115,6 @@ const Dashboard = () => {
         following: user.following?.length || 0,
         communitiesJoined: user.stats?.communitiesJoined || 0
       }
-
       setDashboardStats(stats)
 
       // Process recent activity
@@ -210,16 +209,16 @@ const Dashboard = () => {
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {dashboardStats && [
-            { label: "Events", value: dashboardStats.totalEvents, icon: Calendar },
-            { label: "Points", value: dashboardStats.totalPoints, icon: Zap },
-            { label: "Followers", value: dashboardStats.followers, icon: Users },
-            { label: "Achievements", value: dashboardStats.achievements, icon: Trophy }
+            { label: "Events", value: dashboardStats.totalEvents},
+            { label: "Points", value: dashboardStats.totalPoints},
+            { label: "Followers", value: dashboardStats.followers},
+            { label: "Achievements", value: dashboardStats.achievements}
           ].map((stat) => (
             <Card key={stat.label} className="border-border/50 bg-card/50">
               <CardContent className="p-6 flex flex-col items-center text-center sm:items-start sm:text-left">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary mb-3">
+                {/* <div className="p-2 rounded-lg bg-primary/10 text-primary mb-3">
                   <stat.icon className="w-5 h-5" />
-                </div>
+                </div> */}
                 <p className="text-2xl font-bold text-foreground tracking-tight">
                   {stat.value}
                 </p>

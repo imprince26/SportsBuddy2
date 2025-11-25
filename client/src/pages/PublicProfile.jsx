@@ -7,12 +7,8 @@ import {
   MapPin,
   Calendar,
   Award,
-  Facebook,
-  Twitter,
-  Instagram,
   Dumbbell,
   ChevronLeft,
-  Loader2,
   AlertTriangle,
   Users,
   UserPlus,
@@ -21,22 +17,16 @@ import {
   Target,
   Crown,
   Medal,
-  Sparkles,
-  Activity,
   Star,
-  MessageCircle,
   Share2,
   MoreHorizontal,
   Flag,
-  Heart,
   Mail,
-  Shield,
   CheckCircle,
-  TrendingUp,
-  Eye,
-  Clock,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { FaInstagram as Instagram, FaFacebook as Facebook } from "react-icons/fa";
+import { FaXTwitter as Twitter } from "react-icons/fa6";
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -177,8 +167,8 @@ const FollowersDialog = ({ isOpen, onClose, type, userId, onFollowChange }) => {
                     variant={userData.isFollowedByCurrentUser ? "outline" : "default"}
                     onClick={() => handleFollowToggle(userData._id, userData.isFollowedByCurrentUser)}
                     className={`ml-3 transition-all duration-300 transform hover:scale-105 ${userData.isFollowedByCurrentUser
-                        ? "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-                        : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                      ? "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+                      : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
                       }`}
                   >
                     {userData.isFollowedByCurrentUser ? (
@@ -282,33 +272,12 @@ const PublicProfile = () => {
       if (!res.success) {
         throw new Error(res.message)
       }
-
-      // toast.success(originalIsFollowing ? "Unfollowed successfully!" : "Following successfully!", {
-      //   icon: originalIsFollowing ? "💔" : "❤️",
-      //   style: {
-      //     borderRadius: "12px",
-      //     background: originalIsFollowing ? "#fee2e2" : "#dcfce7",
-      //     color: originalIsFollowing ? "#dc2626" : "#16a34a",
-      //   },
-      // })
     } catch (error) {
       // Revert UI on error
       setIsFollowing(originalIsFollowing)
       setUserStats(originalStats)
       const errorMessage = error.message || "Failed to update follow status"
       toast.error(errorMessage)
-    }
-  }
-
-  const getSportIcon = (sport) => {
-    switch (sport) {
-      case "Football": return <Activity className="w-8 h-8 text-blue-500" />;
-      case "Basketball": return <Dumbbell className="w-8 h-8 text-orange-500" />;
-      case "Tennis": return <Activity className="w-8 h-8 text-green-500" />;
-      case "Running": return <Activity className="w-8 h-8 text-yellow-500" />;
-      case "Cycling": return <Activity className="w-8 h-8 text-purple-500" />;
-      case "Swimming": return <Activity className="w-8 h-8 text-cyan-500" />;
-      default: return <Dumbbell className="w-8 h-8 text-gray-500" />;
     }
   }
 
@@ -327,9 +296,7 @@ const PublicProfile = () => {
 
   const copyProfileLink = () => {
     navigator.clipboard.writeText(window.location.href)
-    toast.success("Profile link copied to clipboard!", {
-      icon: "📋",
-    })
+    toast.success("Profile link copied to clipboard!")
   }
 
   const coverImage = profile?.coverImage?.url
@@ -409,7 +376,7 @@ const PublicProfile = () => {
               <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
             </div>
           )}
-          
+
           {/* Top Navigation Bar */}
           <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10">
             <Button
@@ -421,16 +388,15 @@ const PublicProfile = () => {
               <ChevronLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
-            
+
             <div className="flex gap-3">
               {user && user._id !== profile._id && (
                 <Button
                   onClick={handleFollow}
-                  className={`transition-all duration-300 shadow-lg backdrop-blur-md border border-white/20 ${
-                    isFollowing
+                  className={`transition-all duration-300 shadow-lg backdrop-blur-md border border-white/20 ${isFollowing
                       ? "bg-white/10 text-white hover:bg-red-500/90 hover:border-red-500"
                       : "bg-white text-gray-900 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   {isFollowing ? (
                     <>
@@ -445,7 +411,7 @@ const PublicProfile = () => {
                   )}
                 </Button>
               )}
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="icon" className="bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20">
@@ -503,7 +469,7 @@ const PublicProfile = () => {
                 )}
               </div>
               <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">@{profile.username}</p>
-              
+
               <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600 dark:text-gray-400 mt-4">
                 {(profile.location?.city || profile.location?.country) && (
                   <div className="flex items-center gap-1.5">
@@ -575,26 +541,26 @@ const PublicProfile = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <div className="sticky top-0 z-30 bg-gray-50/95 dark:bg-gray-950/95 backdrop-blur-sm pb-4 pt-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700">
               <TabsList className="inline-flex min-w-max justify-start h-auto p-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-xl">
-                <TabsTrigger 
-                  value="overview" 
+                <TabsTrigger
+                  value="overview"
                   className="rounded-lg px-6 py-2.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm transition-all"
                 >
                   Overview
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="sports" 
+                <TabsTrigger
+                  value="sports"
                   className="rounded-lg px-6 py-2.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm transition-all"
                 >
                   Sports
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="achievements" 
+                <TabsTrigger
+                  value="achievements"
                   className="rounded-lg px-6 py-2.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm transition-all"
                 >
                   Achievements
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="events" 
+                <TabsTrigger
+                  value="events"
                   className="rounded-lg px-6 py-2.5 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm transition-all"
                 >
                   Events
@@ -619,7 +585,7 @@ const PublicProfile = () => {
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                       <div className="flex items-center gap-4">
@@ -653,11 +619,10 @@ const PublicProfile = () => {
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
-                              className={`w-5 h-5 ${
-                                star <= (profile.stats?.rating || 0)
+                              className={`w-5 h-5 ${star <= (profile.stats?.rating || 0)
                                   ? "text-yellow-400 fill-yellow-400"
                                   : "text-gray-200 dark:text-gray-700"
-                              }`}
+                                }`}
                             />
                           ))}
                         </div>
@@ -705,10 +670,7 @@ const PublicProfile = () => {
                 {profile.sportsPreferences?.map((sport, index) => (
                   <Card key={index} className="group hover:border-blue-200 transition-colors">
                     <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                          {getSportIcon(sport.sport)}
-                        </div>
+                      <div className="flex items-start mb-4">
                         <Badge variant="outline" className={getSkillLevelColor(sport.skillLevel)}>
                           {sport.skillLevel}
                         </Badge>

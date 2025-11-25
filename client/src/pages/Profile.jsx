@@ -5,7 +5,6 @@ import { format } from "date-fns"
 import { toast } from "react-hot-toast"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
 import {
   MapPin,
   Award,
@@ -16,31 +15,22 @@ import {
   Dumbbell,
   Plus,
   Users,
-  UserPlus,
   Settings,
   Trophy,
   Calendar,
   Heart,
-  TrendingUp,
   Activity,
-  Target,
   Crown,
   Medal,
-  Sparkles,
   ChevronRight,
-  Shield,
-  Zap,
   Share2,
   MessageCircle,
-  Check,
   Flame,
   Globe,
   Image as ImageIcon,
   Loader2,
-  Bike,
-  Waves,
 } from "lucide-react"
-import { FaInstagram as Instagram, FaFacebook as Facebook  } from "react-icons/fa";
+import { FaInstagram as Instagram, FaFacebook as Facebook } from "react-icons/fa";
 import { FaXTwitter as Twitter } from "react-icons/fa6";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -72,149 +62,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
 import api from "@/utils/api"
+import { profileSchema, achievementSchema } from "@/schemas/profileSchema"
+import FollowersDialog from "@/components/profile/FollowersDialog"
 
-const profileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name cannot exceed 50 characters"),
-  username: z.string().min(3, "Username must be at least 3 characters").max(30, "Username cannot exceed 30 characters"),
-  email: z.string().email("Please enter a valid email"),
-  bio: z.string().max(500, "Bio cannot exceed 500 characters").optional().or(z.literal("")),
-  location: z.object({
-    city: z.string().optional().or(z.literal("")),
-    state: z.string().optional().or(z.literal("")),
-    country: z.string().optional().or(z.literal("")),
-  }),
-  socialLinks: z.object({
-    facebook: z.string().optional().or(z.literal("")),
-    twitter: z.string().optional().or(z.literal("")),
-    instagram: z.string().optional().or(z.literal("")),
-  }),
-  sportsPreferences: z
-    .array(
-      z.object({
-        sport: z.enum([
-          "Football",
-          "Basketball",
-          "Tennis",
-          "Running",
-          "Cycling",
-          "Swimming",
-          "Volleyball",
-          "Cricket",
-          "Other",
-        ]),
-        skillLevel: z.enum(["Beginner", "Intermediate", "Advanced"]),
-      }),
-    )
-    .optional(),
-})
-
-const achievementSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional().or(z.literal("")),
-  date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
-})
-
-const FollowersDialog = ({ isOpen, onClose, type, userId }) => {
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(false)
-  const { getUserFollowers, getUserFollowing, followUser, unfollowUser, user } = useAuth()
-
-  useEffect(() => {
-    if (isOpen && userId) {
-      fetchUsers()
-    }
-  }, [isOpen, userId])
-
-  const fetchUsers = async () => {
-    setLoading(true)
-    try {
-      const data = type === "followers" ? await getUserFollowers(userId) : await getUserFollowing(userId)
-      setUsers(data || [])
-    } catch (error) {
-      toast.error(`Failed to load ${type}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleFollow = async (targetUserId) => {
-    try {
-      await followUser(targetUserId)
-      setUsers((prev) =>
-        prev.map((u) => (u._id === targetUserId ? { ...u, isFollowedByCurrentUser: true } : u))
-      )
-    } catch (error) {
-      toast.error("Failed to follow user")
-    }
-  }
-
-  const handleUnfollow = async (targetUserId) => {
-    try {
-      await unfollowUser(targetUserId)
-      setUsers((prev) =>
-        prev.map((u) => (u._id === targetUserId ? { ...u, isFollowedByCurrentUser: false } : u))
-      )
-    } catch (error) {
-      toast.error("Failed to unfollow user")
-    }
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[600px] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            {type === "followers" ? "Followers" : "Following"}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="overflow-y-auto max-h-[400px] space-y-3">
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>No {type} yet</p>
-            </div>
-          ) : (
-            users.map((userData) => (
-              <div
-                key={userData._id}
-                className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border hover:bg-muted/80 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10 border">
-                    <AvatarImage src={userData.avatar?.url || "/placeholder.svg"} />
-                    <AvatarFallback>
-                      {userData.name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-sm">{userData.name}</p>
-                    <p className="text-xs text-muted-foreground">@{userData.username}</p>
-                  </div>
-                </div>
-                {user && user._id !== userData._id && (
-                  <Button
-                    size="sm"
-                    variant={userData.isFollowedByCurrentUser ? "outline" : "default"}
-                    onClick={() =>
-                      userData.isFollowedByCurrentUser ? handleUnfollow(userData._id) : handleFollow(userData._id)
-                    }
-                  >
-                    {userData.isFollowedByCurrentUser ? "Unfollow" : "Follow"}
-                  </Button>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 const Profile = () => {
   const { user, updateProfile, addAchievement } = useAuth()
@@ -232,7 +82,6 @@ const Profile = () => {
   const [coverImagePreview, setCoverImagePreview] = useState("")
   const [selectedSport, setSelectedSport] = useState("")
   const [selectedSkillLevel, setSelectedSkillLevel] = useState("")
-
 
   const {
     register,
@@ -300,7 +149,7 @@ const Profile = () => {
         socialLinks: user.socialLinks || { facebook: "", twitter: "", instagram: "" },
         sportsPreferences: user.sportsPreferences || [],
       })
-      setAvatarPreview(user.avatar?.url || "/placeholder.svg")
+      setAvatarPreview(user.avatar?.url)
       setCoverImagePreview(user.coverImage?.url || "")
     }
   }, [user, reset])
@@ -400,21 +249,6 @@ const Profile = () => {
       default:
         return "bg-muted text-muted-foreground border-border"
     }
-  }
-
-  const getSportIcon = (sport) => {
-    const icons = {
-      Football: Trophy,
-      Basketball: Trophy,
-      Tennis: Trophy,
-      Running: Activity,
-      Cycling: Bike,
-      Swimming: Waves,
-      Volleyball: Trophy,
-      Cricket: Trophy,
-      Other: Activity,
-    }
-    return icons[sport] || Activity
   }
 
   useEffect(() => {
@@ -556,11 +390,12 @@ const Profile = () => {
               <div className="absolute -top-16 left-6 md:left-10">
                 <div className="relative group">
                   <Avatar className="w-32 h-32 border-4 border-background shadow-xl">
-                    <AvatarImage src={avatarPreview || "/placeholder.svg"} className="object-cover" />
-                    <AvatarFallback className="text-3xl bg-primary/10 text-primary">
-                      {user.name?.charAt(0)}
+                    <AvatarImage src={avatarPreview} className="object-cover" />
+                    <AvatarFallback className="text-6xl bg-primary/10 backdrop-blur-lg text-primary">
+                      {user?.name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
+
                   {editing && (
                     <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                       <Camera className="w-8 h-8 text-white" />
@@ -578,7 +413,7 @@ const Profile = () => {
               {/* Stats */}
               <div className="flex justify-end gap-4 md:gap-8 mb-6 overflow-x-auto pb-2 md:pb-0">
                 {[
-                  { label: "Events Created", value: userStats?.eventsCreated || 0},
+                  { label: "Events Created", value: userStats?.eventsCreated || 0 },
                   { label: "Events Joined", value: userStats?.eventsParticipated || 0 },
                   { label: "Followers", value: userStats?.followers || 0, onClick: () => setFollowersDialogOpen(true) },
                   { label: "Following", value: userStats?.following || 0, onClick: () => setFollowingDialogOpen(true) },
@@ -880,12 +715,6 @@ const Profile = () => {
                       >
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                              {(() => {
-                                const IconComponent = getSportIcon(sport.sport);
-                                return <IconComponent className="w-5 h-5 text-primary" />;
-                              })()}
-                            </div>
                             <h3 className="font-semibold text-lg">{sport.sport}</h3>
                           </div>
                           {editing && (
@@ -1172,10 +1001,6 @@ const Profile = () => {
                       (sport) => (
                         <SelectItem key={sport} value={sport}>
                           <div className="flex items-center gap-2">
-                            {(() => {
-                              const IconComponent = getSportIcon(sport);
-                              return <IconComponent className="w-4 h-4" />;
-                            })()}
                             {sport}
                           </div>
                         </SelectItem>

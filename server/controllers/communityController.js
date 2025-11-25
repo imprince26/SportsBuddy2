@@ -884,7 +884,6 @@ export const searchCommunities = async (req, res) => {
 // Join community
 export const joinCommunity = async (req, res) => {
   try {
-    const { message } = req.body;
     const communityId = req.params.id;
 
     const community = await Community.findById(communityId);
@@ -958,6 +957,7 @@ export const joinCommunity = async (req, res) => {
       message: "Error joining community",
       error: error.message
     });
+    console.log(error)
   }
 };
 

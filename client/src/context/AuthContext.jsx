@@ -174,7 +174,7 @@ export const AuthProvider = ({ children }) => {
       if (user._id === userId) {
         return { success: false, message: 'You cannot follow yourself' };
       }
-      const response = await api.post(`/users/${userId}/follow`);
+      const response = await api.post(`/athletes/${userId}/follow`);
 
       if (response.data.success) {
         // Update local user state with new following list
@@ -193,7 +193,7 @@ export const AuthProvider = ({ children }) => {
   // Unfollow a user
   const unfollowUser = async (userId) => {
     try {
-      const response = await api.delete(`/users/${userId}/follow`);
+      const response = await api.post(`/athletes/${userId}/follow`);
 
       if (response.data.success) {
         // Update local user state by removing from following list
@@ -289,20 +289,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to add achievement';
       return { success: false, message };
-    }
-  };
-
-  // Search users
-  const searchUsers = async (query) => {
-    try {
-      const response = await api.get(`/users/search?q=${query}`);
-
-      if (response.data.success) {
-        return response.data.data;
-      }
-    } catch (error) {
-      console.error('Error searching users:', error);
-      return [];
     }
   };
 

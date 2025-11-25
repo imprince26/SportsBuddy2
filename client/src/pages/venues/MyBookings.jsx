@@ -17,6 +17,7 @@ import {
   Mail,
   User
 } from 'lucide-react';
+import { FaMoneyBillWave } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -139,7 +140,6 @@ const MyBookings = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-                <Calendar className="w-8 h-8 text-primary" />
                 My Bookings
               </h1>
               <p className="text-muted-foreground mt-1">
@@ -186,7 +186,7 @@ const MyBookings = () => {
                     <p className="text-3xl font-bold mt-2">₹{totalSpent.toLocaleString()}</p>
                   </div>
                   <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/20">
-                    <DollarSign className="w-6 h-6 text-green-600" />
+                    <FaMoneyBillWave className="w-6 h-6 text-green-600" />
                   </div>
                 </div>
               </CardContent>
@@ -244,7 +244,6 @@ const MyBookings = () => {
                               to={`/venues/${booking.venue?._id}`}
                               className="text-xl font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-2"
                             >
-                              <Building2 className="w-5 h-5" />
                               {booking.venue?.name || 'Venue'}
                             </Link>
                             <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
@@ -269,7 +268,6 @@ const MyBookings = () => {
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
-                            <DollarSign className="w-4 h-4 text-muted-foreground" />
                             <span className="font-semibold">₹{booking.totalAmount || booking.amount}</span>
                           </div>
                         </div>
@@ -355,7 +353,6 @@ const MyBookings = () => {
 
                 <div className="border-t pt-4">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-primary" />
                     Venue Information
                   </h4>
                   <div className="space-y-2 pl-7">
@@ -373,7 +370,6 @@ const MyBookings = () => {
 
                 <div className="border-t pt-4">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-primary" />
                     Booking Details
                   </h4>
                   <div className="grid grid-cols-2 gap-4 pl-7">

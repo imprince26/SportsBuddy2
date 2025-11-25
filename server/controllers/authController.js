@@ -197,6 +197,9 @@ export const getCurrentUser = async (req, res) => {
         achievements: user.achievements,
         stats: user.stats,
         preferences: user.preferences,
+        followers: user.followers,
+        following: user.following,
+        activityLog: user.activityLog
       },
     });
   } catch (error) {

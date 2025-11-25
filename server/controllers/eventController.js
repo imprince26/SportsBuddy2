@@ -21,6 +21,14 @@ export const createEvent = async (req, res) => {
       equipment
     } = req.body;
 
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     // Handle image uploads - files are already uploaded to Cloudinary by multer
     let uploadedImages = [];
     if (req.files && req.files.length > 0) {

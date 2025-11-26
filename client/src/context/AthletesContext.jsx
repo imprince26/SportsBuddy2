@@ -38,7 +38,7 @@ export const AthletesProvider = ({ children }) => {
     if (!socket) return;
 
     const handleAthleteUpdate = (data) => {
-      setAthletes(prev => prev.map(athlete => 
+      setAthletes(prev => prev.map(athlete =>
         athlete._id === data._id ? data : athlete
       ));
       if (currentAthlete?._id === data._id) {
@@ -50,14 +50,14 @@ export const AthletesProvider = ({ children }) => {
       if (data.userId === user?.id) {
         toast.success(`New achievement unlocked: ${data.title}!`);
       }
-      
+
       if (currentAthlete?._id === data.userId) {
         setAthleteAchievements(prev => [data, ...prev]);
       }
     };
 
     const handleFollowUpdate = (data) => {
-      setAthletes(prev => prev.map(athlete => 
+      setAthletes(prev => prev.map(athlete =>
         athlete._id === data.userId ? {
           ...athlete,
           followersCount: data.followersCount,
@@ -206,32 +206,63 @@ export const AthletesProvider = ({ children }) => {
 
   // Toggle follow athlete
   const toggleFollowAthlete = async (athleteId) => {
+    const previousAthletes = [...athletes];
+    const previousCurrentAthlete = currentAthlete ? { ...currentAthlete } : null;
+
+    // Find the athlete and current follow status
+    const athlete = athletes.find(a => a._id === athleteId);
+    const isCurrentlyFollowing = athlete?.followers?.includes(user?.id);
+
+    // Apply optimistic update
+    setAthletes(prev => prev.map(a => {
+      if (a._id === athleteId) {
+        let newFollowers = [...(a.followers || [])];
+        if (isCurrentlyFollowing) {
+          newFollowers = newFollowers.filter(id => id !== user.id);
+        } else {
+          if (user?.id) newFollowers.push(user.id);
+        }
+        return {
+          ...a,
+          followers: newFollowers,
+          followersCount: newFollowers.length,
+          isFollowing: !isCurrentlyFollowing
+        };
+      }
+      return a;
+    }));
+
+    if (currentAthlete?._id === athleteId) {
+      setCurrentAthlete(prev => {
+        let newFollowers = [...(prev.followers || [])];
+        if (isCurrentlyFollowing) {
+          newFollowers = newFollowers.filter(id => id !== user.id);
+        } else {
+          if (user?.id) newFollowers.push(user.id);
+        }
+        return {
+          ...prev,
+          followers: newFollowers,
+          followersCount: newFollowers.length,
+          isFollowing: !isCurrentlyFollowing
+        };
+      });
+    }
+
     try {
       const response = await api.post(`/athletes/${athleteId}/follow`);
 
       if (response.data.success) {
         const { isFollowing, followersCount } = response.data.data;
-        
-        setAthletes(prev => prev.map(athlete => 
-          athlete._id === athleteId ? {
-            ...athlete,
-            isFollowing,
-            followersCount
-          } : athlete
-        ));
-
-        if (currentAthlete?._id === athleteId) {
-          setCurrentAthlete(prev => ({
-            ...prev,
-            isFollowing,
-            followersCount
-          }));
-        }
 
         toast.success(isFollowing ? 'Athlete followed!' : 'Athlete unfollowed!');
         return { success: true, isFollowing, followersCount };
       }
     } catch (error) {
+      // Revert on error
+      setAthletes(previousAthletes);
+      if (previousCurrentAthlete) setCurrentAthlete(previousCurrentAthlete);
+
       const message = error.response?.data?.message || 'Failed to update follow status';
       toast.error(message);
       return { success: false, message };
@@ -315,7 +346,7 @@ export const AthletesProvider = ({ children }) => {
     error,
     pagination,
     filters,
-    
+
     // Actions
     getAllAthletes,
     getAthleteById,

@@ -84,7 +84,7 @@ const PostCard = ({
             </Link>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex sm:flex-row flex-col sm:items-center sm:gap-2">
                 <Link
                   to={`/profile/${author._id || author.id}`}
                   onClick={(e) => e.stopPropagation()}
@@ -92,13 +92,16 @@ const PostCard = ({
                 >
                   {authorName}
                 </Link>
-                <span className="text-muted-foreground text-sm">
-                  @{authorUsername}
-                </span>
-                <span className="text-muted-foreground text-sm">·</span>
-                <span className="text-muted-foreground text-sm">
-                  {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                </span>
+
+                <div className="flex space-x-2">
+                  <span className="text-muted-foreground text-sm">
+                    @{authorUsername}
+                  </span>
+                  <span className="text-muted-foreground text-sm">·</span>
+                  <span className="text-muted-foreground text-sm">
+                    {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                  </span>
+                </div>
               </div>
 
               {post.community && (

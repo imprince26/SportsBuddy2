@@ -164,7 +164,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16 border-2 border-border">
               <AvatarImage src={user?.avatar?.url} />
-              <AvatarFallback className="text-lg bg-primary/10 text-primary">
+              <AvatarFallback className="text-3xl bg-primary/10 text-primary">
                 {user?.name?.charAt(0) || "U"}
               </AvatarFallback>
             </Avatar>

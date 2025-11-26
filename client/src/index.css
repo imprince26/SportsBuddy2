@@ -25,7 +25,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 221.2 83.2% 53.3%; /* Vibrant Blue */
+    --primary: 221.2 83.2% 53.3%;
+    /* Vibrant Blue */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -37,7 +38,7 @@
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
@@ -49,7 +50,8 @@
 
   .dark {
     /* Dark Theme - Deep & Premium "Midnight Blue" */
-    --background: 224 71% 4%; /* Very dark blue/black */
+    --background: 224 71% 4%;
+    /* Very dark blue/black */
     --foreground: 210 40% 98%;
 
     --card: 217.2 32.6% 17.5%;
@@ -70,7 +72,7 @@
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
@@ -83,53 +85,10 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  /* Custom Scrollbar - Webkit browsers (Chrome, Safari, Edge) */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--muted) / 0.3);
-    border-radius: 5px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.6);
-    border-radius: 5px;
-    transition: background 0.2s ease;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.8);
-  }
-
-  /* Custom Scrollbar - Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--primary) / 0.6) hsl(var(--muted) / 0.3);
-  }
-
-  /* Dark mode scrollbar adjustments */
-  .dark ::-webkit-scrollbar-track {
-    background: hsl(var(--muted) / 0.2);
-  }
-
-  .dark ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.5);
-  }
-
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.7);
-  }
-
-  .dark * {
-    scrollbar-color: hsl(var(--primary) / 0.5) hsl(var(--muted) / 0.2);
   }
 }
 
@@ -137,7 +96,7 @@
   .glass {
     @apply bg-background/60 backdrop-blur-lg border-b border-border/50;
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400;
   }

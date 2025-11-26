@@ -25,6 +25,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth()
@@ -171,8 +177,8 @@ const Header = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Brand */}
-            <div className="flex-shrink-0">
-              <Link to="/" className="flex items-center gap-2 group">
+            <div className="flex-shrink-0 mr-2">
+              <Link to="/" className="flex items-center group">
                 <span className="text-2xl font-bold font-serif tracking-tight text-foreground group-hover:text-primary transition-colors">
                   SportsBuddy
                 </span>
@@ -209,43 +215,65 @@ const Header = () => {
               {isAuthenticated && (
                 <div className="hidden xl:flex items-center gap-2 mr-2">
                   {quickActions.map((action) => (
-                    <Link key={action.path} to={action.path}>
-                      <Button variant="outline" size="sm" className="h-9 gap-2 bg-transparent">
-                        <action.icon className="w-4 h-4" />
-                        <span className="hidden 2xl:inline">{action.name}</span>
-                      </Button>
-                    </Link>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Link key={action.path} to={action.path}>
+                          <Button variant="outline" size="sm" className="h-9 gap-2 bg-transparent">
+                            <action.icon className="w-4 h-4" />
+                            <span className="hidden 2xl:inline">{action.name}</span>
+                          </Button>
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{action.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+
                   ))}
                 </div>
               )}
 
               {/* Theme Toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleTheme}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Toggle theme</p>
+                </TooltipContent>
+              </Tooltip>
 
               {isAuthenticated ? (
                 <>
                   {/* Notifications */}
-                  <Link to="/notifications">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="relative text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary"
-                    >
-                      <Bell className="w-5 h-5" />
-                      {unreadNotifications > 0 && (
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full ring-2 ring-background" />
-                      )}
-                    </Button>
-                  </Link>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Link to="/notifications">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="relative text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary"
+                        >
+                          <Bell className="w-5 h-5" />
+                          {unreadNotifications > 0 && (
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full ring-2 ring-background" />
+                          )}
+                        </Button>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Notifications</p>
+                    </TooltipContent>
+                  </Tooltip>
+
 
                   {/* Profile Menu (Desktop) */}
                   <div className="relative hidden md:block" ref={profileMenuRef}>
@@ -256,7 +284,7 @@ const Header = () => {
                     >
                       <Avatar className="w-8 h-8 border-2 border-background shadow-sm">
                         <AvatarImage src={user?.avatar?.url} />
-                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                        <AvatarFallback className="text-lg bg-primary/10 text-primary">
                           {user?.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
@@ -369,7 +397,7 @@ const Header = () => {
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overscroll-contain">
+            <ScrollArea className="flex-1 overflow-y-auto overscroll-contain">
               <div className="px-4 py-4 space-y-4">
                 {/* Navigation Links */}
                 <div className="space-y-1">
@@ -447,26 +475,26 @@ const Header = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="space-y-3 pt-4 border-t border-border">
+                  <div className="space-y-2 pt-4 border-t border-border">
                     <Link to="/login" onClick={() => setIsMenuOpen(false)}>
                       <Button variant="outline" className="w-full bg-transparent">
                         Sign In
                       </Button>
                     </Link>
                     <Link to="/register" onClick={() => setIsMenuOpen(false)}>
-                      <Button className="w-full">Get Started</Button>
+                      <Button className="w-full mt-2">Get Started</Button>
                     </Link>
                   </div>
                 )}
               </div>
-            </div>
+            </ScrollArea>
 
             {isAuthenticated && (
               <div className="shrink-0 border-t border-border p-4 bg-background">
                 <div className="flex items-center gap-3 mb-3 px-2">
                   <Avatar className="w-10 h-10 border-2 border-primary/20">
-                    <AvatarImage src={user?.avatar?.url || "/placeholder.svg"} />
-                    <AvatarFallback className="text-sm bg-primary/10 text-primary">
+                    <AvatarImage src={user?.avatar?.url} />
+                    <AvatarFallback className="text-lg bg-primary/10 text-primary">
                       {user?.name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>

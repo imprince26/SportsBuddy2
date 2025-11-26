@@ -7,15 +7,18 @@ import BackToTop from "./components/BacktoTop";
 import { BrowserRouter } from "react-router-dom";
 import ContextProvider from "./provider/ContextProvider";
 import { ThemeProvider } from "./context/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ThemeProvider defaultTheme="system" storageKey="theme">
           <ContextProvider>
+            <TooltipProvider>
             <App />
             <BackToTop />
             <CustomToast />
+            </TooltipProvider>
           </ContextProvider>
         </ThemeProvider>
       </BrowserRouter>

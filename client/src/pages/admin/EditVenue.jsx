@@ -53,7 +53,7 @@ const venueSchema = z.object({
     email: z.string().email('Valid email required').optional().or(z.literal('')),
     website: z.string().url().optional().or(z.literal('')),
   }),
-  capacity: z.number().min(1, 'Capacity must be at least 1').max(10000, 'Capacity cannot exceed 10000'),
+  capacity: z.number().min(1, 'Capacity must be at least 1').max(150000, 'Capacity cannot exceed 150000'),
   pricing: z.object({
     hourlyRate: z.number().min(0, 'Hourly rate cannot be negative'),
     dayRate: z.number().min(0, 'Day rate cannot be negative'),
@@ -254,7 +254,7 @@ const EditVenue = () => {
     const result = await updateVenue(id, formData);
 
     if (result.success) {
-      navigate('/admin/venues');
+      navigate(`/venues/${id}`);
     }
   };
 

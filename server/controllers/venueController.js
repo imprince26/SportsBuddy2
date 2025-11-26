@@ -1,7 +1,7 @@
 import Venue from '../models/venueModel.js';
 import User from '../models/userModel.js';
-import Event from '../models/eventModel.js';
 import { cloudinary } from '../config/cloudinary.js';
+import { extractPublicIdFromUrl } from '../config/cloudinary.js';
 
 // Get all venues with filters
 export const getAllVenues = async (req, res) => {
@@ -585,8 +585,55 @@ export const updateVenue = async (req, res) => {
       pricing,
       availability,
       contactInfo,
-      isActive
+      isActive,
+      deletedImages
     } = req.body;
+
+    // Handle deleted images
+    if (deletedImages) {
+      try {
+        const imagesToDelete = Array.isArray(deletedImages)
+          ? deletedImages
+          : JSON.parse(deletedImages || '[]');
+
+        if (imagesToDelete.length > 0) {
+          // Delete images from Cloudinary and remove from database
+          for (const imageUrl of imagesToDelete) {
+            // Find the image in venue.images by URL
+            const imageToDelete = venue.images.find(img => img.url === imageUrl);
+
+            if (imageToDelete && imageToDelete.public_id) {
+              try {
+                // Delete from Cloudinary using public_id
+                await cloudinary.uploader.destroy(imageToDelete.public_id);
+                console.log(`Deleted image from Cloudinary: ${imageToDelete.public_id}`);
+              } catch (cloudinaryError) {
+                console.error(`Error deleting image from Cloudinary: ${imageToDelete.public_id}`, cloudinaryError);
+                // Continue with other deletions even if one fails
+              }
+            } else {
+              // Fallback: try to extract public_id from URL if not found in database
+              const publicId = extractPublicIdFromUrl(imageUrl);
+              if (publicId) {
+                try {
+                  await cloudinary.uploader.destroy(publicId);
+                  console.log(`Deleted image from Cloudinary using extracted public_id: ${publicId}`);
+                } catch (cloudinaryError) {
+                  console.error(`Error deleting image from Cloudinary: ${publicId}`, cloudinaryError);
+                }
+              }
+            }
+          }
+
+          // Remove deleted images from venue.images array
+          venue.images = venue.images.filter(img => !imagesToDelete.includes(img.url));
+          console.log(`Removed ${imagesToDelete.length} images from database`);
+        }
+      } catch (deleteError) {
+        console.error('Error processing deleted images:', deleteError);
+        // Don't throw error, just log it and continue with update
+      }
+    }
 
     // Handle new image uploads
     let newImages = [];

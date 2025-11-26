@@ -255,7 +255,7 @@ const Header = () => {
                       onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                     >
                       <Avatar className="w-8 h-8 border-2 border-background shadow-sm">
-                        <AvatarImage src={user?.avatar?.url || "/placeholder.svg"} />
+                        <AvatarImage src={user?.avatar?.url} />
                         <AvatarFallback className="text-xs bg-primary/10 text-primary">
                           {user?.name?.charAt(0) || "U"}
                         </AvatarFallback>

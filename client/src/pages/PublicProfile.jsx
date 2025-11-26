@@ -88,7 +88,7 @@ const FollowersDialog = ({ isOpen, onClose, type, userId, onFollowChange }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[700px] overflow-hidden bg-card border-border shadow-2xl rounded-2xl animate-in slide-in-from-bottom-5 duration-300">
+      <DialogContent className="max-w-lg max-h-[700px] overflow-hidden bg-background border-border shadow-2xl rounded-2xl animate-in slide-in-from-bottom-5 duration-300">
         <DialogHeader className="pb-4 border-b border-border">
           <DialogTitle className="flex items-center gap-3 text-xl font-bold text-foreground">
             <div className="p-2 rounded-full bg-primary">

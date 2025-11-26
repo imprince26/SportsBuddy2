@@ -87,4 +87,26 @@ const uploadImage = async (file, options = {}) => {
   }
 }
 
-export { upload, deleteImage, uploadImage, cloudinary };
+// Helper function to extract public_id from Cloudinary URL
+const extractPublicIdFromUrl = (url) => {
+  try {
+    // Example URL: https://res.cloudinary.com/dpsi7ncet/image/upload/v1764098691/venues/ytf7ocojikbdyjuseqxu.jpg
+    // Extract: venues/ytf7ocojikbdyjuseqxu
+    const parts = url.split('/');
+    const uploadIndex = parts.indexOf('upload');
+    if (uploadIndex === -1) return null;
+
+    // Get everything after 'upload' and the version (v1234...)
+    const pathParts = parts.slice(uploadIndex + 2); // Skip 'upload' and version
+    const fullPath = pathParts.join('/');
+
+    // Remove file extension
+    const publicId = fullPath.substring(0, fullPath.lastIndexOf('.'));
+    return publicId;
+  } catch (error) {
+    console.error('Error extracting public_id from URL:', error);
+    return null;
+  }
+};
+
+export { upload, deleteImage, uploadImage, cloudinary, extractPublicIdFromUrl };

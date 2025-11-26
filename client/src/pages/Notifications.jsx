@@ -377,7 +377,7 @@ const Notifications = () => {
                   </div>
 
                   {/* Hover Actions */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 sm:static sm:opacity-100 sm:flex sm:flex-col sm:gap-1">
+                  <div className="flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity sm:flex sm:flex-col sm:gap-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">

@@ -114,6 +114,19 @@ const eventSchema = new mongoose.Schema(
           enum: ["confirmed", "pending", "cancelled"],
           default: "confirmed",
         },
+        paymentStatus: {
+          type: String,
+          enum: ["pending", "paid", "confirmed"],
+          default: "confirmed"
+        },
+        paymentMethod: {
+          type: String,
+          enum: ["cash", "online", "free"],
+          default: "free"
+        },
+        paidAt: {
+          type: Date
+        },
         checkInTime: Date,
         checkOutTime: Date,
         attended: { type: Boolean, default: false },

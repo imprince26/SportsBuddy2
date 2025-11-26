@@ -57,7 +57,7 @@ const venueSchema = new mongoose.Schema(
     capacity: {
       type: Number,
       min: [1, "Capacity must be at least 1"],
-      max: [200000, "Capacity cannot exceed 200000"],
+      max: [150000, "Capacity cannot exceed 150000"],
     },
     images: [{
       url: {

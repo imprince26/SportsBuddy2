@@ -34,7 +34,7 @@ export const getLeaderboard = async (req, res) => {
     const leaderboardWithRanks = leaderboard.map((entry, index) => ({
       ...entry,
       rank: skip + index + 1,
-      isCurrentUser: entry.user._id.toString() === req.user?.id
+      isCurrentUser: entry.user?._id.toString() === req.user?.id
     }));
 
     const total = await Leaderboard.countDocuments(query);
@@ -67,7 +67,7 @@ export const getLeaderboard = async (req, res) => {
       currentUserPosition,
       pagination: {
         currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        totalPages: Math.ceil(total / parseInt(limit)) || 1,
         total,
         hasNext: parseInt(page) < Math.ceil(total / parseInt(limit)),
         hasPrev: parseInt(page) > 1
@@ -79,10 +79,20 @@ export const getLeaderboard = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("Leaderboard error:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching leaderboard",
-      error: error.message
+      error: error.message,
+      // Return empty data structure on error
+      data: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        total: 0,
+        hasNext: false,
+        hasPrev: false
+      }
     });
   }
 };
@@ -99,7 +109,7 @@ export const getUserStats = async (req, res) => {
     if (!userStats.length) {
       // Create initial stats if none exist
       const categories = ["overall", "Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming"];
-      
+
       for (const category of categories) {
         await Leaderboard.create({
           user: userId,
@@ -180,7 +190,7 @@ export const updateUserPoints = async (userId, category, pointsToAdd, action) =>
     // Update streak
     const today = new Date();
     const lastActivity = categoryStats.streak.lastActivity;
-    
+
     if (!lastActivity || !isSameDay(today, lastActivity)) {
       if (lastActivity && isConsecutiveDay(today, lastActivity)) {
         categoryStats.streak.current += 1;
@@ -401,9 +411,9 @@ export const getUserRanking = async (req, res) => {
     const { userId } = req.params;
     const { category = "overall" } = req.query;
 
-    const userStats = await Leaderboard.findOne({ 
-      user: userId, 
-      category 
+    const userStats = await Leaderboard.findOne({
+      user: userId,
+      category
     }).populate("user", "name avatar username");
 
     if (!userStats) {
@@ -426,7 +436,7 @@ export const getUserRanking = async (req, res) => {
     });
 
     // Get percentile
-    const percentile = totalParticipants > 1 
+    const percentile = totalParticipants > 1
       ? Math.round((1 - (rank - 1) / totalParticipants) * 100)
       : 100;
 
@@ -438,10 +448,10 @@ export const getUserRanking = async (req, res) => {
         $lte: userStats.points + 500
       }
     })
-    .populate("user", "name avatar username")
-    .sort({ points: -1 })
-    .limit(7)
-    .lean();
+      .populate("user", "name avatar username")
+      .sort({ points: -1 })
+      .limit(7)
+      .lean();
 
     res.json({
       success: true,
@@ -493,10 +503,10 @@ export const getLeaderboardStats = async (req, res) => {
     const recentActivity = await Leaderboard.find({
       updatedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
     })
-    .populate("user", "name avatar username")
-    .sort({ updatedAt: -1 })
-    .limit(10)
-    .lean();
+      .populate("user", "name avatar username")
+      .sort({ updatedAt: -1 })
+      .limit(10)
+      .lean();
 
     // Monthly stats
     const startOfMonth = new Date();
@@ -716,7 +726,7 @@ export const getTrophies = async (req, res) => {
     if (userId) {
       // Get user's stats
       const userStats = await Leaderboard.find({ user: userId });
-      
+
       // Check which trophies the user has earned
       const earnedTrophies = [];
       const availableToEarn = [];
@@ -797,7 +807,7 @@ export const getMonthlyLeaderboard = async (req, res) => {
 
     // Calculate monthly points for each user
     const userPoints = {};
-    
+
     monthlyEvents.forEach(event => {
       // Points for participation
       event.participants.forEach(participant => {
@@ -819,7 +829,7 @@ export const getMonthlyLeaderboard = async (req, res) => {
         return {
           user,
           points,
-          monthlyEvents: monthlyEvents.filter(e => 
+          monthlyEvents: monthlyEvents.filter(e =>
             e.participants.some(p => p.user.toString() === userId) ||
             e.createdBy.toString() === userId
           ).length
@@ -845,7 +855,7 @@ export const getMonthlyLeaderboard = async (req, res) => {
       stats: {
         totalParticipants: leaderboard.length,
         totalEvents: monthlyEvents.length,
-        averagePoints: leaderboard.length > 0 
+        averagePoints: leaderboard.length > 0
           ? Math.round(leaderboard.reduce((sum, entry) => sum + entry.points, 0) / leaderboard.length)
           : 0
       }

@@ -12,10 +12,35 @@ import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-const EventCard = ({ event, index, categories, viewMode = "grid", featured = false }) => {
+const EventCard = ({ event, index, categories, viewMode = "grid", featured = false, user = null }) => {
   const isFeatured = featured || event.isFeatured
 
   const [isLiked, setIsLiked] = useState(false)
+
+  // Check if event is in the past
+  const isPastEvent = new Date(event.date) < new Date()
+
+  // Check if user is a participant
+  const isParticipant = user && event.participants?.some(p => {
+    const participantId = typeof p.user === 'object' ? p.user._id : p.user
+    return participantId === user.id
+  })
+
+  // Check if user is the creator
+  const isCreator = user && (event.createdBy?._id === user.id || event.createdBy === user.id)
+
+  // Determine button state
+  const getButtonConfig = () => {
+    if (isPastEvent) {
+      return { text: "Event Ended", variant: "secondary", disabled: true, icon: null }
+    }
+    if (isParticipant || isCreator) {
+      return { text: "Already Joined", variant: "outline", disabled: false, icon: "CheckCircle" }
+    }
+    return { text: "Join Now", variant: "default", disabled: false, icon: null }
+  }
+
+  const buttonConfig = getButtonConfig()
 
   // Get category info
   const getCategoryInfo = (category) => {
@@ -140,9 +165,19 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                         {isFreeEvent ? "Free" : `₹${event.registrationFee}`}
                       </div>
                     </div>
-                    <Button size="sm" className="rounded-full px-6 group-hover:translate-x-1 transition-transform">
-                      View <ArrowUpRight className="w-4 h-4 ml-1" />
-                    </Button>
+                    {isPastEvent ? (
+                      <Button size="sm" variant="secondary" disabled className="rounded-full px-6">
+                        Event Ended
+                      </Button>
+                    ) : isParticipant || isCreator ? (
+                      <Button size="sm" variant="outline" className="rounded-full px-6 group-hover:translate-x-1 transition-transform">
+                        View Details <ArrowUpRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    ) : (
+                      <Button size="sm" className="rounded-full px-6 group-hover:translate-x-1 transition-transform">
+                        View <ArrowUpRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -271,9 +306,19 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
                 {isFreeEvent ? "Free" : `₹${event.registrationFee}`}
               </p>
             </div>
-            <Button size="sm" className="rounded-full px-5 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all">
-              Join Now
-            </Button>
+            {isPastEvent ? (
+              <Button size="sm" variant="secondary" disabled className="rounded-full px-5">
+                Event Ended
+              </Button>
+            ) : isParticipant || isCreator ? (
+              <Button size="sm" variant="outline" className="rounded-full px-5 shadow-lg shadow-green-500/20 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20">
+                ✓ Joined
+              </Button>
+            ) : (
+              <Button size="sm" className="rounded-full px-5 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all">
+                Join Now
+              </Button>
+            )}
           </CardFooter>
         </Card>
       </Link>

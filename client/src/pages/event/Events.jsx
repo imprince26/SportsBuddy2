@@ -14,7 +14,7 @@ import EventsLoadingSkeleton from "@/components/events/EventsLoadingSkeleton"
 import HeroBg from "@/components/HeroBg"
 
 const Events = () => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -382,6 +382,7 @@ const Events = () => {
                   index={index}
                   viewMode={viewMode}
                   featured={featuredEvents.some(e => e._id === event._id)}
+                  user={user}
                 />
               ))}
             </div>

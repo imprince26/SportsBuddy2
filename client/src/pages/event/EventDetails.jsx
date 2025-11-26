@@ -43,7 +43,7 @@ import {
   Bike,
   Waves
 } from "lucide-react"
-import { FaWhatsapp, FaFacebook  } from "react-icons/fa";
+import { FaWhatsapp, FaFacebook } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaMoneyBillWave, FaTools, FaUserTie } from "react-icons/fa";
 import { IoStatsChart } from "react-icons/io5";
@@ -551,7 +551,7 @@ const EventDetails = () => {
       <div className="relative z-10">
         {/* Hero Section */}
         <div className="relative overflow-hidden border-b border-border bg-background/50 backdrop-blur-sm">
-          
+
           <div className="relative container mx-auto px-4 py-8 sm:py-12 lg:py-16">
             {/* Breadcrumb */}
             <div
@@ -667,7 +667,8 @@ const EventDetails = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
-                  {isAuthenticated && !isParticipant() && !isCreator() && event.status === "Upcoming" && (
+                  {/* Join button - only show for upcoming events, non-participants, non-creators */}
+                  {isAuthenticated && !isParticipant() && !isCreator() && event.status === "Upcoming" && new Date(event.date) > new Date() && (
                     <div className="transition-transform hover:scale-105 active:scale-95">
                       <Button
                         onClick={handleJoinEvent}
@@ -685,7 +686,21 @@ const EventDetails = () => {
                     </div>
                   )}
 
-                  {!isAuthenticated && (
+                  {/* View Details button for participants */}
+                  {isAuthenticated && isParticipant() && !isCreator() && (
+                    <div className="transition-transform hover:scale-105 active:scale-95">
+                      <Button
+                        onClick={() => setActiveTab("participants")}
+                        className="bg-green-600 text-white hover:bg-green-700 font-bold px-6 py-3 rounded-xl shadow-lg"
+                        size="lg"
+                      >
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Joined - View Details
+                      </Button>
+                    </div>
+                  )}
+
+                  {!isAuthenticated && event.status === "Upcoming" && new Date(event.date) > new Date() && (
                     <div className="transition-transform hover:scale-105 active:scale-95">
                       <Button
                         asChild
@@ -1929,8 +1944,8 @@ const EventDetails = () => {
             <div className="p-4 rounded-lg bg-muted/50 border border-border">
               <div className="flex gap-3">
                 {event.images && event.images[0] && (
-                  <img 
-                    src={event.images[0].url} 
+                  <img
+                    src={event.images[0].url}
                     alt={event.name}
                     className="w-16 h-16 rounded-lg object-cover"
                   />

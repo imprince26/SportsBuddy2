@@ -2,6 +2,7 @@ import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
 import { cloudinary, uploadImage, deleteImage } from "../config/cloudinary.js";
 import { validateEvent } from "../utils/validation.js";
+import { completeUserAction, POINT_VALUES } from "../utils/userStatsHelper.js";
 
 // Create Event Controller
 export const createEvent = async (req, res) => {
@@ -24,7 +25,7 @@ export const createEvent = async (req, res) => {
     const userId = req.user._id;
 
     const user = await User.findById(userId);
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -73,6 +74,24 @@ export const createEvent = async (req, res) => {
       }
     });
 
+    // Update user stats: increment eventsCreated and eventsParticipated, award points
+    try {
+      await completeUserAction(req.user._id, {
+        action: 'event_create',
+        points: POINT_VALUES.EVENT_CREATE,
+        category: category || 'overall',
+        statUpdates: {
+          eventsCreated: 1,
+          eventsParticipated: 1 // Creator is also a participant
+        },
+        relatedId: savedEvent._id,
+        checkAchievements: true
+      });
+    } catch (statsError) {
+      console.error('Error updating user stats:', statsError);
+      // Don't fail the request if stats update fails
+    }
+
     const io = req.app.get("io");
     io.emit("newEvent", populatedEvent);
 
@@ -84,7 +103,7 @@ export const createEvent = async (req, res) => {
     // Clean up uploaded images if event creation fails
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        await deleteImage(file.filename).catch((err) => 
+        await deleteImage(file.filename).catch((err) =>
           console.error("Failed to cleanup image:", err)
         );
       }
@@ -171,7 +190,7 @@ export const getAllEvents = async (req, res) => {
     // Date range filter
     if (dateRange && dateRange !== "all") {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
+
       switch (dateRange) {
         case "today":
           query.date = {
@@ -251,10 +270,10 @@ export const getAllEvents = async (req, res) => {
 
     // Use aggregation pipeline if we need to sort by participant count
     let events, total;
-    
+
     if (sortBy && sortBy.startsWith("participants:")) {
       const [, order] = sortBy.split(":");
-      
+
       // Aggregation pipeline for complex sorting
       const pipeline = [
         { $match: query },
@@ -318,12 +337,12 @@ export const getAllEvents = async (req, res) => {
         const participantMap = new Map(
           event.participantUsers.map(user => [user._id.toString(), user])
         );
-        
+
         event.participants = event.participants.map(participant => ({
           ...participant,
           user: participantMap.get(participant.user.toString()) || participant.user
         }));
-        
+
         delete event.participantUsers;
         return event;
       });
@@ -345,10 +364,10 @@ export const getAllEvents = async (req, res) => {
     // Calculate additional metadata for each event
     const eventsWithMetadata = events.map(event => {
       const participantCount = event.participants?.length || 0;
-      const averageRating = event.ratings?.length > 0 
-        ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length 
+      const averageRating = event.ratings?.length > 0
+        ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length
         : 0;
-      
+
       return {
         ...event,
         participantCount,
@@ -389,7 +408,7 @@ export const getAllEvents = async (req, res) => {
         paidEvents: eventsWithMetadata.filter(e => !e.isFreeEvent).length,
         upcomingEvents: eventsWithMetadata.filter(e => e.isUpcoming).length,
         categories: [...new Set(eventsWithMetadata.map(e => e.category))],
-        avgRating: eventsWithMetadata.length > 0 
+        avgRating: eventsWithMetadata.length > 0
           ? Math.round((eventsWithMetadata.reduce((sum, e) => sum + (e.averageRating || 0), 0) / eventsWithMetadata.length) * 10) / 10
           : 0
       }
@@ -412,7 +431,7 @@ export const getAllEvents = async (req, res) => {
 export const getEventById = async (req, res) => {
   try {
     const { id } = req.params;
-        
+
     const event = await Event.findById(id)
       .populate("createdBy", "name avatar username email")
       .populate("participants.user", "name avatar username")
@@ -422,9 +441,9 @@ export const getEventById = async (req, res) => {
       .populate("chat.user", "name avatar username");
 
     if (!event) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "Event not found" 
+        message: "Event not found"
       });
     }
 
@@ -468,7 +487,7 @@ export const updateEvent = async (req, res) => {
     if (req.body.deletedImages) {
       const deletedImages = JSON.parse(req.body.deletedImages);
       for (const publicId of deletedImages) {
-        await deleteImage(publicId).catch((err) => 
+        await deleteImage(publicId).catch((err) =>
           console.error("Failed to delete image:", err)
         );
       }
@@ -528,7 +547,7 @@ export const updateEvent = async (req, res) => {
 
     // Clean up newly uploaded images if update fails
     for (const publicId of newlyUploadedImages) {
-      await deleteImage(publicId).catch((err) => 
+      await deleteImage(publicId).catch((err) =>
         console.error("Failed to cleanup uploaded image:", err)
       );
     }
@@ -628,6 +647,35 @@ export const joinEvent = async (req, res) => {
       $push: { participatedEvents: event._id },
     });
 
+    // Update user stats: increment eventsParticipated, award points, check achievements
+    try {
+      const statsResult = await completeUserAction(req.user._id, {
+        action: 'event_join',
+        points: POINT_VALUES.EVENT_JOIN,
+        category: event.category || 'overall',
+        statUpdates: { eventsParticipated: 1 },
+        relatedId: event._id,
+        checkAchievements: true
+      });
+
+      // Add notification to user about joining event
+      const user = await User.findById(req.user._id);
+      await user.addNotification({
+        type: 'event',
+        title: 'Event Joined',
+        message: `You've joined "${event.name}" and earned ${POINT_VALUES.EVENT_JOIN} points!`,
+        relatedEvent: event._id,
+        priority: 'normal'
+      });
+
+      // Notify about new achievements
+      if (statsResult.newAchievements && statsResult.newAchievements.length > 0) {
+        console.log(`User earned ${statsResult.newAchievements.length} new achievement(s)`);
+      }
+    } catch (statsError) {
+      console.error('Error updating user stats:', statsError);
+    }
+
     await User.findByIdAndUpdate(event.createdBy, {
       $push: {
         notifications: {
@@ -659,6 +707,7 @@ export const joinEvent = async (req, res) => {
       message: "Error joining event",
       error: error.message,
     });
+    console.log(error)
   }
 };
 
@@ -685,6 +734,20 @@ export const leaveEvent = async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
       $pull: { participatedEvents: event._id },
     });
+
+    // Update user stats: decrement eventsParticipated
+    try {
+      await completeUserAction(req.user._id, {
+        action: 'event_leave',
+        points: 0, // No points for leaving
+        category: event.category || 'overall',
+        statUpdates: { eventsParticipated: -1 },
+        relatedId: event._id,
+        checkAchievements: false
+      });
+    } catch (statsError) {
+      console.error('Error updating user stats:', statsError);
+    }
 
     const updatedEvent = await Event.findById(event._id)
       .populate("createdBy", "name avatar")
@@ -718,7 +781,7 @@ export const getFeaturedEvents = async (req, res) => {
   try {
     const { limit = 6 } = req.query;
     const now = new Date();
-    
+
     // Define criteria for featured events
     const featuredQuery = {
       status: { $in: ["Upcoming", "Ongoing"] },
@@ -773,7 +836,7 @@ export const getFeaturedEvents = async (req, res) => {
     // Aggregation pipeline for featured events
     const featuredEvents = await Event.aggregate([
       { $match: featuredQuery },
-      
+
       // Add computed fields
       {
         $addFields: {
@@ -808,7 +871,7 @@ export const getFeaturedEvents = async (req, res) => {
           }
         }
       },
-      
+
       // Calculate feature score
       {
         $addFields: {
@@ -816,16 +879,16 @@ export const getFeaturedEvents = async (req, res) => {
             $add: [
               // High fill percentage gets more points
               { $multiply: ["$fillPercentage", 30] },
-              
+
               // High rating gets more points
               { $multiply: ["$averageRating", 15] },
-              
+
               // Recent events get bonus points
               { $cond: ["$recentlyCreated", 20, 0] },
-              
+
               // Events with images get bonus points
               { $cond: ["$hasImages", 10, 0] },
-              
+
               // Upcoming events get more points (sooner = higher score)
               {
                 $cond: {
@@ -834,12 +897,12 @@ export const getFeaturedEvents = async (req, res) => {
                   else: 5
                 }
               },
-              
+
               // Popular categories get bonus points
               {
                 $cond: {
-                  if: { 
-                    $in: ["$category", ["Football", "Basketball", "Tennis", "Running"]] 
+                  if: {
+                    $in: ["$category", ["Football", "Basketball", "Tennis", "Running"]]
                   },
                   then: 10,
                   else: 5
@@ -849,13 +912,13 @@ export const getFeaturedEvents = async (req, res) => {
           }
         }
       },
-      
+
       // Sort by feature score
       { $sort: { featureScore: -1, createdAt: -1 } },
-      
+
       // Limit results
       { $limit: parseInt(limit) },
-      
+
       // Populate references
       {
         $lookup: {
@@ -879,10 +942,10 @@ export const getFeaturedEvents = async (req, res) => {
           ]
         }
       },
-      
+
       // Unwind createdBy array
       { $unwind: "$createdBy" },
-      
+
       // Add final metadata
       {
         $addFields: {
@@ -891,7 +954,7 @@ export const getFeaturedEvents = async (req, res) => {
           isFeatured: true
         }
       },
-      
+
       // Project final fields
       {
         $project: {
@@ -908,7 +971,7 @@ export const getFeaturedEvents = async (req, res) => {
     if (featuredEvents.length < parseInt(limit)) {
       const remaining = parseInt(limit) - featuredEvents.length;
       const featuredIds = featuredEvents.map(event => event._id);
-      
+
       const additionalEvents = await Event.find({
         _id: { $nin: featuredIds },
         status: { $in: ["Upcoming", "Ongoing"] },
@@ -925,8 +988,8 @@ export const getFeaturedEvents = async (req, res) => {
         ...event,
         participantCount: event.participants?.length || 0,
         spotsLeft: event.maxParticipants - (event.participants?.length || 0),
-        averageRating: event.ratings?.length > 0 
-          ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length 
+        averageRating: event.ratings?.length > 0
+          ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length
           : 0,
         isUpcoming: new Date(event.date) > now,
         daysUntilEvent: Math.ceil((new Date(event.date) - now) / (1000 * 60 * 60 * 24)),
@@ -940,7 +1003,7 @@ export const getFeaturedEvents = async (req, res) => {
     const stats = {
       totalFeatured: featuredEvents.length,
       categories: [...new Set(featuredEvents.map(e => e.category))],
-      avgRating: featuredEvents.length > 0 
+      avgRating: featuredEvents.length > 0
         ? (featuredEvents.reduce((sum, e) => sum + (e.averageRating || 0), 0) / featuredEvents.length).toFixed(1)
         : 0,
       totalParticipants: featuredEvents.reduce((sum, e) => sum + (e.participantCount || 0), 0)
@@ -990,7 +1053,7 @@ export const getTrendingEvents = async (req, res) => {
           createdAt: { $gte: oneWeekAgo } // Only events from last week
         }
       },
-      
+
       {
         $addFields: {
           participantCount: { $size: "$participants" },
@@ -1013,37 +1076,41 @@ export const getTrendingEvents = async (req, res) => {
           trendScore: {
             $add: [
               { $multiply: [{ $size: "$participants" }, 2] }, // Total participants
-              { $multiply: [
-                {
-                  $size: {
-                    $filter: {
-                      input: "$participants",
-                      cond: { $gte: ["$$this.joinedAt", oneDayAgo] }
+              {
+                $multiply: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$participants",
+                        cond: { $gte: ["$$this.joinedAt", oneDayAgo] }
+                      }
                     }
-                  }
-                }, 
-                10
-              ]}, // Recent participants (weighted more)
-              { $multiply: [
-                {
-                  $size: {
-                    $filter: {
-                      input: "$ratings",
-                      cond: { $gte: ["$$this.date", oneDayAgo] }
+                  },
+                  10
+                ]
+              }, // Recent participants (weighted more)
+              {
+                $multiply: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$ratings",
+                        cond: { $gte: ["$$this.date", oneDayAgo] }
+                      }
                     }
-                  }
-                }, 
-                5
-              ]} // Recent ratings
+                  },
+                  5
+                ]
+              } // Recent ratings
             ]
           }
         }
       },
-      
+
       { $match: { trendScore: { $gt: 0 } } }, // Only events with some activity
       { $sort: { trendScore: -1, createdAt: -1 } },
       { $limit: parseInt(limit) },
-      
+
       // Populate references
       {
         $lookup: {
@@ -1055,7 +1122,7 @@ export const getTrendingEvents = async (req, res) => {
         }
       },
       { $unwind: "$createdBy" },
-      
+
       {
         $addFields: {
           averageRating: {
@@ -1070,7 +1137,7 @@ export const getTrendingEvents = async (req, res) => {
           isTrending: true
         }
       },
-      
+
       { $project: { trendScore: 0, recentParticipants: 0, recentRatings: 0 } }
     ]);
 

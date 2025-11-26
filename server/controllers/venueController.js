@@ -2,6 +2,7 @@ import Venue from '../models/venueModel.js';
 import User from '../models/userModel.js';
 import { cloudinary } from '../config/cloudinary.js';
 import { extractPublicIdFromUrl } from '../config/cloudinary.js';
+import { completeUserAction, POINT_VALUES } from '../utils/userStatsHelper.js';
 
 // Get all venues with filters
 export const getAllVenues = async (req, res) => {
@@ -360,6 +361,22 @@ export const rateVenue = async (req, res) => {
     }
 
     await venue.save();
+
+    // Update user stats: award points for rating venue (only for new ratings)
+    if (existingRatingIndex === -1) {
+      try {
+        await completeUserAction(req.user.id, {
+          action: 'venue_review',
+          points: POINT_VALUES.VENUE_RATE,
+          category: 'engagement',
+          statUpdates: {},
+          relatedId: venueId,
+          checkAchievements: true
+        });
+      } catch (statsError) {
+        console.error('Error updating user stats:', statsError);
+      }
+    }
 
     // Fetch updated venue with all populated fields
     const updatedVenue = await Venue.findById(venueId)

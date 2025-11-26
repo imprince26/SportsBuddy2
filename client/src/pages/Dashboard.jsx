@@ -5,7 +5,7 @@ import { useEvents } from "@/hooks/useEvents"
 import { format, formatDistanceToNow } from "date-fns"
 import {
   Calendar, Users, Trophy, Activity, MapPin, Clock, Plus, Bell,
-  BarChart3, Zap, CalendarDays, User,Sparkles, Dumbbell, Settings, UserPlus
+  BarChart3, Zap, CalendarDays, User, Sparkles, Dumbbell, Settings, UserPlus
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -51,7 +51,7 @@ const Dashboard = () => {
         if (eventsData.data.success) {
           const now = new Date()
           const events = eventsData.data.data
-          
+
           // Filter participating events (exclude created events)
           const participatingEvents = events.filter(event => {
             const isParticipant = event.participants?.some(p => {
@@ -75,7 +75,7 @@ const Dashboard = () => {
           }).sort((a, b) => new Date(a.date) - new Date(b.date)) // Sort by nearest date first
 
           // Filter completed events
-          const completedEvents = events.filter(event => 
+          const completedEvents = events.filter(event =>
             event.status === "Completed"
           )
 
@@ -106,8 +106,8 @@ const Dashboard = () => {
         totalEvents: user.stats?.eventsParticipated || 0,
         eventsCreated: user.stats?.eventsCreated || 0,
         eventsParticipated: user.stats?.eventsParticipated || 0,
-        upcomingEvents: userEvents.upcoming.length,
-        completedEvents: userEvents.completed.length,
+        upcomingEvents: Math.max(0, userEvents.upcoming?.length || 0),
+        completedEvents: Math.max(0, userEvents.completed?.length || 0),
         achievements: user.stats?.achievementsCount || user.achievements?.length || 0,
         totalPoints: user.stats?.totalPoints || 0,
         currentRank: user.stats?.currentRank || 0,
@@ -158,7 +158,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto max-w-7xl px-4 py-8">
-        
+
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
@@ -209,10 +209,10 @@ const Dashboard = () => {
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {dashboardStats && [
-            { label: "Events", value: dashboardStats.totalEvents},
-            { label: "Points", value: dashboardStats.totalPoints},
-            { label: "Followers", value: dashboardStats.followers},
-            { label: "Achievements", value: dashboardStats.achievements}
+            { label: "Events", value: dashboardStats.totalEvents },
+            { label: "Points", value: dashboardStats.totalPoints },
+            { label: "Followers", value: dashboardStats.followers },
+            { label: "Achievements", value: dashboardStats.achievements }
           ].map((stat) => (
             <Card key={stat.label} className="border-border/50 bg-card/50">
               <CardContent className="p-6 flex flex-col items-center text-center sm:items-start sm:text-left">

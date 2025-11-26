@@ -2,6 +2,7 @@ import Community from '../models/communityModel.js';
 import User from '../models/userModel.js';
 import { cloudinary } from '../config/cloudinary.js';
 import fs from 'fs';
+import { completeUserAction, POINT_VALUES } from '../utils/userStatsHelper.js';
 
 // Get all communities
 export const getCommunities = async (req, res) => {
@@ -313,7 +314,7 @@ export const createCommunity = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating community:", error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(err => err.message);
@@ -323,7 +324,7 @@ export const createCommunity = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: error.message || "Error creating community"
@@ -356,8 +357,8 @@ export const updateCommunity = async (req, res) => {
     }
 
     // Check permissions
-    const isAdmin = community.admins.includes(req.user.id) || 
-                   community.creator.toString() === req.user.id;
+    const isAdmin = community.admins.includes(req.user.id) ||
+      community.creator.toString() === req.user.id;
 
     if (!isAdmin) {
       return res.status(403).json({
@@ -519,7 +520,7 @@ export const deleteCommunity = async (req, res) => {
     if (community.posts && community.posts.length > 0) {
       try {
         const imageDeletePromises = [];
-        
+
         community.posts.forEach(post => {
           if (post.images && post.images.length > 0) {
             post.images.forEach(img => {
@@ -946,6 +947,30 @@ export const joinCommunity = async (req, res) => {
 
       await community.save();
 
+      // Update user stats: increment communitiesJoined, award points
+      try {
+        await completeUserAction(req.user.id, {
+          action: 'community_join',
+          points: POINT_VALUES.COMMUNITY_JOIN,
+          category: community.category || 'overall',
+          statUpdates: { communitiesJoined: 1 },
+          relatedId: communityId,
+          checkAchievements: true
+        });
+
+        // Add notification to user about joining community
+        const user = await User.findById(req.user.id);
+        await user.addNotification({
+          type: 'community',
+          title: 'Community Joined',
+          message: `You've joined "${community.name}" and earned ${POINT_VALUES.COMMUNITY_JOIN} points!`,
+          relatedCommunity: communityId,
+          priority: 'normal'
+        });
+      } catch (statsError) {
+        console.error('Error updating user stats:', statsError);
+      }
+
       res.json({
         success: true,
         message: "Successfully joined the community"
@@ -995,6 +1020,20 @@ export const leaveCommunity = async (req, res) => {
 
     community.members[memberIndex].isActive = false;
     await community.save();
+
+    // Update user stats: decrement communitiesJoined
+    try {
+      await completeUserAction(req.user.id, {
+        action: 'community_leave',
+        points: 0,
+        category: community.category || 'overall',
+        statUpdates: { communitiesJoined: -1 },
+        relatedId: communityId,
+        checkAchievements: false
+      });
+    } catch (statsError) {
+      console.error('Error updating user stats:', statsError);
+    }
 
     res.json({
       success: true,
@@ -1084,6 +1123,30 @@ export const createPost = async (req, res) => {
     community.posts.push(newPost);
     community.stats.totalPosts += 1;
     await community.save();
+
+    // Update user stats: increment postsCreated, award points
+    try {
+      await completeUserAction(req.user.id, {
+        action: 'post_create',
+        points: POINT_VALUES.POST_CREATE,
+        category: community.category || 'overall',
+        statUpdates: { postsCreated: 1 },
+        relatedId: newPost._id,
+        checkAchievements: true
+      });
+
+      // Add notification to user about post creation
+      const user = await User.findById(req.user.id);
+      await user.addNotification({
+        type: 'community',
+        title: 'Post Created',
+        message: `Your post in "${community.name}" earned you ${POINT_VALUES.POST_CREATE} points!`,
+        relatedCommunity: communityId,
+        priority: 'normal'
+      });
+    } catch (statsError) {
+      console.error('Error updating user stats:', statsError);
+    }
 
     // Get the created post with populated author
     const updatedCommunity = await Community.findById(communityId)
@@ -2254,9 +2317,9 @@ export const deleteComment = async (req, res) => {
 
     // Check if user is the comment author, post author, or community admin
     if (comment.author.toString() !== req.user.id &&
-        post.author.toString() !== req.user.id &&
-        !community.admins.includes(req.user.id) &&
-        !community.moderators.includes(req.user.id)) {
+      post.author.toString() !== req.user.id &&
+      !community.admins.includes(req.user.id) &&
+      !community.moderators.includes(req.user.id)) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to delete this comment"
@@ -2395,10 +2458,10 @@ export const deleteReply = async (req, res) => {
 
     // Check if user is the reply author, comment author, post author, or community admin
     if (reply.author.toString() !== req.user.id &&
-        comment.author.toString() !== req.user.id &&
-        post.author.toString() !== req.user.id &&
-        !community.admins.includes(req.user.id) &&
-        !community.moderators.includes(req.user.id)) {
+      comment.author.toString() !== req.user.id &&
+      post.author.toString() !== req.user.id &&
+      !community.admins.includes(req.user.id) &&
+      !community.moderators.includes(req.user.id)) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to delete this reply"

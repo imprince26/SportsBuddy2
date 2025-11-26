@@ -15,10 +15,8 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
-  Shield,
   Trophy,
   Mail,
-  DollarSign,
   Award,
   Sparkles,
   MessageSquare,
@@ -534,7 +532,6 @@ const VenueDetails = () => {
               <TabsContent value="events" className="pt-6 space-y-6">
                 <div>
                   <h3 className="font-semibold text-foreground text-xl mb-4 flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-primary" />
                     Events Hosted at This Venue
                   </h3>
                   
@@ -598,7 +595,7 @@ const VenueDetails = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h3 className="font-semibold text-gray-900 dark:text-white flex items-center">
-                      <Clock className="w-5 h-5 mr-2 text-gray-400" /> Opening Hours
+                      Opening Hours
                     </h3>
                     <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                       {currentVenue.availability?.map((slot, idx) => (
@@ -612,7 +609,7 @@ const VenueDetails = () => {
 
                   <div className="space-y-4">
                     <h3 className="font-semibold text-gray-900 dark:text-white flex items-center">
-                      <Phone className="w-5 h-5 mr-2 text-gray-400" /> Contact Info
+                      Contact Info
                     </h3>
                     <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                       <div className="flex items-center">
@@ -621,11 +618,11 @@ const VenueDetails = () => {
                       </div>
                       <div className="flex items-center">
                         <Globe className="w-4 h-4 mr-3 text-gray-400" />
-                        {currentVenue.contactInfo?.website || 'No website available'}
+                        {currentVenue.contactInfo?.website ? <a href={currentVenue.contactInfo?.website} target="_blank" className='text-blue-500 hover:underline'> {currentVenue.contactInfo?.website} </a> : 'No website available'}
                       </div>
                       <div className="flex items-center">
                         <MapPin className="w-4 h-4 mr-3 text-gray-400" />
-                        {currentVenue.location?.address}
+                        {currentVenue.location?.address} <span className='mr-1'>, </span> { currentVenue.location?.city} <span className='mr-1'>, </span> { currentVenue.location?.state}
                       </div>
                     </div>
                   </div>
@@ -726,7 +723,6 @@ const VenueDetails = () => {
               <Card className="border-0 shadow-xl bg-card/20 overflow-hidden">
                 <div className="bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground">
                   <div className="flex items-center gap-2 mb-2">
-                    <Award className="w-5 h-5" />
                     <p className="text-sm font-medium opacity-90">Best Price</p>
                   </div>
                   <div className="flex items-baseline gap-1">
@@ -775,7 +771,6 @@ const VenueDetails = () => {
               <Card className="border-0 shadow-lg bg-card/20">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Phone className="w-5 h-5 text-primary" />
                     Contact Venue
                   </CardTitle>
                 </CardHeader>

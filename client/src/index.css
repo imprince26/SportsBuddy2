@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom text selection for SportsBuddy - High specificity */
+::selection {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+::-moz-selection {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
 @layer base {
   :root {
     /* Light Theme - Clean & Professional */
@@ -75,17 +86,6 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  /* Custom Text Selection - SportsBuddy Theme */
-  ::selection {
-    background-color: hsl(var(--primary) / 0.2);
-    color: hsl(var(--primary-foreground));
-  }
-
-  ::-moz-selection {
-    background-color: hsl(var(--primary) / 0.2);
-    color: hsl(var(--primary-foreground));
   }
 
   /* Custom Scrollbar - Webkit browsers (Chrome, Safari, Edge) */

@@ -226,9 +226,9 @@ const CustomToast = () => {
 
   return (
     <Toaster
-      position="top-right"
+      position="bottom-right"
       containerStyle={{
-        top: 24,
+        bottom: 24,
         right: 24,
         zIndex: 9999,
       }}

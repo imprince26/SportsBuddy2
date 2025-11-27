@@ -4,28 +4,16 @@ import { format } from 'date-fns';
 import { 
   ArrowRight, 
   Calendar, 
-  Clock, 
   MapPin, 
   Users, 
   Star, 
-  Trophy, 
-  Play, 
-  Sparkles,
-  TrendingUp,
-  Zap,
   Activity,
-  Eye,
-  Heart,
-  Share2,
-  ChevronRight,
-  Globe
 } from 'lucide-react';
 import api from '@/utils/api';
 
 const UpcomingEvents = () => {
   const [loading, setLoading] = useState(false)
   const [upcomingEvents, setUpcomingEvents] = useState([])
-  const [hoveredIndex, setHoveredIndex] = useState(null)
   const [stats, setStats] = useState({
     totalEvents: 0,
     totalParticipants: 0,
@@ -70,7 +58,8 @@ const UpcomingEvents = () => {
   }, [])
 
   return (
-    <section className='py-24 bg-background border-t border-border'>
+    <section className='py-24 bg-background border-t border-border z-10'>
+      
       <div className='container mx-auto px-4'>
         <div className='flex flex-col md:flex-row justify-between items-end mb-12 gap-6'>
           <div className='max-w-2xl'>

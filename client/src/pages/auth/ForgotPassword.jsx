@@ -21,7 +21,6 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import ModernInput from "@/components/ModernInput"
 import api from "@/utils/api"
 import { toast } from "react-hot-toast"
-import HeroBg from "@/components/HeroBg"
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -63,11 +62,11 @@ const ForgotPassword = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 relative overflow-hidden flex items-center justify-center p-4">
+      <div className="min-h-screen bg-card/20 relative overflow-hidden flex items-center justify-center p-4">
         <HeroBg />
 
         <div className="relative z-10 w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
-          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl rounded-2xl overflow-hidden">
+          <Card className="border-slate-200 dark:border-slate-800 bg-card/20 shadow-xl rounded-2xl overflow-hidden">
             {/* Success Header */}
             <CardHeader className="text-center pb-6 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
               <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -186,13 +185,11 @@ const ForgotPassword = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 relative overflow-hidden flex items-center justify-center p-4">
-      <HeroBg />
-
+    <div className="min-h-screen bg-card relative overflow-hidden flex items-center justify-center p-4">
       <div className="relative z-10 w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
-        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl rounded-2xl overflow-hidden">
+        <Card className="border-border bg-card shadow-xl rounded-2xl overflow-hidden">
           {/* Header */}
-          <CardHeader className="text-center pb-6 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="text-center pb-6 bg-card/20 border-b border-slate-100 dark:border-slate-800">
             <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* Animated Icon Container */}
               <div className="relative w-20 h-20 mx-auto mb-6">
@@ -215,7 +212,6 @@ const ForgotPassword = () => {
             {error && (
               <div className="animate-in fade-in zoom-in-95 duration-300">
                 <Alert className="border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 rounded-xl">
-                  <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                   <AlertTitle className="text-red-800 dark:text-red-200 font-semibold">
                     Error
                   </AlertTitle>
@@ -334,7 +330,6 @@ const ForgotPassword = () => {
           <div className="flex items-center justify-center space-x-2 mb-2">
             <Trophy className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span className="font-bold text-lg text-slate-900 dark:text-slate-50">SportsBuddy</span>
-            <Mail className="w-5 h-5 text-slate-500 dark:text-slate-400" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Secure password recovery for your sports community

@@ -23,7 +23,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import ModernInput from "@/components/ModernInput"
 import { loginSchema,defaultLoginValues } from "@/schemas/authSchema"
-import HeroBg from "@/components/HeroBg"
 
 const Login = () => {
   const { user, login, loading, authError } = useAuth()
@@ -57,89 +56,9 @@ const Login = () => {
   }
 
   return (
-    <div className="h-screen bg-background relative overflow-hidden">
-      <HeroBg />
-
-      <div className="relative z-10 h-full flex">
-        {/* Left Side - Branding */}
-        <div className="hidden lg:flex lg:w-1/2 bg-zinc-950 items-center justify-center p-8 relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-grid-white/[0.02]" />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-purple-500/20 opacity-50" />
-          
-          <div className="max-w-sm text-center text-white relative z-10 animate-in fade-in slide-in-from-left-8 duration-700">
-            <div className="mb-6">
-              {/* SportsBuddy Logo */}
-              <div className="relative mx-auto w-24 h-24 mb-4">
-                <div className="absolute inset-0 bg-primary/20 rounded-full animate-spin-slow" />
-                <div className="absolute inset-1 bg-background rounded-full flex items-center justify-center shadow-xl transition-transform hover:scale-105 border border-primary/20">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-8 h-8 text-primary"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="m4.93 4.93 4.24 4.24" />
-                    <path d="m14.83 9.17 4.24-4.24" />
-                    <path d="m14.83 14.83 4.24 4.24" />
-                    <path d="m9.17 14.83-4.24 4.24" />
-                    <circle cx="12" cy="12" r="4" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <h1 className="text-3xl font-bold mb-3 text-foreground dark:text-white">
-              Welcome Back!
-            </h1>
-
-            <p className="text-lg text-muted-foreground dark:text-zinc-400 mb-6 leading-relaxed">
-              Connect with sports enthusiasts and discover amazing events.
-            </p>
-
-            {/* Sports Icons */}
-            <div className="flex justify-center space-x-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 fill-mode-backwards">
-              {[
-                { icon: "⚽", name: "Football" },
-                { icon: "🏀", name: "Basketball" },
-                { icon: "🎾", name: "Tennis" },
-                { icon: "🏐", name: "Volleyball" },
-              ].map((sport, index) => (
-                <div
-                  key={sport.name}
-                  className="text-center group cursor-pointer transition-transform hover:-translate-y-1"
-                >
-                  <div className="w-10 h-10 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center mb-1 group-hover:bg-white/10 transition-all duration-300 border border-white/10">
-                    <span className="text-lg">{sport.icon}</span>
-                  </div>
-                  <span className="text-xs font-medium text-zinc-400 group-hover:text-white transition-colors">{sport.name}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Stats */}
-            <div className="mt-8 grid grid-cols-3 gap-4 text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500 fill-mode-backwards">
-              {[
-                { number: "50K+", label: "Athletes" },
-                { number: "1000+", label: "Events" },
-                { number: "100+", label: "Cities" },
-              ].map((stat, index) => (
-                <div key={stat.label}>
-                  <div className="text-lg font-bold text-white">{stat.number}</div>
-                  <div className="text-xs text-zinc-400">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Login Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
+    <div className="h-screen bg-background relative overflow-hidden -mt-8">
+        {/* Login Form */}
+        <div className="relative z-10 h-full flex w-full flex items-center justify-center p-6">
           <div className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-500">
             <Card className="border-border bg-card shadow-2xl shadow-black/5 rounded-3xl">
               <CardHeader className="pb-6 pt-8">
@@ -269,7 +188,7 @@ const Login = () => {
                 </div>
 
                 {/* Trust Indicators */}
-                <div className="flex items-center justify-center space-x-6 pt-2">
+                {/* <div className="flex items-center justify-center space-x-6 pt-2">
                   {[
                     { icon: Shield, text: "Secure", color: "text-green-600" },
                     { icon: CheckCircle, text: "Trusted", color: "text-blue-600" },
@@ -284,14 +203,13 @@ const Login = () => {
                       <span className="font-medium">{item.text}</span>
                     </div>
                   ))}
-                </div>
+                </div> */}
               </CardContent>
             </Card>
 
             {/* Mobile Logo */}
             <div className="lg:hidden text-center mt-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
               <div className="flex items-center justify-center space-x-2">
-                <Trophy className="w-5 h-5 text-primary" />
                 <span className="font-bold text-lg text-foreground">SportsBuddy</span>
                 <Zap className="w-5 h-5 text-yellow-500" />
               </div>
@@ -301,7 +219,6 @@ const Login = () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   )
 }

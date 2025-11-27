@@ -1,40 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="sb-bg" x1="18%" y1="12%" x2="82%" y2="88%">
-      <stop offset="0%" stop-color="#0F172A"/>
-      <stop offset="50%" stop-color="#1E40AF"/>
-      <stop offset="100%" stop-color="#2563EB"/>
-    </linearGradient>
-  </defs>
-
-  <!-- brand field -->
-  <rect width="512" height="512" rx="140" fill="url(#sb-bg)"/>
-
-  <!-- strategic ring -->
-  <g transform="translate(256 256)">
-    <circle r="184" fill="none" stroke="#FFFFFF" stroke-width="10" opacity="0.28"/>
-    <circle r="130" fill="none" stroke="#1ECBE1" stroke-width="6" opacity="0.45"/>
-
-    <!-- vertical match spine -->
-    <path d="M0 -120V120" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity="0.65"/>
-
-    <!-- linking arcs (two buddies) -->
-    <path d="M-118 -38C-158 -38 -158 38 -118 38" stroke="#FDE68A" stroke-width="18"
-          stroke-linecap="round" fill="none"/>
-    <path d="M118 -38C158 -38 158 38 118 38" stroke="#FDE68A" stroke-width="18"
-          stroke-linecap="round" fill="none"/>
-
-    <!-- secure base -->
-    <path d="M-70 120C-40 150 40 150 70 120" stroke="#BAE6FD" stroke-width="16"
-          stroke-linecap="round" fill="none" opacity="0.75"/>
-
-    <!-- hub + endpoints -->
-    <circle r="34" fill="#FFFFFF"/>
-    <circle cx="-118" cy="-38" r="18" fill="#BAE6FD"/>
-    <circle cx="-118" cy="38"  r="18" fill="#BAE6FD"/>
-    <circle cx="118"  cy="-38" r="18" fill="#BAE6FD"/>
-    <circle cx="118"  cy="38"  r="18" fill="#BAE6FD"/>
-    <circle cy="-120" r="16" fill="#FDE68A" opacity="0.9"/>
-    <circle cy="120"  r="16" fill="#FDE68A" opacity="0.9"/>
-  </g>
-</svg>
+    <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-8 h-8"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m4.93 4.93 4.24 4.24" />
+                    <path d="m14.83 9.17 4.24-4.24" />
+                    <path d="m14.83 14.83 4.24 4.24" />
+                    <path d="m9.17 14.83-4.24 4.24" />
+                    <circle cx="12" cy="12" r="4" />
+                  </svg>

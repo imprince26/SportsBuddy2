@@ -2,47 +2,22 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import {
   Play,
-  Calendar,
   Trophy,
   Users,
-  Globe,
   Rocket,
-  Target,
-  Zap,
   Star,
-  MapPin,
-  Activity,
-  ArrowRight,
-  CheckCircle2
 } from 'lucide-react'
 import HeroBg from '../HeroBg'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 
 const HeroSection = () => {
   const { user } = useAuth()
 
-  const stats = [
-    { label: 'Active Athletes', value: '15K+', icon: Users },
-    { label: 'Events Monthly', value: '2.5K+', icon: Calendar },
-    { label: 'Sports Available', value: '25+', icon: Trophy },
-    { label: 'Cities Covered', value: '150+', icon: Globe },
-  ]
-
-  const userStats = [
-    { label: 'Events Joined', value: user?.participatedEvents?.length || '12', icon: Calendar },
-    { label: 'Events Created', value: user?.createdEvents?.length || '5', icon: Target },
-    { label: 'Friends Made', value: user?.followers?.length || '28', icon: Users },
-    { label: 'Achievements', value: user?.achievements?.length || '8', icon: Trophy },
-  ]
-
   return (
     <section className='relative min-h-screen flex flex-col justify-center overflow-hidden pb-12'>
-      <HeroBg />
-
       <div className='container mx-auto px-4 relative z-10'>
         <div className='flex flex-col items-center text-center max-w-4xl mx-auto space-y-8'>
-          
+
           {/* Badge */}
           <div className='inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary/50 backdrop-blur-sm border border-border shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500'>
             <span className='relative flex h-2 w-2'>

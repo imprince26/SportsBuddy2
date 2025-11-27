@@ -225,8 +225,6 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      <HeroBg />
-
       {/* Modern Minimal Hero Section */}
       <div className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden border-b border-border/40 bg-background/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 relative z-10">

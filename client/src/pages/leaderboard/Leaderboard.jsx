@@ -255,7 +255,7 @@ const Leaderboard = () => {
 
           <div className="mt-8 flex justify-center">
             <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full max-w-3xl">
-              <TabsList className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 h-auto p-1 bg-muted rounded-xl gap-1">
+              <TabsList className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 h-auto p-1 bg-card/20 rounded-xl gap-1">
                 {categories.map((cat) => (
                   <TabsTrigger
                     key={cat.id}

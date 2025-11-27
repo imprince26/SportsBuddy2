@@ -3,41 +3,41 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Trophy, Users, TrendingUp, Sparkles, Zap, Calendar, MapPin } from 'lucide-react'
 import { IoFootballOutline } from "react-icons/io5";
 import { FaBasketball } from "react-icons/fa6";
-import { FaTableTennis, FaRunning  } from "react-icons/fa";
+import { FaTableTennis, FaRunning } from "react-icons/fa";
 
 const CategoriesSection = () => {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [hoveredIndex, setHoveredIndex] = useState(null)
 
   const categories = [
-    { 
-      id: 'Football', 
-      name: 'Football', 
-      icon: IoFootballOutline, 
+    {
+      id: 'Football',
+      name: 'Football',
+      icon: IoFootballOutline,
       participants: '2.5K+',
       events: '450+',
       description: 'Join the world\'s most popular sport',
     },
-    { 
-      id: 'Basketball', 
-      name: 'Basketball', 
-      icon: FaBasketball, 
+    {
+      id: 'Basketball',
+      name: 'Basketball',
+      icon: FaBasketball,
       participants: '1.8K+',
       events: '320+',
       description: 'Dribble your way to new friendships',
     },
-    { 
-      id: 'Tennis', 
-      name: 'Tennis', 
-      icon: FaTableTennis, 
+    {
+      id: 'Tennis',
+      name: 'Tennis',
+      icon: FaTableTennis,
       participants: '1.2K+',
       events: '280+',
       description: 'Serve up some competitive fun',
     },
-    { 
-      id: 'Running', 
-      name: 'Running', 
-      icon: FaRunning , 
+    {
+      id: 'Running',
+      name: 'Running',
+      icon: FaRunning,
       participants: '3.2K+',
       events: '520+',
       description: 'Run towards your fitness goals',
@@ -46,8 +46,6 @@ const CategoriesSection = () => {
 
   return (
     <section className='py-24 bg-background border-t border-border relative overflow-hidden'>
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02] -z-10" />
 
       <div className='container mx-auto px-4'>
         <div className='flex flex-col md:flex-row justify-between items-end mb-12 gap-6'>
@@ -82,7 +80,7 @@ const CategoriesSection = () => {
                   <ArrowRight className='w-4 h-4 text-muted-foreground group-hover:text-white' />
                 </div>
               </div>
-              
+
               <h3 className='text-xl font-bold font-heading text-foreground mb-2 group-hover:text-primary transition-colors'>
                 {category.name}
               </h3>
@@ -106,7 +104,7 @@ const CategoriesSection = () => {
 
         <div className='mt-12 p-8 rounded-2xl bg-card border border-border relative overflow-hidden group hover:border-primary/30 transition-colors'>
           <div className='absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none' />
-          
+
           <div className='relative z-10 flex flex-col md:flex-row items-center justify-between gap-8'>
             <div className='flex items-center gap-6'>
               <div className='w-14 h-14 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors'>

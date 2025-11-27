@@ -48,9 +48,9 @@ const ModernInput = ({
         }}
         transition={{ duration: 0.2, ease: "easeOut" }}
         className={cn(
-          "absolute left-12 top-1/2 -translate-y-1/2 pointer-events-none font-medium z-20 px-2 origin-left",
-          "bg-slate-950 dark:bg-black",
-          shouldLabelBeUp && "bg-slate-950 dark:bg-black"
+          "absolute left-12 top-[24px] -translate-y-1/2 pointer-events-none font-medium z-20 px-2 origin-left",
+          "bg-background",
+          shouldLabelBeUp && "bg-background"
         )}
         style={{ transformOrigin: "left center" }}
       >
@@ -67,24 +67,24 @@ const ModernInput = ({
               ? "bg-red-500"
               : isFocused
                 ? "bg-blue-500"
-                : "bg-slate-800"
+                : "bg-card/20"
           )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="w-full h-full bg-slate-950 dark:bg-black rounded-xl" />
+          <div className="w-full h-full bg-border rounded-xl" />
         </motion.div>
 
         {/* Input Field Container */}
         <div className={cn(
-          "relative bg-slate-950 dark:bg-black rounded-xl",
+          "relative bg-background rounded-xl",
           "border transition-all duration-300",
           error
             ? "border-red-500"
             : isFocused
               ? "border-blue-500 shadow-sm shadow-blue-500/20"
-              : "border-slate-800 hover:border-slate-700"
+              : "border-border"
         )}>
           {/* Icon */}
           <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
@@ -120,7 +120,7 @@ const ModernInput = ({
             placeholder=""
             className={cn(
               "w-full h-12 pl-12 bg-transparent border-0",
-              "text-slate-50 text-base",
+              "text-background-foreground",
               "placeholder:text-transparent",
               "focus:outline-none focus:ring-0 rounded-xl",
               "transition-all duration-300",

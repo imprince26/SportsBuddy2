@@ -23,7 +23,6 @@ import { Label } from "@/components/ui/label"
 import ModernInput from "@/components/ModernInput"
 import api from "@/utils/api"
 import { toast } from "react-hot-toast"
-import HeroBg from "@/components/HeroBg"
 
 // Conditional schema based on step
 const step1Schema = z.object({
@@ -106,11 +105,11 @@ const ResetPassword = () => {
 
       if (response.data.success) {
         toast.success("Password reset successfully!")
-        navigate("/login", { 
-          state: { 
+        navigate("/login", {
+          state: {
             message: "Password reset successfully. Please login with your new password.",
             type: "success"
-          } 
+          }
         })
       }
     } catch (err) {
@@ -124,13 +123,11 @@ const ResetPassword = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 relative overflow-hidden flex items-center justify-center p-4">
-      <HeroBg />
-
+    <div className="min-h-screen bg-card relative overflow-hidden flex items-center justify-center p-4">
       <div className="relative z-10 w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
-        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl rounded-2xl overflow-hidden">
+        <Card className="border-border bg-card shadow-xl rounded-2xl overflow-hidden">
           {/* Header */}
-          <CardHeader className="text-center pb-6 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="text-center pb-6 bg-card/20 border-b border-slate-100 dark:border-slate-800">
             <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* Animated Icon Container */}
               <div className="relative w-20 h-20 mx-auto mb-6">
@@ -148,7 +145,7 @@ const ResetPassword = () => {
                 {step === 1 ? "Verify Reset Code" : "Set New Password"}
               </CardTitle>
               <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                {step === 1 
+                {step === 1
                   ? "Enter the 6-digit code sent to your email"
                   : "Choose a strong password for your account"
                 }
@@ -158,22 +155,20 @@ const ResetPassword = () => {
             {/* Step Indicator */}
             <div className="flex items-center justify-center space-x-4 mt-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
               <div className="flex items-center space-x-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors duration-300 ${
-                  step === 1 
-                    ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white' 
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors duration-300 ${step === 1
+                    ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
                     : 'bg-green-600 text-white'
-                }`}>
+                  }`}>
                   {step === 1 ? '1' : <CheckCircle className="w-4 h-4" />}
                 </div>
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Verify Code</span>
               </div>
               <div className={`h-0.5 w-8 transition-colors duration-300 ${step === 2 ? 'bg-green-600' : 'bg-slate-200 dark:bg-slate-700'}`} />
               <div className="flex items-center space-x-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors duration-300 ${
-                  step === 2 
-                    ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white' 
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors duration-300 ${step === 2
+                    ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
                     : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                }`}>
+                  }`}>
                   2
                 </div>
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">New Password</span>
@@ -239,7 +234,7 @@ const ResetPassword = () => {
                                 placeholder="000000"
                                 maxLength={6}
                                 {...field}
-                                className="h-14 text-center text-2xl font-mono tracking-[0.5em] border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-xl bg-slate-50 dark:bg-slate-800/50 transition-all duration-300"
+                                className="h-10 text-center text-2xl font-mono tracking-[0.5em] border-2 border-border focus:border-blue-600 dark:focus:border-blue-500 rounded-xl bg-slate-50 dark:bg-slate-800/50 transition-all duration-300"
                                 onChange={(e) => {
                                   const value = e.target.value.replace(/\D/g, '').slice(0, 6)
                                   field.onChange(value)
@@ -302,7 +297,7 @@ const ResetPassword = () => {
                       <Mail className="w-4 h-4" />
                       <span>Didn't receive the code? Send again</span>
                     </Link>
-                    
+
                     <div className="flex items-center justify-center">
                       <Link
                         to="/login"
@@ -418,7 +413,7 @@ const ResetPassword = () => {
                         <ArrowLeft className="w-4 h-4" />
                         <span>Back to Login</span>
                       </Link>
-                      
+
                       <button
                         type="button"
                         onClick={() => setStep(1)}
@@ -442,7 +437,6 @@ const ResetPassword = () => {
           <div className="flex items-center justify-center space-x-2 mb-2">
             <Trophy className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span className="font-bold text-lg text-slate-900 dark:text-slate-50">SportsBuddy</span>
-            <Lock className="w-5 h-5 text-slate-500 dark:text-slate-400" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Secure password reset for your sports community

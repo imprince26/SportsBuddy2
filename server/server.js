@@ -19,22 +19,11 @@ import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
 import job from "./utils/cron.js";
 import { upstashRateLimiters } from "./config/upstashRateLimiter.js";
-import { checkRedisHealth } from "./config/redis.js";
 
 dotenv.config();
 
 connectDB();
 
-// Initialize Redis and check health
-checkRedisHealth().then(isHealthy => {
-  if (isHealthy) {
-    console.log('Redis cache is ready');
-  } else {
-    console.warn('Redis cache is not available, caching disabled');
-  }
-}).catch(err => {
-  console.error('Redis health check error:', err.message);
-});
 
 const app = express();
 const httpServer = createServer(app);

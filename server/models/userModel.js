@@ -7,7 +7,7 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ["event", "chat", "team", "system", "announcement", "marketing"],
+    enum: ["event", "chat", "team", "system", "announcement", "marketing", "follow"],
   },
   message: {
     type: String,
@@ -297,13 +297,18 @@ userSchema.methods.updateStats = async function () {
 
 // Add notification method
 userSchema.methods.addNotification = async function (notification) {
-  // Limit notifications to prevent memory issues
-  if (this.notifications.length >= 100) {
-    this.notifications = this.notifications.slice(0, 50);
-  }
+  try {
+    // Limit notifications to prevent memory issues
+    if (this.notifications.length >= 100) {
+      this.notifications = this.notifications.slice(0, 50);
+    }
 
-  this.notifications.unshift(notification);
-  await this.save();
+    this.notifications.unshift(notification);
+    await this.save();
+  } catch (error) {
+    console.error('Error adding notification:', error);
+    throw error;
+  }
 };
 
 // Add method to create notification from bulk notification
@@ -328,19 +333,29 @@ userSchema.methods.getUnreadNotificationCount = function () {
 
 // Mark notification as read
 userSchema.methods.markNotificationAsRead = async function (notificationId) {
-  const notification = this.notifications.id(notificationId);
-  if (notification) {
-    notification.read = true;
-    await this.save();
+  try {
+    const notification = this.notifications.id(notificationId);
+    if (notification) {
+      notification.read = true;
+      await this.save();
+    }
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    throw error;
   }
 };
 
 // Mark all notifications as read
 userSchema.methods.markAllNotificationsAsRead = async function () {
-  this.notifications.forEach((notification) => {
-    notification.read = true;
-  });
-  await this.save();
+  try {
+    this.notifications.forEach((notification) => {
+      notification.read = true;
+    });
+    await this.save();
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    throw error;
+  }
 };
 
 // Method to generate reset password code

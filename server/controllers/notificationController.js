@@ -217,169 +217,271 @@ export const deleteBulkNotification = asyncHandler(async (req, res) => {
 });
 
 export const getUserNotifications = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 20, unreadOnly = false } = req.query;
+    try {
+        const { page = 1, limit = 20, unreadOnly = false } = req.query;
 
-    const user = await User.findById(req.user._id).select('notifications');
-
-    let notifications = user.notifications;
-
-    if (unreadOnly === 'true') {
-        notifications = notifications.filter(notif => !notif.read);
-    }
-
-    // Pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + parseInt(limit);
-    const paginatedNotifications = notifications.slice(startIndex, endIndex);
-
-    res.json({
-        success: true,
-        data: paginatedNotifications,
-        pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            total: notifications.length,
-            unreadCount: user.getUnreadNotificationCount()
+        const user = await User.findById(req.user._id).select('notifications');
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
         }
-    });
+
+        let notifications = user.notifications;
+
+        if (unreadOnly === 'true') {
+            notifications = notifications.filter(notif => !notif.read);
+        }
+
+        // Pagination
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + parseInt(limit);
+        const paginatedNotifications = notifications.slice(startIndex, endIndex);
+
+        res.json({
+            success: true,
+            data: paginatedNotifications,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: notifications.length,
+                unreadCount: user.getUnreadNotificationCount()
+            }
+        });
+    } catch (error) {
+        console.error('Get user notifications error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching notifications",
+            error: error.message
+        });
+    }
 });
 
 export const markNotificationAsRead = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-    await user.markNotificationAsRead(req.params.notificationId);
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
 
-    res.json({
-        success: true,
-        message: 'Notification marked as read'
-    });
+        await user.markNotificationAsRead(req.params.notificationId);
+
+        res.json({
+            success: true,
+            message: 'Notification marked as read'
+        });
+    } catch (error) {
+        console.error('Mark notification as read error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error marking notification as read",
+            error: error.message
+        });
+    }
 });
 
 export const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-    await user.markAllNotificationsAsRead();
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
 
-    res.json({
-        success: true,
-        message: 'All notifications marked as read'
-    });
+        await user.markAllNotificationsAsRead();
+
+        res.json({
+            success: true,
+            message: 'All notifications marked as read'
+        });
+    } catch (error) {
+        console.error('Mark all notifications as read error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error marking all notifications as read",
+            error: error.message
+        });
+    }
 });
 
 export const deleteUserNotification = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-    user.notifications.id(req.params.notificationId).remove();
-    await user.save();
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
 
-    res.json({
-        success: true,
-        message: 'Notification deleted successfully'
-    });
+        const notification = user.notifications.id(req.params.notificationId);
+        if (!notification) {
+            return res.status(404).json({
+                success: false,
+                message: "Notification not found"
+            });
+        }
+
+        user.notifications.id(req.params.notificationId).remove();
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Notification deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete notification error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error deleting notification",
+            error: error.message
+        });
+    }
 });
 
 export const getNotificationStats = asyncHandler(async (req, res) => {
-    const stats = await Notification.aggregate([
-        {
-            $group: {
-                _id: null,
-                totalNotifications: { $sum: 1 },
-                totalSent: { $sum: { $cond: [{ $eq: ['$status', 'sent'] }, 1, 0] } },
-                totalDraft: { $sum: { $cond: [{ $eq: ['$status', 'draft'] }, 1, 0] } },
-                totalScheduled: { $sum: { $cond: [{ $eq: ['$status', 'scheduled'] }, 1, 0] } },
-                totalFailed: { $sum: { $cond: [{ $eq: ['$status', 'failed'] }, 1, 0] } },
-                totalRecipients: { $sum: '$recipientCount' },
-                totalDelivered: { $sum: '$deliveredCount' },
-                totalRead: { $sum: '$readCount' },
-                avgEngagementRate: { $avg: '$engagementRate' }
+    try {
+        const stats = await Notification.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalNotifications: { $sum: 1 },
+                    totalSent: { $sum: { $cond: [{ $eq: ['$status', 'sent'] }, 1, 0] } },
+                    totalDraft: { $sum: { $cond: [{ $eq: ['$status', 'draft'] }, 1, 0] } },
+                    totalScheduled: { $sum: { $cond: [{ $eq: ['$status', 'scheduled'] }, 1, 0] } },
+                    totalFailed: { $sum: { $cond: [{ $eq: ['$status', 'failed'] }, 1, 0] } },
+                    totalRecipients: { $sum: '$recipientCount' },
+                    totalDelivered: { $sum: '$deliveredCount' },
+                    totalRead: { $sum: '$readCount' },
+                    avgEngagementRate: { $avg: '$engagementRate' }
+                }
             }
-        }
-    ]);
+        ]);
 
-    const typeStats = await Notification.aggregate([
-        {
-            $group: {
-                _id: '$type',
-                count: { $sum: 1 },
-                avgEngagement: { $avg: '$engagementRate' }
+        const typeStats = await Notification.aggregate([
+            {
+                $group: {
+                    _id: '$type',
+                    count: { $sum: 1 },
+                    avgEngagement: { $avg: '$engagementRate' }
+                }
             }
-        }
-    ]);
+        ]);
 
-    const monthlyStats = await Notification.aggregate([
-        {
-            $group: {
-                _id: {
-                    year: { $year: '$createdAt' },
-                    month: { $month: '$createdAt' }
-                },
-                count: { $sum: 1 },
-                recipients: { $sum: '$recipientCount' }
+        const monthlyStats = await Notification.aggregate([
+            {
+                $group: {
+                    _id: {
+                        year: { $year: '$createdAt' },
+                        month: { $month: '$createdAt' }
+                    },
+                    count: { $sum: 1 },
+                    recipients: { $sum: '$recipientCount' }
+                }
+            },
+            { $sort: { '_id.year': -1, '_id.month': -1 } },
+            { $limit: 12 }
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                overview: stats[0] || {},
+                byType: typeStats,
+                monthly: monthlyStats
             }
-        },
-        { $sort: { '_id.year': -1, '_id.month': -1 } },
-        { $limit: 12 }
-    ]);
-
-    res.json({
-        success: true,
-        data: {
-            overview: stats[0] || {},
-            byType: typeStats,
-            monthly: monthlyStats
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Get notification stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching notification statistics",
+            error: error.message
+        });
+    }
 });
 
 export const sendEventNotification = asyncHandler(async (req, res) => {
-    const { title, message, priority = 'normal' } = req.body;
-    const { eventId } = req.params;
+    try {
+        const { title, message, priority = 'normal' } = req.body;
+        const { eventId } = req.params;
 
-    const event = await Event.findById(eventId).populate('participants.user', 'email name');
+        const event = await Event.findById(eventId).populate('participants.user', 'email name');
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: "Event not found"
+            });
+        }
 
-    if (!event) {
-        res.status(404);
-        throw new Error('Event not found');
+        // Check if user is event creator or admin
+        if (event.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to send notifications for this event"
+            });
+        }
+
+        // Use the event model method
+        await event.notifyParticipants({ title, message, priority });
+
+        res.json({
+            success: true,
+            message: `Notification sent to ${event.participants.length} participants`
+        });
+    } catch (error) {
+        console.error('Send event notification error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error sending event notification",
+            error: error.message
+        });
     }
-
-    // Check if user is event creator or admin
-    if (event.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-        res.status(403);
-        throw new Error('Not authorized to send notifications for this event');
-    }
-
-    // Use the event model method
-    await event.notifyParticipants({ title, message, priority });
-
-    res.json({
-        success: true,
-        message: `Notification sent to ${event.participants.length} participants`
-    });
 });
 
 export const sendPersonalNotification = asyncHandler(async (req, res) => {
-    const { title, message, type = 'system', priority = 'normal', actionUrl } = req.body;
-    const { userId } = req.params;
+    try {
+        const { title, message, type = 'system', priority = 'normal', actionUrl } = req.body;
+        const { userId } = req.params;
 
-    const user = await User.findById(userId);
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
 
-    if (!user) {
-        res.status(404);
-        throw new Error('User not found');
+        const notification = {
+            type,
+            title,
+            message,
+            priority,
+            actionUrl,
+            timestamp: new Date()
+        };
+
+        await user.addNotification(notification);
+
+        res.json({
+            success: true,
+            message: 'Personal notification sent successfully'
+        });
+    } catch (error) {
+        console.error('Send personal notification error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error sending personal notification",
+            error: error.message
+        });
     }
-
-    const notification = {
-        type,
-        title,
-        message,
-        priority,
-        actionUrl,
-        timestamp: new Date()
-    };
-
-    await user.addNotification(notification);
-
-    res.json({
-        success: true,
-        message: 'Personal notification sent successfully'
-    });
 });
 
 export const archiveBulkNotification = asyncHandler(async (req, res) => {

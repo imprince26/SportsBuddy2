@@ -50,6 +50,7 @@ import { IoStatsChart } from "react-icons/io5";
 import { useAuth } from "@/hooks/useAuth"
 import { useSocket } from "@/hooks/useSocket"
 import { useEvents } from "@/hooks/useEvents"
+import { useMetadata } from "@/hooks/useMetadata"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -107,6 +108,9 @@ const EventDetails = () => {
   const [sendingMessage, setSendingMessage] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
+  // Use metadata hook with event data
+  useMetadata(event ? { event } : {})
+
   const groupMessagesByDate = (messages) => {
     const groups = [];
     let currentGroup = null;
@@ -150,7 +154,6 @@ const EventDetails = () => {
 
         if (response.data.success) {
           setEvent(response.data.data)
-          document.title = `${response.data.data.name} - SportsBuddy`
 
           // Check if user has already rated
           if (user && response.data.data.ratings) {

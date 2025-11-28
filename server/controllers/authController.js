@@ -6,6 +6,7 @@ import fs from "fs/promises";
 import validator from "validator";
 import sendEmail from "../config/sendEmail.js";
 import { welcomeEmailHtml, resetPasswordEmailHtml, passwordResetSuccessEmailHtml } from "../utils/emailTemplate.js";
+import { ifError } from "assert";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -371,6 +372,7 @@ export const updateProfile = async (req, res) => {
       message: "Error updating profile",
       error: error.message,
     });
+    console.log(error)
   }
 };
 

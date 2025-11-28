@@ -34,6 +34,7 @@ import { FaMoneyBillWave } from "react-icons/fa";
 import { useVenue } from '@/hooks/useVenue';
 import { useAuth } from '@/hooks/useAuth';
 import { useEvents } from '@/hooks/useEvents';
+import { useMetadata } from '@/hooks/useMetadata';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,6 +84,9 @@ const VenueDetails = () => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Use metadata hook with venue data
+  useMetadata(currentVenue ? { venue: currentVenue } : {})
 
   useEffect(() => {
     if (id) {

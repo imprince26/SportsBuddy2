@@ -77,6 +77,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCommunity } from '@/hooks/useCommunity';
 import { useSocket } from '@/hooks/useSocket';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useMetadata } from '@/hooks/useMetadata';
 
 // Utils
 import { formatDistanceToNow } from 'date-fns';
@@ -128,6 +129,9 @@ const CommunityDetails = () => {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
+
+  // Use metadata hook with community data
+  useMetadata(currentCommunity ? { community: currentCommunity } : {})
 
   // Refs
   const fileInputRef = useRef(null);

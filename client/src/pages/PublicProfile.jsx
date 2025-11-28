@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
+import { useMetadata } from "@/hooks/useMetadata"
 import { format } from "date-fns"
 import { toast } from "react-hot-toast"
 import {
@@ -206,6 +207,9 @@ const PublicProfile = () => {
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false)
   const [userStats, setUserStats] = useState({})
 
+  // Use metadata hook with user data
+  useMetadata(profile ? { user: profile } : {})
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -300,12 +304,6 @@ const PublicProfile = () => {
   }
 
   const coverImage = profile?.coverImage?.url
-
-  useEffect(() => {
-    if (profile) {
-      document.title = `${profile.name} (@${profile.username}) | SportsBuddy`
-    }
-  }, [profile])
 
   if (loading) {
     return (

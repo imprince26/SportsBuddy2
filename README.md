@@ -1,262 +1,155 @@
 <div align="center">
-  
-  # SportsBuddy
-  
-  **A comprehensive sports management platform connecting athletes, managing events, and building communities**
-  
-  **[Live Demo](https://sports-buddy2.vercel.app)** • **[Contributing](CONTRIBUTING.md)**
-  
+
+# SportsBuddy
+
+**The ultimate sports networking platform connecting athletes, organizing events, and building communities**
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Visit_Platform-4F46E5?style=for-the-badge&logo=vercel)](https://sports-buddy2.vercel.app)
+[![GitHub Stars](https://img.shields.io/github/stars/imprince26/SportsBuddy2?style=for-the-badge&logo=github)](https://github.com/imprince26/SportsBuddy2)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+
+*Transform your sports journey with advanced event discovery, real-time networking, and comprehensive performance tracking*
+
 </div>
 
 ---
 
-## Overview
+## What is SportsBuddy?
 
-SportsBuddy is a modern, full-stack web application designed to revolutionize sports community management. Built with cutting-edge technologies, it provides a comprehensive ecosystem for athletes to connect, organize events, track performance, and build lasting sporting relationships.
+SportsBuddy is a revolutionary full-stack sports management platform that redefines how athletes connect, compete, and grow. Built with modern web technologies, it serves sports enthusiasts from casual players to competitive athletes, offering seamless event management, advanced networking, and vibrant community building.
 
-The platform serves sports enthusiasts of all levels - from casual weekend players to competitive athletes - offering tools for event management, community building, performance tracking, and real-time communication.
+Our platform combines cutting-edge technology with intuitive design to create the most comprehensive sports networking ecosystem available.
 
-## Architecture & Technology Stack
+## Core Features
 
-<div align="center">
+### Advanced Authentication System
+- **Secure JWT Authentication** with HTTP-only cookies and refresh token rotation
+- **Complete User Registration** with email verification and account activation
+- **Password Security** with bcrypt hashing and secure reset flows
+- **Profile Management** with avatar uploads via Cloudinary integration
+- **Social Following** system with follower analytics and networking
 
-### Frontend Stack
-![Vite](https://img.shields.io/badge/Vite-5.0.0-646CFF?logo=vite&logoColor=white&style=for-the-badge)
-![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react&logoColor=white&style=for-the-badge)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3.3.6-38B2AC?logo=tailwind-css&logoColor=white&style=for-the-badge)
-![Shadcn/ui](https://img.shields.io/badge/Shadcn/ui-Latest-000000?style=for-the-badge)
+### Advanced Event Management
+- **Comprehensive Event Discovery** with location-based search, skill level filtering, and preferences
+- **Comprehensive Event Creation** with rich forms, categories, and detailed information
+- **Real-time Participation** with instant join/leave functionality and capacity management
+- **Integrated Event Chat** powered by Socket.io for seamless participant communication
+- **Media Gallery** with Cloudinary integration for event photo sharing
+- **Advanced Search & Filtering** by sport, location, date, skill level, and more
+- **Event Categories** supporting multiple sports and activity types
 
-### Backend Stack
-![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?logo=node.js&logoColor=white&style=for-the-badge)
-![Express](https://img.shields.io/badge/Express-4.18.2-000000?logo=express&logoColor=white&style=for-the-badge)
-![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb&logoColor=white&style=for-the-badge)
-![Socket.io](https://img.shields.io/badge/Socket.io-4.7.2-010101?logo=socket.io&logoColor=white&style=for-the-badge)
+### Complete Venue Management
+- **Comprehensive Venue Directory** with detailed facility information and amenities
+- **Advanced Booking System** with real-time availability checking and reservation management
+- **Venue Reviews & Ratings** with user feedback and rating systems
+- **Location Integration** with GPS-based search and mapping capabilities
+- **Venue Administration** for owners to manage facilities and bookings
+- **Booking History** with detailed reservation tracking and management
 
-### Cloud & DevOps
-![Cloudinary](https://img.shields.io/badge/Cloudinary-Latest-3448C5?logo=cloudinary&logoColor=white&style=for-the-badge)
-![Vercel](https://img.shields.io/badge/Vercel-Latest-000000?logo=vercel&logoColor=white&style=for-the-badge)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-Latest-2088FF?logo=github-actions&logoColor=white&style=for-the-badge)
+### Athlete Profile System
+- **Detailed Athlete Profiles** with comprehensive personal and sports information
+- **Multi-Sport Support** with skill level tracking across different sports
+- **Achievement System** with performance badges, milestones, and recognition
+- **Social Networking** with follow/unfollow functionality and athlete discovery
+- **Performance History** with historical data and progress visualization
+- **Sports Preferences** with customizable sport categories and expertise levels
 
-</div>
+### Advanced Leaderboard System
+- **Multi-Criteria Rankings** with comprehensive performance metrics
+- **Sport-Specific Leaderboards** with specialized rankings for each sport
+- **Achievement Tracking** with badges, trophies, and milestone celebrations
+- **Personal Statistics** with detailed performance analytics and insights
+- **Time-Based Rankings** including monthly, seasonal, and all-time leaderboards
+- **Social Sharing** capabilities for achievements and rankings
 
-## Current Features
+### Community Platform
+- **Community Creation & Management** with custom descriptions, rules, and member limits
+- **Community Discovery** with search, featured communities, and trending topics
+- **Membership System** with join/leave functionality and member management
+- **Rich Post Creation** with text content, media attachments, and formatting options
+- **Advanced Engagement** with like, comment, reply, and share functionality
+- **Nested Comments System** with threaded conversations and reply chains
+- **Media Gallery** with image uploads for posts and community covers
+- **Search & Discovery** with advanced filtering and community recommendations
 
-### 🔐 Authentication & User Management
-- **Secure Authentication**: JWT-based authentication with HTTP-only cookies
-- **User Profiles**: Comprehensive profile management with avatars and cover images
-- **Profile Privacy**: Public and private profile visibility controls
-- **Social Features**: Follow/unfollow system with follower analytics
-- **Account Security**: Password reset & email verification
+### Advanced Notification System
+- **Real-time Notifications** with instant in-app alerts via Socket.io
+- **Email Notifications** with beautiful, responsive email templates
+- **Customizable Preferences** allowing users to control notification types
+- **Event Alerts** with reminders, updates, and participant notifications
+- **Social Notifications** for follows, mentions, and interactions
+- **System Announcements** for platform updates and maintenance alerts
+- **Bulk Notifications** for admin broadcasts and important communications
 
-### 🏃‍♂️ Athletes Management
-- **Athlete Profiles**: Detailed athlete information and statistics
-- **Sports Preferences**: Multi-sport support with skill level tracking
-- **Achievement System**: Performance badges and recognition
-- **Performance History**: Historical data and progress tracking
+### Real-time Communication
+- **Live Event Chat** with group messaging and participant coordination
+- **Real-time Updates** for event status, participant changes, and live data
+- **Notification Streaming** with instant delivery and status tracking
+- **Activity Feeds** with live streams of platform activities
+- **WebSocket Integration** ensuring low-latency, bidirectional communication
 
-### 🏆 Events System
-- **Event Creation**: Rich event creation with detailed information
-- **Event Discovery**: Advanced filtering and search capabilities  
-- **Real-time Updates**: Live event updates and participant notifications
-- **Event Chat**: Integrated chat system for event communication
-- **Participant Management**: Join/leave functionality
-- **Event Categories**: Multi-sport event support
-- **Location Integration**: Venue and location management
-- **Media Gallery**: Event photos sharing
+### Comprehensive Admin Dashboard
+- **User Management** with account administration, roles, and permissions
+- **Content Moderation** with review tools and violation handling
+- **Event Oversight** with creation monitoring and approval workflows
+- **Venue Administration** with facility management and booking oversight
+- **Community Moderation** with post management and user behavior monitoring
+- **Analytics Dashboard** with platform usage metrics and insights
+- **Notification Management** with bulk messaging and system announcements
+- **System Configuration** with platform settings and feature toggles
+- **Advanced Search** across all platform content and users
+- **Report Generation** with PDF exports and data analysis
 
-<!-- ### 👥 Community Platform
-- **Community Forums**: Discussion boards for sports communities
-- **Post Management**: Create, edit, and manage community posts
-- **Engagement Features**: Like, comment, and share functionality
-- **Community Moderation**: Admin controls and content management
-- **Topic Categories**: Organized discussion topics
-- **Community Analytics**: Engagement metrics and insights -->
+### Modern UI/UX Experience
+- **Responsive Design** with mobile-first approach and cross-device compatibility
+- **Dark/Light Themes** with user-customizable theme preferences
+- **Smooth Animations** powered by Framer Motion for enhanced interactions
+- **Intuitive Navigation** with clean, modern interface design
+- **Loading States** with skeleton loaders and progress indicators
+- **Toast Notifications** for user feedback and system messages
 
-<!-- ### 🏟️ Venue Management
-- **Venue Directory**: Comprehensive venue database
-- **Venue Profiles**: Detailed facility information and amenities
-- **Booking System**: Venue reservation and scheduling
-- **Location Services**: GPS integration and mapping
-- **Venue Reviews**: User ratings and feedback system
-- **Availability Tracking**: Real-time venue availability -->
+### Advanced Search & Discovery
+- **Global Search** across events, venues, athletes, and communities
+- **Advanced Filtering** with multiple criteria and sorting options
+- **Location-Based Search** with GPS integration and proximity filtering
+- **Category-Based Discovery** with sport-specific and activity-based filtering
+- **Real-time Results** with instant search suggestions and autocomplete
 
-<!-- ### 📊 Leaderboard System
-- **Performance Rankings**: Multi-criteria ranking system
-- **Skill-based Leaderboards**: Rankings by sport and skill level
-- **Achievement Tracking**: Points and milestone system
-- **Competition History**: Historical performance data
-- **Category Filters**: Sport-specific and time-based rankings
-- **Social Sharing**: Share achievements and rankings -->
+### Performance & Analytics
+- **Personal Analytics** with detailed performance tracking and insights
+- **Event Analytics** with participation metrics and engagement data
+- **Community Analytics** with interaction statistics and growth metrics
+- **Platform Analytics** with comprehensive usage statistics and trends
+- **Achievement Analytics** with progress visualization and milestone tracking
 
-### 🔔 Notification System
-- **Real-time Notifications**: Instant in-app notifications
-- **Email Notifications**: Comprehensive email notification system
-- **Notification Preferences**: Customizable notification settings
-- **Event Alerts**: Event reminders and updates
-- **Social Notifications**: Follow requests, mentions, and interactions
-- **System Announcements**: Platform updates and maintenance alerts
-
-### ⚡ Real-time Features
-- **Live Chat**: Socket.io powered real-time messaging
-- **Event Updates**: Live event status and participant updates
-- **Notification Streaming**: Real-time notification delivery
-- **Activity Feeds**: Live activity streams and updates
-
-### 🛡️ Admin Dashboard
-- **User Management**: User accounts, roles, and permissions
-- **Content Moderation**: Review and manage platform content
-- **Event Oversight**: Monitor and manage platform events
-- **Analytics Dashboard**: Platform usage and engagement metrics
-- **System Configuration**: Platform settings and feature toggles
-- **Report Management**: Handle user reports and violations
-
-### 📱 Advanced Features
-- **Responsive Design**: Mobile-first, cross-device compatibility
-- **Dark/Light Themes**: User-customizable theme preferences
-<!-- - **Progressive Web App**: PWA capabilities for mobile experience -->
-- **File Upload System**: Cloudinary integration for media management
-- **Search & Filters**: Advanced search across all platform content
-- **Rate Limiting**: Security and performance optimization
-- **Email Templates**: Beautiful, responsive email communications
-<!-- - **Cron Jobs**: Automated tasks and maintenance -->
-
-<!-- ## Platform Statistics -->
-
-<!-- <div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <strong>🎯 Features</strong><br/>
-        <span style="font-size: 1.5em; color: #4CAF50;">50+</span><br/>
-        <small>Active Features</small>
-      </td>
-      <td align="center">
-        <strong>⚡ Performance</strong><br/>
-        <span style="font-size: 1.5em; color: #2196F3;">95+</span><br/>
-        <small>Lighthouse Score</small>
-      </td>
-      <td align="center">
-        <strong>🔧 Components</strong><br/>
-        <span style="font-size: 1.5em; color: #FF9800;">200+</span><br/>
-        <small>UI Components</small>
-      </td>
-      <td align="center">
-        <strong>📊 API Endpoints</strong><br/>
-        <span style="font-size: 1.5em; color: #9C27B0;">80+</span><br/>
-        <small>REST Endpoints</small>
-      </td>
-    </tr>
-  </table>
-</div>
- -->
-## API Documentation
-
-SportsBuddy provides a comprehensive RESTful API with the following endpoint categories:
-
-### Authentication & Users
-- `POST /api/auth/*` - Authentication endpoints (register, login, logout, reset)
-- `GET /api/users/*` - User profile and management endpoints
-- `PUT /api/users/*` - Profile updates and user actions
-
-### Events Management  
-- `GET /api/events` - Event discovery and filtering
-- `POST /api/events` - Event creation and management
-- `PUT /api/events/:id` - Event updates and participant actions
-
-### Athletes & Teams
-- `GET /api/athletes` - Athlete profiles and statistics
-- `POST /api/athletes` - Athlete registration and team management
-- `PUT /api/athletes/:id` - Profile updates and team actions
-
-### Community Features
-- `GET /api/community` - Community posts and discussions
-- `POST /api/community` - Create posts and engage with content
-- `PUT /api/community/:id` - Post management and moderation
-
-### Venue Management
-- `GET /api/venues` - Venue directory and search
-- `POST /api/venues` - Venue registration and booking
-- `PUT /api/venues/:id` - Venue updates and availability
-
-### Leaderboard System
-- `GET /api/leaderboard` - Rankings and performance data
-- `POST /api/leaderboard` - Score submissions and achievements
-- `PUT /api/leaderboard/:id` - Performance updates
-
-### Notifications & Real-time
-- `GET /api/notifications` - Notification management
-- `WebSocket` - Real-time chat and live updates
-- `POST /api/notifications` - Send notifications and alerts
-
-### Administrative
-- `GET /api/admin/*` - Admin dashboard and analytics
-- `POST /api/admin/*` - User and content management
-- `PUT /api/admin/*` - Platform configuration
-
-## Project Structure
-
-```
-SportsBuddy2/
-├── 📁 client/                    # React frontend application
-│   ├── 📁 src/
-│   │   ├── 📁 components/        # Reusable UI components
-│   │   │   ├── 📁 ui/           # Shadcn/ui base components
-│   │   │   ├── 📁 events/       # Event management components
-│   │   │   ├── 📁 athletes/     # Athlete components
-│   │   │   ├── 📁 venues/       # Venue components
-│   │   │   ├── 📁 leaderboard/  # Leaderboard components
-│   │   │   └── 📁 layout/       # Layout and navigation
-│   │   ├── 📁 pages/            # Route-level page components
-│   │   │   ├── 📁 auth/         # Authentication pages
-│   │   │   ├── 📁 event/        # Event management pages
-│   │   │   ├── 📁 athletes/     # Athlete pages
-│   │   │   ├── 📁 community/    # Community pages
-│   │   │   ├── 📁 venue/        # Venue pages
-│   │   │   ├── 📁 leaderboard/  # Leaderboard pages
-│   │   │   └── 📁 admin/        # Admin dashboard
-│   │   ├── 📁 context/          # React Context providers
-│   │   ├── 📁 hooks/            # Custom React hooks
-│   │   ├── 📁 utils/            # Utility functions
-│   │   └── 📁 schemas/          # Form validation schemas
-│   └── 📁 public/               # Static assets
-├── 📁 server/                   # Express.js backend
-│   ├── 📁 controllers/          # Business logic controllers
-│   ├── 📁 models/              # MongoDB/Mongoose models
-│   ├── 📁 routes/              # API route definitions
-│   ├── 📁 middleware/          # Custom middleware
-│   ├── 📁 config/              # Configuration modules
-│   ├── 📁 utils/               # Server utilities
-│   └── 📁 scripts/             # Database and utility scripts
-└── 📁 .github/                 # GitHub workflows and templates
-    ├── 📁 workflows/           # CI/CD automation
-    └── 📁 ISSUE_TEMPLATE/      # Issue templates
-```
-
-## Development Metrics
+## Technology Stack
 
 <div align="center">
 
-![Languages](https://img.shields.io/badge/Languages-JavaScript%20|%20HTML%20|%20CSS-blue?style=flat-square)
-![Code Quality](https://img.shields.io/badge/Code_Quality-ESLint%20|%20Prettier-green?style=flat-square)
-![Testing](https://img.shields.io/badge/Testing-Jest%20|%20Vitest-red?style=flat-square)
-![CI/CD](https://img.shields.io/badge/CI/CD-GitHub_Actions-yellow?style=flat-square)
+### Frontend Technologies
+![React](https://img.shields.io/badge/React-18.2.0-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7.1.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.6-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Shadcn/ui](https://img.shields.io/badge/Shadcn/ui-Latest-000000?style=for-the-badge&logo=shadcnui&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.23.12-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+![React Router](https://img.shields.io/badge/React_Router-6.20.1-CA4245?style=for-the-badge&logo=react-router&logoColor=white)
+![Socket.io](https://img.shields.io/badge/Socket.io-4.7.2-010101?style=for-the-badge&logo=socket.io&logoColor=white)
 
-![Lines of Code](https://img.shields.io/badge/Lines_of_Code-50k+-purple?style=flat-square)
-![Commits](https://img.shields.io/github/commit-activity/m/imprince26/SportsBuddy2?style=flat-square&color=blue)
-![Contributors](https://img.shields.io/github/contributors/imprince26/SportsBuddy2?style=flat-square&color=green)
-![Last Commit](https://img.shields.io/github/last-commit/imprince26/SportsBuddy2?style=flat-square&color=orange)
+### Backend Technologies
+![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-5.1.0-000000?style=for-the-badge&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-8.19.2-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![Mongoose](https://img.shields.io/badge/Mongoose-8.19.2-880000?style=for-the-badge&logo=mongoose&logoColor=white)
+![Socket.io](https://img.shields.io/badge/Socket.io-4.7.2-010101?style=for-the-badge&logo=socket.io&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-9.0.2-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+### Cloud & Infrastructure
+![Cloudinary](https://img.shields.io/badge/Cloudinary-1.41.3-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
+
+### Security & Performance
+![Rate Limiting](https://img.shields.io/badge/Rate_Limiting-Upstash-FF6B6B?style=for-the-badge)
+![Helmet](https://img.shields.io/badge/Helmet-6.x-000000?style=for-the-badge)
+![CORS](https://img.shields.io/badge/CORS-2.8.5-000000?style=for-the-badge)
+![Bcrypt](https://img.shields.io/badge/Bcrypt-3.0.2-000000?style=for-the-badge)
 
 </div>
-
-## Security & Performance
-
-- **Authentication**: JWT with HTTP-only cookies and refresh token rotation
-- **Authorization**: Role-based access control (RBAC) system
-- **Rate Limiting**: Advanced rate limiting with Redis integration
-- **Input Validation**: Zod schema validation on both client and server
-- **File Security**: Secure file upload with type and size restrictions
-- **CORS**: Properly configured cross-origin resource sharing
-- **Environment Security**: Environment-based configuration management
-- **Performance**: Optimized bundle size and lazy loading
-- **Monitoring**: Error tracking and performance monitoring
-- **Database Security**: MongoDB Atlas with connection security

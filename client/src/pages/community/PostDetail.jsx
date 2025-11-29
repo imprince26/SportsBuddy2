@@ -286,7 +286,7 @@ const CommentItem = ({ comment, currentUser, onLike, onReply, onLikeReply, onEdi
         </DialogContent>
       </Dialog>
     </div>
-  );
+  ); 
 };
 
 const PostDetail = () => {

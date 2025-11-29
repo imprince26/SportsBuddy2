@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 const DEFAULT_META = {
   title: 'SportsBuddy - Connect with Athletes and Sports Events',
   description: 'Plan, discover, and manage sports events with SportsBuddy. Connect athletes, venues, and teams effortlessly.',
-  image: '/og-home.png',
+  image: 'https://sports-buddy2.vercel.app/og-home.png',
   url: window.location.origin,
   type: 'website',
   siteName: 'SportsBuddy',
@@ -18,67 +18,67 @@ const PAGE_META = {
   '/': {
     title: 'SportsBuddy - Connect with Athletes and Sports Events',
     description: 'Plan, discover, and manage sports events with SportsBuddy. Connect athletes, venues, and teams effortlessly.',
-    image: '/og-home.png'
+    image: 'https://sports-buddy2.vercel.app/og-home.png'
   },
   '/events': {
     title: 'Sports Events - Discover & Join Amazing Sports Events',
     description: 'Find and join sports events near you. Connect with fellow athletes and participate in tournaments, training sessions, and competitions.',
-    image: '/og-events.png',
+    image: 'https://sports-buddy2.vercel.app/og-events.png',
     keywords: 'sports events, tournaments, competitions, training, join events, sports activities'
   },
   '/venues': {
     title: 'Sports Venues - Find Perfect Venues for Your Games',
     description: 'Book courts, fields, and sports facilities near you. Find the perfect venue for your next game or training session.',
-    image: '/og-venues.png',
+    image: 'https://sports-buddy2.vercel.app/og-venues.png',
     keywords: 'sports venues, book courts, sports facilities, fields, stadiums, arenas'
   },
   '/athletes': {
     title: 'Top Athletes - Meet Elite Sports Professionals',
     description: 'Connect with elite athletes and sports professionals. Find coaches, trainers, and fellow sports enthusiasts.',
-    image: '/og-athletes.png',
+    image: 'https://sports-buddy2.vercel.app/og-athletes.png',
     keywords: 'athletes, sports professionals, coaches, trainers, sports network'
   },
   '/leaderboard': {
     title: 'Leaderboard - Top Performers & Champions',
     description: 'View the top performers and champions in SportsBuddy. Compete, achieve, and climb the ranks.',
-    image: '/og-leaderboard.png',
+    image: 'https://sports-buddy2.vercel.app/og-leaderboard.png',
     keywords: 'leaderboard, rankings, champions, top performers, sports achievements'
   },
   '/community': {
     title: 'Sports Community - Connect with Fellow Athletes',
     description: 'Join the SportsBuddy community. Share experiences, find teammates, and connect with sports enthusiasts worldwide.',
-    image: '/og-home.png',
+    image: 'https://sports-buddy2.vercel.app/og-home.png',
     keywords: 'sports community, athletes network, sports discussions, teammates'
   },
   '/login': {
     title: 'Login - SportsBuddy',
     description: 'Login to your SportsBuddy account to access events, venues, and connect with athletes.',
-    image: '/og-home.png'
+    image: 'https://sports-buddy2.vercel.app/og-home.png'
   },
   '/register': {
     title: 'Join SportsBuddy - Create Your Account',
     description: 'Create your SportsBuddy account and start connecting with athletes, discovering events, and booking venues.',
-    image: '/og-home.png'
+    image: 'https://sports-buddy2.vercel.app/og-home.png'
   },
   '/dashboard': {
     title: 'Dashboard - SportsBuddy',
     description: 'Your personal dashboard on SportsBuddy. Manage your events, bookings, and sports activities.',
-    image: '/og-home.png'
+    image: 'https://sports-buddy2.vercel.app/og-home.png'
   },
   '/profile': {
     title: 'My Profile - SportsBuddy',
     description: 'Manage your SportsBuddy profile, achievements, and sports preferences.',
-    image: '/og-home.png'
+    image: 'https://sports-buddy2.vercel.app/og-home.png'
   },
   '/settings': {
     title: 'Settings - SportsBuddy',
     description: 'Customize your SportsBuddy experience with personalized settings and preferences.',
-    image: '/og-home.png'
+    image: 'https://sports-buddy2.vercel.app/og-home.png'
   },
   '/notifications': {
     title: 'Notifications - SportsBuddy',
     description: 'Stay updated with the latest notifications from SportsBuddy events and community.',
-    image: '/og-home.png'
+    image: 'https://sports-buddy2.vercel.app/og-home.png'
   }
 };
 
@@ -89,7 +89,7 @@ const getDynamicMeta = (pathname, data = {}) => {
   // Event details page
   if (pathname.startsWith('/events/') && data.event) {
     const event = data.event;
-    const image = event.images?.[0]?.url || '/og-events.png';
+    const image = event.images?.[0]?.url || 'https://sports-buddy2.vercel.app/og-events.png';
     const eventDate = new Date(event.date).toLocaleDateString();
     const participantCount = event.participants?.length || 0;
     const maxParticipants = event.maxParticipants || 'unlimited';
@@ -107,7 +107,7 @@ const getDynamicMeta = (pathname, data = {}) => {
   // Venue details page
   if (pathname.startsWith('/venues/') && data.venue) {
     const venue = data.venue;
-    const image = venue.images?.[0]?.url || '/og-venues.png';
+    const image = venue.images?.[0]?.url || 'https://sports-buddy2.vercel.app/og-venues.png';
     const sports = venue.sports?.join(', ') || 'Multiple sports';
     const rating = venue.averageRating || 'Not rated';
 
@@ -124,7 +124,7 @@ const getDynamicMeta = (pathname, data = {}) => {
   // User profile page
   if (pathname.startsWith('/profile/') && data.user) {
     const user = data.user;
-    const image = user.avatar?.url || user.coverImage?.url || '/og-athletes.png';
+    const image = user.avatar?.url || user.coverImage?.url || 'https://sports-buddy2.vercel.app/og-athletes.png';
     const sports = user.sportsPreferences?.map(pref => pref.sport).join(', ') || 'Multiple sports';
     const achievements = user.achievements?.length || 0;
 
@@ -141,7 +141,7 @@ const getDynamicMeta = (pathname, data = {}) => {
   // Community details page
   if (pathname.startsWith('/community/') && data.community) {
     const community = data.community;
-    const image = community.banner || community.logo || '/og-home.png';
+    const image = community.banner || community.logo || '/https://sports-buddy2.vercel.app/og-home.png';
 
     return {
       title: `${community.name} - Sports Community on SportsBuddy`,

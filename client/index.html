@@ -1,14 +1,16 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Primary Meta -->
   <title>SportsBuddy - Connect with Athletes and Sports Events</title>
   <meta name="title" content="SportsBuddy - Connect with Athletes and Sports Events" />
-  <meta name="description" content="Plan, discover, and manage sports events with SportsBuddy. Connect athletes, venues, and teams effortlessly." />
-  <meta name="keywords" content="sportsbuddy, sports events, athlete network, event management, team finder, tournaments, sports venues, athletes, leaderboard" />
-  <meta name="author" content="SportsBuddy" />
+  <meta name="description"
+    content="Plan, discover, and manage sports events with SportsBuddy. Connect athletes, venues, and teams effortlessly." />
+  <meta name="keywords"
+    content="sportsbuddy, sports events, athlete network, event management, team finder, tournaments, sports venues, athletes, leaderboard" />
   <meta name="robots" content="index, follow" />
   <meta name="application-name" content="SportsBuddy" />
   <meta name="apple-mobile-web-app-title" content="SportsBuddy" />
@@ -21,11 +23,9 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="SportsBuddy - Connect with Athletes and Sports Events" />
-  <meta property="og:description" content="Plan, discover, and manage sports events with SportsBuddy. Connect athletes, venues, and teams effortlessly." />
-  <meta property="og:image" content="/og-home.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:type" content="image/png" />
+  <meta property="og:description"
+    content="Plan, discover, and manage sports events with SportsBuddy. Connect athletes, venues, and teams effortlessly." />
+  <meta property="og:image" content="https://sports-buddy2.vercel.app/og-home.png" />
   <meta property="og:url" content="https://sports-buddy2.vercel.app/" />
   <meta property="og:site_name" content="SportsBuddy" />
   <meta property="og:locale" content="en_US" />
@@ -33,40 +33,48 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SportsBuddy - Connect with Athletes and Sports Events" />
-  <meta name="twitter:description" content="Plan, discover, and manage sports events with SportsBuddy. Connect athletes, venues, and teams effortlessly." />
-  <meta name="twitter:image" content="/og-home.png" />
+  <meta name="twitter:description"
+    content="Plan, discover, and manage sports events with SportsBuddy. Connect athletes, venues, and teams effortlessly." />
+  <meta name="twitter:image" content="https://sports-buddy2.vercel.app/og-home.png" />
 
   <!-- Icons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.png" />
-  
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@200..800&display=swap"
+    rel="stylesheet">
 
-    <!-- Theme initialization script to prevent flash -->
-    <script>
-      (function() {
-        const theme = localStorage.getItem('theme');
-        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      })();
-    </script>
-    <style>
-      /* Prevent flash of wrong background */
-      html, body {
-        background-color: #ffffff;
+  <!-- Theme initialization script to prevent flash -->
+  <script>
+    (function () {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
       }
-      html.dark, html.dark body {
-        background-color: #111827;
-      }
-    </style>
-    </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+    })();
+  </script>
+  <style>
+    /* Prevent flash of wrong background */
+    html,
+    body {
+      background-color: #ffffff;
+    }
+
+    html.dark,
+    html.dark body {
+      background-color: #111827;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

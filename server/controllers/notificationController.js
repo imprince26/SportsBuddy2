@@ -321,15 +321,15 @@ export const deleteUserNotification = asyncHandler(async (req, res) => {
             });
         }
 
-        const notification = user.notifications.id(req.params.notificationId);
-        if (!notification) {
+        const notificationIndex = user.notifications.findIndex(n => n._id.toString() === req.params.notificationId);
+        if (notificationIndex === -1) {
             return res.status(404).json({
                 success: false,
                 message: "Notification not found"
             });
         }
 
-        user.notifications.id(req.params.notificationId).remove();
+        user.notifications.splice(notificationIndex, 1);
         await user.save();
 
         res.json({

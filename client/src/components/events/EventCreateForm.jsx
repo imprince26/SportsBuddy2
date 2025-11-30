@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "react-hot-toast"
 import { useEvents } from "@/hooks/useEvents"
 import { useVenue } from "@/hooks/useVenue"
-import { Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Save, Upload, Plus, Trash2, CheckCircle, Sparkles, Target, Shield, Camera, ArrowRight, AlertTriangle, IndianRupee } from 'lucide-react'
+import { Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Upload, Plus, Trash2, CheckCircle, Sparkles, Camera, ArrowRight, AlertTriangle, IndianRupee } from 'lucide-react'
 import { VenueSelector } from "@/components/events/VenueSelector"
 import {
     Form,
@@ -110,14 +110,13 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
         if (newRule.trim()) {
             form.setValue("rules", [...form.getValues("rules"), newRule.trim()])
             setNewRule("")
-            toast.success("Rule added successfully")
         }
     }
 
     const removeRule = (index) => {
         const updatedRules = form.getValues("rules").filter((_, i) => i !== index)
         form.setValue("rules", updatedRules)
-        toast.success("Rule removed")
+        form.trigger("rules")
     }
 
     const addEquipment = () => {
@@ -127,14 +126,13 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                 { item: newEquipment.item.trim(), required: newEquipment.required },
             ])
             setNewEquipment({ item: "", required: false })
-            toast.success("Equipment added successfully")
         }
     }
 
     const removeEquipment = (index) => {
         const updatedEquipment = form.getValues("equipment").filter((_, i) => i !== index)
         form.setValue("equipment", updatedEquipment)
-        toast.success("Equipment removed")
+        form.trigger("equipment")
     }
 
     const onSubmit = async (formData) => {
@@ -166,9 +164,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
                             {/* Basic Info Tab */}
                             {activeTab === "basic" && (
-                                <div
-                                    className="p-4 sm:p-8 animate-in slide-in-from-right-4 duration-500"
-                                >
+                                <div className="p-4 sm:p-8 animate-in slide-in-from-right-4 duration-500"                            >
                                     <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
                                         <div>
                                             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Basic Information</h2>
@@ -687,154 +683,157 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 </div>
                                             )}
                                         </div>
-                                        {/* Rules Section */}
-                                        <div className="space-y-4 sm:space-y-6">
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="text-lg sm:text-xl font-semibold text-foreground">Event Rules & Guidelines</h3>
-                                                <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>
-                                            </div>
-                                            <Card className="border-2 border-border">
-                                                <CardContent className="p-4 sm:p-6">
-                                                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-                                                        <Input
-                                                            value={newRule}
-                                                            onChange={(e) => setNewRule(e.target.value)}
-                                                            placeholder="Add a rule or guideline for participants..."
-                                                            className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
-                                                            onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
-                                                        />
-                                                        <Button
-                                                            type="button"
-                                                            onClick={addRule}
-                                                            disabled={!newRule.trim()}
-                                                            className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
-                                                        >
-                                                            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                                                            Add Rule
-                                                        </Button>
-                                                    </div>
-                                                    {form.getValues("rules")?.length > 0 ? (
-                                                        <div className="space-y-2 sm:space-y-3">
-                                                            {form.getValues("rules").map((rule, index) => (
-                                                                <div
-                                                                    key={index}
-                                                                    className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                                                >
-                                                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
-                                                                        <span className="text-xs sm:text-sm font-bold text-white">{index + 1}</span>
-                                                                    </div>
-                                                                    <p className="flex-1 text-foreground text-base sm:text-lg leading-relaxed">
-                                                                        {rule}
-                                                                    </p>
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={() => removeRule(index)}
-                                                                        className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
-                                                                    >
-                                                                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
-                                                            <Shield className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-                                                            <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
-                                                                No Rules Added Yet
-                                                            </h4>
-                                                            <p className="text-muted-foreground text-xs sm:text-sm">
-                                                                Add rules to help participants understand expectations and guidelines.
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-                                        </div>
-                                        {/* Equipment Section */}
-                                        <div className="space-y-4 sm:space-y-6">
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="text-lg sm:text-xl font-semibold text-foreground">Required Equipment</h3>
-                                                <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>
-                                            </div>
-                                            <Card className="border-2 border-border">
-                                                <CardContent className="p-4 sm:p-6">
-                                                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-                                                        <Input
-                                                            value={newEquipment.item}
-                                                            onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
-                                                            placeholder="Add equipment needed for the event..."
-                                                            className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
-                                                            onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
-                                                        />
-                                                        <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-muted rounded-md sm:rounded-lg border border-border">
-                                                            <input
-                                                                type="checkbox"
-                                                                id="equipment-required"
-                                                                checked={newEquipment.required}
-                                                                onChange={(e) => setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))}
-                                                                className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600"
+
+                                        <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
+
+                                            {/* Rules Section */}
+                                            <div className="space-y-4 sm:space-y-6">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-lg sm:text-xl font-semibold text-foreground">Event Rules & Guidelines</h3>
+                                                    <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>
+                                                </div>
+                                                <Card className="border-2 border-border">
+                                                    <CardContent className="p-4 sm:p-6">
+                                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+                                                            <Input
+                                                                value={newRule}
+                                                                onChange={(e) => setNewRule(e.target.value)}
+                                                                placeholder="Add a rule or guideline for participants..."
+                                                                className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
+                                                                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
                                                             />
-                                                            <label
-                                                                htmlFor="equipment-required"
-                                                                className="text-xs sm:text-sm font-medium text-foreground whitespace-nowrap"
+                                                            <Button
+                                                                type="button"
+                                                                onClick={addRule}
+                                                                disabled={!newRule.trim()}
+                                                                className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
                                                             >
-                                                                Required
-                                                            </label>
+                                                                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                                                                Add Rule
+                                                            </Button>
                                                         </div>
-                                                        <Button
-                                                            type="button"
-                                                            onClick={addEquipment}
-                                                            disabled={!newEquipment.item.trim()}
-                                                            className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
-                                                        >
-                                                            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                                                            Add
-                                                        </Button>
-                                                    </div>
-                                                    {form.getValues("equipment")?.length > 0 ? (
-                                                        <div className="grid grid-cols-1 gap-2 sm:gap-3">
-                                                            {form.getValues("equipment").map((item, index) => (
-                                                                <div
-                                                                    key={index}
-                                                                    className="flex items-center justify-between p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                                                >
-                                                                    <div className="flex items-center gap-2 sm:gap-3">
-                                                                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                                                                        <span className="text-foreground font-medium text-sm sm:text-base">
-                                                                            {item.item}
-                                                                        </span>
-                                                                        {item.required && (
-                                                                            <Badge variant="destructive" className="text-xs">Required</Badge>
-                                                                        )}
-                                                                    </div>
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={() => removeEquipment(index)}
-                                                                        className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                                        {form.getValues("rules")?.length > 0 ? (
+                                                            <div className="space-y-2 sm:space-y-3">
+                                                                {form.getValues("rules").map((rule, index) => (
+                                                                    <div
+                                                                        key={index}
+                                                                        className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
                                                                     >
-                                                                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            ))}
+                                                                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
+                                                                            <span className="text-xs sm:text-sm font-bold text-white">{index + 1}</span>
+                                                                        </div>
+                                                                        <p className="flex-1 mt-1 text-foreground text-base leading-relaxed">
+                                                                            {rule}
+                                                                        </p>
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => removeRule(index)}
+                                                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                                                        >
+                                                                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
+                                                                <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
+                                                                    No Rules Added Yet
+                                                                </h4>
+                                                                <p className="text-muted-foreground text-xs sm:text-sm">
+                                                                    Add rules to help participants understand expectations and guidelines.
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                            {/* Equipment Section */}
+                                            <div className="space-y-4 sm:space-y-6">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-lg sm:text-xl font-semibold text-foreground">Required Equipment</h3>
+                                                    <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>
+                                                </div>
+                                                <Card className="border-2 border-border">
+                                                    <CardContent className="p-4 sm:p-6">
+                                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+                                                            <Input
+                                                                value={newEquipment.item}
+                                                                onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
+                                                                placeholder="Add equipment needed for the event..."
+                                                                className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
+                                                                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
+                                                            />
+                                                            <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-muted rounded-md sm:rounded-lg border border-border">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id="equipment-required"
+                                                                    checked={newEquipment.required}
+                                                                    onChange={(e) => setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))}
+                                                                    className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600"
+                                                                />
+                                                                <label
+                                                                    htmlFor="equipment-required"
+                                                                    className="text-xs sm:text-sm font-medium text-foreground whitespace-nowrap"
+                                                                >
+                                                                    Required
+                                                                </label>
+                                                            </div>
+                                                            <Button
+                                                                type="button"
+                                                                onClick={addEquipment}
+                                                                disabled={!newEquipment.item.trim()}
+                                                                className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
+                                                            >
+                                                                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                                                                Add
+                                                            </Button>
                                                         </div>
-                                                    ) : (
-                                                        <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
-                                                            <Target className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-                                                            <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
-                                                                No Equipment Listed
-                                                            </h4>
-                                                            <p className="text-muted-foreground text-xs sm:text-sm">
-                                                                List any equipment or gear participants should bring to the event.
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
+                                                        {form.getValues("equipment")?.length > 0 ? (
+                                                            <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                                                                {form.getValues("equipment").map((item, index) => (
+                                                                    <div
+                                                                        key={index}
+                                                                        className="flex items-center justify-between p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                                                    >
+                                                                        <div className="flex items-center gap-2 sm:gap-3">
+                                                                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                                                                            <span className="text-foreground font-medium text-sm sm:text-base">
+                                                                                {item.item}
+                                                                            </span>
+                                                                            {item.required && (
+                                                                                <Badge variant="destructive" className="text-xs">Required</Badge>
+                                                                            )}
+                                                                        </div>
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => removeEquipment(index)}
+                                                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                                                        >
+                                                                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
+                                                                <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
+                                                                    No Equipment Listed
+                                                                </h4>
+                                                                <p className="text-muted-foreground text-xs sm:text-sm">
+                                                                    List any equipment or gear participants should bring to the event.
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
                                         </div>
+
 
                                         <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 pt-4 sm:pt-6">
                                             <Button
@@ -876,7 +875,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                     </div>
                                     <div className="space-y-6 sm:space-y-8">
                                         {/* Event Summary Card */}
-                                        <Card className="bg-primary/10 border-primary/20">
+                                        <Card className="bg-card border-primary/20">
                                             <CardContent className="p-4 sm:p-8">
                                                 <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                                                     {imagePreview.length > 0 ? (
@@ -901,7 +900,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                                 <Badge variant="outline" className="text-xs capitalize">{form.getValues("eventType")}</Badge>
                                                             </div>
                                                         </div>
-                                                        <div className="grid grid-cols-1 gap-2 sm:gap-4 text-xs sm:text-sm">
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
                                                             <div className="flex items-center gap-2">
                                                                 <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
                                                                 <span className="text-foreground">
@@ -933,7 +932,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                             <div className="flex items-center gap-2 text-xs sm:text-sm">
                                                                 <IndianRupee className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
                                                                 <span className="text-foreground font-semibold">
-                                                                    ${form.getValues("registrationFee")} registration fee
+                                                                    {form.getValues("registrationFee")} registration fee
                                                                 </span>
                                                             </div>
                                                         )}
@@ -954,7 +953,6 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 <Card>
                                                     <CardHeader>
                                                         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                                                            <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                                                             Event Rules ({form.getValues("rules").length})
                                                         </CardTitle>
                                                     </CardHeader>
@@ -981,7 +979,6 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 <Card>
                                                     <CardHeader>
                                                         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                                                            <Target className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
                                                             Equipment ({form.getValues("equipment").length})
                                                         </CardTitle>
                                                     </CardHeader>
@@ -1009,8 +1006,8 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                             className={cn(
                                                 "border-2",
                                                 completionProgress === 100
-                                                    ? "border-primary bg-primary/10"
-                                                    : "border-orange-600 bg-orange-900/20"
+                                                    ? "border-primary/40 bg-primary/10"
+                                                    : "border-orange-600/40 bg-orange-100 dark:bg-orange-950/20"
                                             )}
                                         >
                                             <CardContent className="p-4 sm:p-6">
@@ -1061,7 +1058,6 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                         toast.success("Event saved as draft");
                                                     }}
                                                 >
-                                                    <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                                                     Save Draft
                                                 </Button>
                                                 <Button

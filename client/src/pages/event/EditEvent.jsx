@@ -7,10 +7,7 @@ import { format } from "date-fns"
 import { useEvents } from "@/hooks/useEvents"
 import { useVenue } from "@/hooks/useVenue"
 import {
-  Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Save, Eye, Upload, Plus,
-  Trash2, CheckCircle, Award, Target, Shield, Camera,
-  FileText, Settings, ArrowRight, Star, Trophy, DollarSign, AlertTriangle,
-  MapPinIcon, UsersIcon, CalendarDays, Timer, Heart, Layers, Loader2, Zap, Flame, Building2
+  Calendar, ImagePlus, X, ChevronLeft, Clock, MapPin, Users, Eye, Upload, Plus, Trash2, CheckCircle, Target, Shield, Camera, FileText, Settings, ArrowRight, AlertTriangle, Loader2, IndianRupee
 } from 'lucide-react'
 import { VenueSelector } from "@/components/events/VenueSelector"
 import {
@@ -151,8 +148,8 @@ const EditEvent = () => {
               state: "",
             },
             maxParticipants: eventData.maxParticipants || 10,
-            difficulty: eventData.difficulty || "Beginner",
-            eventType: eventData.eventType || "casual",
+            difficulty: ["Beginner", "Intermediate", "Advanced"].includes(eventData.difficulty) ? eventData.difficulty : "Beginner",
+            eventType: ["casual", "tournament", "training"].includes(eventData.eventType) ? eventData.eventType : "casual",
             registrationFee: eventData.registrationFee || 0,
             rules: eventData.rules || [],
             equipment: eventData.equipment || [],
@@ -233,7 +230,6 @@ const EditEvent = () => {
     const newPreviews = validFiles.map((file) => URL.createObjectURL(file))
     setImagePreview((prev) => [...prev, ...newPreviews])
     setHasChanges(true)
-    toast.success(`${validFiles.length} image(s) added successfully`)
   }
 
   const handleImageChange = (e) => {
@@ -246,7 +242,6 @@ const EditEvent = () => {
     setNewImages((prev) => prev.filter((_, i) => i !== index))
     setImagePreview((prev) => prev.filter((_, i) => i !== index))
     setHasChanges(true)
-    toast.success("Image removed")
   }
 
   const removeExistingImage = (index) => {
@@ -254,7 +249,6 @@ const EditEvent = () => {
     setDeletedImages((prev) => [...prev, imageToRemove.public_id])
     setExistingImages((prev) => prev.filter((_, i) => i !== index))
     setHasChanges(true)
-    toast.success("Image marked for removal")
   }
 
   const addRule = () => {
@@ -262,15 +256,14 @@ const EditEvent = () => {
       form.setValue("rules", [...form.getValues("rules"), newRule.trim()])
       setNewRule("")
       setHasChanges(true)
-      toast.success("Rule added successfully")
     }
   }
 
   const removeRule = (index) => {
     const updatedRules = form.getValues("rules").filter((_, i) => i !== index)
     form.setValue("rules", updatedRules)
+    form.trigger("rules")
     setHasChanges(true)
-    toast.success("Rule removed")
   }
 
   const addEquipment = () => {
@@ -281,15 +274,14 @@ const EditEvent = () => {
       ])
       setNewEquipment({ item: "", required: false })
       setHasChanges(true)
-      toast.success("Equipment added successfully")
     }
   }
 
   const removeEquipment = (index) => {
     const updatedEquipment = form.getValues("equipment").filter((_, i) => i !== index)
     form.setValue("equipment", updatedEquipment)
+    form.trigger("equipment")
     setHasChanges(true)
-    toast.success("Equipment removed")
   }
 
   const onSubmit = async (formData) => {
@@ -326,11 +318,14 @@ const EditEvent = () => {
       const result = await updateEvent(id, eventFormData)
 
       if (result.success) {
-        toast.success("Event updated successfully! 🎉")
         setHasChanges(false)
         navigate(`/events/${id}`)
+      } else {
+        console.log('Update failed:', result.message);
+        toast.error(result.message || "Failed to update event")
       }
     } catch (error) {
+      console.log('Update error:', error);
       toast.error(error.message || "Failed to update event")
     }
   }
@@ -435,22 +430,19 @@ const EditEvent = () => {
         <div className="animate-in fade-in duration-500">
           {/* Header */}
           <div className="mb-8 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center gap-4 mb-8">
-              <Button
-                variant="ghost"
-                asChild
-                className="h-10 w-10 p-0 rounded-full hover:bg-muted"
-              >
-                <Link to={`/events/${id}`}>
-                  <ChevronLeft className="w-5 h-5" />
-                </Link>
-              </Button>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-foreground" />
-                  </div>
-                  <div>
+            <div className="flex sm:flex-row flex-col justify-center sm:items-center gap-4 mb-8">
+              <div className="flex items-center gap-4 flex-1">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="h-10 w-10 p-0 rounded-full hover:bg-muted"
+                >
+                  <Link to={`/events/${id}`}>
+                    <ChevronLeft className="w-5 h-5" />
+                  </Link>
+                </Button>
+                <div className="flex-1">
+                  <div className="flex flex-col justify-center mb-2">
                     <h1 className="text-3xl font-bold text-foreground">
                       Edit Event
                     </h1>
@@ -458,17 +450,18 @@ const EditEvent = () => {
                       Update your event details and settings
                     </p>
                   </div>
+                  {hasChanges && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-destructive/20 text-destructive border-destructive/30"
+                    >
+                      <Settings className="w-3 h-3 mr-1" />
+                      Unsaved Changes
+                    </Badge>
+                  )}
                 </div>
-                {hasChanges && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-amber-900/30 text-amber-200 border-amber-800"
-                  >
-                    <Settings className="w-3 h-3 mr-1" />
-                    Unsaved Changes
-                  </Badge>
-                )}
               </div>
+
               <Button
                 variant="destructive"
                 onClick={() => setShowConfirmDelete(true)}
@@ -484,9 +477,6 @@ const EditEvent = () => {
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
                   <div className="flex items-center gap-3 mb-4 sm:mb-0">
-                    <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
-                      <Trophy className="w-4 h-4 text-foreground" />
-                    </div>
                     <div>
                       <span className="font-semibold text-foreground text-base">
                         Event Update Progress
@@ -510,7 +500,7 @@ const EditEvent = () => {
 
           {/* Step Navigation */}
           <div className="mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-100">
-            <div className="grid md:grid-cols-4 grid-cols-1 gap-4">
+            <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-4">
               {steps.map((step, index) => (
                 <button
                   key={step.id}
@@ -558,16 +548,11 @@ const EditEvent = () => {
                       <div
                         className="p-8 animate-in slide-in-from-right-4 duration-500"
                       >
-                        <div className="flex items-center gap-4 mb-8">
-                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-foreground" />
-                          </div>
-                          <div>
-                            <h2 className="text-2xl font-bold text-foreground">Basic Information</h2>
-                            <p className="text-muted-foreground">
-                              Update the essential details about your event
-                            </p>
-                          </div>
+                        <div className="flex flex-col justify-center mb-8">
+                          <h2 className="text-2xl font-bold text-foreground">Basic Information</h2>
+                          <p className="text-muted-foreground">
+                            Update the essential details about your event
+                          </p>
                         </div>
                         <div className="space-y-8">
                           {/* Event Name */}
@@ -602,7 +587,7 @@ const EditEvent = () => {
                                 <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
                                   Sport Category *
                                 </FormLabel>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4">
                                   {categories.map((category) => (
                                     <button
                                       key={category.value}
@@ -611,22 +596,12 @@ const EditEvent = () => {
                                       className={cn(
                                         "p-4 rounded-xl border transition-all duration-200 text-left group hover:-translate-y-0.5 active:scale-95",
                                         field.value === category.value
-                                          ? "border-primary bg-muted"
-                                          : "border-border hover:border-primary/50"
+                                          ? "border-blue-500 bg-blue-900/20 scale-100 sm:scale-105"
+                                          : "border-border hover:border-muted-foreground/20 hover:shadow-md bg-background"
                                       )}
                                     >
-                                      <div className="flex items-center gap-3 mb-2">
-                                        <div
-                                          className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl bg-card"
-                                        >
-                                          {category.icon}
-                                        </div>
-                                        <div className="flex-1">
-                                          <h3 className="font-semibold text-foreground">{category.label}</h3>
-                                          <p className="text-xs text-muted-foreground">
-                                            {category.participants} players
-                                          </p>
-                                        </div>
+                                      <div className="flex flex-col items-center justify-center gap-3 mb-2">
+                                        <h3 className="font-semibold text-foreground">{category.label}</h3>
                                       </div>
                                     </button>
                                   ))}
@@ -712,30 +687,29 @@ const EditEvent = () => {
                           {/* Location */}
                           <div className="space-y-6">
                             <div className="flex items-center gap-2">
-                              <MapPinIcon className="w-6 h-6 text-foreground" />
                               <h3 className="text-xl font-semibold text-foreground">Location Details</h3>
                             </div>
 
-                            {/* Venue Selection */}
-                            <div className="space-y-4 p-4 bg-accent/50 rounded-lg border border-border">
-                              <div className="flex items-center gap-2">
-                                <Building2 className="w-5 h-5 text-primary" />
-                                <h4 className="font-semibold text-foreground">Select Venue (Optional)</h4>
+                            <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
+
+                              {/* Venue Selection */}
+                              <div className="space-y-4 p-4 bg-background rounded-lg border border-border">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-semibold text-foreground">Select Venue (Optional)</h4>
+                                </div>
+
+                                <VenueSelector
+                                  venues={venues}
+                                  selectedVenue={selectedVenue}
+                                  onSelect={(venue) => {
+                                    setSelectedVenue(venue)
+                                    form.setValue('location.address', venue.location?.address || '')
+                                    form.setValue('location.city', venue.location?.city || '')
+                                    form.setValue('location.state', venue.location?.state || '')
+                                  }}
+                                />
                               </div>
 
-                              <VenueSelector
-                                venues={venues}
-                                selectedVenue={selectedVenue}
-                                onSelect={(venue) => {
-                                  setSelectedVenue(venue)
-                                  form.setValue('location.address', venue.location?.address || '')
-                                  form.setValue('location.city', venue.location?.city || '')
-                                  form.setValue('location.state', venue.location?.state || '')
-                                }}
-                              />
-                            </div>
-
-                            <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                               <FormField
                                 control={form.control}
                                 name="location.address"
@@ -794,12 +768,13 @@ const EditEvent = () => {
                               />
                             </div>
                           </div>
+
                           <div className="flex justify-end pt-6">
                             <Button
                               type="button"
                               onClick={() => setActiveTab("details")}
                               size="lg"
-                              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 h-auto text-base"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
                             >
                               Next: Event Details
                               <ArrowRight className="w-5 h-5 ml-2" />
@@ -814,16 +789,11 @@ const EditEvent = () => {
                       <div
                         className="p-8 animate-in slide-in-from-right-4 duration-500"
                       >
-                        <div className="flex items-center gap-4 mb-8">
-                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
-                            <Settings className="w-6 h-6 text-foreground" />
-                          </div>
-                          <div>
-                            <h2 className="text-2xl font-bold text-foreground">Event Configuration</h2>
-                            <p className="text-muted-foreground">
-                              Update the important details and requirements
-                            </p>
-                          </div>
+                        <div className="flex flex-col justify-center mb-8">
+                          <h2 className="text-2xl font-bold text-foreground">Event Configuration</h2>
+                          <p className="text-muted-foreground">
+                            Update the important details and requirements
+                          </p>
                         </div>
                         <div className="space-y-8">
                           <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
@@ -833,7 +803,6 @@ const EditEvent = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
-                                    <UsersIcon className="w-5 h-5 text-muted-foreground" />
                                     Maximum Participants *
                                   </FormLabel>
                                   <FormControl>
@@ -862,12 +831,11 @@ const EditEvent = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
-                                    <DollarSign className="w-5 h-5 text-muted-foreground" />
-                                    Registration Fee ($)
+                                    Registration Fee
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                                      <IndianRupee className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                       <Input
                                         type="number"
                                         min={0}
@@ -893,24 +861,20 @@ const EditEvent = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
-                                    <Award className="w-5 h-5 text-muted-foreground" />
                                     Difficulty Level *
                                   </FormLabel>
                                   <div className="space-y-3">
                                     {[
                                       {
                                         value: "Beginner",
-                                        icon: Seedling,
                                         description: "Open to all skill levels - perfect for newcomers",
                                       },
                                       {
                                         value: "Intermediate",
-                                        icon: Zap,
                                         description: "Some experience required - moderate challenge",
                                       },
                                       {
                                         value: "Advanced",
-                                        icon: Flame,
                                         description: "High skill level required - competitive play",
                                       },
                                     ].map((level) => (
@@ -921,20 +885,13 @@ const EditEvent = () => {
                                         className={cn(
                                           "w-full p-4 rounded-xl border transition-all duration-200 text-left hover:translate-x-1",
                                           field.value === level.value
-                                            ? "border-primary bg-muted"
-                                            : "border-border hover:border-primary/50"
+                                            ? "border-primary bg-primary/20 scale-100 sm:scale-102"
+                                            : "border-border hover:border-muted-foreground/20"
                                         )}
                                       >
-                                        <div className="flex items-center gap-3">
-                                          <div
-                                            className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10"
-                                          >
-                                            <level.icon className="w-5 h-5 text-primary" />
-                                          </div>
-                                          <div className="flex-1">
-                                            <h4 className="font-semibold text-foreground">{level.value}</h4>
-                                            <p className="text-sm text-muted-foreground">{level.description}</p>
-                                          </div>
+                                        <div className="flex flex-col justify-center">
+                                          <h4 className="font-semibold text-foreground">{level.value}</h4>
+                                          <p className="text-sm text-muted-foreground">{level.description}</p>
                                         </div>
                                       </button>
                                     ))}
@@ -949,26 +906,22 @@ const EditEvent = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-base font-semibold text-foreground flex items-center gap-2">
-                                    <Target className="w-5 h-5 text-muted-foreground" />
                                     Event Type *
                                   </FormLabel>
                                   <div className="space-y-3">
                                     {[
                                       {
                                         value: "casual",
-                                        icon: Heart,
                                         title: "Casual",
                                         description: "Fun and relaxed atmosphere - social play",
                                       },
                                       {
                                         value: "tournament",
-                                        icon: Trophy,
                                         title: "Tournament",
                                         description: "Competitive event with rankings and prizes",
                                       },
                                       {
                                         value: "training",
-                                        icon: Target,
                                         title: "Training",
                                         description: "Skill development and coaching session",
                                       },
@@ -980,20 +933,13 @@ const EditEvent = () => {
                                         className={cn(
                                           "w-full p-4 rounded-xl border transition-all duration-200 text-left hover:translate-x-1",
                                           field.value === type.value
-                                            ? "border-primary bg-muted"
-                                            : "border-border hover:border-primary/50"
+                                            ? "border-blue-500 bg-blue-900/20 scale-100 sm:scale-102"
+                                            : "border-border hover:border-muted-foreground/20"
                                         )}
                                       >
-                                        <div className="flex items-center gap-3">
-                                          <div
-                                            className="w-10 h-10 rounded-lg flex items-center justify-center bg-card"
-                                          >
-                                            <type.icon className="w-5 h-5 text-foreground" />
-                                          </div>
-                                          <div className="flex-1">
-                                            <h4 className="font-semibold text-foreground">{type.title}</h4>
-                                            <p className="text-sm text-muted-foreground">{type.description}</p>
-                                          </div>
+                                        <div className="flex flex-col justify-center">
+                                          <h4 className="font-semibold text-foreground">{type.title}</h4>
+                                          <p className="text-sm text-muted-foreground">{type.description}</p>
                                         </div>
                                       </button>
                                     ))}
@@ -1009,7 +955,7 @@ const EditEvent = () => {
                               variant="outline"
                               onClick={() => setActiveTab("basic")}
                               size="lg"
-                              className="px-8 py-4 h-auto text-base rounded-xl border-border hover:bg-muted text-foreground"
+                              className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-full sm:w-auto"
                             >
                               <ChevronLeft className="w-5 h-5 mr-2" />
                               Previous
@@ -1018,7 +964,7 @@ const EditEvent = () => {
                               type="button"
                               onClick={() => setActiveTab("media")}
                               size="lg"
-                              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 h-auto text-base"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
                             >
                               Next: Media & Rules
                               <ArrowRight className="w-5 h-5 ml-2" />
@@ -1033,22 +979,16 @@ const EditEvent = () => {
                       <div
                         className="p-8 animate-in slide-in-from-right-4 duration-500"
                       >
-                        <div className="flex items-center gap-4 mb-8">
-                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
-                            <Camera className="w-6 h-6 text-foreground" />
-                          </div>
-                          <div>
-                            <h2 className="text-2xl font-bold text-foreground">Media & Guidelines</h2>
-                            <p className="text-muted-foreground">
-                              Update visual content and set expectations for participants
-                            </p>
-                          </div>
+                        <div className="flex flex-col justify-center mb-8">
+                          <h2 className="text-2xl font-bold text-foreground">Media & Guidelines</h2>
+                          <p className="text-muted-foreground">
+                            Update visual content and set expectations for participants
+                          </p>
                         </div>
                         <div className="space-y-10">
                           {/* Images Section */}
                           <div className="space-y-6">
                             <div className="flex items-center gap-2">
-                              <ImagePlus className="w-6 h-6 text-foreground" />
                               <h3 className="text-xl font-semibold text-foreground">Event Images</h3>
                               <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground">Optional</Badge>
                             </div>
@@ -1120,7 +1060,7 @@ const EditEvent = () => {
                               />
                               <label
                                 htmlFor="new-image-upload"
-                                className="inline-flex items-center px-8 py-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 cursor-pointer"
+                                className="inline-flex items-center px-6 sm:px-4 py-3 sm:py-2 rounded-lg sm:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all duration-200 cursor-pointer shadow-md sm:shadow-lg hover:shadow-xl"
                               >
                                 <Upload className="w-5 h-5 mr-3" />
                                 <span className="text-lg font-medium">Choose New Images</span>
@@ -1159,171 +1099,173 @@ const EditEvent = () => {
                             )}
                           </div>
 
-                          {/* Rules Section */}
-                          <div className="space-y-6">
-                            <div className="flex items-center gap-2">
-                              <Shield className="w-6 h-6 text-foreground" />
-                              <h3 className="text-xl font-semibold text-foreground">
-                                Event Rules & Guidelines
-                              </h3>
-                              <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground">Optional</Badge>
-                            </div>
+                          <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
+                            {/* Rules Section */}
+                            <div className="space-y-6">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-semibold text-foreground">
+                                  Event Rules & Guidelines
+                                </h3>
+                                <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>
+                              </div>
 
-                            <Card className="border border-border shadow-sm">
-                              <CardContent className="p-6">
-                                <div className="flex gap-3 mb-4">
-                                  <Input
-                                    value={newRule}
-                                    onChange={(e) => setNewRule(e.target.value)}
-                                    placeholder="Add a rule or guideline for participants..."
-                                    className="flex-1 h-12 text-lg bg-background border-input focus:ring-primary"
-                                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
-                                  />
-                                  <Button
-                                    type="button"
-                                    onClick={addRule}
-                                    disabled={!newRule.trim()}
-                                    className="h-12 px-6 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                                  >
-                                    <Plus className="w-5 h-5 mr-2" />
-                                    Add Rule
-                                  </Button>
-                                </div>
-
-                                {form.getValues("rules")?.length > 0 ? (
-                                  <div className="space-y-3">
-                                    {form.getValues("rules").map((rule, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-start gap-4 p-4 rounded-lg bg-muted border border-border animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                      >
-                                        <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center flex-shrink-0 mt-1">
-                                          <span className="text-sm font-bold text-foreground">
-                                            {index + 1}
-                                          </span>
-                                        </div>
-                                        <p className="flex-1 text-foreground text-lg leading-relaxed">
-                                          {rule}
-                                        </p>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => removeRule(index)}
-                                          className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
-                                        >
-                                          <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
-                                    <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                                    <h4 className="text-lg font-medium text-foreground mb-2">
-                                      No Rules Added Yet
-                                    </h4>
-                                    <p className="text-muted-foreground">
-                                      Add rules to help participants understand expectations and guidelines.
-                                    </p>
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          </div>
-
-                          {/* Equipment Section */}
-                          <div className="space-y-6">
-                            <div className="flex items-center gap-2">
-                              <Target className="w-6 h-6 text-foreground" />
-                              <h3 className="text-xl font-semibold text-foreground">
-                                Required Equipment
-                              </h3>
-                              <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground">Optional</Badge>
-                            </div>
-
-                            <Card className="border border-border shadow-sm">
-                              <CardContent className="p-6">
-                                <div className="flex gap-3 mb-4">
-                                  <Input
-                                    value={newEquipment.item}
-                                    onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
-                                    placeholder="Add equipment needed for the event..."
-                                    className="flex-1 h-12 text-lg bg-background border-input focus:ring-primary"
-                                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
-                                  />
-                                  <div className="flex items-center gap-3 px-4 py-2 bg-muted rounded-lg border border-border">
-                                    <input
-                                      type="checkbox"
-                                      id="equipment-required"
-                                      checked={newEquipment.required}
-                                      onChange={(e) =>
-                                        setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))
-                                      }
-                                      className="w-4 h-4 text-foreground rounded border-input focus:ring-primary"
+                              <Card className="border border-border shadow-sm">
+                                <CardContent className="p-6">
+                                  <div className="flex gap-3 mb-4">
+                                    <Input
+                                      value={newRule}
+                                      onChange={(e) => setNewRule(e.target.value)}
+                                      placeholder="Add a rule or guideline for participants..."
+                                      className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
+                                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
                                     />
-                                    <label
-                                      htmlFor="equipment-required"
-                                      className="text-sm font-medium text-foreground whitespace-nowrap"
+                                    <Button
+                                      type="button"
+                                      onClick={addRule}
+                                      disabled={!newRule.trim()}
+                                      className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
                                     >
-                                      Required
-                                    </label>
+                                      <Plus className="w-5 h-5 mr-2" />
+                                      Add Rule
+                                    </Button>
                                   </div>
-                                  <Button
-                                    type="button"
-                                    onClick={addEquipment}
-                                    disabled={!newEquipment.item.trim()}
-                                    className="h-12 px-6 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                                  >
-                                    <Plus className="w-5 h-5 mr-2" />
-                                    Add
-                                  </Button>
-                                </div>
 
-                                {form.getValues("equipment")?.length > 0 ? (
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {form.getValues("equipment").map((item, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-center justify-between p-4 rounded-lg bg-muted border border-border animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                      >
-                                        <div className="flex items-center gap-3">
-                                          <CheckCircle className="w-5 h-5 text-foreground" />
-                                          <span className="text-foreground font-medium">
-                                            {item.item}
-                                          </span>
-                                          {item.required && (
-                                            <Badge variant="destructive" className="text-xs">
-                                              Required
-                                            </Badge>
-                                          )}
-                                        </div>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => removeEquipment(index)}
-                                          className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                  {form.getValues("rules")?.length > 0 ? (
+                                    <div className="space-y-3">
+                                      {form.getValues("rules").map((rule, index) => (
+                                        <div
+                                          key={index}
+                                          className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         >
-                                          <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                      </div>
-                                    ))}
+                                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
+                                            <span className="text-xs sm:text-sm font-bold text-white">
+                                              {index + 1}
+                                            </span>
+                                          </div>
+                                          <p className="flex-1 mt-1 text-foreground text-base leading-relaxed">
+                                            {rule}
+                                          </p>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => removeRule(index)}
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                          >
+                                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
+                                      <Shield className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                                      <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
+                                        No Rules Added Yet
+                                      </h4>
+                                      <p className="text-muted-foreground text-xs sm:text-sm">
+                                        Add rules to help participants understand expectations and guidelines.
+                                      </p>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            </div>
+
+                            {/* Equipment Section */}
+                            <div className="space-y-6">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-semibold text-foreground">
+                                  Required Equipment
+                                </h3>
+                                <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground">Optional</Badge>
+                              </div>
+
+                              <Card className="border border-border shadow-sm">
+                                <CardContent className="p-6">
+                                  <div className="flex gap-3 mb-4">
+                                    <Input
+                                      value={newEquipment.item}
+                                      onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
+                                      placeholder="Add equipment needed for the event..."
+                                      className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
+                                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
+                                    />
+                                    <div className="flex items-center gap-3 px-4 py-2 bg-muted rounded-lg border border-border">
+                                      <input
+                                        type="checkbox"
+                                        id="equipment-required"
+                                        checked={newEquipment.required}
+                                        onChange={(e) =>
+                                          setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))
+                                        }
+                                        className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600"
+                                      />
+                                      <label
+                                        htmlFor="equipment-required"
+                                        className="text-xs sm:text-sm font-medium text-foreground whitespace-nowrap"
+                                      >
+                                        Required
+                                      </label>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      onClick={addEquipment}
+                                      disabled={!newEquipment.item.trim()}
+                                      className="h-12 px-6 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                                    >
+                                      <Plus className="w-5 h-5 mr-2" />
+                                      Add
+                                    </Button>
                                   </div>
-                                ) : (
-                                  <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
-                                    <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                                    <h4 className="text-lg font-medium text-foreground mb-2">
-                                      No Equipment Listed
-                                    </h4>
-                                    <p className="text-muted-foreground">
-                                      List any equipment or gear participants should bring to the event.
-                                    </p>
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
+
+                                  {form.getValues("equipment")?.length > 0 ? (
+                                    <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                                      {form.getValues("equipment").map((item, index) => (
+                                        <div
+                                          key={index}
+                                          className="flex items-center justify-between p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                        >
+                                          <div className="flex items-center gap-2 sm:gap-3">
+                                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                                            <span className="text-foreground font-medium text-sm sm:text-base">
+                                              {item.item}
+                                            </span>
+                                            {item.required && (
+                                              <Badge variant="destructive" className="text-xs">
+                                                Required
+                                              </Badge>
+                                            )}
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => removeEquipment(index)}
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-900/20"
+                                          >
+                                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
+                                      <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                                      <h4 className="text-lg font-medium text-foreground mb-2">
+                                        No Equipment Listed
+                                      </h4>
+                                      <p className="text-muted-foreground">
+                                        List any equipment or gear participants should bring to the event.
+                                      </p>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            </div>
                           </div>
+
+
 
                           <div className="flex justify-between pt-6">
                             <Button
@@ -1331,7 +1273,7 @@ const EditEvent = () => {
                               variant="outline"
                               onClick={() => setActiveTab("details")}
                               size="lg"
-                              className="px-8 py-4 rounded-xl border-border hover:bg-muted text-foreground"
+                              className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-full sm:w-auto"
                             >
                               <ChevronLeft className="w-5 h-5 mr-2" />
                               Previous
@@ -1340,7 +1282,7 @@ const EditEvent = () => {
                               type="button"
                               onClick={() => setActiveTab("review")}
                               size="lg"
-                              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 rounded-xl"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
                             >
                               Next: Review & Save
                               <ArrowRight className="w-5 h-5 ml-2" />
@@ -1355,18 +1297,13 @@ const EditEvent = () => {
                       <div
                         className="p-8 animate-in slide-in-from-right-4 duration-500"
                       >
-                        <div className="flex items-center gap-4 mb-8">
-                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
-                            <Eye className="w-6 h-6 text-foreground" />
-                          </div>
-                          <div>
-                            <h2 className="text-2xl font-bold text-foreground">
-                              Review & Save Changes
-                            </h2>
-                            <p className="text-muted-foreground">
-                              Review all changes before saving your updated event
-                            </p>
-                          </div>
+                        <div className="flex flex-col justify-center mb-8">
+                          <h2 className="text-2xl font-bold text-foreground">
+                            Review & Save Changes
+                          </h2>
+                          <p className="text-muted-foreground">
+                            Review all changes before saving your updated event
+                          </p>
                         </div>
 
                         <div className="space-y-8">
@@ -1403,21 +1340,20 @@ const EditEvent = () => {
                                     </div>
                                   </div>
 
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
                                     <div className="flex items-center gap-2">
-                                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                                      <span className="text-foreground">
+                                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />          <span className="text-foreground">
                                         {form.getValues("date") ? new Date(form.getValues("date")).toLocaleDateString() : "Date"}
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Clock className="w-4 h-4 text-muted-foreground" />
+                                      <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
                                       <span className="text-foreground">
                                         {form.getValues("time") || "Time"}
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Users className="w-4 h-4 text-muted-foreground" />
+                                      <Users className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
                                       <span className="text-foreground">
                                         {form.getValues("maxParticipants")} participants
                                       </span>
@@ -1425,7 +1361,7 @@ const EditEvent = () => {
                                   </div>
 
                                   <div className="flex items-center gap-2 text-sm">
-                                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
                                     <span className="text-foreground">
                                       {[
                                         form.getValues("location.address"),
@@ -1437,9 +1373,9 @@ const EditEvent = () => {
 
                                   {form.getValues("registrationFee") > 0 && (
                                     <div className="flex items-center gap-2 text-sm">
-                                      <DollarSign className="w-4 h-4 text-muted-foreground" />
+                                      <IndianRupee className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
                                       <span className="text-foreground font-semibold">
-                                        ${form.getValues("registrationFee")} registration fee
+                                        {form.getValues("registrationFee")} registration fee
                                       </span>
                                     </div>
                                   )}
@@ -1462,7 +1398,6 @@ const EditEvent = () => {
                               <Card className="border-border">
                                 <CardHeader>
                                   <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                                    <Shield className="w-5 h-5 text-muted-foreground" />
                                     Event Rules ({form.getValues("rules").length})
                                   </CardTitle>
                                 </CardHeader>
@@ -1490,7 +1425,6 @@ const EditEvent = () => {
                               <Card className="border-border">
                                 <CardHeader>
                                   <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                                    <Target className="w-5 h-5 text-muted-foreground" />
                                     Equipment ({form.getValues("equipment").length})
                                   </CardTitle>
                                 </CardHeader>
@@ -1518,10 +1452,10 @@ const EditEvent = () => {
 
                           {/* Completion Status */}
                           <Card className={cn(
-                            "border",
+                            "border-2",
                             completionProgress === 100
-                              ? "border-green-900 bg-green-900/10"
-                              : "border-amber-900 bg-amber-900/10"
+                              ? "border-primary/40 bg-primary/10"
+                              : "border-orange-600/40 bg-orange-100 dark:bg-orange-950/20"
                           )}>
                             <CardContent className="p-6">
                               <div className="flex items-center gap-3 mb-4">
@@ -1564,7 +1498,7 @@ const EditEvent = () => {
                               Previous
                             </Button>
 
-                            <div className="flex gap-4">
+                            <div className="flex sm:flex-row flex-col gap-4">
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1577,7 +1511,7 @@ const EditEvent = () => {
 
                               <Button
                                 type="submit"
-                                disabled={loading || completionProgress < 100}
+                                disabled={loading}
                                 size="lg"
                                 className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
                               >
@@ -1588,7 +1522,6 @@ const EditEvent = () => {
                                   </>
                                 ) : (
                                   <>
-                                    <Save className="w-5 h-5 mr-2" />
                                     Save Changes
                                   </>
                                 )}

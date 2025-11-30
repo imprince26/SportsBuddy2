@@ -4,9 +4,7 @@ export const eventSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters").max(100),
   category: z.string().min(1, "Please select a category"),
   description: z.string().min(20, "Description must be at least 20 characters").max(1000),
-  date: z.string().refine((date) => new Date(date) > new Date(), {
-    message: "Event date must be in the future",
-  }),
+  date: z.string().min(1, "Date is required"),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format"),
   location: z.object({
     address: z.string().min(5, "Address is required"),

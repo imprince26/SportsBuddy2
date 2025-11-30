@@ -350,12 +350,12 @@ const EditEvent = () => {
     return (
       <div
         className={cn(
-          "relative w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300",
+          "relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
           isActive
-            ? "bg-primary text-primary-foreground shadow-md"
+            ? "bg-primary text-white shadow-lg scale-110"
             : isCompleted
-              ? "bg-muted text-foreground"
-              : "bg-card text-muted-foreground border border-border"
+              ? "bg-primary text-white"
+              : "bg-slate-900 text-slate-400 border border-slate-800"
         )}
       >
         {isCompleted ? (
@@ -424,8 +424,6 @@ const EditEvent = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-
-
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="animate-in fade-in duration-500">
           {/* Header */}
@@ -508,7 +506,7 @@ const EditEvent = () => {
                   className={cn(
                     "p-4 rounded-xl border transition-all duration-300 text-left group hover:-translate-y-0.5 active:scale-95",
                     activeTab === step.id
-                      ? "border-primary bg-card shadow-md"
+                      ? "border-primary bg-card shadow-md scale-[1.02] "
                       : "border-border bg-card/50 hover:border-primary/50"
                   )}
                 >
@@ -568,7 +566,7 @@ const EditEvent = () => {
                                   <Input
                                     placeholder="Enter an exciting and descriptive event name"
                                     {...field}
-                                    className="h-12 text-base bg-background border-input focus:ring-primary"
+                                    className="h-12 text-sm sm:text-base bg-background border-input focus:ring-primary"
                                   />
                                 </FormControl>
                                 <FormDescription className="text-muted-foreground">
@@ -601,7 +599,7 @@ const EditEvent = () => {
                                       )}
                                     >
                                       <div className="flex flex-col items-center justify-center gap-3 mb-2">
-                                        <h3 className="font-semibold text-foreground">{category.label}</h3>
+                                        <h3 className="font-semibold text-xs sm:text-sm text-foreground">{category.label}</h3>
                                       </div>
                                     </button>
                                   ))}
@@ -625,9 +623,9 @@ const EditEvent = () => {
                                 <FormControl>
                                   <Textarea
                                     placeholder="Describe your event in detail..."
-                                    rows={4}
+                                    rows={6}
                                     {...field}
-                                    className="text-base bg-background border-input focus:ring-primary resize-none"
+                                    className="text-sm sm:text-base bg-background border-input focus:ring-primary resize-none"
                                   />
                                 </FormControl>
                                 <FormDescription className="text-muted-foreground">
@@ -649,11 +647,10 @@ const EditEvent = () => {
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                       <Input
                                         type="date"
                                         {...field}
-                                        className="h-12 pl-12 text-base bg-background border-input focus:ring-primary"
+                                        className="h-12 text-sm sm:text-base bg-background border-input focus:ring-primary"
                                       />
                                     </div>
                                   </FormControl>
@@ -671,11 +668,10 @@ const EditEvent = () => {
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                       <Input
                                         type="time"
                                         {...field}
-                                        className="h-12 pl-12 text-base bg-background border-input focus:ring-primary"
+                                        className="h-12 text-sm sm:text-base bg-background border-input focus:ring-primary"
                                       />
                                     </div>
                                   </FormControl>
@@ -695,7 +691,7 @@ const EditEvent = () => {
                               {/* Venue Selection */}
                               <div className="space-y-4 p-4 bg-background rounded-lg border border-border">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="font-semibold text-foreground">Select Venue (Optional)</h4>
+                                  <h4 className="font-semibold text-sm sm:text-base text-foreground">Select Venue (Optional)</h4>
                                 </div>
 
                                 <VenueSelector
@@ -718,11 +714,10 @@ const EditEvent = () => {
                                     <FormLabel className="text-base font-semibold text-foreground">Address *</FormLabel>
                                     <FormControl>
                                       <div className="relative">
-                                        <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                                         <Input
                                           placeholder="Enter the complete venue address"
                                           {...field}
-                                          className="h-12 pl-12 text-base bg-background border-input focus:ring-primary"
+                                          className="h-12 text-sm sm:text-base bg-background border-input focus:ring-primary"
                                         />
                                       </div>
                                     </FormControl>
@@ -740,7 +735,7 @@ const EditEvent = () => {
                                       <Input
                                         placeholder="Enter city name"
                                         {...field}
-                                        className="h-12 text-base bg-background border-input focus:ring-primary"
+                                        className="h-12 text-sm sm:text-base bg-background border-input focus:ring-primary"
                                       />
                                     </FormControl>
                                     <FormMessage />
@@ -759,7 +754,7 @@ const EditEvent = () => {
                                       <Input
                                         placeholder="Enter state (optional)"
                                         {...field}
-                                        className="h-12 text-base bg-background border-input focus:ring-primary"
+                                        className="h-12 text-sm sm:text-base bg-background border-input focus:ring-primary"
                                       />
                                     </FormControl>
                                     <FormMessage />
@@ -774,7 +769,7 @@ const EditEvent = () => {
                               type="button"
                               onClick={() => setActiveTab("details")}
                               size="lg"
-                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-auto"
                             >
                               Next: Event Details
                               <ArrowRight className="w-5 h-5 ml-2" />
@@ -885,13 +880,13 @@ const EditEvent = () => {
                                         className={cn(
                                           "w-full p-4 rounded-xl border transition-all duration-200 text-left hover:translate-x-1",
                                           field.value === level.value
-                                            ? "border-primary bg-primary/20 scale-100 sm:scale-102"
+                                            ? "border-primary bg-primary/20 scale-[1.02]"
                                             : "border-border hover:border-muted-foreground/20"
                                         )}
                                       >
                                         <div className="flex flex-col justify-center">
-                                          <h4 className="font-semibold text-foreground">{level.value}</h4>
-                                          <p className="text-sm text-muted-foreground">{level.description}</p>
+                                          <h4 className="font-semibold text-sm sm:text-base text-foreground">{level.value}</h4>
+                                          <p className="text-xs sm:text-sm text-muted-foreground">{level.description}</p>
                                         </div>
                                       </button>
                                     ))}
@@ -933,13 +928,13 @@ const EditEvent = () => {
                                         className={cn(
                                           "w-full p-4 rounded-xl border transition-all duration-200 text-left hover:translate-x-1",
                                           field.value === type.value
-                                            ? "border-blue-500 bg-blue-900/20 scale-100 sm:scale-102"
+                                            ? "border-blue-500 bg-blue-900/20 scale-[1.02]"
                                             : "border-border hover:border-muted-foreground/20"
                                         )}
                                       >
                                         <div className="flex flex-col justify-center">
-                                          <h4 className="font-semibold text-foreground">{type.title}</h4>
-                                          <p className="text-sm text-muted-foreground">{type.description}</p>
+                                          <h4 className="font-semibold text-sm sm:text-base text-foreground">{type.title}</h4>
+                                          <p className="text-xs sm:text-sm text-muted-foreground">{type.description}</p>
                                         </div>
                                       </button>
                                     ))}
@@ -949,13 +944,13 @@ const EditEvent = () => {
                               )}
                             />
                           </div>
-                          <div className="flex justify-between pt-6">
+                          <div className="flex sm:flex-row flex-col space-y-4 sm:space-y-0 justify-between pt-6">
                             <Button
                               type="button"
                               variant="outline"
                               onClick={() => setActiveTab("basic")}
                               size="lg"
-                              className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-full sm:w-auto"
+                              className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-auto"
                             >
                               <ChevronLeft className="w-5 h-5 mr-2" />
                               Previous
@@ -964,7 +959,7 @@ const EditEvent = () => {
                               type="button"
                               onClick={() => setActiveTab("media")}
                               size="lg"
-                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-auto"
                             >
                               Next: Media & Rules
                               <ArrowRight className="w-5 h-5 ml-2" />
@@ -977,7 +972,7 @@ const EditEvent = () => {
                     {/* Media & Rules Tab */}
                     {activeTab === "media" && (
                       <div
-                        className="p-8 animate-in slide-in-from-right-4 duration-500"
+                        className="p-4 sm:p-8 animate-in slide-in-from-right-4 duration-500"
                       >
                         <div className="flex flex-col justify-center mb-8">
                           <h2 className="text-2xl font-bold text-foreground">Media & Guidelines</h2>
@@ -1026,7 +1021,7 @@ const EditEvent = () => {
                             {/* Image Upload Area */}
                             <div
                               className={cn(
-                                "border-2 border-dashed rounded-2xl p-8 text-center transition-colors duration-200 bg-card/50",
+                                "border-2 border-dashed border-border rounded-lg sm:rounded-2xl p-4 sm:p-8 text-center hover:border-blue-500 transition-colors duration-200 bg-muted/50",
                                 dragActive
                                   ? "border-primary bg-muted"
                                   : "border-border hover:border-primary/50"
@@ -1036,18 +1031,18 @@ const EditEvent = () => {
                               onDragOver={handleDrag}
                               onDrop={handleDrop}
                             >
-                              <div className="mb-6">
-                                <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                  <ImagePlus className="w-10 h-10 text-foreground" />
+                              <div className="mb-4 sm:mb-6">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-lg sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-md sm:shadow-lg">
+                                  <ImagePlus className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                                 </div>
-                                <h4 className="text-xl font-semibold text-foreground mb-3">
-                                  Upload New Images
+                                <h4 className="text-base sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
+                                  Upload Event Images
                                 </h4>
-                                <p className="text-muted-foreground mb-3 text-lg">
-                                  Add more stunning visuals to your event
+                                <p className="text-muted-foreground mb-2 sm:mb-3 text-xs sm:text-lg">
+                                  Add stunning visuals to showcase your event
                                 </p>
-                                <p className="text-sm text-muted-foreground">
-                                  PNG, JPG, WEBP up to 5MB each • Maximum 5 images total
+                                <p className="text-xs sm:text-sm text-muted-foreground">
+                                  PNG, JPG, WEBP up to 5MB each • Maximum 5 images
                                 </p>
                               </div>
                               <input
@@ -1060,10 +1055,10 @@ const EditEvent = () => {
                               />
                               <label
                                 htmlFor="new-image-upload"
-                                className="inline-flex items-center px-6 sm:px-4 py-3 sm:py-2 rounded-lg sm:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all duration-200 cursor-pointer shadow-md sm:shadow-lg hover:shadow-xl"
+                                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all duration-200 cursor-pointer shadow-md sm:shadow-lg hover:shadow-xl"
                               >
                                 <Upload className="w-5 h-5 mr-3" />
-                                <span className="text-lg font-medium">Choose New Images</span>
+                                <span className="text-sm sm:text-lg font-medium">Choose New Images</span>
                               </label>
                             </div>
 
@@ -1101,33 +1096,33 @@ const EditEvent = () => {
 
                           <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
                             {/* Rules Section */}
-                            <div className="space-y-6">
+                            <div className="space-y-4 sm:space-y-6">
                               <div className="flex items-center gap-2">
-                                <h3 className="text-xl font-semibold text-foreground">
-                                  Event Rules & Guidelines
-                                </h3>
-                                <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>
-                              </div>
+                                <h3 className="text-base sm:text-xl font-semibold text-foreground">Event Rules & Guidelines</h3>
+                                <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>                              </div>
 
-                              <Card className="border border-border shadow-sm">
-                                <CardContent className="p-6">
-                                  <div className="flex gap-3 mb-4">
+                              <Card className="border-2 border-border">
+                                <CardContent className="p-4 sm:p-6">
+                                  <div className="flex flex-col  gap-2 sm:gap-3 mb-4">
                                     <Input
                                       value={newRule}
                                       onChange={(e) => setNewRule(e.target.value)}
                                       placeholder="Add a rule or guideline for participants..."
-                                      className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
+                                      className="flex-1 h-10 sm:h-12 text-xs sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg p-4"
                                       onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
                                     />
-                                    <Button
-                                      type="button"
-                                      onClick={addRule}
-                                      disabled={!newRule.trim()}
-                                      className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
-                                    >
-                                      <Plus className="w-5 h-5 mr-2" />
-                                      Add Rule
-                                    </Button>
+                                    <div className="">
+
+                                      <Button
+                                        type="button"
+                                        onClick={addRule}
+                                        disabled={!newRule.trim()}
+                                        className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-auto"
+                                      >
+                                        <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                                        Add Rule
+                                      </Button>
+                                    </div>
                                   </div>
 
                                   {form.getValues("rules")?.length > 0 ? (
@@ -1135,14 +1130,14 @@ const EditEvent = () => {
                                       {form.getValues("rules").map((rule, index) => (
                                         <div
                                           key={index}
-                                          className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                          className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         >
-                                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
+                                          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
                                             <span className="text-xs sm:text-sm font-bold text-white">
                                               {index + 1}
                                             </span>
                                           </div>
-                                          <p className="flex-1 mt-1 text-foreground text-base leading-relaxed">
+                                          <p className="flex-1 mt-1 text-foreground text-sm sm:text-base leading-relaxed">
                                             {rule}
                                           </p>
                                           <Button
@@ -1159,7 +1154,6 @@ const EditEvent = () => {
                                     </div>
                                   ) : (
                                     <div className="text-center py-6 sm:py-8 border-2 border-dashed border-border rounded-md sm:rounded-lg bg-muted/50">
-                                      <Shield className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
                                       <h4 className="text-base sm:text-lg font-medium text-foreground mb-2">
                                         No Rules Added Yet
                                       </h4>
@@ -1175,48 +1169,50 @@ const EditEvent = () => {
                             {/* Equipment Section */}
                             <div className="space-y-6">
                               <div className="flex items-center gap-2">
-                                <h3 className="text-xl font-semibold text-foreground">
-                                  Required Equipment
-                                </h3>
-                                <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground">Optional</Badge>
+                                <h3 className="text-base sm:text-xl font-semibold text-foreground">Required Equipment</h3>
+                                <Badge variant="secondary" className="ml-2 text-xs sm:text-sm">Optional</Badge>
                               </div>
 
-                              <Card className="border border-border shadow-sm">
-                                <CardContent className="p-6">
-                                  <div className="flex gap-3 mb-4">
+                              <Card className="border-2 border-border">
+                                <CardContent className="p-4 sm:p-6">
+                                  <div className="flex flex-col gap-2 sm:gap-3 mb-4">
                                     <Input
                                       value={newEquipment.item}
                                       onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
                                       placeholder="Add equipment needed for the event..."
-                                      className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
+                                      className="flex-1 h-10 sm:h-12 text-xs md:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg p-4"
                                       onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
                                     />
-                                    <div className="flex items-center gap-3 px-4 py-2 bg-muted rounded-lg border border-border">
-                                      <input
-                                        type="checkbox"
-                                        id="equipment-required"
-                                        checked={newEquipment.required}
-                                        onChange={(e) =>
-                                          setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))
-                                        }
-                                        className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600"
-                                      />
-                                      <label
-                                        htmlFor="equipment-required"
-                                        className="text-xs sm:text-sm font-medium text-foreground whitespace-nowrap"
+                                    <div className="flex items-center justify-between gap-2 sm:gap-3">
+                                      <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-muted rounded-md sm:rounded-lg border border-border">
+                                        <input
+                                          type="checkbox"
+                                          id="equipment-required"
+                                          checked={newEquipment.required}
+                                          onChange={(e) =>
+                                            setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))
+                                          }
+                                          className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600"
+                                        />
+                                        <label
+                                          htmlFor="equipment-required"
+                                          className="text-xs sm:text-sm font-medium text-foreground whitespace-nowrap"
+                                        >
+                                          Required
+                                        </label>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        onClick={addEquipment}
+                                        disabled={!newEquipment.item.trim()}
+                                        className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-auto"
                                       >
-                                        Required
-                                      </label>
+                                        <Plus className="w-5 h-5 mr-2" />
+                                        Add
+                                      </Button>
                                     </div>
-                                    <Button
-                                      type="button"
-                                      onClick={addEquipment}
-                                      disabled={!newEquipment.item.trim()}
-                                      className="h-12 px-6 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                                    >
-                                      <Plus className="w-5 h-5 mr-2" />
-                                      Add
-                                    </Button>
+
+
                                   </div>
 
                                   {form.getValues("equipment")?.length > 0 ? (
@@ -1251,7 +1247,6 @@ const EditEvent = () => {
                                     </div>
                                   ) : (
                                     <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-card/50 animate-in fade-in zoom-in duration-300">
-                                      <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                                       <h4 className="text-lg font-medium text-foreground mb-2">
                                         No Equipment Listed
                                       </h4>
@@ -1267,13 +1262,13 @@ const EditEvent = () => {
 
 
 
-                          <div className="flex justify-between pt-6">
+                          <div className="flex sm:flex-row flex-col space-y-4 sm:space-y-0 justify-between pt-6">
                             <Button
                               type="button"
                               variant="outline"
                               onClick={() => setActiveTab("details")}
                               size="lg"
-                              className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-full sm:w-auto"
+                              className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-auto"
                             >
                               <ChevronLeft className="w-5 h-5 mr-2" />
                               Previous
@@ -1282,7 +1277,7 @@ const EditEvent = () => {
                               type="button"
                               onClick={() => setActiveTab("review")}
                               size="lg"
-                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                              className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-auto"
                             >
                               Next: Review & Save
                               <ArrowRight className="w-5 h-5 ml-2" />
@@ -1486,13 +1481,13 @@ const EditEvent = () => {
                           </Card>
 
                           {/* Action Buttons */}
-                          <div className="flex justify-between pt-6">
+                          <div className="flex sm:flex-row sm:space-y-0 flex-col space-y-4 justify-between pt-6">
                             <Button
                               type="button"
                               variant="outline"
                               onClick={() => setActiveTab("media")}
                               size="lg"
-                              className="px-8 py-4 rounded-xl border-border hover:bg-muted text-foreground"
+                              className="px-8 py-4 rounded-xl border-border hover:bg-muted text-foreground w-auto"
                             >
                               <ChevronLeft className="w-5 h-5 mr-2" />
                               Previous
@@ -1503,7 +1498,7 @@ const EditEvent = () => {
                                 type="button"
                                 variant="outline"
                                 size="lg"
-                                className="px-8 py-4 rounded-xl border-border hover:bg-muted text-foreground"
+                                className="px-8 py-4 rounded-xl border-border hover:bg-muted text-foreground w-auto"
                                 onClick={() => navigate(`/events/${id}`)}
                               >
                                 Cancel Changes
@@ -1513,7 +1508,7 @@ const EditEvent = () => {
                                 type="submit"
                                 disabled={loading}
                                 size="lg"
-                                className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                                className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 w-auto"
                               >
                                 {loading ? (
                                   <>

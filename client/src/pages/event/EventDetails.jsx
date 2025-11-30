@@ -843,33 +843,28 @@ const EventDetails = () => {
               {/* Enhanced Tabs */}
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-4 bg-muted border border-border rounded-xl p-1">
+                  <TabsList className="flex md:grid md:grid-cols-4 w-full bg-muted border border-border rounded-xl p-1 gap-1 overflow-x-auto md:overflow-visible">
                     <TabsTrigger
                       value="overview"
-                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300 "
+                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300 text-xs sm:text-sm flex-shrink-0"
                     >
-                      {/* <Info className="w-4 h-4 mr-2" /> */}
                       Overview
                     </TabsTrigger>
                     <TabsTrigger
                       value="participants"
-                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300"
+                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300 text-xs sm:text-sm flex-shrink-0"
                     >
-                      {/* <Users className="w-4 h-4 mr-2" /> */}
-                      <span className="">Participants</span>
-                      {/* <span className="sm:hidden">({event.participantCount})</span> */}
+                      Participants
                     </TabsTrigger>
                     <TabsTrigger
                       value="reviews"
-                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300"
+                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300 text-xs sm:text-sm flex-shrink-0"
                     >
-                      {/* <Star className="w-4 h-4 mr-2" /> */}
-                      <span className="">Reviews</span>
-                      {/* <span className="sm:hidden">({event.ratings?.length || 0})</span> */}
+                      Reviews
                     </TabsTrigger>
                     <TabsTrigger
                       value="chat"
-                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300"
+                      className="data-[state=active]:bg-background data-[state=active]:text-foreground rounded-lg transition-all duration-300 text-xs sm:text-sm flex-shrink-0"
                       onClick={() => {
                         if (isAuthenticated && isParticipant()) {
                           setShowChatModal(true)
@@ -880,7 +875,6 @@ const EventDetails = () => {
                         }
                       }}
                     >
-                      {/* <MessageSquare className="w-4 h-4 mr-2" /> */}
                       Chat
                     </TabsTrigger>
                   </TabsList>
@@ -900,7 +894,7 @@ const EventDetails = () => {
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <p className="whitespace-pre-line text-muted-foreground leading-relaxed text-lg">
+                            <p className="whitespace-pre-line text-muted-foreground leading-relaxed text-base sm:text-lg">
                               {event.description}
                             </p>
                           </CardContent>
@@ -921,13 +915,13 @@ const EventDetails = () => {
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                              <div className="flex justify-between p-3 bg-muted/50 rounded-lg">
                                 <div className="flex items-center gap-3">
                                   <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                   <span className="font-medium text-muted-foreground">Date</span>
                                 </div>
-                                <span className="text-foreground font-semibold">
-                                  {format(new Date(event.date), "EEEE, MMMM dd, yyyy")}
+                                <span className="text-foreground  font-semibold">
+                                  {format(new Date(event.date), "MMMM dd, yyyy")}
                                 </span>
                               </div>
 

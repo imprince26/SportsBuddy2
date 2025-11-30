@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { toast } from "react-hot-toast"
-import { useEvents } from "@/hooks/useEvents"
 import { useVenue } from "@/hooks/useVenue"
 import { ChevronLeft, Eye, CheckCircle, Camera, FileText, Settings, ArrowRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
@@ -14,17 +12,9 @@ import { eventSchema, defaultEventValues } from "@/schemas/eventSchema"
 import EventCreateForm from "@/components/events/EventCreateForm"
 
 const CreateEventForm = () => {
-  const navigate = useNavigate()
-  const { createEvent } = useEvents()
   const { getVenues } = useVenue()
-  const [isLoading, setIsLoading] = useState(false)
-  const [images, setImages] = useState([])
-  const [imagePreview, setImagePreview] = useState([])
-  const [newRule, setNewRule] = useState("")
-  const [newEquipment, setNewEquipment] = useState({ item: "", required: false })
   const [completionProgress, setCompletionProgress] = useState(0)
   const [activeTab, setActiveTab] = useState("basic")
-  const [selectedVenue, setSelectedVenue] = useState(null)
 
   const form = useForm({
     resolver: zodResolver(eventSchema),
@@ -63,18 +53,6 @@ const CreateEventForm = () => {
     },
   ]
 
-  const categories = [
-    { value: "Football", label: "Football", participants: "50K+" },
-    { value: "Basketball", label: "Basketball", participants: "45K+" },
-    { value: "Tennis", label: "Tennis", participants: "30K+" },
-    { value: "Running", label: "Running", participants: "60K+" },
-    { value: "Cycling", label: "Cycling", participants: "25K+" },
-    { value: "Swimming", label: "Swimming", participants: "20K+" },
-    { value: "Volleyball", label: "Volleyball", participants: "15K+" },
-    { value: "Cricket", label: "Cricket", participants: "40K+" },
-    { value: "Other", label: "Other Sports", participants: "10K+" },
-  ]
-
   // Page Title
   useEffect(() => {
     document.title = "Create Event - SportsBuddy"
@@ -105,92 +83,6 @@ const CreateEventForm = () => {
     const subscription = form.watch(() => calculateProgress())
     return () => subscription.unsubscribe()
   }, [form, calculateProgress])
-
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files)
-
-    if (files.length + images.length > 5) {
-      toast.error("Maximum 5 images allowed")
-      return
-    }
-
-    const validFiles = files.filter((file) => {
-      const isValidType = ["image/jpeg", "image/png", "image/webp"].includes(file.type)
-      const isValidSize = file.size <= 5 * 1024 * 1024
-
-      if (!isValidType) {
-        toast.error(`${file.name} is not a supported image type`)
-        return false
-      }
-      if (!isValidSize) {
-        toast.error(`${file.name} is too large (max 5MB)`)
-        return false
-      }
-      return true
-    })
-
-    setImages((prev) => [...prev, ...validFiles])
-    const newPreviews = validFiles.map((file) => URL.createObjectURL(file))
-    setImagePreview((prev) => [...prev, ...newPreviews])
-  }
-
-  const removeImage = (index) => {
-    URL.revokeObjectURL(imagePreview[index])
-    setImages((prev) => prev.filter((_, i) => i !== index))
-    setImagePreview((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  const addRule = () => {
-    if (newRule.trim()) {
-      form.setValue("rules", [...form.getValues("rules"), newRule.trim()])
-      setNewRule("")
-      toast.success("Rule added successfully")
-    }
-  }
-
-  const removeRule = (index) => {
-    const updatedRules = form.getValues("rules").filter((_, i) => i !== index)
-    form.setValue("rules", updatedRules)
-    toast.success("Rule removed")
-  }
-
-  const addEquipment = () => {
-    if (newEquipment.item.trim()) {
-      form.setValue("equipment", [
-        ...form.getValues("equipment"),
-        { item: newEquipment.item.trim(), required: newEquipment.required },
-      ])
-      setNewEquipment({ item: "", required: false })
-      toast.success("Equipment added successfully")
-    }
-  }
-
-  const removeEquipment = (index) => {
-    const updatedEquipment = form.getValues("equipment").filter((_, i) => i !== index)
-    form.setValue("equipment", updatedEquipment)
-    toast.success("Equipment removed")
-  }
-
-  const onSubmit = async (formData) => {
-    try {
-      setIsLoading(true)
-      const data = {
-        ...formData,
-        images: images,
-        venue: selectedVenue?._id || null
-      }
-      const result = await createEvent(data)
-
-      if (result.success) {
-        toast.success("Event created successfully! 🎉")
-        navigate(`/events/${result.event.id}`)
-      }
-    } catch (error) {
-      toast.error(error.message || "Failed to create event")
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const getStepIcon = (step, index) => {
     const StepIcon = step.icon
@@ -223,7 +115,7 @@ const CreateEventForm = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
 
-      <div className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="animate-in fade-in duration-500">
           {/* Header */}
           <div className="mb-6 sm:mb-8 animate-in slide-in-from-bottom-4 duration-500">
@@ -284,20 +176,20 @@ const CreateEventForm = () => {
           </div>
 
           {/* Step Navigation */}
-          <div className="mb-6 sm:mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-100">
-            <div className="grid md:grid-cols-4 grid-cols-1 gap-3 sm:gap-4">
+          <div className="mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-100">
+            <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-4">
               {steps.map((step, index) => (
                 <button
                   key={step.id}
                   onClick={() => setActiveTab(step.id)}
                   className={cn(
-                    "p-4 sm:p-6 rounded-lg sm:rounded-2xl border-2 transition-all duration-300 text-left group hover:-translate-y-0.5 active:scale-95",
+                    "p-4 rounded-xl border transition-all duration-300 text-left group hover:-translate-y-0.5 active:scale-95",
                     activeTab === step.id
-                      ? "border-blue-600 bg-card shadow-lg sm:shadow-xl scale-100 sm:scale-105"
-                      : "border-border bg-card/50 hover:border-muted-foreground/20 hover:shadow-md"
+                      ? "border-primary bg-card shadow-lg sm:shadow-xl scale-[1.02]"
+                      : "border-border bg-card/50 hover:border-primary/50 hover:shadow-md"
                   )}
                 >
-                  <div className="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-3">
+                  <div className="flex items-center gap-4 mb-3">
                     {getStepIcon(step, index)}
                     <div className="flex-1">
                       <h3

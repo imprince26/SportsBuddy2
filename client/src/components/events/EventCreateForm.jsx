@@ -187,7 +187,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                         <Input
                                                             placeholder="Enter an exciting and descriptive event name"
                                                             {...field}
-                                                            className="h-12 sm:h-14 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full text-foreground placeholder:text-muted-foreground"
+                                                            className="h-12 sm:h-14 text-sm sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full text-foreground placeholder:text-muted-foreground"
                                                         />
                                                     </FormControl>
                                                     <FormDescription className="text-muted-foreground text-xs sm:text-sm">
@@ -220,7 +220,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                                 )}
                                                             >
                                                                 <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
-                                                                    <h3 className="font-semibold text-base sm:text-foreground">{category.label}</h3>
+                                                                    <h3 className="font-semibold sm:text-sm text-xs sm:text-foreground">{category.label}</h3>
                                                                 </div>
                                                             </button>
                                                         ))}
@@ -244,9 +244,9 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                     <FormControl>
                                                         <Textarea
                                                             placeholder="Describe your event in detail. What makes it special? What should participants expect? Include any special features, prizes, or unique aspects of your event..."
-                                                            rows={4}
+                                                            rows={6}
                                                             {...field}
-                                                            className="text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 resize-none w-full text-foreground placeholder:text-muted-foreground"
+                                                            className="text-xs sm:text-base bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 resize-none w-full text-foreground placeholder:text-muted-foreground"
                                                         />
                                                     </FormControl>
                                                     <FormDescription className="text-muted-foreground text-xs sm:text-sm">
@@ -268,11 +268,10 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                         </FormLabel>
                                                         <FormControl>
                                                             <div className="relative">
-                                                                <Calendar className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
                                                                 <Input
                                                                     type="date"
                                                                     {...field}
-                                                                    className="h-12 sm:h-14 pl-10 sm:pl-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full text-foreground [color-scheme:dark]"
+                                                                    className="h-12 sm:h-14 text-sm sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full text-foreground [color-scheme:dark]"
                                                                 />
                                                             </div>
                                                         </FormControl>
@@ -293,11 +292,10 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                         </FormLabel>
                                                         <FormControl>
                                                             <div className="relative">
-                                                                <Clock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
                                                                 <Input
                                                                     type="time"
                                                                     {...field}
-                                                                    className="h-12 sm:h-14 pl-10 sm:pl-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full text-foreground [color-scheme:dark]"
+                                                                    className="h-12 sm:h-14 text-sm sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full text-foreground [color-scheme:dark]"
                                                                 />
                                                             </div>
                                                         </FormControl>
@@ -344,11 +342,10 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                             <FormLabel className="text-base sm:text-lg font-semibold text-foreground">Address *</FormLabel>
                                                             <FormControl>
                                                                 <div className="relative">
-                                                                    <MapPin className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
                                                                     <Input
                                                                         placeholder="Enter the complete venue address"
                                                                         {...field}
-                                                                        className="h-12 sm:h-14 pl-10 sm:pl-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full text-foreground placeholder:text-muted-foreground"
+                                                                        className="h-12 sm:h-14 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-lg sm:rounded-xl shadow-sm transition-all duration-200 w-full text-foreground placeholder:text-muted-foreground"
                                                                     />
                                                                 </div>
                                                             </FormControl>
@@ -399,7 +396,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 type="button"
                                                 onClick={() => setActiveTab("details")}
                                                 size="lg"
-                                                className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                                                className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-auto"
                                             >
                                                 Next: Event Details
                                                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -512,13 +509,13 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                                     className={cn(
                                                                         "w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.02] active:scale-98",
                                                                         field.value === level.value
-                                                                            ? "border-primary bg-primary/20 scale-100 sm:scale-102"
+                                                                            ? "border-primary bg-primary/20 scale-[1.02]"
                                                                             : "border-border hover:border-muted-foreground/20"
                                                                     )}
                                                                 >
                                                                     <div className="flex items-center gap-2 sm:gap-3">
                                                                         <div className="flex-1">
-                                                                            <h4 className="font-semibold text-base sm:text-foreground">{level.value}</h4>
+                                                                            <h4 className="font-semibold text-sm sm:text-base sm:text-foreground">{level.value}</h4>
                                                                             <p className="text-xs sm:text-sm text-muted-foreground">{level.description}</p>
                                                                         </div>
                                                                     </div>
@@ -562,13 +559,13 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                                     className={cn(
                                                                         "w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.02] active:scale-98",
                                                                         field.value === type.value
-                                                                            ? "border-blue-500 bg-blue-900/20 scale-100 sm:scale-102"
+                                                                            ? "border-blue-500 bg-blue-900/20 scale-100 sm:scale-[1.02]"
                                                                             : "border-border hover:border-muted-foreground/20"
                                                                     )}
                                                                 >
                                                                     <div className="flex items-center gap-2 sm:gap-3">
                                                                         <div className="flex-1">
-                                                                            <h4 className="font-semibold text-base sm:text-foreground">{type.title}</h4>
+                                                                            <h4 className="font-semibold text-sm sm:text-base sm:text-foreground">{type.title}</h4>
                                                                             <p className="text-xs sm:text-sm text-muted-foreground">{type.description}</p>
                                                                         </div>
                                                                     </div>
@@ -580,13 +577,13 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 )}
                                             />
                                         </div>
-                                        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 pt-4 sm:pt-6">
+                                        <div className="flex sm:flex-row flex-col justify-between gap-3 sm:gap-4 pt-4 sm:pt-6">
                                             <Button
                                                 type="button"
                                                 variant="outline"
                                                 onClick={() => setActiveTab("basic")}
                                                 size="lg"
-                                                className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-full sm:w-auto"
+                                                className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-auto"
                                             >
                                                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                                                 Previous
@@ -595,7 +592,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 type="button"
                                                 onClick={() => setActiveTab("media")}
                                                 size="lg"
-                                                className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                                                className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-auto"
                                             >
                                                 Next: Media & Rules
                                                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -694,35 +691,38 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 </div>
                                                 <Card className="border-2 border-border">
                                                     <CardContent className="p-4 sm:p-6">
-                                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+                                                        <div className="flex flex-col gap-2 sm:gap-3 mb-4">
                                                             <Input
                                                                 value={newRule}
                                                                 onChange={(e) => setNewRule(e.target.value)}
                                                                 placeholder="Add a rule or guideline for participants..."
-                                                                className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
+                                                                className="flex-1 h-10 sm:h-12 text-xs md:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg p-4"
                                                                 onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRule())}
                                                             />
-                                                            <Button
-                                                                type="button"
-                                                                onClick={addRule}
-                                                                disabled={!newRule.trim()}
-                                                                className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
-                                                            >
-                                                                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                                                                Add Rule
-                                                            </Button>
+                                                            <div className="">
+
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={addRule}
+                                                                    disabled={!newRule.trim()}
+                                                                    className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50  w-auto"
+                                                                >
+                                                                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                                                                    Add Rule
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                         {form.getValues("rules")?.length > 0 ? (
                                                             <div className="space-y-2 sm:space-y-3">
                                                                 {form.getValues("rules").map((rule, index) => (
                                                                     <div
                                                                         key={index}
-                                                                        className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                                                        className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md sm:rounded-lg bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
                                                                     >
-                                                                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
+                                                                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
                                                                             <span className="text-xs sm:text-sm font-bold text-white">{index + 1}</span>
                                                                         </div>
-                                                                        <p className="flex-1 mt-1 text-foreground text-base leading-relaxed">
+                                                                        <p className="flex-1 mt-1 text-foreground text-sm sm:text-base leading-relaxed">
                                                                             {rule}
                                                                         </p>
                                                                         <Button
@@ -758,38 +758,41 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 </div>
                                                 <Card className="border-2 border-border">
                                                     <CardContent className="p-4 sm:p-6">
-                                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+                                                        <div className="flex flex-col  gap-2 sm:gap-3 mb-4">
                                                             <Input
                                                                 value={newEquipment.item}
                                                                 onChange={(e) => setNewEquipment((prev) => ({ ...prev, item: e.target.value }))}
                                                                 placeholder="Add equipment needed for the event..."
-                                                                className="flex-1 h-10 sm:h-12 text-base sm:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg"
+                                                                className="flex-1 h-10 sm:h-12 text-xs md:text-lg bg-background border-input focus:border-blue-500 rounded-md sm:rounded-lg p-4"
                                                                 onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addEquipment())}
                                                             />
-                                                            <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-muted rounded-md sm:rounded-lg border border-border">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    id="equipment-required"
-                                                                    checked={newEquipment.required}
-                                                                    onChange={(e) => setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))}
-                                                                    className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600"
-                                                                />
-                                                                <label
-                                                                    htmlFor="equipment-required"
-                                                                    className="text-xs sm:text-sm font-medium text-foreground whitespace-nowrap"
+                                                            <div className="flex justify-between">
+                                                                <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-muted rounded-md sm:rounded-lg border border-border">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        id="equipment-required"
+                                                                        checked={newEquipment.required}
+                                                                        onChange={(e) => setNewEquipment((prev) => ({ ...prev, required: e.target.checked }))}
+                                                                        className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600"
+                                                                    />
+                                                                    <label
+                                                                        htmlFor="equipment-required"
+                                                                        className="text-xs sm:text-sm font-medium text-foreground whitespace-nowrap"
+                                                                    >
+                                                                        Required
+                                                                    </label>
+                                                                </div>
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={addEquipment}
+                                                                    disabled={!newEquipment.item.trim()}
+                                                                    className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-auto"
                                                                 >
-                                                                    Required
-                                                                </label>
+                                                                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                                                                    Add
+                                                                </Button>
                                                             </div>
-                                                            <Button
-                                                                type="button"
-                                                                onClick={addEquipment}
-                                                                disabled={!newEquipment.item.trim()}
-                                                                className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-md sm:rounded-lg disabled:opacity-50 w-full sm:w-auto"
-                                                            >
-                                                                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                                                                Add
-                                                            </Button>
+
                                                         </div>
                                                         {form.getValues("equipment")?.length > 0 ? (
                                                             <div className="grid grid-cols-1 gap-2 sm:gap-3">
@@ -835,13 +838,13 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                         </div>
 
 
-                                        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 pt-4 sm:pt-6">
+                                        <div className="flex sm:flex-row flex-col justify-between gap-3 sm:gap-4 pt-4 sm:pt-6">
                                             <Button
                                                 type="button"
                                                 variant="outline"
                                                 onClick={() => setActiveTab("details")}
                                                 size="lg"
-                                                className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-full sm:w-auto"
+                                                className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl border-2 hover:bg-accent w-auto"
                                             >
                                                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                                                 Previous
@@ -850,7 +853,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                 type="button"
                                                 onClick={() => setActiveTab("review")}
                                                 size="lg"
-                                                className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
+                                                className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 w-auto"
                                             >
                                                 Next: Review & Publish
                                                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -960,7 +963,7 @@ const EventCreateForm = ({ activeTab, setActiveTab, form, completionProgress, se
                                                         <ul className="space-y-2">
                                                             {form.getValues("rules").slice(0, 3).map((rule, index) => (
                                                                 <li key={index} className="flex items-start gap-2 text-xs sm:text-sm">
-                                                                    <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                                                                    <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0 ">
                                                                         {index + 1}
                                                                     </span>
                                                                     <span className="text-muted-foreground">{rule}</span>

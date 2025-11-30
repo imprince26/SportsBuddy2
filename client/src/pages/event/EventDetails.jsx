@@ -70,7 +70,6 @@ import api from "@/utils/api"
 import toast from "react-hot-toast"
 import EmojiPicker from 'emoji-picker-react';
 import { isToday, isYesterday, format as formatDate, isSameDay } from 'date-fns';
-import HeroBg from "@/components/HeroBg"
 
 const EventDetails = () => {
   const { id } = useParams()
@@ -531,9 +530,6 @@ const EventDetails = () => {
     e.target.value = null
   }
 
-  // Animation variants removed
-
-
   // Loading skeleton
   if (loading) {
     return <EventDetailsSkeleton />
@@ -549,8 +545,6 @@ const EventDetails = () => {
   return (
 
     <div className="min-h-screen bg-background relative">
-      <HeroBg />
-
       <div className="relative z-10">
         {/* Hero Section */}
         <div className="relative overflow-hidden border-b border-border bg-background/50 backdrop-blur-sm">

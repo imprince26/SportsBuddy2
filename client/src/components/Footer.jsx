@@ -61,9 +61,6 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="lg:col-span-1 space-y-6">
             <Link to="/" className="inline-flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all duration-300">
-                <Activity className="w-6 h-6 text-primary-foreground" />
-              </div>
               <span className="text-2xl font-bold font-heading tracking-tight text-foreground group-hover:text-primary transition-colors">
                 SportsBuddy
               </span>

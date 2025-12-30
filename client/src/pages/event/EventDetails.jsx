@@ -20,16 +20,11 @@ import {
   Loader2,
   ArrowLeft,
   ArrowRight,
-  Shield,
   Target,
-  TrendingUp,
-  Zap,
   Flag,
   MoreVertical,
   Copy,
   CheckCircle,
-  Info,
-  X,
   Eye,
   Navigation,
   Sparkles,
@@ -38,15 +33,13 @@ import {
   Smile,
   Paperclip,
   ImageIcon,
-  IndianRupee,
   Activity,
   Bike,
   Waves
 } from "lucide-react"
 import { FaWhatsapp, FaFacebook } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import { FaMoneyBillWave, FaTools, FaUserTie } from "react-icons/fa";
-import { IoStatsChart } from "react-icons/io5";
+import { FaMoneyBillWave, FaTools } from "react-icons/fa";
 import { useAuth } from "@/hooks/useAuth"
 import { useSocket } from "@/hooks/useSocket"
 import { useEvents } from "@/hooks/useEvents"
@@ -105,6 +98,7 @@ const EventDetails = () => {
   const [isFavorite, setIsFavorite] = useState(false)
   const [hasRated, setHasRated] = useState(false)
   const [sendingMessage, setSendingMessage] = useState(false)
+  const [submittingReview, setSubmittingReview] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   // Use metadata hook with event data
@@ -206,7 +200,7 @@ const EventDetails = () => {
   // Helper functions
   const isParticipant = () => {
     if (!user || !event) return false
-    return event.participants.some((p) => p.user._id === user.id)
+    return event?.participants.some((p) => p.user.id === user.id)
   }
 
   const isCreator = () => {
@@ -214,18 +208,32 @@ const EventDetails = () => {
     return event.createdBy._id === user.id
   }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Upcoming":
-        return "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
-      case "Ongoing":
-        return "bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800"
-      case "Completed":
-        return "bg-gray-50 dark:bg-gray-950/50 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"
-      case "Cancelled":
-        return "bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800"
-      default:
-        return "bg-gray-50 dark:bg-gray-950/50 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"
+  // Check if event has ended based on date and time (IST timezone)
+  const isEventEnded = () => {
+    if (!event) return false
+    
+    try {
+      // Parse event date and time
+      const eventDate = new Date(event.date)
+      const [hours, minutes] = event.time.split(':').map(Number)
+      
+      // Create event datetime
+      const eventDateTime = new Date(eventDate)
+      eventDateTime.setHours(hours, minutes, 0, 0)
+      
+      // Get current time in IST (UTC + 5:30)
+      const now = new Date()
+      const istOffset = 5.5 * 60 * 60 * 1000 // 5 hours 30 minutes in milliseconds
+      const nowIST = new Date(now.getTime() + istOffset)
+      
+      // Convert event time to IST for comparison
+      const eventDateTimeIST = new Date(eventDateTime.getTime() + istOffset)
+      
+      // Event is ended if current IST time is after event time
+      return nowIST > eventDateTimeIST
+    } catch (error) {
+      console.error('Error checking if event ended:', error)
+      return false
     }
   }
 
@@ -308,20 +316,34 @@ const EventDetails = () => {
 
   const handleSubmitRating = async (e) => {
     e.preventDefault()
-    if (rating === 0) return
+    
+    if (rating === 0) {
+      toast.error("Please select a rating")
+      return
+    }
 
+    setSubmittingReview(true)
     try {
-      const response = await api.post(`/events/${id}/ratings`, { rating, review })
+      const response = await api.post(`/events/${id}/ratings`, { 
+        rating, 
+        review: review.trim() || undefined 
+      })
+      
       if (response.data.success) {
         setEvent(response.data.data)
         setRating(0)
         setReview("")
         setHasRated(true)
         toast.success("Review submitted successfully!")
+      } else {
+        toast.error(response.data.message || "Failed to submit review")
       }
     } catch (err) {
       console.error("Error submitting rating:", err)
-      toast.error("Failed to submit review")
+      const errorMessage = err.response?.data?.message || err.message || "Failed to submit review"
+      toast.error(errorMessage)
+    } finally {
+      setSubmittingReview(false)
     }
   }
 
@@ -1264,34 +1286,38 @@ const EventDetails = () => {
                                 <Star className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                               </div> */}
                               Event Reviews
-                              {event.averageRating > 0 && (
-                                <div className="flex items-center gap-2 ml-auto">
-                                  <div className="flex items-center gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star
-                                        key={i}
-                                        className={cn(
-                                          "w-4 h-4",
-                                          i < Math.floor(event.averageRating)
-                                            ? "text-yellow-400 fill-current"
-                                            : "text-muted-foreground",
-                                        )}
-                                      />
-                                    ))}
+                              {event.ratings && event.ratings.length > 0 && (() => {
+                                const totalRating = event.ratings.reduce((sum, r) => sum + r.rating, 0)
+                                const avgRating = totalRating / event.ratings.length
+                                return (
+                                  <div className="flex items-center gap-2 ml-auto">
+                                    <div className="flex items-center gap-1">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star
+                                          key={i}
+                                          className={cn(
+                                            "w-4 h-4",
+                                            i < Math.floor(avgRating)
+                                              ? "text-yellow-400 fill-current"
+                                              : "text-muted-foreground",
+                                          )}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="font-semibold text-foreground">
+                                      {avgRating.toFixed(1)}
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
+                                      ({event.ratings.length} {event.ratings.length === 1 ? 'review' : 'reviews'})
+                                    </span>
                                   </div>
-                                  <span className="font-semibold text-foreground">
-                                    {event.averageRating.toFixed(1)}
-                                  </span>
-                                  <span className="text-sm text-muted-foreground">
-                                    ({event.ratings?.length || 0} reviews)
-                                  </span>
-                                </div>
-                              )}
+                                )
+                              })()}
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-6">
                             {/* Add Review Form */}
-                            {isAuthenticated && isParticipant() && !hasRated && event.status === "Completed" && (
+                            {isAuthenticated && isParticipant() && !hasRated && isEventEnded() && (
                               <div
                                 className="p-6 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-200 dark:border-blue-800 animate-in fade-in slide-in-from-bottom-4 duration-500"
                               >
@@ -1337,11 +1363,20 @@ const EventDetails = () => {
                                   </div>
                                   <Button
                                     type="submit"
-                                    disabled={rating === 0}
+                                    disabled={rating === 0 || submittingReview}
                                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                                   >
-                                    <Star className="w-4 h-4 mr-2" />
-                                    Submit Review
+                                    {submittingReview ? (
+                                      <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Submitting...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Star className="w-4 h-4 mr-2" />
+                                        Submit Review
+                                      </>
+                                    )}
                                   </Button>
                                 </form>
                               </div>
@@ -1350,46 +1385,50 @@ const EventDetails = () => {
                             {/* Reviews List */}
                             {event.ratings && event.ratings.length > 0 ? (
                               <div className="space-y-4">
-                                {event.ratings.map((rating, index) => (
+                                {event.ratings.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)).map((rating, index) => (
                                   <div
                                     key={rating._id}
-                                    className="p-4 bg-muted/50 rounded-xl animate-in fade-in slide-in-from-bottom-4 duration-500"
-                                    style={{ animationDelay: `${index * 100}ms` }}
+                                    className="p-5 bg-gradient-to-br from-muted/30 to-muted/50 rounded-xl border border-border/50 hover:border-border transition-all duration-200 animate-in fade-in slide-in-from-bottom-4"
+                                    style={{ animationDelay: `${index * 50}ms` }}
                                   >
                                     <div className="flex items-start gap-4">
-                                      <Avatar className="w-10 h-10">
+                                      <Avatar className="w-12 h-12 border-2 border-background shadow-sm">
                                         <AvatarImage src={rating.user.avatar || "/placeholder.svg"} />
-                                        <AvatarFallback className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                                        <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50 text-blue-600 dark:text-blue-400 font-semibold">
                                           {rating.user.name
                                             .split(" ")
                                             .map((n) => n[0])
                                             .join("")}
                                         </AvatarFallback>
                                       </Avatar>
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                          <h4 className="font-medium text-foreground">
-                                            {rating.user.name}
-                                          </h4>
-                                          <div className="flex items-center gap-1">
-                                            {[...Array(5)].map((_, i) => (
-                                              <Star
-                                                key={i}
-                                                className={cn(
-                                                  "w-4 h-4",
-                                                  i < rating.rating
-                                                    ? "text-yellow-400 fill-current"
-                                                    : "text-muted-foreground",
-                                                )}
-                                              />
-                                            ))}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-3 mb-2">
+                                          <div>
+                                            <h4 className="font-semibold text-foreground">
+                                              {rating.user.name}
+                                            </h4>
+                                            <div className="flex items-center gap-2 mt-1">
+                                              <div className="flex items-center gap-0.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                  <Star
+                                                    key={i}
+                                                    className={cn(
+                                                      "w-4 h-4",
+                                                      i < rating.rating
+                                                        ? "text-yellow-400 fill-yellow-400"
+                                                        : "text-muted-foreground/30",
+                                                    )}
+                                                  />
+                                                ))}
+                                              </div>
+                                              <span className="text-sm text-muted-foreground">
+                                                {formatDistanceToNow(new Date(rating.date || rating.createdAt))} ago
+                                              </span>
+                                            </div>
                                           </div>
-                                          <span className="text-sm text-muted-foreground">
-                                            {formatDistanceToNow(new Date(rating.createdAt))} ago
-                                          </span>
                                         </div>
                                         {rating.review && (
-                                          <p className="text-muted-foreground leading-relaxed">
+                                          <p className="text-foreground/80 leading-relaxed mt-3 text-sm">
                                             {rating.review}
                                           </p>
                                         )}
@@ -1399,13 +1438,15 @@ const EventDetails = () => {
                                 ))}
                               </div>
                             ) : (
-                              <div className="text-center py-8">
-                                <Star className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                              <div className="text-center py-12">
+                                <div className="w-20 h-20 bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                  <Star className="w-10 h-10 text-yellow-500 dark:text-yellow-400" />
+                                </div>
                                 <h3 className="text-lg font-semibold text-foreground mb-2">
                                   No Reviews Yet
                                 </h3>
-                                <p className="text-muted-foreground">
-                                  Be the first to review this event after it's completed.
+                                <p className="text-muted-foreground max-w-sm mx-auto">
+                                  {isEventEnded() ? "Be the first to share your experience!" : "Reviews will be available after the event ends."}
                                 </p>
                               </div>
                             )}

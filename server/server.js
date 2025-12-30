@@ -18,12 +18,11 @@ import venueRoute from './routes/venueRoute.js';
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
 import job from "./utils/cron.js";
-import { upstashRateLimiters } from "./config/upstashRateLimiter.js";
+// import { upstashRateLimiters } from "./config/upstashRateLimiter.js";
 
 dotenv.config();
 
 connectDB();
-
 
 const app = express();
 const httpServer = createServer(app);
@@ -46,8 +45,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-// Apply Upstash global rate limiter to all requests
-app.use(upstashRateLimiters.global);
+// app.use(upstashRateLimiters.global);
 
 if (process.env.NODE_ENV === "production") job.start();
 
@@ -75,15 +73,15 @@ app.get("/health", (req, res) => {
 
 // Routes
 app.use("/api/auth", authRoute);
-app.use("/api/events", upstashRateLimiters.api, eventRoute);
-app.use("/api/users", upstashRateLimiters.api, userRoute);
-app.use('/api/admin', upstashRateLimiters.admin, adminRoute);
-app.use('/api/notifications', upstashRateLimiters.api, notificationRoute);
-app.use("/api/upload", upstashRateLimiters.upload, uploadRoute);
-app.use("/api/athletes", upstashRateLimiters.api, athletesRoute);
-app.use("/api/community", upstashRateLimiters.api, communityRoute);
-app.use("/api/leaderboard", upstashRateLimiters.api, leaderboardRoute);
-app.use("/api/venues", upstashRateLimiters.api, venueRoute);
+app.use("/api/events", eventRoute);
+app.use("/api/users", userRoute);
+app.use('/api/admin', adminRoute);
+app.use('/api/notifications', notificationRoute);
+app.use("/api/upload",  uploadRoute);
+app.use("/api/athletes", athletesRoute);
+app.use("/api/community", communityRoute);
+app.use("/api/leaderboard", leaderboardRoute);
+app.use("/api/venues",  venueRoute);
 
 // Error handling middleware for rate limiting
 app.use((err, req, res, next) => {

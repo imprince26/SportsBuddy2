@@ -1220,7 +1220,34 @@ export const addRating = async (req, res) => {
     const event = await Event.findById(req.params.id);
 
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Event not found" 
+      });
+    }
+
+    // Check if event has ended based on date and time (IST timezone)
+    const eventDate = new Date(event.date);
+    const [hours, minutes] = event.time.split(':').map(Number);
+    
+    // Create event datetime
+    const eventDateTime = new Date(eventDate);
+    eventDateTime.setHours(hours, minutes, 0, 0);
+    
+    // Get current time in IST (UTC + 5:30)
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
+    const nowIST = new Date(now.getTime() + istOffset);
+    
+    // Convert event time to IST for comparison
+    const eventDateTimeIST = new Date(eventDateTime.getTime() + istOffset);
+    
+    // Check if event has ended
+    if (nowIST <= eventDateTimeIST) {
+      return res.status(400).json({ 
+        success: false,
+        message: "You can only rate events after they have ended" 
+      });
     }
 
     const isParticipant = event.participants.some(
@@ -1228,9 +1255,10 @@ export const addRating = async (req, res) => {
     );
 
     if (!isParticipant) {
-      return res
-        .status(403)
-        .json({ message: "Only participants can rate events" });
+      return res.status(403).json({ 
+        success: false,
+        message: "Only participants can rate events" 
+      });
     }
 
     const existingRating = event.ratings.find(
@@ -1238,24 +1266,45 @@ export const addRating = async (req, res) => {
     );
 
     if (existingRating) {
-      return res.status(400).json({ message: "Already rated this event" });
+      return res.status(400).json({ 
+        success: false,
+        message: "You have already rated this event" 
+      });
     }
 
-    event.ratings.push({
-      user: req.user._id,
-      rating: req.body.rating,
-      review: req.body.review,
-      date: new Date()
-    });
+    // Validate rating value
+    const ratingValue = Number(req.body.rating);
+    if (!ratingValue || ratingValue < 1 || ratingValue > 5) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Rating must be a number between 1 and 5" 
+      });
+    }
 
-    await event.save();
+    // Prepare rating object
+    const newRating = {
+      user: req.user._id,
+      rating: ratingValue,
+      date: new Date()
+    };
+
+    // Add review only if provided
+    if (req.body.review && req.body.review.trim()) {
+      newRating.review = req.body.review.trim();
+    }
+
+    // Use updateOne to bypass date validation for completed events
+    await Event.updateOne(
+      { _id: req.params.id },
+      { $push: { ratings: newRating } }
+    );
 
     const updatedEvent = await Event.findById(event._id)
       .populate("createdBy", "name avatar")
       .populate("participants.user", "name avatar")
       .populate("teams.captain", "name avatar")
       .populate("teams.members", "name avatar")
-      .populate("ratings.user", "name avatar");
+      .populate("ratings.user", "name avatar username");
 
     const io = req.app.get("io");
     io.to(`user:${event.createdBy}`).emit("newRating", {
@@ -1268,6 +1317,8 @@ export const addRating = async (req, res) => {
       data: updatedEvent
     });
   } catch (error) {
+        console.log(error.message)
+
     res.status(500).json({
       success: false,
       message: "Error adding rating",

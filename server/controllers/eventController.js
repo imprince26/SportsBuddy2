@@ -166,13 +166,8 @@ export const getAllEvents = async (req, res) => {
       query.difficulty = difficulty;
     }
 
-    // Status filter
-    if (status && status !== "all") {
-      query.status = status;
-    } else {
-      // Default to show only upcoming and ongoing events
-      query.status = { $in: ["Upcoming", "Ongoing"] };
-    }
+    // Note: Status filter will be applied after calculating status from date/time
+    // Do not use event.status field as it may be outdated
 
     // Fee type filter
     if (feeType && feeType !== "all") {
@@ -243,28 +238,37 @@ export const getAllEvents = async (req, res) => {
     const limitNum = Math.min(50, Math.max(1, parseInt(limit))); // Max 50 events per page
     const skip = (pageNum - 1) * limitNum;
 
-    // Sorting
+    // Sorting - status and rating will be handled after calculation
     let sort = {};
+    let sortField = "default";
+    let sortOrder = "asc";
+    
     if (sortBy) {
-      const [field, order] = sortBy.split(":");
-      switch (field) {
+      [sortField, sortOrder] = sortBy.split(":");
+      switch (sortField) {
         case "date":
-          sort.date = order === "desc" ? -1 : 1;
+          sort.date = sortOrder === "desc" ? -1 : 1;
           break;
         case "created":
-          sort.createdAt = order === "desc" ? -1 : 1;
+          sort.createdAt = sortOrder === "desc" ? -1 : 1;
           break;
         case "participants":
           // For participant count sorting, we'll use aggregation
           break;
         case "name":
-          sort.name = order === "desc" ? -1 : 1;
+          sort.name = sortOrder === "desc" ? -1 : 1;
           break;
         case "fee":
-          sort.registrationFee = order === "desc" ? -1 : 1;
+        case "price":
+          sort.registrationFee = sortOrder === "desc" ? -1 : 1;
+          break;
+        case "status":
+        case "rating":
+          // Will be handled after calculating these values
           break;
         default:
-          sort.date = 1; // Default sort by date ascending
+          // Default: no initial sort, will sort by status priority later
+          break;
       }
     }
 
@@ -361,36 +365,103 @@ export const getAllEvents = async (req, res) => {
       ]);
     }
 
-    // Calculate additional metadata for each event
+    // Calculate additional metadata for each event with IST timezone
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+    const nowIST = new Date(now.getTime() + istOffset);
+    
     const eventsWithMetadata = events.map(event => {
       const participantCount = event.participants?.length || 0;
       const averageRating = event.ratings?.length > 0
         ? event.ratings.reduce((acc, rating) => acc + rating.rating, 0) / event.ratings.length
         : 0;
 
+      // Calculate actual event status based on time and date (IST timezone)
+      const eventDate = new Date(event.date);
+      const [hours, minutes] = (event.time || "00:00").split(':').map(Number);
+      const eventDateTime = new Date(eventDate);
+      eventDateTime.setHours(hours, minutes, 0, 0);
+      const eventDateTimeIST = new Date(eventDateTime.getTime() + istOffset);
+      
+      // Determine status based on time comparison
+      let calculatedStatus = "Upcoming";
+      let statusPriority = 1; // For sorting: 1=Upcoming, 2=Ongoing, 3=Completed
+      
+      if (nowIST > eventDateTimeIST) {
+        calculatedStatus = "Completed";
+        statusPriority = 3;
+      } else if (Math.abs(nowIST - eventDateTimeIST) < 2 * 60 * 60 * 1000) { // Within 2 hours
+        calculatedStatus = "Ongoing";
+        statusPriority = 2;
+      }
+
       return {
         ...event,
+        status: calculatedStatus, // Use calculated status instead of stored field
+        statusPriority, // For sorting purposes
         participantCount,
         spotsLeft: event.maxParticipants - participantCount,
         averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
-        isUpcoming: new Date(event.date) > now,
-        daysUntilEvent: Math.ceil((new Date(event.date) - now) / (1000 * 60 * 60 * 24)),
+        isUpcoming: calculatedStatus === "Upcoming",
+        daysUntilEvent: Math.ceil((eventDateTimeIST - nowIST) / (1000 * 60 * 60 * 24)),
         isFreeEvent: !event.registrationFee || event.registrationFee === 0,
         fillPercentage: Math.round((participantCount / event.maxParticipants) * 100),
         isAlmostFull: (participantCount / event.maxParticipants) > 0.85
       };
     });
 
+    // Apply status filter based on calculated status
+    let filteredEvents = eventsWithMetadata;
+    if (status && status !== "all") {
+      filteredEvents = eventsWithMetadata.filter(event => 
+        event.status.toLowerCase() === status.toLowerCase()
+      );
+    }
+
+    // Apply custom sorting based on sortField
+    if (sortField === "status") {
+      // Sort by status priority (Upcoming -> Ongoing -> Completed)
+      filteredEvents.sort((a, b) => {
+        const diff = sortOrder === "desc" 
+          ? b.statusPriority - a.statusPriority 
+          : a.statusPriority - b.statusPriority;
+        // Secondary sort by date
+        return diff !== 0 ? diff : new Date(a.date) - new Date(b.date);
+      });
+    } else if (sortField === "rating") {
+      // Sort by average rating
+      filteredEvents.sort((a, b) => {
+        const diff = sortOrder === "desc" 
+          ? b.averageRating - a.averageRating 
+          : a.averageRating - b.averageRating;
+        // Secondary sort by date
+        return diff !== 0 ? diff : new Date(a.date) - new Date(b.date);
+      });
+    } else if (sortField === "default" || !sortBy) {
+      // Default sorting: Show latest (most recently created) events first
+      // Upcoming/Ongoing events before Completed, sorted by creation date (newest first)
+      filteredEvents.sort((a, b) => {
+        // First sort by status priority (Upcoming/Ongoing before Completed)
+        const statusDiff = a.statusPriority - b.statusPriority;
+        if (statusDiff !== 0) return statusDiff;
+        // Within same status, sort by creation date (most recent first)
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    }
+
+    // Recalculate total and apply pagination after filtering and sorting
+    const filteredTotal = filteredEvents.length;
+    const paginatedEvents = filteredEvents.slice(skip, skip + limitNum);
+
     // Response with pagination info
     const response = {
       success: true,
-      data: eventsWithMetadata,
+      data: paginatedEvents,
       pagination: {
-        total,
-        pages: Math.ceil(total / limitNum),
+        total: filteredTotal,
+        pages: Math.ceil(filteredTotal / limitNum),
         page: pageNum,
         limit: limitNum,
-        hasNext: pageNum < Math.ceil(total / limitNum),
+        hasNext: pageNum < Math.ceil(filteredTotal / limitNum),
         hasPrev: pageNum > 1
       },
       filters: {
@@ -400,16 +471,19 @@ export const getAllEvents = async (req, res) => {
         status: status || "all",
         dateRange: dateRange || "all",
         feeType: feeType || "all",
-        sortBy: sortBy || "date:asc"
+        sortBy: sortBy || "default:asc",
+        venue: venue || "all"
       },
       stats: {
-        totalEvents: total,
-        freeEvents: eventsWithMetadata.filter(e => e.isFreeEvent).length,
-        paidEvents: eventsWithMetadata.filter(e => !e.isFreeEvent).length,
-        upcomingEvents: eventsWithMetadata.filter(e => e.isUpcoming).length,
-        categories: [...new Set(eventsWithMetadata.map(e => e.category))],
-        avgRating: eventsWithMetadata.length > 0
-          ? Math.round((eventsWithMetadata.reduce((sum, e) => sum + (e.averageRating || 0), 0) / eventsWithMetadata.length) * 10) / 10
+        totalEvents: filteredTotal,
+        freeEvents: filteredEvents.filter(e => e.isFreeEvent).length,
+        paidEvents: filteredEvents.filter(e => !e.isFreeEvent).length,
+        upcomingEvents: filteredEvents.filter(e => e.isUpcoming).length,
+        ongoingEvents: filteredEvents.filter(e => e.status === "Ongoing").length,
+        completedEvents: filteredEvents.filter(e => e.status === "Completed").length,
+        categories: [...new Set(filteredEvents.map(e => e.category))],
+        avgRating: filteredEvents.length > 0
+          ? Math.round((filteredEvents.reduce((sum, e) => sum + (e.averageRating || 0), 0) / filteredEvents.length) * 10) / 10
           : 0
       }
     };

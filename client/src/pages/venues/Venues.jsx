@@ -18,6 +18,7 @@ import {
   Calendar,
   IndianRupee
 } from 'lucide-react';
+import { MdStadium } from "react-icons/md";
 import { useVenue } from '@/hooks/useVenue';
 import VenueCard from '@/components/venues/VenueCard';
 import { Button } from '@/components/ui/button';
@@ -153,7 +154,7 @@ const EmptyState = ({ onClear }) => (
     className="flex flex-col items-center justify-center py-20 px-4 text-center"
   >
     <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-      <Building2 className="w-12 h-12 text-primary" />
+      <MdStadium className="w-12 h-12 text-primary" />
     </div>
     <h3 className="text-2xl font-bold text-foreground mb-2">No venues found</h3>
     <p className="text-muted-foreground max-w-md mb-8">
@@ -229,7 +230,7 @@ const Venues = () => {
             className="max-w-4xl mx-auto text-center space-y-6"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-              <Building2 className="w-4 h-4" />
+              <MdStadium className="w-4 h-4" />
               <span>{pagination?.total || venues.length}+ Premium Venues Available</span>
             </div>
 

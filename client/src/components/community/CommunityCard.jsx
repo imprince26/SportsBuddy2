@@ -13,7 +13,9 @@ import {
     MessageSquare,
     TrendingUp,
     Sparkles,
-    CheckCircle
+    CheckCircle,
+    Shield,
+    Eye
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -40,6 +42,84 @@ const CommunityCard = ({
     const handleActionClick = (e, action) => {
         e.stopPropagation()
         action()
+    }
+
+    // Check if user is an admin
+    const isAdmin = user?.role === 'admin'
+
+    // Render action button based on user role and membership status
+    const renderActionButton = () => {
+        const buttonSize = variant === "compact" ? "sm" : "default"
+
+        // Admin users (not member/creator) - show "View as Admin"
+        if (isAdmin && !isCreator && !isMember) {
+            return (
+                <Button
+                    onClick={(e) => handleActionClick(e, () => navigate(`/community/${community._id}`))}
+                    className="w-full bg-primary/80 hover:bg-primary text-primary-foreground shadow-md"
+                    size={buttonSize}
+                >
+                    <Shield className="w-4 h-4 mr-2" />
+                    View as Admin
+                </Button>
+            )
+        }
+
+        // Creator - show "Manage Community"
+        if (isCreator) {
+            return (
+                <Button
+                    onClick={(e) => handleActionClick(e, () => navigate(`/community/${community._id}/edit`))}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
+                    size={buttonSize}
+                >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Manage Community
+                </Button>
+            )
+        }
+
+        // Member - show "View Community"
+        if (isMember) {
+            return (
+                <Button
+                    onClick={(e) => handleActionClick(e, () => navigate(`/community/${community._id}`))}
+                    variant="outline"
+                    className="w-full border-2 border-primary text-primary hover:bg-primary/10"
+                    size={buttonSize}
+                >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    View Community
+                </Button>
+            )
+        }
+
+        // Logged in user (not member) - show "Join Community"
+        if (user) {
+            return (
+                <Button
+                    onClick={(e) => handleActionClick(e, () => onJoin(community._id))}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
+                    size={buttonSize}
+                >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Join Community
+                </Button>
+            )
+        }
+
+        // Guest - show "Sign in to Join"
+        return (
+            <Button
+                onClick={(e) => handleActionClick(e, () => navigate('/login'))}
+                variant="outline"
+                className="w-full border-2 border-primary text-primary hover:bg-primary/10"
+                size={buttonSize}
+            >
+                <Eye className="w-4 h-4 mr-2" />
+                Sign in to Join
+            </Button>
+        )
     }
 
     return (
@@ -80,7 +160,7 @@ const CommunityCard = ({
                 {/* Featured Badge */}
                 {community.isFeatured && (
                     <div className="absolute top-3 left-3 z-10">
-                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg px-3 py-1">
+                        <Badge className="bg-primary text-primary-foreground border-0 shadow-lg px-3 py-1">
                             <Crown className="w-3 h-3 mr-1.5" />
                             Featured
                         </Badge>
@@ -214,44 +294,7 @@ const CommunityCard = ({
 
                 {/* Action Button */}
                 <div className="mt-auto">
-                    {isCreator ? (
-                        <Button
-                            onClick={(e) => handleActionClick(e, () => navigate(`/community/${community._id}/edit`))}
-                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-md"
-                            size={variant === "compact" ? "sm" : "default"}
-                        >
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Manage
-                        </Button>
-                    ) : isMember ? (
-                        <Button
-                            onClick={(e) => handleActionClick(e, () => navigate(`/community/${community._id}`))}
-                            variant="outline"
-                            className="w-full border-2 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20"
-                            size={variant === "compact" ? "sm" : "default"}
-                        >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            View Community
-                        </Button>
-                    ) : user ? (
-                        <Button
-                            onClick={(e) => handleActionClick(e, () => onJoin(community._id))}
-                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
-                            size={variant === "compact" ? "sm" : "default"}
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Join Community
-                        </Button>
-                    ) : (
-                        <Button
-                            onClick={(e) => handleActionClick(e, () => navigate('/login'))}
-                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                            size={variant === "compact" ? "sm" : "default"}
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Join Community
-                        </Button>
-                    )}
+                    {renderActionButton()}
                 </div>
             </CardContent>
 

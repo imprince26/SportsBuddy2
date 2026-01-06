@@ -18,3 +18,6 @@ export {
     CommunityQuickStats,
     TrendingTopics
 } from './CommunityComponents'
+
+// Details Components
+export * from './details'

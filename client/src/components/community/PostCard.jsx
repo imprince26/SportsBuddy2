@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Share2, Eye, MoreVertical, Bookmark, Edit2, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { Card } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +12,7 @@ import {
   DropdownMenuSeparator
 } from '../ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const PostCard = ({
   post,
@@ -66,20 +66,22 @@ const PostCard = ({
 
   return (
     <Card
-      className="cursor-pointer border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg hover:border-primary/30 transition-all duration-300 mb-4"
+      className="cursor-pointer border-border bg-card hover:shadow-md hover:border-primary/20 transition-all duration-300"
       onClick={handleCardClick}
     >
-      <div className="p-4">
+      <CardContent className="p-5">
         {/* Header */}
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-3 flex-1">
             <Link
               to={`/profile/${author._id || author.id}`}
               onClick={(e) => e.stopPropagation()}
             >
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-11 w-11 border border-border">
                 <AvatarImage src={authorAvatar} alt={authorName} />
-                <AvatarFallback>{authorName[0]?.toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  {authorName[0]?.toUpperCase()}
+                </AvatarFallback>
               </Avatar>
             </Link>
 
@@ -88,17 +90,15 @@ const PostCard = ({
                 <Link
                   to={`/profile/${author._id || author.id}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="font-semibold hover:underline"
+                  className="font-semibold text-foreground hover:text-primary transition-colors"
                 >
                   {authorName}
                 </Link>
 
-                <div className="flex space-x-2">
-                  <span className="text-muted-foreground text-sm">
-                    @{authorUsername}
-                  </span>
-                  <span className="text-muted-foreground text-sm">·</span>
-                  <span className="text-muted-foreground text-sm">
+                <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                  <span>@{authorUsername}</span>
+                  <span>·</span>
+                  <span>
                     {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                   </span>
                 </div>
@@ -108,7 +108,7 @@ const PostCard = ({
                 <Link
                   to={`/community/${post.community._id}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="text-sm text-muted-foreground hover:underline"
+                  className="text-sm text-primary/80 hover:text-primary transition-colors"
                 >
                   {post.community.name}
                 </Link>
@@ -119,7 +119,7 @@ const PostCard = ({
           {currentUser && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -145,7 +145,7 @@ const PostCard = ({
                         e.stopPropagation();
                         onDelete?.(post._id);
                       }}
-                      className="text-destructive"
+                      className="text-destructive focus:text-destructive"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete post
@@ -158,19 +158,21 @@ const PostCard = ({
         </div>
 
         {/* Content */}
-        <div className="mb-3">
-          <p className="text-base whitespace-pre-wrap break-words">{post.content}</p>
+        <div className="mb-4">
+          <p className="text-base text-foreground whitespace-pre-wrap break-words leading-relaxed">
+            {post.content}
+          </p>
         </div>
 
         {/* Images */}
         {post.images && post.images.length > 0 && (
-          <div className={`mb-3 ${getImageContainerClass(post.images.length)}`}>
+          <div className={`mb-4 ${getImageContainerClass(post.images.length)}`}>
             {post.images.slice(0, 4).map((image, index) => (
-              <div key={index} className="relative">
+              <div key={index} className="relative overflow-hidden rounded-lg">
                 <img
                   src={image.url}
                   alt={`Post image ${index + 1}`}
-                  className={getImageClass(index, post.images.length)}
+                  className={cn(getImageClass(index, post.images.length), "hover:scale-105 transition-transform duration-300")}
                   onClick={(e) => {
                     e.stopPropagation();
                     onImageClick?.(post.images, index);
@@ -195,33 +197,49 @@ const PostCard = ({
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex items-center justify-between pt-4 border-t border-border">
           <Button
             variant="ghost"
             size="sm"
-            className={`gap-2 ${isLiked ? 'text-red-500' : ''}`}
+            className={cn(
+              "gap-2 hover:bg-primary/10",
+              isLiked ? "text-primary" : "text-muted-foreground hover:text-primary"
+            )}
             onClick={handleLike}
           >
-            <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-            <span className="text-sm">{likesCount}</span>
+            <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
+            <span className="text-sm font-medium">{likesCount}</span>
           </Button>
 
-          <Button variant="ghost" size="sm" className="gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10"
+          >
             <MessageCircle className="h-4 w-4" />
-            <span className="text-sm">{post.comments?.length || 0}</span>
+            <span className="text-sm font-medium">{post.comments?.length || 0}</span>
           </Button>
 
-          <Button variant="ghost" size="sm" className="gap-2" onClick={handleShare}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10"
+            onClick={handleShare}
+          >
             <Share2 className="h-4 w-4" />
-            <span className="text-sm">{post.shares || 0}</span>
+            <span className="text-sm font-medium">{post.shares || 0}</span>
           </Button>
 
-          <Button variant="ghost" size="sm" className="gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10"
+          >
             <Eye className="h-4 w-4" />
-            <span className="text-sm">{post.views?.length || 0}</span>
+            <span className="text-sm font-medium">{post.views?.length || 0}</span>
           </Button>
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };

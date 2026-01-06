@@ -155,7 +155,7 @@ const Communities = () => {
               </motion.p>
 
               <motion.div
-                className="flex flex-wrap gap-4"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
@@ -163,17 +163,17 @@ const Communities = () => {
                 {user && (
                   <Button
                     size="lg"
-                    className="h-14 px-8 text-lg rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
                     onClick={() => navigate('/community/create')}
                   >
-                    <Plus className="w-5 h-5 mr-2" />
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Create Community
                   </Button>
                 )}
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-14 px-8 text-lg rounded-full border-2 hover:bg-secondary/50"
+                  className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg rounded-full border-2 hover:bg-secondary/50 w-full sm:w-auto"
                   onClick={() => document.getElementById('communities-feed')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   Browse Communities

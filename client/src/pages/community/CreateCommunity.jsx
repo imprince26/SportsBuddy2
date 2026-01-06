@@ -190,7 +190,6 @@ const CreateCommunity = () => {
 
   return (
     <div className="min-h-screen bg-background relative pb-20">
-      <HeroBg />
 
       <div className="relative z-10">
         {/* Header */}

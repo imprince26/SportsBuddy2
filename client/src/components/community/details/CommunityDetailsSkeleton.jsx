@@ -31,21 +31,6 @@ const CommunityDetailsSkeleton = () => {
                 </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="container mx-auto px-4 py-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[...Array(4)].map((_, i) => (
-                        <Card key={i} className="border-border">
-                            <CardContent className="p-4 text-center">
-                                <Skeleton className="w-10 h-10 rounded-xl mx-auto mb-2" />
-                                <Skeleton className="h-6 w-16 mx-auto mb-1" />
-                                <Skeleton className="h-4 w-20 mx-auto" />
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            </div>
-
             {/* Main Content */}
             <div className="container mx-auto px-4 pb-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

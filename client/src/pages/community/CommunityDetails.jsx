@@ -371,7 +371,7 @@ const CommunityDetails = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-4 lg:grid-cols-5 bg-card border border-border p-1">
+              <TabsList className="w-full grid grid-cols-4 bg-card border border-border p-1">
                 <TabsTrigger value="posts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   Posts
                 </TabsTrigger>

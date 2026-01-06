@@ -5,23 +5,22 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Building2,
-  DollarSign,
   CheckCircle,
   XCircle,
   AlertCircle,
   Eye,
-  Filter,
   Search,
   Phone,
-  Mail,
-  User
+  IndianRupee,
+  CalendarDays,
+  TrendingUp,
+  ArrowRight
 } from 'lucide-react';
-import { FaMoneyBillWave } from 'react-icons/fa';
+import { MdStadium } from 'react-icons/md';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -41,6 +40,7 @@ import { format } from 'date-fns';
 import api from '@/utils/api';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 
 const MyBookings = () => {
   const { user } = useAuth();
@@ -61,7 +61,7 @@ const MyBookings = () => {
       const response = await api.get('/users/my-bookings', {
         params: { status: statusFilter !== 'all' ? statusFilter : undefined }
       });
-      
+
       if (response.data.success) {
         setBookings(response.data.data || []);
       } else {
@@ -77,36 +77,48 @@ const MyBookings = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusConfig = (status) => {
     const config = {
-      confirmed: { variant: 'default', icon: CheckCircle, label: 'Confirmed', color: 'text-green-600' },
-      pending: { variant: 'secondary', icon: AlertCircle, label: 'Pending', color: 'text-yellow-600' },
-      cancelled: { variant: 'destructive', icon: XCircle, label: 'Cancelled', color: 'text-red-600' }
+      confirmed: {
+        variant: 'default',
+        icon: CheckCircle,
+        label: 'Confirmed',
+        bg: 'bg-primary/10',
+        text: 'text-primary',
+        border: 'border-primary/20'
+      },
+      pending: {
+        variant: 'secondary',
+        icon: AlertCircle,
+        label: 'Pending',
+        bg: 'bg-amber-500/10',
+        text: 'text-amber-600',
+        border: 'border-amber-500/20'
+      },
+      cancelled: {
+        variant: 'destructive',
+        icon: XCircle,
+        label: 'Cancelled',
+        bg: 'bg-destructive/10',
+        text: 'text-destructive',
+        border: 'border-destructive/20'
+      }
     };
-    
-    const { variant, icon: Icon, label, color } = config[status] || config.pending;
-    
-    return (
-      <Badge variant={variant} className="flex items-center gap-1">
-        <Icon className="w-3 h-3" />
-        {label}
-      </Badge>
-    );
+    return config[status] || config.pending;
   };
 
   const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = 
+    const matchesSearch =
       booking.venue?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.venue?.location?.city?.toLowerCase().includes(searchTerm.toLowerCase());
-    
     return matchesSearch;
   });
 
-  const upcomingBookings = filteredBookings.filter(b => 
+  const upcomingBookings = filteredBookings.filter(b =>
     new Date(b.startTime) > new Date() && b.status !== 'cancelled'
   ).length;
 
-  const pastBookings = filteredBookings.filter(b => 
+  const pastBookings = filteredBookings.filter(b =>
     new Date(b.startTime) < new Date()
   ).length;
 
@@ -118,11 +130,14 @@ const MyBookings = () => {
     return (
       <div className="min-h-screen bg-background p-4 md:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          <Skeleton className="h-12 w-64" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-32" />)}
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 rounded-xl" />)}
           </div>
-          <Skeleton className="h-96" />
+          <Skeleton className="h-16 rounded-xl" />
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-xl" />)}
+          </div>
         </div>
       </div>
     );
@@ -130,86 +145,83 @@ const MyBookings = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-7xl">
+        {/* Hero Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-                My Bookings
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                View and manage your venue bookings
-              </p>
+          <div className="bg-gradient-to-br from-primary via-primary to-primary/80 rounded-2xl p-6 sm:p-8 text-primary-foreground relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent_50%)]" />
+            <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarDays className="w-5 h-5" />
+                  <span className="text-sm font-medium opacity-90">Your Bookings</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold">My Bookings</h1>
+                <p className="opacity-90 text-sm sm:text-base mt-1">View and manage your venue reservations</p>
+              </div>
+              <Link to="/venues">
+                <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-0">
+                  <MdStadium className="w-4 h-4 mr-2" />
+                  Browse Venues
+                </Button>
+              </Link>
             </div>
           </div>
+        </motion.div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-6">
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6"
+        >
+          {[
+            { label: 'Upcoming', value: upcomingBookings, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Completed', value: pastBookings, icon: CheckCircle, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Total Spent', value: `₹${totalSpent.toLocaleString()}`, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
+          ].map((stat, i) => (
+            <Card key={i} className="border-border hover:border-primary/30 transition-colors">
+              <CardContent className="p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Upcoming Bookings</p>
-                    <p className="text-3xl font-bold mt-2">{upcomingBookings}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="text-2xl sm:text-3xl font-bold mt-1">{stat.value}</p>
                   </div>
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <Calendar className="w-6 h-6 text-primary" />
+                  <div className={cn("p-3 rounded-xl", stat.bg)}>
+                    <stat.icon className={cn("w-6 h-6", stat.color)} />
                   </div>
                 </div>
               </CardContent>
             </Card>
+          ))}
+        </motion.div>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Past Bookings</p>
-                    <p className="text-3xl font-bold mt-2">{pastBookings}</p>
-                  </div>
-                  <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/20">
-                    <CheckCircle className="w-6 h-6 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Spent</p>
-                    <p className="text-3xl font-bold mt-2">₹{totalSpent.toLocaleString()}</p>
-                  </div>
-                  <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/20">
-                    <FaMoneyBillWave className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Filters */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by venue name or city..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
+        {/* Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by venue name or city..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 border-border focus-visible:ring-primary"
+                  />
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full md:w-48">
+                  <SelectTrigger className="w-full sm:w-48 border-border">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -227,191 +239,258 @@ const MyBookings = () => {
         {/* Bookings List */}
         <div className="space-y-4">
           {filteredBookings.length > 0 ? (
-            filteredBookings.map((booking, index) => (
-              <motion.div
-                key={booking._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <Link 
-                              to={`/venues/${booking.venue?._id}`}
-                              className="text-xl font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-2"
-                            >
-                              {booking.venue?.name || 'Venue'}
-                            </Link>
-                            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                              <MapPin className="w-4 h-4" />
-                              <span>{booking.venue?.location?.address}, {booking.venue?.location?.city}</span>
-                            </div>
-                          </div>
-                          {getStatusBadge(booking.status)}
-                        </div>
+            filteredBookings.map((booking, index) => {
+              const statusConfig = getStatusConfig(booking.status);
+              const StatusIcon = statusConfig.icon;
+              const isUpcoming = new Date(booking.startTime) > new Date();
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-medium">
-                              {format(new Date(booking.startTime), 'MMM dd, yyyy')}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Clock className="w-4 h-4 text-muted-foreground" />
-                            <span>
-                              {format(new Date(booking.startTime), 'hh:mm a')} - {format(new Date(booking.endTime), 'hh:mm a')}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className="font-semibold">₹{booking.totalAmount || booking.amount}</span>
-                          </div>
-                        </div>
-
-                        {booking.notes && (
-                          <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-                            <p className="text-sm text-muted-foreground">
-                              <span className="font-medium">Notes:</span> {booking.notes}
-                            </p>
+              return (
+                <motion.div
+                  key={booking._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card className={cn(
+                    "border-border hover:border-primary/30 transition-all hover:shadow-md overflow-hidden",
+                    isUpcoming && booking.status === 'confirmed' && "border-l-4 border-l-primary"
+                  )}>
+                    <CardContent className="p-0">
+                      <div className="flex flex-col lg:flex-row">
+                        {/* Venue Image */}
+                        {booking.venue?.images?.[0] && (
+                          <div className="lg:w-48 h-32 lg:h-auto flex-shrink-0">
+                            <img
+                              src={booking.venue.images[0].url}
+                              alt={booking.venue?.name}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
                         )}
-                      </div>
 
-                      <div className="flex flex-row lg:flex-col gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedBooking(booking);
-                            setShowDetailsDialog(true);
-                          }}
-                          className="flex-1 lg:flex-none"
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Details
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                          className="flex-1 lg:flex-none"
-                        >
-                          <Link to={`/venues/${booking.venue?._id}`}>
-                            View Venue
-                          </Link>
-                        </Button>
+                        {/* Content */}
+                        <div className="flex-1 p-4 sm:p-5">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                            <div className="flex-1">
+                              <Link
+                                to={`/venues/${booking.venue?._id}`}
+                                className="text-lg font-semibold text-foreground hover:text-primary transition-colors inline-flex items-center gap-2"
+                              >
+                                {booking.venue?.name || 'Venue'}
+                                <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                              </Link>
+                              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                <MapPin className="w-4 h-4 text-primary" />
+                                <span>{booking.venue?.location?.address}, {booking.venue?.location?.city}</span>
+                              </div>
+                            </div>
+                            <Badge className={cn(
+                              "flex items-center gap-1 self-start",
+                              statusConfig.bg,
+                              statusConfig.text,
+                              statusConfig.border,
+                              "border"
+                            )}>
+                              <StatusIcon className="w-3 h-3" />
+                              {statusConfig.label}
+                            </Badge>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-primary" />
+                              <span className="font-medium">{format(new Date(booking.startTime), 'MMM dd, yyyy')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-primary" />
+                              <span>{format(new Date(booking.startTime), 'hh:mm a')} - {format(new Date(booking.endTime), 'hh:mm a')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <IndianRupee className="w-4 h-4 text-primary" />
+                              <span className="font-semibold">₹{booking.totalAmount || booking.amount}</span>
+                            </div>
+                            {isUpcoming && booking.status === 'confirmed' && (
+                              <Badge variant="outline" className="w-fit border-primary/30 text-primary bg-primary/5">
+                                Upcoming
+                              </Badge>
+                            )}
+                          </div>
+
+                          {booking.notes && (
+                            <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                              <p className="text-sm text-muted-foreground">
+                                <span className="font-medium">Notes:</span> {booking.notes}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedBooking(booking);
+                                setShowDetailsDialog(true);
+                              }}
+                              className="hover:bg-primary/5 hover:border-primary/30"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="hover:bg-primary/5 hover:border-primary/30"
+                            >
+                              <Link to={`/venues/${booking.venue?._id}`}>
+                                <MdStadium className="w-4 h-4 mr-2" />
+                                View Venue
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })
           ) : (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Calendar className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No bookings found</h3>
-                <p className="text-muted-foreground mb-6">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'Try adjusting your filters'
-                    : 'You haven\'t made any bookings yet'}
-                </p>
-                {!searchTerm && statusFilter === 'all' && (
-                  <Button asChild>
-                    <Link to="/venues">Browse Venues</Link>
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <Card className="border-dashed">
+                <CardContent className="py-16 text-center">
+                  <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                    <CalendarDays className="w-10 h-10 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">No bookings found</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    {searchTerm || statusFilter !== 'all'
+                      ? 'Try adjusting your filters to find your bookings'
+                      : "You haven't made any venue bookings yet. Start exploring our venues!"}
+                  </p>
+                  {!searchTerm && statusFilter === 'all' && (
+                    <Button asChild className="bg-primary hover:bg-primary/90">
+                      <Link to="/venues">
+                        <MdStadium className="w-4 h-4 mr-2" />
+                        Browse Venues
+                      </Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           )}
         </div>
 
         {/* Booking Details Dialog */}
         <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Booking Details</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarDays className="w-5 h-5 text-primary" />
+                Booking Details
+              </DialogTitle>
               <DialogDescription>
                 Complete information about your booking
               </DialogDescription>
             </DialogHeader>
             {selectedBooking && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
+              <div className="space-y-5">
+                {/* Booking ID & Status */}
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                   <div>
-                    <p className="text-sm text-muted-foreground">Booking ID</p>
-                    <p className="font-mono font-semibold">
-                      #{selectedBooking._id.slice(-8).toUpperCase()}
-                    </p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Booking ID</p>
+                    <p className="font-mono font-semibold text-lg">#{selectedBooking._id.slice(-8).toUpperCase()}</p>
                   </div>
-                  {getStatusBadge(selectedBooking.status)}
+                  {(() => {
+                    const config = getStatusConfig(selectedBooking.status);
+                    const Icon = config.icon;
+                    return (
+                      <Badge className={cn("flex items-center gap-1", config.bg, config.text, config.border, "border")}>
+                        <Icon className="w-3 h-3" />
+                        {config.label}
+                      </Badge>
+                    );
+                  })()}
                 </div>
 
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    Venue Information
+                {/* Venue Info */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+                    <MdStadium className="w-4 h-4 text-primary" />
+                    Venue
                   </h4>
-                  <div className="space-y-2 pl-7">
-                    <p className="font-medium">{selectedBooking.venue?.name}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span>{selectedBooking.venue?.location?.address}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="w-4 h-4" />
-                      <span>{selectedBooking.venue?.contactInfo?.phone || 'Not available'}</span>
-                    </div>
-                  </div>
+                  <Card className="border-border">
+                    <CardContent className="p-4 space-y-2">
+                      <p className="font-semibold text-lg">{selectedBooking.venue?.name}</p>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4 text-primary mt-0.5" />
+                        <span>{selectedBooking.venue?.location?.address}, {selectedBooking.venue?.location?.city}</span>
+                      </div>
+                      {selectedBooking.venue?.contactInfo?.phone && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Phone className="w-4 h-4 text-primary" />
+                          <span>{selectedBooking.venue.contactInfo.phone}</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
 
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    Booking Details
+                {/* Booking Details */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    Schedule
                   </h4>
-                  <div className="grid grid-cols-2 gap-4 pl-7">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Date</p>
-                      <p className="font-medium">{format(new Date(selectedBooking.startTime), 'PPP')}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Time Slot</p>
-                      <p className="font-medium">
-                        {format(new Date(selectedBooking.startTime), 'hh:mm a')} - {format(new Date(selectedBooking.endTime), 'hh:mm a')}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Duration</p>
-                      <p className="font-medium">{selectedBooking.duration || 'N/A'} hours</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Amount Paid</p>
-                      <p className="font-semibold text-lg text-primary">₹{selectedBooking.totalAmount || selectedBooking.amount}</p>
-                    </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Card className="border-border">
+                      <CardContent className="p-3">
+                        <p className="text-xs text-muted-foreground">Date</p>
+                        <p className="font-medium">{format(new Date(selectedBooking.startTime), 'PPP')}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-border">
+                      <CardContent className="p-3">
+                        <p className="text-xs text-muted-foreground">Time</p>
+                        <p className="font-medium">{format(new Date(selectedBooking.startTime), 'hh:mm a')} - {format(new Date(selectedBooking.endTime), 'hh:mm a')}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-border">
+                      <CardContent className="p-3">
+                        <p className="text-xs text-muted-foreground">Duration</p>
+                        <p className="font-medium">{selectedBooking.duration || 'N/A'} hours</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-border bg-primary/5">
+                      <CardContent className="p-3">
+                        <p className="text-xs text-muted-foreground">Amount</p>
+                        <p className="font-bold text-lg text-primary">₹{selectedBooking.totalAmount || selectedBooking.amount}</p>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
 
                 {selectedBooking.notes && (
-                  <div className="border-t pt-4">
-                    <h4 className="font-semibold mb-2">Additional Notes</h4>
-                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                      {selectedBooking.notes}
-                    </p>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Notes</h4>
+                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">{selectedBooking.notes}</p>
                   </div>
                 )}
 
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-2">Payment Information</h4>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      Payment Method: <span className="font-medium text-foreground">Cash</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Booked on: {format(new Date(selectedBooking.bookingDate || selectedBooking.createdAt), 'PPP')}
-                    </p>
+                {/* Payment Info */}
+                <div className="p-4 bg-muted/50 rounded-xl space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Payment Method</span>
+                    <span className="font-medium">Cash</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Booked on</span>
+                    <span className="font-medium">{format(new Date(selectedBooking.bookingDate || selectedBooking.createdAt), 'PPP')}</span>
                   </div>
                 </div>
               </div>

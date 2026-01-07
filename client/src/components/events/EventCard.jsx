@@ -1,184 +1,183 @@
 /* eslint-disable react/prop-types */
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
-import { format } from "date-fns"
+import { format, isToday, isTomorrow, differenceInDays } from "date-fns"
 import {
-  MapPin, Users, Clock, Heart, ArrowUpRight, Sparkles, Zap
+  MapPin, Users, Clock, Calendar, ArrowRight, Bookmark, CheckCircle2
 } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
 
-const EventCard = ({ event, index, categories, viewMode = "grid", featured = false, user = null }) => {
-  const isFeatured = featured || event.isFeatured
+const EventCard = ({ event, index = 0, viewMode = "grid", user = null }) => {
+  const [isBookmarked, setIsBookmarked] = useState(false)
 
-  const [isLiked, setIsLiked] = useState(false)
+  // Date calculations
+  const eventDate = new Date(event.date)
+  const isPastEvent = eventDate < new Date()
+  const daysUntil = differenceInDays(eventDate, new Date())
 
-  // Check if event is in the past
-  const isPastEvent = new Date(event.date) < new Date()
-
-  // Check if user is a participant
+  // User status
   const isParticipant = user && event.participants?.some(p => {
     const participantId = typeof p.user === 'object' ? p.user._id : p.user
     return participantId === user.id
   })
-
-  // Check if user is the creator
   const isCreator = user && (event.createdBy?._id === user.id || event.createdBy === user.id)
+  const hasJoined = isParticipant || isCreator
 
-  // Determine button state
-  const getButtonConfig = () => {
-    if (isPastEvent) {
-      return { text: "Event Ended", variant: "secondary", disabled: true, icon: null }
-    }
-    if (isParticipant || isCreator) {
-      return { text: "Already Joined", variant: "outline", disabled: false, icon: "CheckCircle" }
-    }
-    return { text: "Join Now", variant: "default", disabled: false, icon: null }
-  }
+  // Capacity
+  const participantCount = event.participantCount || event.participants?.length || 0
+  const maxParticipants = event.maxParticipants || 10
+  const fillPercentage = Math.min(100, (participantCount / maxParticipants) * 100)
+  const spotsLeft = Math.max(0, maxParticipants - participantCount)
+  const isAlmostFull = fillPercentage >= 80
 
-  const buttonConfig = getButtonConfig()
-
-  // Get category info
-  const getCategoryInfo = (category) => {
-    const categoryInfo = categories.find(c => c.value === category)
-    return {
-      icon: categoryInfo?.icon || "",
-      label: categoryInfo?.label || category
-    }
-  }
-
-  // Calculate metrics
-  const fillPercentage = ((event.participantCount || 0) / event.maxParticipants) * 100
-  const isAlmostFull = fillPercentage > 85
+  // Price
   const isFreeEvent = !event.registrationFee || event.registrationFee === 0
-  const eventDate = new Date(event.date)
+
+  // Date label
+  const getDateLabel = () => {
+    if (isPastEvent) return "Ended"
+    if (isToday(eventDate)) return "Today"
+    if (isTomorrow(eventDate)) return "Tomorrow"
+    if (daysUntil <= 7) return `In ${daysUntil} days`
+    return format(eventDate, "MMM d")
+  }
+
+  // Difficulty color
+  const getDifficultyStyle = (level) => {
+    switch (level?.toLowerCase()) {
+      case 'beginner': return 'bg-primary/10 text-primary border-primary/20'
+      case 'intermediate': return 'bg-primary/15 text-primary border-primary/30'
+      case 'advanced': return 'bg-primary/20 text-primary border-primary/40'
+      default: return 'bg-secondary text-muted-foreground border-border/50'
+    }
+  }
 
   // List View
   if (viewMode === "list") {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.4, delay: index * 0.05 }}
+        transition={{ duration: 0.3, delay: index * 0.03 }}
       >
         <Link to={`/events/${event._id}`} className="group block">
-          <Card className="overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg bg-card/50 backdrop-blur-sm">
-            <div className="flex flex-col sm:flex-row h-full">
-              {/* Image Section */}
-              <div className="relative w-full sm:w-64 h-48 sm:h-auto shrink-0 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 sm:hidden" />
-                {event.images && event.images.length > 0 ? (
+          <Card className="overflow-hidden border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 bg-card">
+            <div className="flex flex-col sm:flex-row">
+              {/* Image */}
+              <div className="relative w-full sm:w-56 h-40 sm:h-auto flex-shrink-0 overflow-hidden">
+                {event.images?.[0]?.url ? (
                   <img
-                    src={event.images[0].url || "/placeholder.svg"}
+                    src={event.images[0].url}
                     alt={event.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <span className="text-4xl text-muted-foreground">🏆</span>
+                    <Calendar className="w-10 h-10 text-muted-foreground/30" />
                   </div>
                 )}
-
-                {/* Date Badge (Mobile) */}
-                <div className="absolute top-3 left-3 z-20 sm:hidden">
-                  <div className="bg-background/90 backdrop-blur-md rounded-lg p-2 text-center shadow-sm border border-border/50">
-                    <div className="text-xs font-bold text-primary uppercase tracking-wider">
-                      {format(eventDate, "MMM")}
-                    </div>
-                    <div className="text-lg font-black leading-none">
-                      {format(eventDate, "dd")}
-                    </div>
+                {/* Date Badge */}
+                <div className="absolute top-3 left-3">
+                  <div className={cn(
+                    "px-2.5 py-1.5 rounded-lg text-xs font-bold backdrop-blur-md",
+                    isPastEvent
+                      ? "bg-muted/90 text-muted-foreground"
+                      : "bg-primary text-primary-foreground"
+                  )}>
+                    {getDateLabel()}
                   </div>
                 </div>
               </div>
 
-              {/* Content Section */}
-              <div className="flex-1 p-5 flex flex-col justify-between">
+              {/* Content */}
+              <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between min-w-0">
                 <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex gap-2 mb-2">
-                      <Badge variant="secondary" className="rounded-md font-medium bg-primary/10 text-primary hover:bg-primary/20 border-0">
-                        {getCategoryInfo(event.category).label}
+                  {/* Category & Status */}
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <Badge variant="outline" className="rounded-md text-xs border-primary/20 text-primary bg-primary/5">
+                      {event.category || "Sports"}
+                    </Badge>
+                    {event.difficulty && (
+                      <Badge variant="outline" className={cn("rounded-md text-xs", getDifficultyStyle(event.difficulty))}>
+                        {event.difficulty}
                       </Badge>
-                      {isFeatured && (
-                        <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-0">
-                          <Sparkles className="w-3 h-3 mr-1" /> Featured
-                        </Badge>
-                      )}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 -mr-2 -mt-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsLiked(!isLiked)
-                      }}
-                    >
-                      <Heart className={cn("w-4 h-4", isLiked && "fill-current text-red-500")} />
-                    </Button>
+                    )}
+                    {hasJoined && (
+                      <Badge className="bg-primary/10 text-primary border-0 text-xs">
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> Joined
+                      </Badge>
+                    )}
                   </div>
 
-                  <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                  {/* Title */}
+                  <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">
                     {event.name}
                   </h3>
 
-                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground mb-4">
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-2 text-primary" />
-                      {format(eventDate, "EEE, MMM d")} • {event.time}
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-2 text-primary" />
-                      {event.location?.city || "TBD"}
-                    </div>
-                  </div>
-
-                  <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
-                    {event.description}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                  <div className="flex items-center gap-3">
-                    <div className="flex -space-x-2">
-                      {[...Array(3)].map((_, i) => (
-                        <Avatar key={i} className="w-7 h-7 border-2 border-background">
-                          <AvatarFallback className="text-[10px] bg-muted">U{i}</AvatarFallback>
-                        </Avatar>
-                      ))}
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">{event.participantCount || 0}</span> going
+                  {/* Meta */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mb-3">
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-primary/60" />
+                      {format(eventDate, "EEE, MMM d")} • {event.time || "TBA"}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-primary/60" />
+                      {event.location?.city || event.location?.address || "TBD"}
                     </span>
                   </div>
 
+                  {/* Description */}
+                  {event.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                      {event.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-3 border-t border-border/50">
                   <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-muted-foreground">Price</div>
-                      <div className="text-lg font-bold text-primary">
-                        {isFreeEvent ? "Free" : `₹${event.registrationFee}`}
+                    {/* Participants */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-1.5">
+                        {event.participants?.slice(0, 3).map((p, i) => (
+                          <Avatar key={i} className="w-6 h-6 border-2 border-background">
+                            <AvatarImage src={p.user?.avatar?.url} />
+                            <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                              {p.user?.name?.charAt(0) || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
                       </div>
+                      <span className="text-xs text-muted-foreground">
+                        <span className="font-semibold text-foreground">{participantCount}</span>/{maxParticipants}
+                      </span>
                     </div>
-                    {isPastEvent ? (
-                      <Button size="sm" variant="secondary" disabled className="rounded-full px-6">
-                        Event Ended
-                      </Button>
-                    ) : isParticipant || isCreator ? (
-                      <Button size="sm" variant="outline" className="rounded-full px-6 group-hover:translate-x-1 transition-transform">
-                        View Details <ArrowUpRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    ) : (
-                      <Button size="sm" className="rounded-full px-6 group-hover:translate-x-1 transition-transform">
-                        View <ArrowUpRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    )}
+
+                    {/* Price */}
+                    <div className="text-sm">
+                      <span className="font-bold text-primary">
+                        {isFreeEvent ? "Free" : `₹${event.registrationFee}`}
+                      </span>
+                    </div>
                   </div>
+
+                  <Button
+                    size="sm"
+                    variant={isPastEvent ? "secondary" : "default"}
+                    disabled={isPastEvent}
+                    className="rounded-lg gap-1"
+                  >
+                    {isPastEvent ? "Ended" : "View"}
+                    {!isPastEvent && <ArrowRight className="w-3.5 h-3.5" />}
+                  </Button>
                 </div>
               </div>
             </div>
@@ -191,135 +190,136 @@ const EventCard = ({ event, index, categories, viewMode = "grid", featured = fal
   // Grid View (Default)
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+      transition={{ duration: 0.3, delay: index * 0.04 }}
       className="h-full"
     >
       <Link to={`/events/${event._id}`} className="group block h-full">
-        <Card className="h-full flex flex-col border-border/50 bg-card hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 group -translate-y-1 overflow-hidden">
-          {/* Image Container */}
-          <div className="relative h-48 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
-
-            {event.images && event.images.length > 0 ? (
+        <Card className="h-full flex flex-col overflow-hidden border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 bg-card">
+          {/* Image Section */}
+          <div className="relative h-44 overflow-hidden bg-muted">
+            {event.images?.[0]?.url ? (
               <img
-                src={event.images[0].url || "/placeholder.svg"}
+                src={event.images[0].url}
                 alt={event.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
-              <div className="w-full h-full bg-muted flex items-center justify-center">
-                <span className="text-6xl opacity-20">🏆</span>
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                <Calendar className="w-12 h-12 text-muted-foreground/20" />
               </div>
             )}
 
-            {/* Top Badges */}
-            <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20">
-              <div className="bg-background/95 backdrop-blur-md rounded-xl p-2.5 text-center shadow-lg min-w-[60px]">
-                <div className="text-xs font-bold text-primary uppercase tracking-wider mb-0.5">
-                  {format(eventDate, "MMM")}
-                </div>
-                <div className="text-xl font-black leading-none text-foreground">
-                  {format(eventDate, "dd")}
-                </div>
+            {/* Overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+            {/* Top row: Date + Bookmark */}
+            <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+              <div className={cn(
+                "px-2.5 py-1.5 rounded-lg text-xs font-bold backdrop-blur-md shadow-sm",
+                isPastEvent
+                  ? "bg-muted/90 text-muted-foreground"
+                  : isToday(eventDate) || isTomorrow(eventDate)
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background/90 text-foreground"
+              )}>
+                {getDateLabel()}
               </div>
 
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-full bg-background/20 backdrop-blur-md hover:bg-background/40 text-white border-0"
+                className="h-8 w-8 rounded-full bg-background/20 backdrop-blur-md hover:bg-background/40 text-white"
                 onClick={(e) => {
                   e.preventDefault()
-                  setIsLiked(!isLiked)
+                  setIsBookmarked(!isBookmarked)
                 }}
               >
-                <Heart className={cn("w-4 h-4", isLiked && "fill-current text-red-500")} />
+                <Bookmark className={cn("w-4 h-4", isBookmarked && "fill-current")} />
               </Button>
             </div>
 
-            {/* Bottom Info on Image */}
-            <div className="absolute bottom-4 left-4 right-4 z-20">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-primary/90 hover:bg-primary text-primary-foreground backdrop-blur-md border-0">
-                  {getCategoryInfo(event.category).label}
+            {/* Bottom: Category badge */}
+            <div className="absolute bottom-3 left-3 right-3">
+              <div className="flex flex-wrap gap-1.5">
+                <Badge className="bg-primary/90 text-primary-foreground border-0 text-xs backdrop-blur-sm">
+                  {event.category || "Sports"}
                 </Badge>
-                {isAlmostFull && (
-                  <Badge variant="secondary" className="bg-white/20 backdrop-blur-md text-white border-0 animate-pulse">
-                    <Zap className="w-3 h-3 mr-1" /> Few Spots
+                {isAlmostFull && !isPastEvent && (
+                  <Badge variant="secondary" className="bg-background/80 text-foreground border-0 text-xs backdrop-blur-sm">
+                    {spotsLeft} spots left
                   </Badge>
                 )}
-                {isFeatured && (
-                  <Badge className="bg-yellow-500/90 hover:bg-yellow-500 text-white backdrop-blur-md border-0">
-                    <Sparkles className="w-3 h-3 mr-1" /> Featured
-                  </Badge>
-                )}
-              </div>
-              <h3 className="text-xl font-bold text-white line-clamp-1 mb-1 group-hover:text-primary transition-colors">
-                {event.name}
-              </h3>
-              <div className="flex items-center text-white/80 text-sm">
-                <MapPin className="w-3.5 h-3.5 mr-1.5" />
-                <span className="truncate">{event.location?.city || "Location TBD"}</span>
               </div>
             </div>
           </div>
 
-          {/* Card Content */}
-          <CardContent className="flex-1 p-5 flex flex-col">
-            <div className="flex justify-between items-center mb-4 text-sm text-muted-foreground">
-              <div className="flex items-center bg-secondary/50 px-2.5 py-1 rounded-md">
-                <Clock className="w-3.5 h-3.5 mr-1.5 text-primary" />
-                {event.time}
+          {/* Content */}
+          <div className="flex-1 p-4 flex flex-col">
+            {/* Title */}
+            <h3 className="font-bold text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug">
+              {event.name}
+            </h3>
+
+            {/* Meta info */}
+            <div className="space-y-1.5 text-sm text-muted-foreground mb-3">
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-primary/60 flex-shrink-0" />
+                <span className="truncate">{format(eventDate, "EEE, MMM d")} • {event.time || "TBA"}</span>
               </div>
-              <div className="flex items-center">
-                <Users className="w-3.5 h-3.5 mr-1.5" />
-                <span>{event.participantCount || 0}/{event.maxParticipants}</span>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-primary/60 flex-shrink-0" />
+                <span className="truncate">{event.location?.city || event.location?.address || "Location TBD"}</span>
               </div>
             </div>
 
-            <div className="space-y-3 mt-auto">
-              {/* Progress Bar */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Capacity</span>
-                  <span className="font-medium text-primary">
-                    {Math.round(fillPercentage)}%
-                  </span>
-                </div>
-                <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500 bg-primary"
-                    style={{ width: `${fillPercentage}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
+            {/* Spacer */}
+            <div className="flex-1" />
 
-          {/* Card Footer */}
-          <CardFooter className="p-5 flex items-center justify-between border-t border-border/50 pt-4">
-            <div>
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Price</p>
-              <p className="text-lg font-bold text-primary">
-                {isFreeEvent ? "Free" : `₹${event.registrationFee}`}
-              </p>
+            {/* Capacity bar */}
+            <div className="mb-3">
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  {participantCount}/{maxParticipants} joined
+                </span>
+                <span className={cn(
+                  "font-medium",
+                  isAlmostFull ? "text-primary" : "text-muted-foreground"
+                )}>
+                  {Math.round(fillPercentage)}%
+                </span>
+              </div>
+              <Progress value={fillPercentage} className="h-1.5" />
             </div>
-            {isPastEvent ? (
-              <Button size="sm" variant="secondary" disabled className="rounded-full px-5">
-                Event Ended
-              </Button>
-            ) : isParticipant || isCreator ? (
-              <Button size="sm" variant="outline" className="rounded-full px-5 shadow-lg shadow-green-500/20 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20">
-                ✓ Joined
-              </Button>
-            ) : (
-              <Button size="sm" className="rounded-full px-5 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all">
-                Join Now
-              </Button>
-            )}
-          </CardFooter>
+
+            {/* Footer: Price + Status/Button */}
+            <div className="flex items-center justify-between pt-3 border-t border-border/50">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Entry</p>
+                <p className="text-base font-bold text-primary">
+                  {isFreeEvent ? "Free" : `₹${event.registrationFee}`}
+                </p>
+              </div>
+
+              {isPastEvent ? (
+                <Badge variant="secondary" className="rounded-lg px-3 py-1">
+                  Ended
+                </Badge>
+              ) : hasJoined ? (
+                <Badge className="bg-primary/10 text-primary border-primary/20 rounded-lg px-3 py-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                  Joined
+                </Badge>
+              ) : (
+                <Button size="sm" className="rounded-lg gap-1 shadow-sm shadow-primary/20">
+                  Join <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
         </Card>
       </Link>
     </motion.div>

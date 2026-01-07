@@ -1,17 +1,28 @@
-import { useState, useEffect, useCallback, Suspense, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import {
   Plus, Grid3X3, List, ChevronLeft, ChevronRight,
-  RefreshCw, AlertTriangle, Calendar, Trophy, Activity, Users, Star
+  RefreshCw, AlertTriangle, Calendar, Trophy,
+  Search, SlidersHorizontal, Filter, X, Check
 } from 'lucide-react'
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import api from "@/utils/api"
 import EventCard from "@/components/events/EventCard"
-import EventsFilters from "@/components/events/EventsFilters"
 import EventsLoadingSkeleton from "@/components/events/EventsLoadingSkeleton"
-import HeroBg from "@/components/HeroBg"
+import { motion, AnimatePresence } from "framer-motion"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Card } from '@/components/ui/card'
+import { Skeleton } from "@/components/ui/skeleton"
 
 const Events = () => {
   const { isAuthenticated, user } = useAuth()
@@ -23,13 +34,8 @@ const Events = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [viewMode, setViewMode] = useState("grid")
-  const [featuredEvents, setFeaturedEvents] = useState([])
-  const [stats, setStats] = useState({
-    totalEvents: 0,
-    activeEvents: 0,
-    totalParticipants: 0,
-    avgRating: 0
-  })
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   // Filters state
   const [filters, setFilters] = useState({
@@ -38,7 +44,8 @@ const Events = () => {
     difficulty: "all",
     status: "all",
     dateRange: "all",
-    sortBy: "date:asc"
+    sortBy: "date:asc",
+    includeEnded: false // By default, don't show ended events
   })
 
   // Pagination state
@@ -51,38 +58,64 @@ const Events = () => {
     hasPrev: false
   })
 
-  // Categories and options
+  // Categories
   const categories = [
     { value: "all", label: "All Sports" },
     { value: "Football", label: "Football" },
     { value: "Basketball", label: "Basketball" },
     { value: "Tennis", label: "Tennis" },
+    { value: "Cricket", label: "Cricket" },
+    { value: "Badminton", label: "Badminton" },
     { value: "Running", label: "Running" },
     { value: "Cycling", label: "Cycling" },
     { value: "Swimming", label: "Swimming" },
     { value: "Volleyball", label: "Volleyball" },
-    { value: "Cricket", label: "Cricket" },
     { value: "Other", label: "Other" }
   ]
 
-  // Parse URL parameters on component mount
+  const difficulties = [
+    { value: "all", label: "All Levels" },
+    { value: "Beginner", label: "Beginner" },
+    { value: "Intermediate", label: "Intermediate" },
+    { value: "Advanced", label: "Advanced" },
+  ]
+
+  const dateRanges = [
+    { value: "all", label: "Any Date" },
+    { value: "today", label: "Today" },
+    { value: "tomorrow", label: "Tomorrow" },
+    { value: "thisWeek", label: "This Week" },
+    { value: "thisMonth", label: "This Month" },
+    { value: "upcoming", label: "Upcoming" },
+  ]
+
+  const sortOptions = [
+    { value: "date:asc", label: "Earliest First" },
+    { value: "date:desc", label: "Latest First" },
+    { value: "created:desc", label: "Recently Added" },
+    { value: "participants:desc", label: "Most Popular" },
+  ]
+
+  // Parse URL parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const newFilters = { ...filters }
 
     if (urlParams.get("category")) newFilters.category = urlParams.get("category")
     if (urlParams.get("difficulty")) newFilters.difficulty = urlParams.get("difficulty")
-    if (urlParams.get("search")) newFilters.search = urlParams.get("search")
+    if (urlParams.get("search")) {
+      newFilters.search = urlParams.get("search")
+      setSearchQuery(urlParams.get("search"))
+    }
     if (urlParams.get("dateRange")) newFilters.dateRange = urlParams.get("dateRange")
     if (urlParams.get("sortBy")) newFilters.sortBy = urlParams.get("sortBy")
 
     setFilters(newFilters)
-
     const page = parseInt(urlParams.get("page")) || 1
     setPagination(prev => ({ ...prev, page }))
   }, [location.search])
 
-  // Update URL when filters change
+  // Update URL
   const updateURL = useCallback((newFilters, newPage = 1) => {
     const params = new URLSearchParams()
 
@@ -92,15 +125,13 @@ const Events = () => {
       }
     })
 
-    if (newPage > 1) {
-      params.set("page", newPage.toString())
-    }
+    if (newPage > 1) params.set("page", newPage.toString())
 
     const newURL = params.toString() ? `?${params.toString()}` : ""
     navigate(`/events${newURL}`, { replace: true })
   }, [navigate])
 
-  // Fetch events function
+  // Fetch events
   const fetchEvents = useCallback(async (newFilters = filters, page = pagination.page) => {
     setLoading(true)
     setError(null)
@@ -108,18 +139,14 @@ const Events = () => {
     try {
       const params = new URLSearchParams()
 
-      // Add filters to params
       Object.entries(newFilters).forEach(([key, value]) => {
         if (value && value !== "all" && value !== "") {
           params.set(key, value)
         }
       })
 
-      // Add pagination
       params.set("page", page.toString())
       params.set("limit", pagination.limit.toString())
-
-      // Add timestamp to prevent caching
       params.set("_t", Date.now().toString())
 
       const response = await api.get(`/events?${params.toString()}`)
@@ -127,7 +154,6 @@ const Events = () => {
       if (response.data.success) {
         setEvents(response.data.data)
         setPagination(response.data.pagination)
-        if (response.data.stats) setStats(response.data.stats)
       } else {
         throw new Error(response.data.message || "Failed to fetch events")
       }
@@ -140,27 +166,12 @@ const Events = () => {
     }
   }, [filters, pagination.page, pagination.limit])
 
-  // Fetch featured events
-  const fetchFeaturedEvents = useCallback(async () => {
-    try {
-      const response = await api.get('/events/featured')
-      if (response.data.success) {
-        setFeaturedEvents(response.data.data)
-      }
-    } catch (err) {
-      console.error("Error fetching featured events:", err)
-    }
-  }, [])
-
-
-
   // Initial fetch
   useEffect(() => {
     fetchEvents()
-    fetchFeaturedEvents()
   }, [])
 
-  // Set page title
+  // Page title
   useEffect(() => {
     document.title = "Sports Events - SportsBuddy"
   }, [])
@@ -174,24 +185,10 @@ const Events = () => {
     fetchEvents(newFilters, 1)
   }
 
-  // Timer ref for debounce
-  const timerRef = useRef(null)
-
-  // Handle search with debounce
+  // Handle search
   const handleSearch = (e) => {
-    const value = e.target.value
-    // Update local filter state immediately for input display
-    setFilters(prev => ({ ...prev, search: value }))
-
-    // Clear existing timer
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-    }
-
-    // Set new timer
-    timerRef.current = setTimeout(() => {
-      handleFilterChange("search", value)
-    }, 500)
+    e?.preventDefault()
+    handleFilterChange("search", searchQuery)
   }
 
   // Handle pagination
@@ -204,13 +201,15 @@ const Events = () => {
 
   // Reset filters
   const resetFilters = () => {
+    setSearchQuery("")
     const defaultFilters = {
       search: "",
       category: "all",
       difficulty: "all",
       status: "all",
       dateRange: "all",
-      sortBy: "date:asc"
+      sortBy: "date:asc",
+      includeEnded: false
     }
     setFilters(defaultFilters)
     setPagination(prev => ({ ...prev, page: 1 }))
@@ -218,92 +217,229 @@ const Events = () => {
     fetchEvents(defaultFilters, 1)
   }
 
-  // Refresh events
-  const refreshEvents = () => {
-    fetchEvents(filters, pagination.page)
-  }
+  const hasActiveFilters = filters.category !== 'all' ||
+    filters.difficulty !== 'all' ||
+    filters.search ||
+    filters.dateRange !== 'all' ||
+    filters.includeEnded
+
+  const activeFilterCount = [
+    filters.category !== 'all',
+    filters.difficulty !== 'all',
+    filters.dateRange !== 'all',
+    filters.search,
+    filters.includeEnded
+  ].filter(Boolean).length
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden border-b border-border/40 bg-background/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-            <div className="max-w-3xl">
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight text-foreground mb-6 leading-tight">
-                Discover Your Next <br />
-                <span className="text-primary">
-                  Sports Adventure
-                </span>
-              </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-                Join a community of athletes. Find local games, tournaments, and training sessions tailored to your skill level.
-              </p>
+      <div className="relative overflow-hidden border-b border-border">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.1),transparent_50%)]" />
 
-              <div className="flex flex-wrap gap-4">
-                {isAuthenticated && (
-                  <Link to="/events/create">
-                    <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all bg-primary text-primary-foreground hover:bg-primary/90">
-                      <Plus className="w-5 h-5 mr-2" />
-                      Create Event
-                    </Button>
-                  </Link>
-                )}
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="h-14 px-8 text-lg rounded-full border-2 hover:bg-secondary/50"
-                  onClick={() => document.getElementById('events-feed').scrollIntoView({ behavior: 'smooth' })}
-                >
-                  Browse Events
-                </Button>
-              </div>
+        <div className="container mx-auto px-4 py-12 lg:py-16 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-3xl mx-auto text-center space-y-6"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <Trophy className="w-4 h-4" />
+              <span>Discover Events Near You</span>
             </div>
 
-            {/* Quick Stats - Minimal Blue Design */}
-            <div className="hidden lg:grid grid-cols-2 gap-4">
-              {[
-                { label: "Active Events", value: stats.activeEvents || "100+", icon: Activity },
-                { label: "Athletes", value: stats.totalParticipants || "5k+", icon: Users },
-                { label: "Avg Rating", value: stats.avgRating?.toFixed(1) || "4.9", icon: Star },
-                { label: "Total Events", value: stats.totalEvents || "500+", icon: Trophy },
-              ].map((stat, i) => (
-                <div key={i} className="bg-card/80 backdrop-blur-sm border border-border/50 p-6 rounded-2xl w-40 hover:border-primary/30 transition-colors duration-300 shadow-sm">
-                  <stat.icon className="w-8 h-8 mb-3 text-primary" />
-                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
+            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
+              Find Your Next <br />
+              <span className="text-primary">Sports Adventure</span>
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Join a community of athletes. Find local games, tournaments, and training sessions tailored to your skill level.
+            </p>
+
+            {/* Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mt-8">
+              <div className="relative flex-grow">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                <Input
+                  placeholder="Search events, locations, or sports..."
+                  className="pl-12 h-12 text-base bg-card border-border focus-visible:ring-primary rounded-xl"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+                />
+              </div>
+              <Button
+                size="lg"
+                className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+                onClick={handleSearch}
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className={cn(
+                  "h-12 px-4 rounded-xl border-border hover:bg-muted relative",
+                  isFilterOpen && "bg-primary/10 border-primary/30"
+                )}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                <SlidersHorizontal className="w-5 h-5" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+            </div>
+
+            {/* Quick Categories */}
+            <div className="flex flex-wrap justify-center gap-2 mt-6">
+              {categories.slice(1, 7).map((cat) => (
+                <Button
+                  key={cat.value}
+                  variant={filters.category === cat.value ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "rounded-full",
+                    filters.category === cat.value
+                      ? "bg-primary text-primary-foreground"
+                      : "border-border hover:border-primary/30 hover:bg-primary/10"
+                  )}
+                  onClick={() => handleFilterChange('category', cat.value === filters.category ? 'all' : cat.value)}
+                >
+                  {cat.label}
+                </Button>
               ))}
             </div>
-          </div>
+
+            {/* Create Event Button */}
+            {isAuthenticated && (
+              <div className="mt-8">
+                <Link to="/events/create">
+                  <Button variant="outline" className="rounded-full border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
+                    <Plus className="w-4 h-4" />
+                    Create Your Own Event
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </motion.div>
         </div>
       </div>
 
-      <div id="events-feed" className="container mx-auto px-4 pb-20">
+      {/* Filters Panel (Expandable) */}
+      <AnimatePresence>
+        {isFilterOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-b border-border bg-card/50 overflow-hidden"
+          >
+            <div className="container mx-auto px-4 py-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-primary" />
+                  Filters
+                </h3>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={resetFilters}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Clear All
+                  </Button>
+                )}
+              </div>
 
-        {/* Filters Section */}
-        <div className="z-30 bg-background/95 backdrop-blur-xl py-4 -mx-4 px-4 mb-8 border-y border-border/50 shadow-sm">
-          <Suspense fallback={<EventsLoadingSkeleton type="filters" />}>
-            <EventsFilters
-              filters={filters}
-              handleSearch={handleSearch}
-              categories={categories}
-              handleFilterChange={handleFilterChange}
-              refreshEvents={refreshEvents}
-              loading={loading}
-              resetFilters={resetFilters}
-            />
-          </Suspense>
-        </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 items-end">
+                <Select value={filters.category} onValueChange={(v) => handleFilterChange('category', v)}>
+                  <SelectTrigger className="bg-background border-border">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-        {/* Main Content Area */}
-        <div className="flex flex-col gap-6">
-          {/* Results Header */}
-          <div className="flex items-center justify-between">
+                <Select value={filters.difficulty} onValueChange={(v) => handleFilterChange('difficulty', v)}>
+                  <SelectTrigger className="bg-background border-border">
+                    <SelectValue placeholder="Difficulty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {difficulties.map(d => (
+                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={filters.dateRange} onValueChange={(v) => handleFilterChange('dateRange', v)}>
+                  <SelectTrigger className="bg-background border-border">
+                    <SelectValue placeholder="Date" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dateRanges.map(d => (
+                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={filters.sortBy} onValueChange={(v) => handleFilterChange('sortBy', v)}>
+                  <SelectTrigger className="bg-background border-border">
+                    <SelectValue placeholder="Sort By" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map(s => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Show Past Events Toggle */}
+                <div
+                  className={cn(
+                    "flex items-center gap-2 h-10 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors",
+                    filters.includeEnded && "bg-primary/10 border-primary/30 text-primary"
+                  )}
+                  onClick={() => handleFilterChange('includeEnded', !filters.includeEnded)}
+                >
+                  <div className={cn(
+                    "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                    filters.includeEnded ? "bg-primary border-primary" : "border-muted-foreground"
+                  )}>
+                    {filters.includeEnded && <Check className="w-3 h-3 text-primary-foreground" />}
+                  </div>
+                  <span className="text-sm font-medium select-none">Show Past Events</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Results Header */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
             <h2 className="text-xl font-semibold text-foreground">
-              {loading ? "Loading..." : `${pagination.total} Events Found`}
+              {hasActiveFilters ? 'Search Results' : 'All Events'}
             </h2>
+            <p className="text-sm text-muted-foreground">
+              {loading ? "Loading..." : `${pagination.total || events.length} events found`}
+            </p>
+          </div>
 
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
             <div className="flex items-center bg-secondary/50 p-1 rounded-lg border border-border/50">
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
@@ -322,128 +458,206 @@ const Events = () => {
                 <List className="w-4 h-4" />
               </Button>
             </div>
+
+            {/* Refresh */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchEvents()}
+              disabled={loading}
+              className="h-8"
+            >
+              <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+            </Button>
           </div>
+        </div>
 
-          {/* Loading State */}
-          {loading && <EventsLoadingSkeleton type="events" viewMode={viewMode} />}
+        {/* Active Filters Tags */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {filters.category !== 'all' && (
+              <Badge variant="secondary" className="gap-1 pl-3 pr-1 py-1">
+                {filters.category}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 hover:bg-transparent"
+                  onClick={() => handleFilterChange('category', 'all')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {filters.difficulty !== 'all' && (
+              <Badge variant="secondary" className="gap-1 pl-3 pr-1 py-1">
+                {filters.difficulty}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 hover:bg-transparent"
+                  onClick={() => handleFilterChange('difficulty', 'all')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {filters.dateRange !== 'all' && (
+              <Badge variant="secondary" className="gap-1 pl-3 pr-1 py-1">
+                {dateRanges.find(d => d.value === filters.dateRange)?.label}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 hover:bg-transparent"
+                  onClick={() => handleFilterChange('dateRange', 'all')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {filters.search && (
+              <Badge variant="secondary" className="gap-1 pl-3 pr-1 py-1">
+                "{filters.search}"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 hover:bg-transparent"
+                  onClick={() => {
+                    setSearchQuery('')
+                    handleFilterChange('search', '')
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+          </div>
+        )}
 
-          {/* Error State */}
-          {error && !loading && (
-            <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+        {/* Loading State */}
+        {loading && (
+          <div className={cn(
+            "grid gap-6",
+            viewMode === "grid"
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              : "grid-cols-1 max-w-4xl"
+          )}>
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className={viewMode === "grid" ? "h-80 rounded-xl" : "h-40 rounded-xl"} />
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-foreground">Something went wrong</h3>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Button onClick={() => fetchEvents()}>
+              <RefreshCw className="w-4 h-4 mr-2" /> Try Again
+            </Button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && events.length === 0 && (
+          <div className="text-center py-20 bg-card/30 rounded-2xl border border-dashed border-border">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+              <Calendar className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-foreground">No events found</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              We couldn't find any events matching your criteria. Try adjusting your filters or create your own event!
+            </p>
+            <div className="flex justify-center gap-3">
+              <Button variant="outline" onClick={resetFilters}>Clear Filters</Button>
+              {isAuthenticated && (
+                <Link to="/events/create">
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" /> Create Event
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Events Grid/List */}
+        {!loading && !error && events.length > 0 && (
+          <div className={cn(
+            "grid gap-6",
+            viewMode === "grid"
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              : "grid-cols-1 max-w-4xl"
+          )}>
+            {events.map((event, index) => (
+              <EventCard
+                key={event._id}
+                event={event}
+                index={index}
+                viewMode={viewMode}
+                user={user}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && !error && pagination.pages > 1 && (
+          <div className="mt-12 flex flex-col items-center gap-4">
+            <div className="flex items-center gap-2 bg-card border border-border p-2 rounded-xl">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={!pagination.hasPrev}
+                className="h-9 w-9 rounded-lg"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+
+              <div className="flex items-center gap-1 px-2">
+                {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+                  let pageNum = i + 1
+                  if (pagination.pages > 5) {
+                    if (pagination.page > 3) pageNum = pagination.page - 2 + i
+                    if (pagination.page > pagination.pages - 2) pageNum = pagination.pages - 4 + i
+                  }
+                  if (pageNum > pagination.pages || pageNum < 1) return null
+
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={pagination.page === pageNum ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => handlePageChange(pageNum)}
+                      className="min-w-9 h-9 rounded-lg"
+                    >
+                      {pageNum}
+                    </Button>
+                  )
+                })}
               </div>
-              <h3 className="text-xl font-semibold mb-2">Oops! Something went wrong</h3>
-              <p className="text-muted-foreground mb-6">{error}</p>
-              <Button onClick={refreshEvents}>
-                <RefreshCw className="w-4 h-4 mr-2" /> Try Again
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={!pagination.hasNext}
+                className="h-9 w-9 rounded-lg"
+              >
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
-          )}
 
-          {/* No Results */}
-          {!loading && !error && events.length === 0 && (
-            <div className="text-center py-20 bg-card/30 rounded-3xl border border-dashed border-border">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-secondary mb-6">
-                <Calendar className="w-10 h-10 text-muted-foreground" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2">No events found</h3>
-              <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                We couldn't find any events matching your criteria. Try adjusting your filters or create your own event!
-              </p>
-              <div className="flex justify-center gap-4">
-                <Button variant="outline" onClick={resetFilters}>Clear Filters</Button>
-                {isAuthenticated && (
-                  <Link to="/events/create">
-                    <Button>Create Event</Button>
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Events Grid */}
-          {!loading && !error && events.length > 0 && (
-            <div className={cn(
-              "grid gap-6",
-              viewMode === "grid"
-                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                : "grid-cols-1 max-w-4xl mx-auto w-full"
-            )}>
-              {events.map((event, index) => (
-                <EventCard
-                  key={event._id}
-                  event={event}
-                  categories={categories}
-                  index={index}
-                  viewMode={viewMode}
-                  featured={featuredEvents.some(e => e._id === event._id)}
-                  user={user}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {!loading && !error && pagination.pages > 1 && (
-            <div className="mt-16 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-3 bg-card/80 backdrop-blur-sm border-2 border-border/60 p-3 rounded-2xl shadow-lg">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handlePageChange(pagination.page - 1)}
-                  disabled={!pagination.hasPrev}
-                  className="h-10 w-10 rounded-xl border-2 disabled:opacity-30"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </Button>
-
-                <div className="flex items-center gap-2 px-2">
-                  {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-                    let pageNum = i + 1
-                    if (pagination.pages > 5) {
-                      if (pagination.page > 3) pageNum = pagination.page - 2 + i
-                      if (pagination.page > pagination.pages - 2) pageNum = pagination.pages - 4 + i
-                    }
-
-                    if (pageNum > pagination.pages) return null
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={pagination.page === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(pageNum)}
-                        className={cn(
-                          "min-w-10 h-10 rounded-xl font-semibold text-base transition-all",
-                          pagination.page === pageNum
-                            ? "shadow-md shadow-primary/30"
-                            : "hover:border-primary/50"
-                        )}
-                      >
-                        {pageNum}
-                      </Button>
-                    )
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                  disabled={!pagination.hasNext}
-                  className="h-10 w-10 rounded-xl border-2 disabled:opacity-30"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </Button>
-              </div>
-
-              <p className="text-sm font-medium text-muted-foreground">
-                Page <span className="text-foreground font-bold">{pagination.page}</span> of <span className="text-foreground font-bold">{pagination.pages}</span>
-              </p>
-            </div>
-          )}
-        </div>
+            <p className="text-sm text-muted-foreground">
+              Page <span className="font-semibold text-foreground">{pagination.page}</span> of{' '}
+              <span className="font-semibold text-foreground">{pagination.pages}</span>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -24,14 +24,21 @@ export const getLeaderboard = async (req, res) => {
     }
 
     const leaderboard = await Leaderboard.find(query)
-      .populate("user", "name avatar username location.city")
+      .populate({
+        path: "user",
+        select: "name avatar username location.city role",
+        match: { role: { $ne: "admin" } }
+      })
       .sort({ points: -1, eventsParticipated: -1 })
       .skip(skip)
       .limit(parseInt(limit))
       .lean();
 
+    // Filter out entries where user is null (admin users filtered by populate match)
+    const filteredLeaderboard = leaderboard.filter(entry => entry.user !== null);
+
     // Add rankings
-    const leaderboardWithRanks = leaderboard.map((entry, index) => ({
+    const leaderboardWithRanks = filteredLeaderboard.map((entry, index) => ({
       ...entry,
       rank: skip + index + 1,
       isCurrentUser: entry.user?._id.toString() === req.user?.id
@@ -281,11 +288,12 @@ export const getCategories = async (req, res) => {
       { id: "Football", name: "Football", icon: "⚽" },
       { id: "Basketball", name: "Basketball", icon: "🏀" },
       { id: "Tennis", name: "Tennis", icon: "🎾" },
+      { id: "Cricket", name: "Cricket", icon: "🏏" },
+      { id: "Badminton", name: "Badminton", icon: "🏸" },
       { id: "Running", name: "Running", icon: "🏃" },
       { id: "Cycling", name: "Cycling", icon: "🚴" },
       { id: "Swimming", name: "Swimming", icon: "🏊" },
-      { id: "Volleyball", name: "Volleyball", icon: "🏐" },
-      { id: "Cricket", name: "Cricket", icon: "🏏" }
+      { id: "Volleyball", name: "Volleyball", icon: "🏐" }
     ];
 
     // Get participant counts for each category
@@ -346,17 +354,24 @@ export const getLeaderboardBySport = async (req, res) => {
     const combinedQuery = { ...query, ...dateFilter };
 
     const leaderboard = await Leaderboard.find(combinedQuery)
-      .populate("user", "name avatar username location.city sportsPreferences")
+      .populate({
+        path: "user",
+        select: "name avatar username location.city sportsPreferences role",
+        match: { role: { $ne: "admin" } }
+      })
       .sort({ points: -1, eventsParticipated: -1 })
       .skip(skip)
       .limit(parseInt(limit))
       .lean();
 
+    // Filter out entries where user is null (admin users)
+    const filteredLeaderboard = leaderboard.filter(entry => entry.user !== null);
+
     // Add rankings
-    const leaderboardWithRanks = leaderboard.map((entry, index) => ({
+    const leaderboardWithRanks = filteredLeaderboard.map((entry, index) => ({
       ...entry,
       rank: skip + index + 1,
-      isCurrentUser: entry.user._id.toString() === req.user?.id
+      isCurrentUser: entry.user?._id?.toString() === req.user?.id
     }));
 
     const total = await Leaderboard.countDocuments(combinedQuery);

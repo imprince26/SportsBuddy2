@@ -125,15 +125,16 @@ export const getAllEvents = async (req, res) => {
       difficulty,
       status,
       dateRange,
-      feeType, // Added feeType filter
-      venue, // Added venue filter
+      feeType,
+      venue,
       sortBy = "date:asc",
       radius = 10,
       location,
       page = 1,
       limit = 12,
       lat,
-      lng
+      lng,
+      includeEnded = "false"
     } = req.query;
 
     // Build query object
@@ -242,7 +243,7 @@ export const getAllEvents = async (req, res) => {
     let sort = {};
     let sortField = "default";
     let sortOrder = "asc";
-    
+
     if (sortBy) {
       [sortField, sortOrder] = sortBy.split(":");
       switch (sortField) {
@@ -368,7 +369,7 @@ export const getAllEvents = async (req, res) => {
     // Calculate additional metadata for each event with IST timezone
     const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
     const nowIST = new Date(now.getTime() + istOffset);
-    
+
     const eventsWithMetadata = events.map(event => {
       const participantCount = event.participants?.length || 0;
       const averageRating = event.ratings?.length > 0
@@ -381,11 +382,11 @@ export const getAllEvents = async (req, res) => {
       const eventDateTime = new Date(eventDate);
       eventDateTime.setHours(hours, minutes, 0, 0);
       const eventDateTimeIST = new Date(eventDateTime.getTime() + istOffset);
-      
+
       // Determine status based on time comparison
       let calculatedStatus = "Upcoming";
       let statusPriority = 1; // For sorting: 1=Upcoming, 2=Ongoing, 3=Completed
-      
+
       if (nowIST > eventDateTimeIST) {
         calculatedStatus = "Completed";
         statusPriority = 3;
@@ -411,39 +412,67 @@ export const getAllEvents = async (req, res) => {
 
     // Apply status filter based on calculated status
     let filteredEvents = eventsWithMetadata;
+
+    // By default, exclude completed/ended events unless explicitly requested
+    const showEnded = includeEnded === "true" || includeEnded === true;
+
     if (status && status !== "all") {
-      filteredEvents = eventsWithMetadata.filter(event => 
+      // If specific status is requested, use that
+      filteredEvents = eventsWithMetadata.filter(event =>
         event.status.toLowerCase() === status.toLowerCase()
+      );
+    } else if (!showEnded) {
+      // By default, don't show completed events unless includeEnded=true
+      filteredEvents = eventsWithMetadata.filter(event =>
+        event.status !== "Completed"
       );
     }
 
     // Apply custom sorting based on sortField
+    // Always prioritize: Upcoming -> Ongoing -> Completed, then apply secondary sort
     if (sortField === "status") {
       // Sort by status priority (Upcoming -> Ongoing -> Completed)
       filteredEvents.sort((a, b) => {
-        const diff = sortOrder === "desc" 
-          ? b.statusPriority - a.statusPriority 
+        const diff = sortOrder === "desc"
+          ? b.statusPriority - a.statusPriority
           : a.statusPriority - b.statusPriority;
-        // Secondary sort by date
         return diff !== 0 ? diff : new Date(a.date) - new Date(b.date);
       });
     } else if (sortField === "rating") {
       // Sort by average rating
       filteredEvents.sort((a, b) => {
-        const diff = sortOrder === "desc" 
-          ? b.averageRating - a.averageRating 
+        const diff = sortOrder === "desc"
+          ? b.averageRating - a.averageRating
           : a.averageRating - b.averageRating;
-        // Secondary sort by date
         return diff !== 0 ? diff : new Date(a.date) - new Date(b.date);
       });
-    } else if (sortField === "default" || !sortBy) {
-      // Default sorting: Show latest (most recently created) events first
-      // Upcoming/Ongoing events before Completed, sorted by creation date (newest first)
+    } else if (sortField === "date") {
+      // Date sorting: Still prioritize upcoming/ongoing before completed, then sort by date
       filteredEvents.sort((a, b) => {
-        // First sort by status priority (Upcoming/Ongoing before Completed)
+        // First, group by status (upcoming/ongoing vs completed)
+        const aIsActive = a.statusPriority < 3 ? 0 : 1;
+        const bIsActive = b.statusPriority < 3 ? 0 : 1;
+        if (aIsActive !== bIsActive) return aIsActive - bIsActive;
+        // Then sort by date
+        return sortOrder === "desc"
+          ? new Date(b.date) - new Date(a.date)
+          : new Date(a.date) - new Date(b.date);
+      });
+    } else if (sortField === "created") {
+      // Creation date sorting: Still prioritize active events
+      filteredEvents.sort((a, b) => {
+        const aIsActive = a.statusPriority < 3 ? 0 : 1;
+        const bIsActive = b.statusPriority < 3 ? 0 : 1;
+        if (aIsActive !== bIsActive) return aIsActive - bIsActive;
+        return sortOrder === "desc"
+          ? new Date(b.createdAt) - new Date(a.createdAt)
+          : new Date(a.createdAt) - new Date(b.createdAt);
+      });
+    } else {
+      // Default sorting: Upcoming/Ongoing first, then by creation date (newest first)
+      filteredEvents.sort((a, b) => {
         const statusDiff = a.statusPriority - b.statusPriority;
         if (statusDiff !== 0) return statusDiff;
-        // Within same status, sort by creation date (most recent first)
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
     }
@@ -472,7 +501,8 @@ export const getAllEvents = async (req, res) => {
         dateRange: dateRange || "all",
         feeType: feeType || "all",
         sortBy: sortBy || "default:asc",
-        venue: venue || "all"
+        venue: venue || "all",
+        includeEnded: showEnded
       },
       stats: {
         totalEvents: filteredTotal,
@@ -1294,33 +1324,33 @@ export const addRating = async (req, res) => {
     const event = await Event.findById(req.params.id);
 
     if (!event) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "Event not found" 
+        message: "Event not found"
       });
     }
 
     // Check if event has ended based on date and time (IST timezone)
     const eventDate = new Date(event.date);
     const [hours, minutes] = event.time.split(':').map(Number);
-    
+
     // Create event datetime
     const eventDateTime = new Date(eventDate);
     eventDateTime.setHours(hours, minutes, 0, 0);
-    
+
     // Get current time in IST (UTC + 5:30)
     const now = new Date();
     const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
     const nowIST = new Date(now.getTime() + istOffset);
-    
+
     // Convert event time to IST for comparison
     const eventDateTimeIST = new Date(eventDateTime.getTime() + istOffset);
-    
+
     // Check if event has ended
     if (nowIST <= eventDateTimeIST) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "You can only rate events after they have ended" 
+        message: "You can only rate events after they have ended"
       });
     }
 
@@ -1329,9 +1359,9 @@ export const addRating = async (req, res) => {
     );
 
     if (!isParticipant) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         success: false,
-        message: "Only participants can rate events" 
+        message: "Only participants can rate events"
       });
     }
 
@@ -1340,18 +1370,18 @@ export const addRating = async (req, res) => {
     );
 
     if (existingRating) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "You have already rated this event" 
+        message: "You have already rated this event"
       });
     }
 
     // Validate rating value
     const ratingValue = Number(req.body.rating);
     if (!ratingValue || ratingValue < 1 || ratingValue > 5) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Rating must be a number between 1 and 5" 
+        message: "Rating must be a number between 1 and 5"
       });
     }
 
@@ -1391,7 +1421,7 @@ export const addRating = async (req, res) => {
       data: updatedEvent
     });
   } catch (error) {
-        console.log(error.message)
+    console.log(error.message)
 
     res.status(500).json({
       success: false,

@@ -9,7 +9,7 @@ const leaderboardSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["overall", "Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket"],
+      enum: ["overall", "Football", "Basketball", "Tennis", "Running", "Cycling", "Swimming", "Volleyball", "Cricket", "Badminton"],
       default: "overall",
     },
     points: {
@@ -26,6 +26,34 @@ const leaderboardSchema = new mongoose.Schema(
       default: 0,
     },
     eventsWon: {
+      type: Number,
+      default: 0,
+    },
+    eventsRated: {
+      type: Number,
+      default: 0,
+    },
+    communitiesJoined: {
+      type: Number,
+      default: 0,
+    },
+    postsCreated: {
+      type: Number,
+      default: 0,
+    },
+    postsLiked: {
+      type: Number,
+      default: 0,
+    },
+    commentsCreated: {
+      type: Number,
+      default: 0,
+    },
+    venuesRated: {
+      type: Number,
+      default: 0,
+    },
+    venuesBooked: {
       type: Number,
       default: 0,
     },
@@ -84,6 +112,15 @@ const leaderboardSchema = new mongoose.Schema(
         default: 100,
       },
     },
+    pointsHistory: [{
+      points: Number,
+      reason: String,
+      action: String,
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
   },
   {
     timestamps: true,

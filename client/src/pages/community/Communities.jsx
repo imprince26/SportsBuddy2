@@ -11,7 +11,12 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Search,
+  SlidersHorizontal,
+  X,
+  Filter,
+  MapPin
 } from 'lucide-react'
 import { useCommunity } from '@/hooks/useCommunity'
 import { useAuth } from '@/hooks/useAuth'
@@ -20,17 +25,44 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 
 // Import community components
 import CommunityCard from '@/components/community/CommunityCard'
-import CommunityFilters from '@/components/community/CommunityFilters'
 import {
   CommunitiesGridSkeleton
 } from '@/components/community/CommunitySkeletons'
 import {
-  CommunityEmptyState,
-  CommunityQuickStats
+  CommunityEmptyState
 } from '@/components/community/CommunityComponents'
+
+const SPORTS_CATEGORIES = [
+  { value: 'all', label: 'All Categories' },
+  { value: 'Football', label: 'Football' },
+  { value: 'Basketball', label: 'Basketball' },
+  { value: 'Tennis', label: 'Tennis' },
+  { value: 'Running', label: 'Running' },
+  { value: 'Cycling', label: 'Cycling' },
+  { value: 'Swimming', label: 'Swimming' },
+  { value: 'Volleyball', label: 'Volleyball' },
+  { value: 'Cricket', label: 'Cricket' },
+  { value: 'Other', label: 'Other' }
+]
+
+const COMMUNITIES_SORT = [
+  { value: 'members:desc', label: 'Most Members' },
+  { value: 'members:asc', label: 'Least Members' },
+  { value: 'createdAt:desc', label: 'Newest First' },
+  { value: 'activity:desc', label: 'Most Active' }
+]
 
 const Communities = () => {
   const {
@@ -54,6 +86,7 @@ const Communities = () => {
   const [sortBy, setSortBy] = useState('members:desc')
   const [location, setLocation] = useState('')
   const [privacy, setPrivacy] = useState('all')
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   // Stats (mock for now - can be fetched from API)
   const [stats] = useState({
@@ -121,6 +154,11 @@ const Communities = () => {
     getCommunities(defaultFilters)
   }
 
+  const handleSearch = (e) => {
+    e?.preventDefault()
+    // Triggered via debounce effect
+  }
+
   const isFiltersActive = searchQuery || selectedCategory !== 'all' ||
     sortBy !== 'members:desc' || location || privacy !== 'all'
 
@@ -130,83 +168,190 @@ const Communities = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Hero Section - Clean & Modern */}
-      <div className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden border-b border-border/40 bg-background/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-            {/* Left Content */}
-            <div className="max-w-3xl">
-              <motion.h1
-                className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight text-foreground mb-6 leading-tight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                Join Your <br />
-                <span className="text-primary">Sports Tribe</span>
-              </motion.h1>
-              <motion.p
-                className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl leading-relaxed"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                Connect with athletes who share your passion. Discover communities, share experiences, and grow together.
-              </motion.p>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden border-b border-border">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,hsl(var(--primary)/0.12),transparent_50%)]" />
 
-              <motion.div
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                {user && (
-                  <Button
-                    size="lg"
-                    className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
-                    onClick={() => navigate('/community/create')}
-                  >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Create Community
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg rounded-full border-2 hover:bg-secondary/50 w-full sm:w-auto"
-                  onClick={() => document.getElementById('communities-feed')?.scrollIntoView({ behavior: 'smooth' })}
-                >
-                  Browse Communities
-                </Button>
-              </motion.div>
+        <div className="container mx-auto px-4 py-12 lg:py-16 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-3xl mx-auto text-center space-y-6"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+              <Users className="w-4 h-4" />
+              <span>Join {stats.totalCommunities}+ Active Communities</span>
             </div>
 
-            {/* Right Content - Quick Stats */}
-            <motion.div
-              className="hidden lg:grid grid-cols-2 gap-4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              {[
-                { label: "Communities", value: stats.totalCommunities, icon: Users },
-                { label: "Members", value: stats.totalMembers, icon: Activity },
-                { label: "Posts Today", value: stats.postsToday, icon: MessageSquare },
-                { label: "New This Week", value: stats.newCommunities, icon: TrendingUp }
-              ].map((stat, i) => (
-                <Card
-                  key={i}
-                  className="bg-card/80 backdrop-blur-sm border border-border/50 p-6 rounded-2xl w-40 hover:border-primary/30 transition-colors duration-300 shadow-sm"
+            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
+              Find Your <br />
+              <span className="text-primary">Sports Tribe</span>
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Connect with athletes who share your passion. Discover communities, share experiences, and grow together.
+            </p>
+
+            {/* Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mt-8">
+              <div className="relative flex-grow">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                <Input
+                  placeholder="Search communities..."
+                  className="pl-12 h-12 text-base bg-card border-border focus-visible:ring-primary rounded-xl"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+                />
+              </div>
+              <Button
+                size="lg"
+                className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+                onClick={handleSearch}
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className={cn(
+                  "h-12 px-4 rounded-xl border-border hover:bg-muted",
+                  isFilterOpen && "bg-primary/10 border-primary/30"
+                )}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                <SlidersHorizontal className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Quick Categories */}
+            <div className="flex flex-wrap justify-center gap-2 mt-6">
+              {SPORTS_CATEGORIES.slice(1, 6).map((cat) => (
+                <Button
+                  key={cat.value}
+                  variant={selectedCategory === cat.value ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "rounded-full",
+                    selectedCategory === cat.value
+                      ? "bg-primary text-primary-foreground"
+                      : "border-border hover:border-primary/30 hover:bg-primary/10"
+                  )}
+                  onClick={() => setSelectedCategory(selectedCategory === cat.value ? 'all' : cat.value)}
                 >
-                  <stat.icon className="w-8 h-8 mb-3 text-primary" />
-                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </Card>
+                  {cat.label}
+                </Button>
               ))}
-            </motion.div>
-          </div>
+            </div>
+
+            {/* Create Community Button */}
+            {user && (
+              <div className="mt-8">
+                <Button
+                  onClick={() => navigate('/community/create')}
+                  variant="outline"
+                  className="rounded-full border-primary/20 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary/50 gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Your Own Community
+                </Button>
+              </div>
+            )}
+
+          </motion.div>
         </div>
       </div>
+
+      {/* Filters Section (Expandable) */}
+      <AnimatePresence>
+        {isFilterOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-b border-border bg-card overflow-hidden"
+          >
+            <div className="container mx-auto px-4 py-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-primary" />
+                  Advanced Filters
+                </h3>
+                {isFiltersActive && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={clearFilters}
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear All
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Category</label>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full bg-background border-border">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SPORTS_CATEGORIES.map(c => (
+                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Location</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="City or Area"
+                      className="pl-9 bg-background border-border"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Privacy</label>
+                  <Select value={privacy} onValueChange={setPrivacy}>
+                    <SelectTrigger className="w-full bg-background border-border">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="false">Public Only</SelectItem>
+                      <SelectItem value="true">Private Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Sort By</label>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-full bg-background border-border">
+                      <SelectValue placeholder="Sort By" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMUNITIES_SORT.map(s => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div id="communities-feed" className="container mx-auto px-4 py-8">
@@ -240,26 +385,6 @@ const Communities = () => {
               {loading ? "Loading..." : `${displayCommunities.length} communities found`}
             </p>
           </div>
-
-          {/* Filters Section - Only for Discover Tab */}
-          {activeTab === 'discover' && (
-            <div className="mb-8 p-4 bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl">
-              <CommunityFilters
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                location={location}
-                setLocation={setLocation}
-                privacy={privacy}
-                setPrivacy={setPrivacy}
-                onClearFilters={clearFilters}
-                isFiltersActive={isFiltersActive}
-              />
-            </div>
-          )}
 
           {/* Discover Tab Content */}
           <TabsContent value="discover" className="mt-0">

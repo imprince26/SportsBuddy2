@@ -398,7 +398,7 @@ const Notifications = () => {
     if (isToday(date)) key = "Today";
     else if (isYesterday(date)) key = "Yesterday";
     else key = format(date, "MMMM d, yyyy");
-
+    
     if (!groups[key]) groups[key] = [];
     groups[key].push(notification);
     return groups;
@@ -666,7 +666,7 @@ const Notifications = () => {
         >
           {loading ? (
             <NotificationSkeleton />
-          ) : filteredNotifications.length === 0 ? (
+          ) : filteredNotifications.length == 0 ? (
             <EmptyState filter={filter} onReset={() => setFilter("all")} />
           ) : (
             <div className="space-y-6">

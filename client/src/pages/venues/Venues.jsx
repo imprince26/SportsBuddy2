@@ -214,7 +214,7 @@ const Venues = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-border">
+      <div className="relative overflow-hidden border-b border-border bg-background/50 backdrop-blur-sm">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,hsl(var(--primary)/0.12),transparent_50%)]" />
@@ -223,64 +223,61 @@ const Venues = () => {
         <div className="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-10 right-20 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
 
-        <div className="container mx-auto px-4 py-12 lg:py-20 relative">
+        <div className="container mx-auto px-4 py-12 lg:py-16 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-4xl mx-auto text-center space-y-6"
+            className="max-w-3xl mx-auto text-center space-y-6"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
               <MdStadium className="w-4 h-4" />
               <span>{pagination?.total || venues.length}+ Premium Venues Available</span>
             </div>
 
-            <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-foreground">
-              Find & Book{' '}
-              <span className="text-primary relative">
+            <h1 className="text-4xl lg:text-6xl font-black tracking-tight text-foreground">
+              Find & Book <br />
+              <span className="text-primary relative inline-block">
                 Amazing Venues
                 <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" fill="none">
                   <path d="M1 5.5C47.6667 2.16667 152.4 -1.9 199 5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-primary/30" />
                 </svg>
               </span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Discover world-class sports facilities near you. Book courts, fields, and gyms instantly with verified venues and real-time availability.
             </p>
 
             {/* Search Bar - Mobile Optimized */}
-            <div className="flex flex-col gap-3 max-w-2xl mx-auto mt-8">
+            <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mt-8">
               <div className="relative flex-grow">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 <Input
                   placeholder="Search venues..."
-                  className="pl-12 h-12 sm:h-14 text-base bg-card border-border focus-visible:ring-primary rounded-xl sm:rounded-2xl shadow-lg shadow-black/5"
+                  className="pl-12 h-12 text-base bg-card border-border focus-visible:ring-primary rounded-xl shadow-lg shadow-black/5"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
                 />
               </div>
-              <div className="flex gap-2">
-                <Button
-                  size="lg"
-                  className="flex-1 h-11 sm:h-14 px-4 sm:px-8 rounded-xl sm:rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
-                  onClick={handleSearch}
-                >
-                  <Search className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
-                  <span className="hidden sm:inline">Search</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className={cn(
-                    "h-11 sm:h-14 px-4 rounded-xl sm:rounded-2xl border-border hover:bg-muted",
-                    isFilterOpen && "bg-primary/10 border-primary/30"
-                  )}
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                >
-                  <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="ml-2 hidden sm:inline">Filters</span>
-                </Button>
-              </div>
+              <Button
+                size="lg"
+                className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+                onClick={handleSearch}
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className={cn(
+                  "h-12 px-4 rounded-xl border-border hover:bg-muted aspect-square sm:aspect-auto",
+                  isFilterOpen && "bg-primary/10 border-primary/30"
+                )}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                <SlidersHorizontal className="w-5 h-5" />
+              </Button>
             </div>
 
             {/* Quick Sport Filters */}

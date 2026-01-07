@@ -50,6 +50,7 @@ import Communities from './pages/community/Communities';
 import CreateCommunity from './pages/community/CreateCommunity';
 import EditCommunity from './pages/community/EditCommunity';
 import CommunityDetails from './pages/community/CommunityDetails';
+import ManageCommunity from './pages/community/ManageCommunity';
 import PostDetail from './pages/community/PostDetail';
 // import CreateVenue from './pages/venue/CreateVenue';
 // import EditVenue from './pages/venue/EditVenue';
@@ -179,6 +180,7 @@ function App() {
             <Route path="users/:id/following" element={<ProtectedRoute><FollowersFollowing type="following" /></ProtectedRoute>} />
             <Route path="community/create" element={<ProtectedRoute><CreateCommunity /></ProtectedRoute>} />
             <Route path="community/:id/edit" element={<ProtectedRoute><EditCommunity /></ProtectedRoute>} />
+            <Route path="community/:id/manage" element={<ProtectedRoute><ManageCommunity /></ProtectedRoute>} />
             <Route path="venues/:id/edit" element={<ProtectedRoute><EditVenue /></ProtectedRoute>} />
           </Route>
 

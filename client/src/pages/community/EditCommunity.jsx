@@ -9,8 +9,15 @@ import {
   Trash2,
   Lock,
   Globe,
-  Info,
-  Loader2
+  Loader2,
+  Image as ImageIcon,
+  MapPin,
+  FileText,
+  Settings,
+  Save,
+  Eye,
+  AlertCircle,
+  Info
 } from 'lucide-react';
 import { useCommunity } from '@/hooks/useCommunity';
 import { Button } from '@/components/ui/button';
@@ -19,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -26,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 const SPORTS_CATEGORIES = [
   'Football',
@@ -165,6 +174,7 @@ const EditCommunity = () => {
       };
       reader.readAsDataURL(file);
       setErrors(prev => ({ ...prev, image: '' }));
+      setImageRemoved(false);
     }
   };
 
@@ -214,12 +224,10 @@ const EditCommunity = () => {
       rules: formData.rules.filter(r => r.trim())
     };
 
-    // Handle image removal
     if (imageRemoved && !imageFile) {
       submitData.removeImage = true;
     }
 
-    // Only include image if a new file was selected
     if (imageFile) {
       submitData.image = imageFile;
     }
@@ -233,306 +241,355 @@ const EditCommunity = () => {
 
   if (initializing) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading community...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 relative pb-20">
-      {/* Header */}
-      <div className="border-b border-border bg-white dark:bg-gray-900 sticky top-0 z-20 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 pb-24">
+      <div className="border-b border-border/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-20">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Community</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Update your community settings
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Edit Community
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {formData.name || 'Update your community settings'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/community/${id}`)}
+                className="hidden sm:flex gap-2 rounded-xl"
+              >
+                <Eye className="w-4 h-4" />
+                View
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-        {/* Form */}
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
-            <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
-              <CardHeader className="border-b border-gray-100 dark:border-gray-800">
-                <CardTitle className="text-gray-900 dark:text-white">Basic Information</CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
-                  Essential details about your community
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                {/* Community Image */}
-                <div>
-                  <Label>Community Image</Label>
-                  <div className="mt-2">
-                    {imagePreview ? (
-                      <div className="relative w-full h-48 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+            <CardHeader className="border-b border-border/50">
+              <CardTitle className="flex items-center gap-2">
+                Basic Information
+              </CardTitle>
+              <CardDescription>Essential details about your community</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div>
+                <Label className="text-base font-semibold">Community Image</Label>
+                <p className="text-sm text-muted-foreground mb-3">Upload a cover image for your community</p>
+                <div className="mt-2">
+                  {imagePreview ? (
+                    <div className="relative w-full h-48 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 group">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <label className="p-3 bg-white rounded-full cursor-pointer hover:scale-110 transition-transform shadow-lg">
+                          <Upload className="w-5 h-5 text-gray-700" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden"
+                          />
+                        </label>
                         <button
                           type="button"
                           onClick={removeImage}
-                          className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                          className="p-3 bg-red-500 text-white rounded-full hover:scale-110 transition-transform shadow-lg"
                         >
-                          <X className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer bg-card hover:bg-accent/50 transition">
-                        <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                        <span className="text-sm text-muted-foreground">
-                          Click to upload image
-                        </span>
-                        <span className="text-xs text-muted-foreground mt-1">
-                          PNG, JPG up to 5MB
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
-                    {errors.image && (
-                      <p className="text-sm text-red-500 mt-1">{errors.image}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Name */}
-                <div>
-                  <Label htmlFor="name">
-                    Community Name <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Enter community name"
-                    maxLength={100}
-                    className="mt-1"
-                  />
-                  <div className="flex justify-between mt-1">
-                    {errors.name && (
-                      <p className="text-sm text-red-500">{errors.name}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground ml-auto">
-                      {formData.name.length}/100
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-primary/30 rounded-2xl cursor-pointer bg-primary/5 hover:bg-primary/10 transition group">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <ImageIcon className="w-8 h-8 text-primary" />
+                      </div>
+                      <span className="font-medium text-primary">Click to upload image</span>
+                      <span className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                  {errors.image && (
+                    <p className="text-sm text-red-500 mt-2 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.image}
                     </p>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <Label htmlFor="description">
-                    Description <span className="text-red-500">*</span>
-                  </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Describe your community..."
-                    maxLength={500}
-                    rows={4}
-                    className="mt-1"
-                  />
-                  <div className="flex justify-between mt-1">
-                    {errors.description && (
-                      <p className="text-sm text-red-500">{errors.description}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground ml-auto">
-                      {formData.description.length}/500
-                    </p>
-                  </div>
-                </div>
-
-                {/* Category */}
-                <div>
-                  <Label htmlFor="category">
-                    Category <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) =>
-                      setFormData(prev => ({ ...prev, category: value }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select a sport category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SPORTS_CATEGORIES.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.category && (
-                    <p className="text-sm text-red-500 mt-1">{errors.category}</p>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Location */}
-            <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
-              <CardHeader className="border-b border-gray-100 dark:border-gray-800">
-                <CardTitle className="text-gray-900 dark:text-white">Location</CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
-                  Where is your community based?
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.location.city}
-                      onChange={(e) => handleLocationChange('city', e.target.value)}
-                      placeholder="Enter city"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      value={formData.location.state}
-                      onChange={(e) => handleLocationChange('state', e.target.value)}
-                      placeholder="Enter state"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="country">Country</Label>
-                    <Input
-                      id="country"
-                      value={formData.location.country}
-                      onChange={(e) => handleLocationChange('country', e.target.value)}
-                      placeholder="Enter country"
-                      className="mt-1"
-                    />
-                  </div>
+              <div>
+                <Label htmlFor="name" className="text-base font-semibold">
+                  Community Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Enter a unique name for your community"
+                  maxLength={100}
+                  className={cn(
+                    "mt-2 rounded-xl border-border/50 h-12",
+                    errors.name && "border-red-500"
+                  )}
+                />
+                <div className="flex justify-between mt-2">
+                  {errors.name && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.name}
+                    </p>
+                  )}
+                  <p className={cn(
+                    "text-xs ml-auto",
+                    formData.name.length > 90 ? "text-amber-500" : "text-muted-foreground"
+                  )}>
+                    {formData.name.length}/100
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Community Rules */}
-            <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
-              <CardHeader className="border-b border-gray-100 dark:border-gray-800">
-                <CardTitle className="text-gray-900 dark:text-white">Community Rules</CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
-                  Set guidelines for your community members
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                {formData.rules.map((rule, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={rule}
-                      onChange={(e) => handleRuleChange(index, e.target.value)}
-                      placeholder={`Rule ${index + 1}`}
-                      className="flex-1"
-                    />
-                    {formData.rules.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeRule(index)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addRule}
-                  className="w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Rule
-                </Button>
-                {errors.rules && (
-                  <p className="text-sm text-red-500">{errors.rules}</p>
+              <div>
+                <Label htmlFor="description" className="text-base font-semibold">
+                  Description <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe what your community is about..."
+                  maxLength={500}
+                  rows={4}
+                  className={cn(
+                    "mt-2 rounded-xl border-border/50 resize-none",
+                    errors.description && "border-red-500"
+                  )}
+                />
+                <div className="flex justify-between mt-2">
+                  {errors.description && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.description}
+                    </p>
+                  )}
+                  <p className={cn(
+                    "text-xs ml-auto",
+                    formData.description.length > 450 ? "text-amber-500" : "text-muted-foreground"
+                  )}>
+                    {formData.description.length}/500
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="category" className="text-base font-semibold">
+                  Category <span className="text-red-500">*</span>
+                </Label>
+                <p className="text-sm text-muted-foreground mb-2">Select the primary sport or activity</p>
+                <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                  <SelectTrigger className={cn(
+                    "rounded-xl border-border/50 h-12",
+                    errors.category && "border-red-500"
+                  )}>
+                    <SelectValue placeholder="Choose a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SPORTS_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.category && (
+                  <p className="text-sm text-red-500 mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.category}
+                  </p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Privacy & Settings */}
-            <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
-              <CardHeader className="border-b border-gray-100 dark:border-gray-800">
-                <CardTitle className="text-gray-900 dark:text-white">Privacy & Settings</CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
-                  Configure how your community works
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                {/* Privacy */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {formData.isPrivate ? (
-                      <Lock className="w-5 h-5 text-muted-foreground" />
-                    ) : (
-                      <Globe className="w-5 h-5 text-muted-foreground" />
-                    )}
-                    <div>
-                      <Label>Private Community</Label>
-                      <p className="text-xs text-muted-foreground">
-                        {formData.isPrivate
-                          ? 'Users need approval to join'
-                          : 'Anyone can join freely'}
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={formData.isPrivate}
-                    onCheckedChange={(checked) =>
-                      setFormData(prev => ({ ...prev, isPrivate: checked }))
-                    }
+          <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+            <CardHeader className="border-b border-border/50">
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-primary" />
+                Location
+              </CardTitle>
+              <CardDescription>Where is your community based?</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="city" className="font-medium">City</Label>
+                  <Input
+                    id="city"
+                    value={formData.location.city}
+                    onChange={(e) => handleLocationChange('city', e.target.value)}
+                    placeholder="Enter city"
+                    className="mt-2 rounded-xl border-border/50 h-11"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="state" className="font-medium">State / Province</Label>
+                  <Input
+                    id="state"
+                    value={formData.location.state}
+                    onChange={(e) => handleLocationChange('state', e.target.value)}
+                    placeholder="Enter state"
+                    className="mt-2 rounded-xl border-border/50 h-11"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="country" className="font-medium">Country</Label>
+                  <Input
+                    id="country"
+                    value={formData.location.country}
+                    onChange={(e) => handleLocationChange('country', e.target.value)}
+                    placeholder="Enter country"
+                    className="mt-2 rounded-xl border-border/50 h-11"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                <div className="h-px bg-border" />
-
-                {/* Member Permissions */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Info className="w-4 h-4" />
-                    Member Permissions
+          <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+            <CardHeader className="border-b border-border/50">
+              <CardTitle className="flex items-center gap-2">
+                <Info className="w-5 h-5 text-primary" />
+                Community Rules
+              </CardTitle>
+              <CardDescription>Set guidelines for your community members</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-3">
+              {formData.rules.map((rule, index) => (
+                <div key={index} className="flex gap-2">
+                  <div className="w-8 h-11 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-bold text-primary">{index + 1}</span>
                   </div>
+                  <Input
+                    value={rule}
+                    onChange={(e) => handleRuleChange(index, e.target.value)}
+                    placeholder={`Rule ${index + 1}: e.g., Be respectful to all members`}
+                    className="flex-1 rounded-xl border-border/50 h-11"
+                  />
+                  {formData.rules.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => removeRule(index)}
+                      className="rounded-xl border-red-200 text-red-500 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addRule}
+                className="w-full rounded-xl border-dashed border-primary/50 text-primary hover:bg-primary/5 mt-2"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Another Rule
+              </Button>
+              {errors.rules && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.rules}
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
-                  <div className="flex items-center justify-between">
+          <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+            <CardHeader className="border-b border-border/50">
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-primary" />
+                Privacy & Settings
+              </CardTitle>
+              <CardDescription>Configure how your community works</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-primary/10 to-blue-500/10 border border-primary/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                    {formData.isPrivate ? (
+                      <Lock className="w-6 h-6 text-primary" />
+                    ) : (
+                      <Globe className="w-6 h-6 text-primary" />
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-base font-semibold">
+                      {formData.isPrivate ? 'Private Community' : 'Public Community'}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {formData.isPrivate
+                        ? 'Users need approval to join'
+                        : 'Anyone can join freely'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={formData.isPrivate}
+                  onCheckedChange={(checked) =>
+                    setFormData(prev => ({ ...prev, isPrivate: checked }))
+                  }
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Member Permissions
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
                     <div>
-                      <Label>Allow Member Posts</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Members can create posts in the community
-                      </p>
+                      <Label className="font-medium">Allow Member Posts</Label>
+                      <p className="text-xs text-muted-foreground">Members can create posts in the community</p>
                     </div>
                     <Switch
                       checked={formData.settings.allowMemberPosts}
@@ -542,12 +599,10 @@ const EditCommunity = () => {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
                     <div>
-                      <Label>Allow Member Events</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Members can create events in the community
-                      </p>
+                      <Label className="font-medium">Allow Member Events</Label>
+                      <p className="text-xs text-muted-foreground">Members can create events in the community</p>
                     </div>
                     <Switch
                       checked={formData.settings.allowMemberEvents}
@@ -557,13 +612,11 @@ const EditCommunity = () => {
                     />
                   </div>
 
-                  {!formData.isPrivate && (
-                    <div className="flex items-center justify-between">
+                  {formData.isPrivate && (
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
                       <div>
-                        <Label>Auto-Approve Members</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Automatically approve all join requests
-                        </p>
+                        <Label className="font-medium">Auto-Approve Members</Label>
+                        <p className="text-xs text-muted-foreground">Automatically approve all join requests</p>
                       </div>
                       <Switch
                         checked={formData.settings.autoApproveMembers}
@@ -574,24 +627,25 @@ const EditCommunity = () => {
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Submit Buttons */}
-            <div className="flex justify-end gap-3 pt-4">
+          <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-border/50 p-4 z-20">
+            <div className="container mx-auto max-w-4xl flex justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate(`/community/${id}`)}
                 disabled={loading}
-                className="border-gray-300 dark:border-gray-700"
+                className="rounded-xl"
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={loading}
-                className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20"
+                className="bg-gradient-to-r from-primary to-blue-600 hover:opacity-90 rounded-xl shadow-lg shadow-primary/20 min-w-32"
               >
                 {loading ? (
                   <>
@@ -599,12 +653,16 @@ const EditCommunity = () => {
                     Saving...
                   </>
                 ) : (
-                  'Save Changes'
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </>
                 )}
               </Button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

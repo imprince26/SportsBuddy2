@@ -7,7 +7,11 @@ import {
   Plus,
   Filter,
   Flag,
-  ChevronDown
+  ChevronDown,
+  Edit3,
+  Settings,
+  Users,
+  Shield
 } from 'lucide-react'
 
 // UI Components
@@ -364,6 +368,39 @@ const CommunityDetails = () => {
         onNavigateManage={() => navigate(`/community/${id}/manage`)}
       />
 
+      {/* Management Action Bar - Only for eligible users */}
+      {/* {community.canManage && (
+        <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-primary/20">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="w-4 h-4 text-primary" />
+                <span className="font-medium text-primary">You can manage this community</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/community/${id}/edit`)}
+                  className="gap-2 bg-background hover:bg-primary hover:text-primary-foreground border-primary/30"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Edit Community</span>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => navigate(`/community/${id}/manage`)}
+                  className="gap-2 bg-primary hover:bg-primary/90"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="hidden sm:inline">Manage Members</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )} */}
+
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -535,6 +572,40 @@ const CommunityDetails = () => {
 
           {/* Sidebar */}
           <div className="hidden lg:block space-y-6">
+            {/* Management Tools Card - Only for eligible users */}
+            {community.canManage && (
+              <Card className="border-border overflow-hidden">
+                <div className="bg-gradient-to-r from-primary to-primary/80 p-4">
+                  <div className="flex items-center gap-2 text-white">
+                    <span className="font-semibold">Management Tools</span>
+                  </div>
+                </div>
+                <CardContent className="p-4 space-y-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/community/${id}/edit`)}
+                    className="w-full justify-start gap-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    Edit Community
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/community/${id}/manage`)}
+                    className="w-full justify-start gap-2"
+                  >
+                    <Users className="w-4 h-4" />
+                    Manage Members
+                  </Button>
+                  {community.isPrivate && (
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-xs text-muted-foreground mb-2">Private community - approval required</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* About Card */}
             <CommunityAboutCard community={community} />
 

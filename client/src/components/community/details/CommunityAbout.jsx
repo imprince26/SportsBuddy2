@@ -128,7 +128,6 @@ export const CommunityAboutSection = ({ community }) => {
                 <Card className="border-border bg-card">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-primary" />
                             Community Rules
                         </CardTitle>
                     </CardHeader>

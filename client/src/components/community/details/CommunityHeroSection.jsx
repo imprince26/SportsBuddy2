@@ -38,16 +38,16 @@ const CommunityHeroSection = ({
     onNavigateEdit,
     onNavigateManage
 }) => {
-    const isCreator = community.creator?._id === user?.id
-    const isAdmin = user?.role === 'admin'
-    const isModerator = community.moderators?.some(m => m._id === user?.id)
+    const isCreator = community.isCreator
+    const isAdmin = community.admins?.some(a => a._id === user?.id || a === user?.id)
+    const isModerator = community.moderators?.some(m => m._id === user?.id || m === user?.id)
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="relative"
+            className="relative mt-14 sm:mt-0"
         >
             {/* Cover Image */}
             <div className="h-56 md:h-72 lg:h-96 relative overflow-hidden">
@@ -71,7 +71,7 @@ const CommunityHeroSection = ({
             {/* Community Info */}
             <div className="absolute bottom-0 left-0 right-0">
                 <div className="container mx-auto px-4 pb-6 md:pb-8">
-                    <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
+                    <div className="flex flex-row md:items-end gap-4 md:gap-6">
                         {/* Avatar */}
                         <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border-4 border-background shadow-xl overflow-hidden flex-shrink-0 bg-card">
                             {community.image?.url ? (
@@ -90,7 +90,7 @@ const CommunityHeroSection = ({
                         {/* Details */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-2xl md:text-4xl font-black text-white truncate">
+                                <h1 className="text-2xl md:text-4xl font-black text-white">
                                     {community.name}
                                 </h1>
                                 <Badge
@@ -175,34 +175,41 @@ const CommunityHeroSection = ({
                                                     <MoreHorizontal className="w-4 h-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48">
+                                            <DropdownMenuContent align="end" className="w-52">
+                                                {/* Admin/Moderator Options */}
                                                 {community.canManage && (
                                                     <>
-                                                        <DropdownMenuItem onClick={onNavigateEdit}>
-                                                            <Edit3 className="w-4 h-4 mr-2" />
+                                                        <DropdownMenuItem onClick={onNavigateEdit} className="gap-2">
+                                                            <Edit3 className="w-4 h-4" />
                                                             Edit Community
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={onNavigateManage}>
-                                                            <Settings className="w-4 h-4 mr-2" />
+                                                        <DropdownMenuItem onClick={onNavigateManage} className="gap-2">
+                                                            <Settings className="w-4 h-4" />
                                                             Manage Members
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem
-                                                            onClick={onShowDeleteDialog}
-                                                            className="text-destructive focus:text-destructive"
-                                                        >
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete Community
-                                                        </DropdownMenuItem>
                                                     </>
                                                 )}
-                                                {!community.canManage && (
+
+                                                {/* Options for all members */}
+                                                {!isCreator && (
                                                     <DropdownMenuItem
                                                         onClick={onShowLeaveDialog}
-                                                        className="text-destructive focus:text-destructive"
+                                                        className="gap-2 text-destructive focus:text-destructive"
                                                     >
-                                                        <UserMinus className="w-4 h-4 mr-2" />
+                                                        <UserMinus className="w-4 h-4" />
                                                         Leave Community
+                                                    </DropdownMenuItem>
+                                                )}
+
+                                                {/* Creator-only option */}
+                                                {isCreator && (
+                                                    <DropdownMenuItem
+                                                        onClick={onShowDeleteDialog}
+                                                        className="gap-2 text-destructive focus:text-destructive"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                        Delete Community
                                                     </DropdownMenuItem>
                                                 )}
                                             </DropdownMenuContent>

@@ -45,7 +45,7 @@ export const CommunityProvider = ({ children }) => {
     };
 
     const handlePostUpdated = (data) => {
-      setPosts(prev => prev.map(post => 
+      setPosts(prev => prev.map(post =>
         post._id === data._id ? data : post
       ));
       if (currentPost?._id === data._id) {
@@ -62,7 +62,7 @@ export const CommunityProvider = ({ children }) => {
     };
 
     const handlePostLiked = (data) => {
-      setPosts(prev => prev.map(post => 
+      setPosts(prev => prev.map(post =>
         post._id === data.postId ? {
           ...post,
           likesCount: data.likesCount,
@@ -72,13 +72,13 @@ export const CommunityProvider = ({ children }) => {
     };
 
     const handleNewComment = (data) => {
-      setPosts(prev => prev.map(post => 
+      setPosts(prev => prev.map(post =>
         post._id === data.postId ? {
           ...post,
           commentsCount: post.commentsCount + 1
         } : post
       ));
-      
+
       if (currentPost?._id === data.postId) {
         setCurrentPost(prev => ({
           ...prev,
@@ -150,7 +150,7 @@ export const CommunityProvider = ({ children }) => {
 
     try {
       const formData = new FormData();
-      
+
       Object.entries(postData).forEach(([key, value]) => {
         if (key === 'images' && value) {
           Array.from(value).forEach((file) => {
@@ -210,7 +210,7 @@ export const CommunityProvider = ({ children }) => {
 
     try {
       const formData = new FormData();
-      
+
       Object.entries(updateData).forEach(([key, value]) => {
         if (key === 'images' && value) {
           Array.from(value).forEach((file) => {
@@ -231,7 +231,7 @@ export const CommunityProvider = ({ children }) => {
 
       if (response.data.success) {
         const updatedPost = response.data.data;
-        setPosts(prev => prev.map(post => 
+        setPosts(prev => prev.map(post =>
           post._id === postId ? updatedPost : post
         ));
         if (currentPost?._id === postId) {
@@ -278,8 +278,8 @@ export const CommunityProvider = ({ children }) => {
 
       if (response.data.success) {
         const { isLiked, likesCount } = response.data.data;
-        
-        setPosts(prev => prev.map(post => 
+
+        setPosts(prev => prev.map(post =>
           post._id === postId ? {
             ...post,
             isLiked,
@@ -313,8 +313,8 @@ export const CommunityProvider = ({ children }) => {
 
       if (response.data.success) {
         const newComment = response.data.data;
-        
-        setPosts(prev => prev.map(post => 
+
+        setPosts(prev => prev.map(post =>
           post._id === postId ? {
             ...post,
             commentsCount: post.commentsCount + 1
@@ -474,7 +474,7 @@ export const CommunityProvider = ({ children }) => {
 
     try {
       const formData = new FormData();
-      
+
       Object.entries(communityData).forEach(([key, value]) => {
         if (key === 'image' && value instanceof File) {
           formData.append('image', value);
@@ -501,7 +501,7 @@ export const CommunityProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Create community error:', error.response?.data);
-      const message = error.response?.data?.errors 
+      const message = error.response?.data?.errors
         ? error.response.data.errors.join(', ')
         : error.response?.data?.message || 'Failed to create community';
       toast.error(message, { id: toastId });
@@ -518,7 +518,7 @@ export const CommunityProvider = ({ children }) => {
 
     try {
       const formData = new FormData();
-      
+
       Object.entries(updateData).forEach(([key, value]) => {
         if (key === 'image' && value instanceof File) {
           formData.append('image', value);
@@ -769,6 +769,104 @@ export const CommunityProvider = ({ children }) => {
     }
   };
 
+  // Get join requests for a community
+  const getJoinRequests = async (communityId) => {
+    try {
+      const response = await api.get(`/community/${communityId}/join-requests`);
+      if (response.data.success) {
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch join requests';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  // Handle join request (approve/reject)
+  const handleJoinRequest = async (communityId, requestId, action) => {
+    const toastId = toast.loading(`${action === 'approve' ? 'Approving' : 'Rejecting'} request...`);
+
+    try {
+      const response = await api.post(`/community/${communityId}/join-requests/${requestId}`, {
+        action
+      });
+
+      if (response.data.success) {
+        toast.success(response.data.message, { id: toastId });
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to process request';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    }
+  };
+
+  // Update member role
+  const updateMemberRole = async (communityId, memberId, role) => {
+    const toastId = toast.loading('Updating member role...');
+
+    try {
+      const response = await api.put(`/community/${communityId}/members/${memberId}/role`, {
+        role
+      });
+
+      if (response.data.success) {
+        toast.success(response.data.message, { id: toastId });
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update member role';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    }
+  };
+
+  // Remove member from community
+  const removeMemberFromCommunity = async (communityId, memberId) => {
+    const toastId = toast.loading('Removing member...');
+
+    try {
+      const response = await api.delete(`/community/${communityId}/members/${memberId}`);
+
+      if (response.data.success) {
+        toast.success(response.data.message, { id: toastId });
+        return { success: true };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to remove member';
+      toast.error(message, { id: toastId });
+      return { success: false, message };
+    }
+  };
+
+  // Get community members with pagination and filters
+  const getCommunityMembers = async (communityId, { search, role, page = 1, limit = 20 } = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (search) queryParams.append('search', search);
+      if (role && role !== 'all') queryParams.append('role', role);
+      queryParams.append('page', page);
+      queryParams.append('limit', limit);
+
+      const response = await api.get(`/community/${communityId}/members?${queryParams}`);
+
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data,
+          creator: response.data.creator,
+          pagination: response.data.pagination
+        };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch members';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
   const value = {
     // State
     posts,
@@ -782,7 +880,7 @@ export const CommunityProvider = ({ children }) => {
     currentCommunity,
     communities,
     myCommunities,
-    
+
     // Community Actions
     getCommunities,
     getMyCommunities,
@@ -792,7 +890,14 @@ export const CommunityProvider = ({ children }) => {
     joinCommunity,
     leaveCommunity,
     fetchCommunity,
-    
+
+    // Community Management
+    getJoinRequests,
+    handleJoinRequest,
+    updateMemberRole,
+    removeMemberFromCommunity,
+    getCommunityMembers,
+
     // Post Actions
     getCommunityPosts,
     createCommunityPost,

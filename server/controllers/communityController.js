@@ -192,6 +192,12 @@ export const getCommunity = async (req, res) => {
       ? community.members.find(m => m.user._id.toString() === req.user.id)?.role
       : null;
 
+    // Check if user can manage community
+    const isCreator = req.user && community.creator._id.toString() === req.user.id;
+    const isAdmin = req.user && community.admins?.some(a => a._id.toString() === req.user.id);
+    const isModerator = req.user && community.moderators?.some(m => m._id.toString() === req.user.id);
+    const canManage = isCreator || isAdmin || isModerator;
+
     // Filter posts based on privacy and membership
     let visiblePosts = community.posts;
     if (community.isPrivate && !isMember) {
@@ -209,10 +215,12 @@ export const getCommunity = async (req, res) => {
       success: true,
       data: {
         ...community,
-        posts: visiblePosts.slice(0, 20), // Limit to recent posts
+        posts: visiblePosts.slice(0, 20),
         memberCount: community.members.filter(m => m.isActive).length,
         isMember,
         memberRole,
+        isCreator,
+        canManage,
         canPost: isMember && (community.settings.allowMemberPosts || memberRole !== "member")
       }
     });
@@ -2487,3 +2495,415 @@ export const deleteReply = async (req, res) => {
   }
 };
 
+// Get join requests for community
+export const getJoinRequests = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const community = await Community.findById(id)
+      .populate('joinRequests.user', 'name username avatar')
+      .populate('creator', 'name username avatar');
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Community not found"
+      });
+    }
+
+    const isCreator = community.creator._id.toString() === req.user.id;
+    const isAdmin = community.admins?.some(a => a.toString() === req.user.id);
+    const isModerator = community.moderators?.some(m => m.toString() === req.user.id);
+
+    if (!isCreator && !isAdmin && !isModerator) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view join requests"
+      });
+    }
+
+    const pendingRequests = community.joinRequests.filter(r => r.status === 'pending');
+
+    res.json({
+      success: true,
+      data: pendingRequests,
+      total: pendingRequests.length
+    });
+
+  } catch (error) {
+    console.error("Error in getJoinRequests:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching join requests",
+      error: error.message
+    });
+  }
+};
+
+// Handle join request (approve/reject)
+export const handleJoinRequest = async (req, res) => {
+  try {
+    const { id, requestId } = req.params;
+    const { action } = req.body;
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid action. Use 'approve' or 'reject'"
+      });
+    }
+
+    const community = await Community.findById(id)
+      .populate('joinRequests.user', 'name username avatar');
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Community not found"
+      });
+    }
+
+    const isCreator = community.creator.toString() === req.user.id;
+    const isAdmin = community.admins?.some(a => a.toString() === req.user.id);
+    const isModerator = community.moderators?.some(m => m.toString() === req.user.id);
+
+    if (!isCreator && !isAdmin && !isModerator) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to manage join requests"
+      });
+    }
+
+    const request = community.joinRequests.id(requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Join request not found"
+      });
+    }
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: "This request has already been processed"
+      });
+    }
+
+    if (action === 'approve') {
+      const existingMember = community.members.find(
+        m => m.user.toString() === request.user._id.toString()
+      );
+
+      if (existingMember) {
+        existingMember.isActive = true;
+        existingMember.joinedAt = new Date();
+      } else {
+        community.members.push({
+          user: request.user._id,
+          role: 'member',
+          joinedAt: new Date(),
+          isActive: true
+        });
+      }
+
+      request.status = 'approved';
+
+      try {
+        await completeUserAction(request.user._id, {
+          action: 'community_join',
+          points: POINT_VALUES.COMMUNITY_JOIN,
+          category: community.category || 'overall',
+          statUpdates: { communitiesJoined: 1 },
+          relatedId: id,
+          checkAchievements: true
+        });
+
+        const user = await User.findById(request.user._id);
+        await user.addNotification({
+          type: 'community',
+          title: 'Request Approved',
+          message: `Your request to join "${community.name}" has been approved!`,
+          relatedCommunity: id,
+          priority: 'normal'
+        });
+      } catch (statsError) {
+        console.error('Error updating user stats:', statsError);
+      }
+    } else {
+      request.status = 'rejected';
+
+      try {
+        const user = await User.findById(request.user._id);
+        await user.addNotification({
+          type: 'community',
+          title: 'Request Declined',
+          message: `Your request to join "${community.name}" was declined.`,
+          relatedCommunity: id,
+          priority: 'low'
+        });
+      } catch (notifyError) {
+        console.error('Error sending notification:', notifyError);
+      }
+    }
+
+    await community.save();
+
+    res.json({
+      success: true,
+      message: action === 'approve' ? 'Request approved successfully' : 'Request rejected'
+    });
+
+  } catch (error) {
+    console.error("Error in handleJoinRequest:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error processing join request",
+      error: error.message
+    });
+  }
+};
+
+// Update member role
+export const updateMemberRole = async (req, res) => {
+  try {
+    const { id, memberId } = req.params;
+    const { role } = req.body;
+
+    if (!['member', 'moderator', 'admin'].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role. Use 'member', 'moderator', or 'admin'"
+      });
+    }
+
+    const community = await Community.findById(id);
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Community not found"
+      });
+    }
+
+    const isCreator = community.creator.toString() === req.user.id;
+    const isAdmin = community.admins?.some(a => a.toString() === req.user.id);
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update member roles"
+      });
+    }
+
+    if (memberId === community.creator.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot change the creator's role"
+      });
+    }
+
+    if (role === 'admin' && !isCreator) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the creator can assign admin role"
+      });
+    }
+
+    const member = community.members.find(m => m.user.toString() === memberId);
+
+    if (!member) {
+      return res.status(404).json({
+        success: false,
+        message: "Member not found"
+      });
+    }
+
+    const previousRole = member.role;
+    member.role = role;
+
+    if (role === 'admin') {
+      if (!community.admins.includes(memberId)) {
+        community.admins.push(memberId);
+      }
+      community.moderators = community.moderators.filter(m => m.toString() !== memberId);
+    } else if (role === 'moderator') {
+      if (!community.moderators.includes(memberId)) {
+        community.moderators.push(memberId);
+      }
+      community.admins = community.admins.filter(a => a.toString() !== memberId);
+    } else {
+      community.admins = community.admins.filter(a => a.toString() !== memberId);
+      community.moderators = community.moderators.filter(m => m.toString() !== memberId);
+    }
+
+    await community.save();
+
+    try {
+      const user = await User.findById(memberId);
+      await user.addNotification({
+        type: 'community',
+        title: 'Role Updated',
+        message: `Your role in "${community.name}" has been changed from ${previousRole} to ${role}.`,
+        relatedCommunity: id,
+        priority: 'normal'
+      });
+    } catch (notifyError) {
+      console.error('Error sending notification:', notifyError);
+    }
+
+    res.json({
+      success: true,
+      message: `Member role updated to ${role}`,
+      data: { memberId, role }
+    });
+
+  } catch (error) {
+    console.error("Error in updateMemberRole:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating member role",
+      error: error.message
+    });
+  }
+};
+
+// Remove member from community
+export const removeMember = async (req, res) => {
+  try {
+    const { id, memberId } = req.params;
+
+    const community = await Community.findById(id);
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Community not found"
+      });
+    }
+
+    const isCreator = community.creator.toString() === req.user.id;
+    const isAdmin = community.admins?.some(a => a.toString() === req.user.id);
+    const isModerator = community.moderators?.some(m => m.toString() === req.user.id);
+
+    if (!isCreator && !isAdmin && !isModerator) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to remove members"
+      });
+    }
+
+    if (memberId === community.creator.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot remove the community creator"
+      });
+    }
+
+    const targetMember = community.members.find(m => m.user.toString() === memberId);
+    if (isModerator && !isCreator && !isAdmin) {
+      if (targetMember?.role === 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: "Moderators cannot remove admins"
+        });
+      }
+    }
+
+    if (targetMember) {
+      targetMember.isActive = false;
+    }
+
+    community.admins = community.admins.filter(a => a.toString() !== memberId);
+    community.moderators = community.moderators.filter(m => m.toString() !== memberId);
+
+    await community.save();
+
+    try {
+      const user = await User.findById(memberId);
+      await user.addNotification({
+        type: 'community',
+        title: 'Removed from Community',
+        message: `You have been removed from "${community.name}".`,
+        relatedCommunity: id,
+        priority: 'normal'
+      });
+    } catch (notifyError) {
+      console.error('Error sending notification:', notifyError);
+    }
+
+    res.json({
+      success: true,
+      message: "Member removed successfully"
+    });
+
+  } catch (error) {
+    console.error("Error in removeMember:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error removing member",
+      error: error.message
+    });
+  }
+};
+
+// Get community members with details
+export const getCommunityMembers = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { search, role, page = 1, limit = 20 } = req.query;
+
+    const community = await Community.findById(id)
+      .populate('members.user', 'name username avatar')
+      .populate('creator', 'name username avatar')
+      .populate('admins', 'name username avatar')
+      .populate('moderators', 'name username avatar');
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Community not found"
+      });
+    }
+
+    let members = community.members.filter(m => m.isActive);
+
+    if (role && role !== 'all') {
+      members = members.filter(m => m.role === role);
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      members = members.filter(m =>
+        m.user?.name?.toLowerCase().includes(searchLower) ||
+        m.user?.username?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    const total = members.length;
+    const startIndex = (parseInt(page) - 1) * parseInt(limit);
+    const paginatedMembers = members.slice(startIndex, startIndex + parseInt(limit));
+
+    res.json({
+      success: true,
+      data: paginatedMembers,
+      creator: community.creator,
+      pagination: {
+        total,
+        pages: Math.ceil(total / parseInt(limit)),
+        page: parseInt(page),
+        limit: parseInt(limit),
+        hasNext: parseInt(page) < Math.ceil(total / parseInt(limit)),
+        hasPrev: parseInt(page) > 1
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in getCommunityMembers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching members",
+      error: error.message
+    });
+  }
+};

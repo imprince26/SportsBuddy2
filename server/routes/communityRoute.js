@@ -28,7 +28,12 @@ import {
   updateComment,
   deleteComment,
   updateReply,
-  deleteReply
+  deleteReply,
+  getJoinRequests,
+  handleJoinRequest,
+  updateMemberRole,
+  removeMember,
+  getCommunityMembers
 } from '../controllers/communityController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
 import { upload } from '../config/cloudinary.js';
@@ -68,6 +73,13 @@ router.delete('/:id', deleteCommunity); // Creator or admin can delete
 // Community membership
 router.post('/:id/join', joinCommunity);
 router.post('/:id/leave', leaveCommunity);
+
+// Community management
+router.get('/:id/join-requests', getJoinRequests);
+router.post('/:id/join-requests/:requestId', handleJoinRequest);
+router.get('/:id/members', getCommunityMembers);
+router.put('/:id/members/:memberId/role', updateMemberRole);
+router.delete('/:id/members/:memberId', removeMember);
 
 // Community posts
 router.post('/posts', upload.array('images', 5), createCommunityPost);

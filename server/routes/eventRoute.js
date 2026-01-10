@@ -16,13 +16,15 @@ import {
   searchEvents,
   getNearbyEvents,
    getFeaturedEvents,
-  getTrendingEvents
+  getTrendingEvents,
+  getUpcomingEvents
 } from '../controllers/eventController.js';
 
 const router = express.Router();
 
 // Public routes - caching now handled in controllers
 router.get('/', getAllEvents);
+router.get('/upcoming', getUpcomingEvents);
 router.get('/featured', getFeaturedEvents);
 router.get('/trending', getTrendingEvents);
 router.get('/search', searchEvents);

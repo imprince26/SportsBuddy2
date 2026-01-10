@@ -25,7 +25,7 @@ const UpcomingEvents = () => {
     const fetchEvents = async () => {
       setLoading(true)
       try {
-        const res = await api.get("/events?status=Upcoming&sort=date&limit=6");
+        const res = await api.get("/events/upcoming?limit=6");
         const events = res.data.data
         if (events.length > 0) {
           setUpcomingEvents(events)

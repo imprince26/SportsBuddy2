@@ -1,7 +1,6 @@
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
-import { cloudinary, uploadImage, deleteImage } from "../config/cloudinary.js";
-import { validateEvent } from "../utils/validation.js";
+import { cloudinary, deleteImage } from "../config/cloudinary.js";
 import { completeUserAction, POINT_VALUES } from "../utils/userStatsHelper.js";
 
 // Create Event Controller
@@ -133,7 +132,8 @@ export const getAllEvents = async (req, res) => {
       page = 1,
       limit = 12,
       lat,
-      lng
+      lng,
+      includeEnded = "false" // Show past/completed events if true
     } = req.query;
 
     // Build query object
@@ -165,9 +165,6 @@ export const getAllEvents = async (req, res) => {
     if (difficulty && difficulty !== "all") {
       query.difficulty = difficulty;
     }
-
-    // Note: Status filter will be applied after calculating status from date/time
-    // Do not use event.status field as it may be outdated
 
     // Fee type filter
     if (feeType && feeType !== "all") {
@@ -278,7 +275,7 @@ export const getAllEvents = async (req, res) => {
     if (sortBy && sortBy.startsWith("participants:")) {
       const [, order] = sortBy.split(":");
 
-      // Aggregation pipeline for complex sorting
+      // Aggregation pipeline for complex sorting - remove pagination, do it after status filtering
       const pipeline = [
         { $match: query },
         {
@@ -304,8 +301,6 @@ export const getAllEvents = async (req, res) => {
             date: 1 // Secondary sort by date
           }
         },
-        { $skip: skip },
-        { $limit: limitNum },
         {
           $lookup: {
             from: "users",
@@ -331,10 +326,7 @@ export const getAllEvents = async (req, res) => {
         { $unwind: "$createdBy" }
       ];
 
-      [events, total] = await Promise.all([
-        Event.aggregate(pipeline),
-        Event.countDocuments(query)
-      ]);
+      events = await Event.aggregate(pipeline);
 
       // Map participant users back to participants array
       events = events.map(event => {
@@ -352,17 +344,13 @@ export const getAllEvents = async (req, res) => {
       });
 
     } else {
-      // Regular query for simple sorting
-      [events, total] = await Promise.all([
-        Event.find(query)
-          .sort(sort)
-          .skip(skip)
-          .limit(limitNum)
-          .populate("createdBy", "name avatar username")
-          .populate("participants.user", "name avatar username")
-          .lean(),
-        Event.countDocuments(query)
-      ]);
+      // Regular query - fetch all events without pagination first
+      // We'll apply pagination after calculating and filtering by status
+      events = await Event.find(query)
+        .sort(sort)
+        .populate("createdBy", "name avatar username")
+        .populate("participants.user", "name avatar username")
+        .lean();
     }
 
     // Calculate additional metadata for each event with IST timezone
@@ -396,7 +384,7 @@ export const getAllEvents = async (req, res) => {
 
       return {
         ...event,
-        status: calculatedStatus, // Use calculated status instead of stored field
+        status: calculatedStatus,
         statusPriority, // For sorting purposes
         participantCount,
         spotsLeft: event.maxParticipants - participantCount,
@@ -411,9 +399,19 @@ export const getAllEvents = async (req, res) => {
 
     // Apply status filter based on calculated status
     let filteredEvents = eventsWithMetadata;
+    
+    // Check if user wants to include ended/completed events
+    const showEnded = includeEnded === "true" || includeEnded === true;
+    
     if (status && status !== "all") {
+      // Filter by specific status if requested
       filteredEvents = eventsWithMetadata.filter(event => 
         event.status.toLowerCase() === status.toLowerCase()
+      );
+    } else if (!showEnded) {
+      // By default, show only upcoming and ongoing events (exclude completed)
+      filteredEvents = eventsWithMetadata.filter(event => 
+        event.status === "Upcoming" || event.status === "Ongoing"
       );
     }
 
@@ -448,7 +446,6 @@ export const getAllEvents = async (req, res) => {
       });
     }
 
-    // Recalculate total and apply pagination after filtering and sorting
     const filteredTotal = filteredEvents.length;
     const paginatedEvents = filteredEvents.slice(skip, skip + limitNum);
 
@@ -472,7 +469,8 @@ export const getAllEvents = async (req, res) => {
         dateRange: dateRange || "all",
         feeType: feeType || "all",
         sortBy: sortBy || "default:asc",
-        venue: venue || "all"
+        venue: venue || "all",
+        includeEnded: includeEnded
       },
       stats: {
         totalEvents: filteredTotal,
@@ -501,7 +499,6 @@ export const getAllEvents = async (req, res) => {
   }
 };
 
-// Get Upcoming Events - specifically for home page section
 export const getUpcomingEvents = async (req, res) => {
   try {
     const { limit = 6 } = req.query;
@@ -513,7 +510,6 @@ export const getUpcomingEvents = async (req, res) => {
       .populate("participants.user", "name avatar username")
       .lean();
 
-    // Calculate status for each event based on date/time (IST timezone)
     const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
     const now = new Date();
     const nowIST = new Date(now.getTime() + istOffset);

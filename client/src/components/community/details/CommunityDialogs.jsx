@@ -27,7 +27,7 @@ export const JoinCommunityDialog = ({
 }) => {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md bg-card border-border">
+            <DialogContent className="sm:max-w-md bg-popover border-border">
                 <DialogHeader>
                     <DialogTitle>Request to Join</DialogTitle>
                     <DialogDescription>
@@ -74,7 +74,7 @@ export const LeaveCommunityDialog = ({
 }) => {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md bg-card border-border">
+            <DialogContent className="sm:max-w-md bg-popover border-border">
                 <DialogHeader>
                     <div className="mx-auto w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mb-4">
                         <UserMinus className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -120,7 +120,7 @@ export const DeleteCommunityDialog = ({
 }) => {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md bg-card border-border">
+            <DialogContent className="sm:max-w-md bg-popover border-border">
                 <DialogHeader>
                     <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mb-4">
                         <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -168,7 +168,7 @@ export const DeletePostDialog = ({
 }) => {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md bg-card border-border">
+            <DialogContent className="sm:max-w-md bg-popover border-border">
                 <DialogHeader>
                     <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mb-4">
                         <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />

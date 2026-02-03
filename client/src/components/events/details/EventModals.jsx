@@ -26,7 +26,7 @@ export const DeleteConfirmModal = ({
 }) => {
     return (
         <Dialog open={showConfirmDelete} onOpenChange={setShowConfirmDelete}>
-            <DialogContent className="bg-card/95 backdrop-blur-xl border-border">
+            <DialogContent className="bg-popover backdrop-blur-xl border-border">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-3 text-red-600 dark:text-red-400">
                         <AlertTriangle className="w-6 h-6" />
@@ -64,7 +64,7 @@ export const ShareModal = ({
 }) => {
     return (
         <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
-            <DialogContent className="sm:max-w-md bg-card/30 backdrop-blur-xl border-border">
+            <DialogContent className="sm:max-w-md bg-popover backdrop-blur-xl border-border">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-3">
                         <div className="p-2 rounded-full bg-primary/10">

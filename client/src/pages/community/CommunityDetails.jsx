@@ -320,9 +320,31 @@ const CommunityDetails = () => {
     }
   }
 
-  // Loading state
-  if (loading || !currentCommunity) {
+  // Loading state - only show skeleton during actual loading, not when data is present
+  if (loading && !currentCommunity) {
     return <CommunityDetailsSkeleton />
+  }
+
+  // If not loading but no community, show error
+  if (!loading && !currentCommunity) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="text-center p-8">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Flag className="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Community Not Found</h3>
+            <p className="text-muted-foreground mb-4">
+              The community you're looking for doesn't exist or has been removed.
+            </p>
+            <Button onClick={() => navigate('/community')} className="w-full">
+              Browse Communities
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   // Error state
@@ -408,15 +430,10 @@ const CommunityDetails = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-4 bg-card border border-border p-1">
+              <TabsList className="w-full grid grid-cols-3 bg-card border border-border p-1">
                 <TabsTrigger value="posts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   Posts
                 </TabsTrigger>
-                {community.isMember && (
-                  <TabsTrigger value="my-posts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    My Posts
-                  </TabsTrigger>
-                )}
                 <TabsTrigger value="members" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   Members
                 </TabsTrigger>
@@ -427,9 +444,26 @@ const CommunityDetails = () => {
 
               {/* Posts Tab */}
               <TabsContent value="posts" className="mt-6 space-y-6">
-                {/* Create Post */}
-                {community.isMember && community.canPost && (
-                  <CreatePostPrompt user={user} onClick={() => setShowCreatePost(true)} />
+                {/* Create Post or Sign In Prompt */}
+                {user ? (
+                  community.isMember && community.canPost && (
+                    <CreatePostPrompt user={user} onClick={() => setShowCreatePost(true)} />
+                  )
+                ) : (
+                  <Card className="border-border bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+                    <CardContent className="text-center py-8">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <MessageSquare className="w-6 h-6 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Join the Conversation</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Sign in to create posts, comment, and interact with the community
+                      </p>
+                      <Button onClick={() => navigate('/login')} className="gap-2">
+                        Sign In to Continue
+                      </Button>
+                    </CardContent>
+                  </Card>
                 )}
 
                 {/* Sort Filter */}
@@ -479,6 +513,11 @@ const CommunityDetails = () => {
                             Create First Post
                           </Button>
                         )}
+                        {!user && (
+                          <Button onClick={() => navigate('/login')}>
+                            Sign In to Post
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   ) : (
@@ -506,48 +545,6 @@ const CommunityDetails = () => {
                   )}
                 </div>
               </TabsContent>
-
-              {/* My Posts Tab */}
-              {community.isMember && (
-                <TabsContent value="my-posts" className="mt-6 space-y-4">
-                  {myPosts.length === 0 ? (
-                    <Card className="border-border bg-card/50 border-dashed">
-                      <CardContent className="text-center py-16">
-                        <MessageSquare className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold mb-2">No posts yet</h3>
-                        <p className="text-muted-foreground mb-6">
-                          You haven't created any posts in this community yet.
-                        </p>
-                        <Button onClick={() => setShowCreatePost(true)}>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Create Your First Post
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <AnimatePresence mode="popLayout">
-                      {myPosts.map((post, index) => (
-                        <motion.div
-                          key={post._id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                        >
-                          <PostCard
-                            post={post}
-                            currentUser={user}
-                            onLike={handleLikePost}
-                            onShare={handleSharePost}
-                            onEdit={handleEditPost}
-                            onDelete={handleDeletePost}
-                            onImageClick={handleImageClick}
-                          />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  )}
-                </TabsContent>
-              )}
 
               {/* Members Tab */}
               <TabsContent value="members" className="mt-6">
@@ -620,8 +617,8 @@ const CommunityDetails = () => {
         </div>
       </div>
 
-      {/* Floating Create Post Button (Mobile) */}
-      {community.isMember && community.canPost && (
+      {/* Floating Create Post Button (Mobile) - Only for members */}
+      {user && community.isMember && community.canPost && (
         <motion.div
           className="fixed bottom-6 right-6 z-50 lg:hidden"
           initial={{ scale: 0 }}

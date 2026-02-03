@@ -35,7 +35,7 @@ import {
   removeMember,
   getCommunityMembers
 } from '../controllers/communityController.js';
-import { isAuthenticated } from '../middleware/authMiddleware.js';
+import { isAuthenticated, optionalAuth } from '../middleware/authMiddleware.js';
 import { upload } from '../config/cloudinary.js';
 
 const router = express.Router();
@@ -55,15 +55,15 @@ router.get('/posts/trending', getTrendingPosts);
 
 router.get('/posts/:id', getCommunityPostById);
 
+// Community detail with optional auth (allows guests to view)
+router.get('/:id', optionalAuth, getCommunity);
+
 // Protected routes
 router.use(isAuthenticated);
 
 // User communities (must be before /:id to avoid conflicts)
 router.get('/my-communities', getUserCommunities);
 router.get('/user/:userId', getUserCommunities);
-
-// Community detail (after specific routes)
-router.get('/:id', getCommunity);
 
 // Community CRUD
 router.post('/', upload.array('image', 1), createCommunity);

@@ -281,7 +281,7 @@ const EventChatModal = ({
     return (
         <>
             <Dialog open={showChatModal} onOpenChange={setShowChatModal}>
-                <DialogContent className="max-w-5xl h-[90vh] bg-gray-50 dark:bg-card/10 backdrop-blur-3xl border-border p-0 overflow-auto scrollbar-hide">
+                <DialogContent className="max-w-5xl h-[90vh] bg-popover backdrop-blur-3xl border-border p-0 overflow-auto scrollbar-hide">
                     <DialogHeader className="px-4 md:mt-3 mt-6 sm:p-6 pb-0 border-b border-border">
                         <DialogTitle className="flex items-center gap-3 text-foreground">
                             <div className="flex-1 min-w-0">

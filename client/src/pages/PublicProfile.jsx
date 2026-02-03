@@ -36,6 +36,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import api from "@/utils/api"
 
 const FollowersDialog = ({ isOpen, onClose, type, userId, onFollowChange }) => {
@@ -102,93 +103,95 @@ const FollowersDialog = ({ isOpen, onClose, type, userId, onFollowChange }) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="overflow-y-auto max-h-[500px] space-y-2 py-2">
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="relative">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-border border-t-primary"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-6 h-6 bg-primary rounded-full animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-12 space-y-4">
-              <div className="relative">
-                <Users className="w-16 h-16 mx-auto text-muted-foreground" />
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-muted rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-muted-foreground">0</span>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-medium text-foreground">No {type} yet</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {type === "followers" ? "No one is following this user yet" : "This user isn't following anyone yet"}
-                </p>
-              </div>
-            </div>
-          ) : (
-            users.map((userData, index) => (
-              <div
-                key={userData._id}
-                className="group flex items-center justify-between p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-accent transition-all duration-300 transform animate-in slide-in-from-left-5"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <Link to={`/users/${userData._id}`} className="flex items-center gap-4 flex-1 min-w-0" onClick={onClose}>
-                  <div className="relative">
-                    <Avatar className="w-12 h-12 border-2 border-white dark:border-gray-800 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <AvatarImage src={userData.avatar?.url || "/placeholder.svg"} className="object-cover" />
-                      <AvatarFallback className="bg-primary text-primary-foreground font-bold">
-                        {userData.name?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {userData.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full animate-pulse"></div>
-                    )}
+        <ScrollArea className="h-[500px]">
+          <div className="space-y-2 py-2 pr-4">
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-border border-t-primary"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-6 h-6 bg-primary rounded-full animate-pulse"></div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {userData.name}
-                      </p>
-                      {userData.isVerified && (
-                        <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                </div>
+              </div>
+            ) : users.length === 0 ? (
+              <div className="text-center py-12 space-y-4">
+                <div className="relative">
+                  <Users className="w-16 h-16 mx-auto text-muted-foreground" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-muted rounded-full flex items-center justify-center">
+                    <span className="text-xs font-bold text-muted-foreground">0</span>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium text-foreground">No {type} yet</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {type === "followers" ? "No one is following this user yet" : "This user isn't following anyone yet"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              users.map((userData, index) => (
+                <div
+                  key={userData._id}
+                  className="group flex items-center justify-between p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-accent transition-all duration-300 transform animate-in slide-in-from-left-5"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <Link to={`/users/${userData._id}`} className="flex items-center gap-4 flex-1 min-w-0" onClick={onClose}>
+                    <div className="relative">
+                      <Avatar className="w-12 h-12 border-2 border-white dark:border-gray-800 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <AvatarImage src={userData.avatar?.url || "/placeholder.svg"} className="object-cover" />
+                        <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                          {userData.name?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {userData.isOnline && (
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full animate-pulse"></div>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">@{userData.username}</p>
-                    {userData.bio && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-1">{userData.bio}</p>
-                    )}
-                  </div>
-                </Link>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {userData.name}
+                        </p>
+                        {userData.isVerified && (
+                          <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">@{userData.username}</p>
+                      {userData.bio && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-1">{userData.bio}</p>
+                      )}
+                    </div>
+                  </Link>
 
-                {user && user._id !== userData._id && (
-                  <Button
-                    size="sm"
-                    variant={userData.isFollowedByCurrentUser ? "outline" : "default"}
-                    onClick={() => handleFollowToggle(userData._id, userData.isFollowedByCurrentUser)}
-                    className={`ml-3 transition-all duration-300 transform hover:scale-105 ${userData.isFollowedByCurrentUser
-                      ? "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-                      : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-                      }`}
-                  >
-                    {userData.isFollowedByCurrentUser ? (
-                      <>
-                        <UserMinus className="w-3 h-3 mr-1" />
-                        Unfollow
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="w-3 h-3 mr-1" />
-                        Follow
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            ))
-          )}
-        </div>
+                  {user && user._id !== userData._id && (
+                    <Button
+                      size="sm"
+                      variant={userData.isFollowedByCurrentUser ? "outline" : "default"}
+                      onClick={() => handleFollowToggle(userData._id, userData.isFollowedByCurrentUser)}
+                      className={`ml-3 transition-all duration-300 transform hover:scale-105 ${userData.isFollowedByCurrentUser
+                        ? "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+                        : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                        }`}
+                    >
+                      {userData.isFollowedByCurrentUser ? (
+                        <>
+                          <UserMinus className="w-3 h-3 mr-1" />
+                          Unfollow
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-3 h-3 mr-1" />
+                          Follow
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )

@@ -93,7 +93,7 @@ export const CreatePostDialog = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg bg-card border-border">
+            <DialogContent className="sm:max-w-lg bg-popover border-border">
                 <DialogHeader>
                     <DialogTitle className="text-center pb-4 border-b border-border">
                         Create Post
@@ -214,7 +214,7 @@ export const EditPostDialog = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg bg-card border-border">
+            <DialogContent className="sm:max-w-lg bg-popover border-border">
                 <DialogHeader>
                     <DialogTitle className="text-center pb-4 border-b border-border">
                         Edit Post

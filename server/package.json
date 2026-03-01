@@ -24,7 +24,7 @@
     "cors": "^2.8.5",
     "cron": "^4.3.3",
     "dotenv": "^17.2.3",
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
     "express-rate-limit": "^8.1.0",
     "express-validator": "^7.0.1",

@@ -13,7 +13,8 @@ import {
   Star,
   Grid3X3,
   List,
-  Sparkles
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { useAthletes } from '@/hooks/useAthletes';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,7 +52,8 @@ const sportsCategories = [
 const FeaturedAthletes = ({ athletes, currentUser, onFollow }) => {
   if (!athletes || athletes.length === 0) return null;
 
-  const featured = athletes.slice(0, 3);
+  const verifiedFeatured = athletes.filter((athlete) => athlete.isVerified);
+  const featured = (verifiedFeatured.length > 0 ? verifiedFeatured : athletes).slice(0, 3);
 
   return (
     <motion.div
@@ -79,6 +81,11 @@ const FeaturedAthletes = ({ athletes, currentUser, onFollow }) => {
                     <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                       {athlete.name}
                     </h3>
+                    {athlete.isVerified && (
+                      <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                        <CheckCircle2 className="w-3 h-3" /> Verified
+                      </div>
+                    )}
                     <p className="text-sm text-muted-foreground">@{athlete.username}</p>
                     <div className="flex items-center gap-2 mt-1">
                       {athlete.sportsPreferences?.slice(0, 2).map((pref, idx) => (

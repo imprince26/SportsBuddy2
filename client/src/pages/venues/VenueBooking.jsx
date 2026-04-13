@@ -6,6 +6,7 @@ import {
   Clock,
   MapPin,
   CheckCircle,
+  Sparkles,
   ArrowLeft,
   CreditCard,
   Banknote,
@@ -336,6 +337,11 @@ const VenueBooking = () => {
                       <div className="absolute bottom-3 left-3 right-3">
                         <h3 className="font-semibold text-white text-lg truncate">{currentVenue.name}</h3>
                       </div>
+                      {currentVenue.isFeatured && (
+                        <Badge className="absolute top-3 left-3 bg-amber-500 text-white border-0">
+                          <Sparkles className="w-3 h-3 mr-1" /> Featured
+                        </Badge>
+                      )}
                       {currentVenue.isVerified && (
                         <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground border-0">
                           <CheckCircle className="w-3 h-3 mr-1" /> Verified

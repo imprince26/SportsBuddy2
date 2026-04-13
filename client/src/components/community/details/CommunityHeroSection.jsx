@@ -12,7 +12,8 @@ import {
     UserMinus,
     UserPlus,
     Shield,
-    Crown
+    Crown,
+    Sparkles
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -103,6 +104,11 @@ const CommunityHeroSection = ({
                                             <><Globe className="w-3 h-3 mr-1" /> Public</>
                                         )}
                                     </Badge>
+                                    {community.isFeatured && (
+                                        <Badge className="bg-amber-500/90 text-white border-0 text-xs sm:text-sm">
+                                            <Sparkles className="w-3 h-3 mr-1" /> Featured
+                                        </Badge>
+                                    )}
                                 </div>
 
                                 {/* Stats Row */}

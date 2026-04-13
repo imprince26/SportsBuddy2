@@ -9,6 +9,7 @@ import {
     ArrowRight,
     CheckCircle,
     Heart,
+    Sparkles,
     Wifi,
     Car,
     Dumbbell
@@ -77,6 +78,11 @@ const VenueCard = ({ venue, variant = "grid" }) => {
 
                             {/* Badges */}
                             <div className="absolute top-3 right-3 flex gap-2">
+                                {venue.isFeatured && (
+                                    <Badge className="bg-amber-500/90 text-white border-0 backdrop-blur-sm">
+                                        <Sparkles className="w-3 h-3 mr-1" /> Featured
+                                    </Badge>
+                                )}
                                 {venue.isVerified && (
                                     <Badge className="bg-primary/90 text-primary-foreground border-0 backdrop-blur-sm">
                                         <CheckCircle className="w-3 h-3 mr-1" /> Verified
@@ -229,11 +235,18 @@ const VenueCard = ({ venue, variant = "grid" }) => {
                         </div>
 
                         {/* Right side - Verified Badge */}
-                        {venue.isVerified && (
-                            <Badge className="bg-primary/90 text-primary-foreground border-0 backdrop-blur-sm shadow-lg">
-                                <CheckCircle className="w-3 h-3 mr-1" /> Verified
-                            </Badge>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {venue.isFeatured && (
+                                <Badge className="bg-amber-500/90 text-white border-0 backdrop-blur-sm shadow-lg">
+                                    <Sparkles className="w-3 h-3 mr-1" /> Featured
+                                </Badge>
+                            )}
+                            {venue.isVerified && (
+                                <Badge className="bg-primary/90 text-primary-foreground border-0 backdrop-blur-sm shadow-lg">
+                                    <CheckCircle className="w-3 h-3 mr-1" /> Verified
+                                </Badge>
+                            )}
+                        </div>
                     </div>
 
                     {/* Bottom Info */}

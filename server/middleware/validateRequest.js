@@ -1,0 +1,83 @@
+import { z } from "zod";
+
+const formatPath = (path) => {
+  if (!path || path.length === 0) {
+    return "root";
+  }
+
+  return path.reduce((acc, part) => {
+    if (typeof part === "number") {
+      return `${acc}[${part}]`;
+    }
+    return acc ? `${acc}.${part}` : String(part);
+  }, "");
+};
+
+const normalizeValidationErrors = (issues, source) => {
+  return issues.map((issue) => ({
+    source,
+    path: formatPath(issue.path),
+    message: issue.message,
+  }));
+};
+
+const isZodSchemaLike = (schema) => {
+  return Boolean(schema && typeof schema.safeParse === "function");
+};
+
+export const validateRequest = ({ body, query, params } = {}) => {
+  return (req, res, next) => {
+    try {
+      const errors = [];
+
+      const validators = [
+        { source: "body", schema: body, payload: req.body },
+        { source: "query", schema: query, payload: req.query },
+        { source: "params", schema: params, payload: req.params },
+      ];
+
+      for (const validator of validators) {
+        if (!validator.schema) {
+          continue;
+        }
+
+        if (!isZodSchemaLike(validator.schema)) {
+          errors.push({
+            source: validator.source,
+            path: "schema",
+            message: "Validation schema is misconfigured",
+          });
+          continue;
+        }
+
+        const result = validator.schema.safeParse(validator.payload);
+        if (!result.success) {
+          errors.push(...normalizeValidationErrors(result.error.issues, validator.source));
+          continue;
+        }
+
+        if (!res.locals.validated) {
+          res.locals.validated = {};
+        }
+
+        res.locals.validated[validator.source] = result.data;
+      }
+
+      if (errors.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors,
+        });
+      }
+
+      return next();
+    } catch (error) {
+      return next(error);
+    }
+  };
+};
+
+export const objectIdSchema = z
+  .string()
+  .regex(/^[0-9a-fA-F]{24}$/, "Invalid identifier format");

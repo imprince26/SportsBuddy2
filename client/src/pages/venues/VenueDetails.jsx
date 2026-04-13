@@ -364,6 +364,11 @@ const VenueDetails = () => {
           <div className="container mx-auto">
             <div className="max-w-4xl space-y-4">
               <div className="flex flex-wrap items-center gap-3">
+                {currentVenue.isFeatured && (
+                  <Badge className="bg-amber-500 text-white border-0 h-7 px-3 text-xs font-semibold uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Featured
+                  </Badge>
+                )}
                 {currentVenue.isVerified && (
                   <Badge className="bg-primary text-primary-foreground border-0 h-7 px-3 text-xs font-semibold uppercase tracking-wider">
                     <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Verified

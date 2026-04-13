@@ -1,6 +1,11 @@
 import express from "express";
 import { isAuthenticated } from "../middleware/authMiddleware.js";
 import {
+  publicSearchLimiter,
+  userWriteLimiter,
+} from "../middleware/rateLimitMiddleware.js";
+
+import {
   getUserProfile,
   getUserFollowers,
   getUserFollowing,
@@ -15,14 +20,14 @@ import { toggleFollowAthlete } from "../controllers/athletesController.js";
 const router = express.Router();
 
 // Public routes
-router.get("/search", searchUsers);
+router.get("/search", publicSearchLimiter, searchUsers);
 
 // Protected routes - MUST come before /:userId to avoid route conflicts
 router.get("/my-bookings", isAuthenticated, getUserBookings);
 router.get("/events", isAuthenticated, getUserEvents);
-router.put("/preferences", isAuthenticated, updatePreferences);
+router.put("/preferences", isAuthenticated, userWriteLimiter, updatePreferences);
 
-router.post("/:userId/follow", isAuthenticated, toggleFollowAthlete);
+router.post("/:userId/follow", isAuthenticated, userWriteLimiter, toggleFollowAthlete);
 
 router.get("/:userId/followers", isAuthenticated, getUserFollowers);
 

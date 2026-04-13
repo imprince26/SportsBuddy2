@@ -61,7 +61,7 @@ const priceRanges = [
 const FeaturedVenues = ({ venues }) => {
   if (!venues || venues.length === 0) return null;
 
-  const featured = venues.filter(v => v.isVerified).slice(0, 3);
+  const featured = venues.filter((v) => v.isFeatured).slice(0, 3);
   if (featured.length === 0) {
     return null;
   }

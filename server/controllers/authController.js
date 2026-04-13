@@ -1,12 +1,14 @@
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
-import { uploadImage, deleteImage } from "../config/cloudinary.js";
-import fs from "fs/promises";
+import { deleteImage } from "../config/cloudinary.js";
 import validator from "validator";
 import sendEmail from "../config/sendEmail.js";
-import { welcomeEmailHtml, resetPasswordEmailHtml, passwordResetSuccessEmailHtml } from "../utils/emailTemplate.js";
-import { ifError } from "assert";
+import { resetPasswordEmailHtml, passwordResetSuccessEmailHtml } from "../utils/emailTemplate.js";
+
+const isAccountAllowedToLogin = (accountStatus) => {
+  return accountStatus !== "suspended" && accountStatus !== "banned";
+};
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -101,6 +103,16 @@ export const login = async (req, res) => {
       });
     }
 
+    if (!isAccountAllowedToLogin(user.accountStatus)) {
+      return res.status(403).json({
+        success: false,
+        message:
+          user.accountStatus === "suspended"
+            ? "Your account is suspended. Contact support for assistance."
+            : "Your account has been banned."
+      });
+    }
+
     // Check if password matches
     const isMatch = await user.matchPassword(password);
 
@@ -110,6 +122,9 @@ export const login = async (req, res) => {
         message: "Invalid Password"
       });
     }
+
+    user.lastLoginAt = new Date();
+    await user.save({ validateBeforeSave: false });
 
     // Generate token
     const token = generateToken(user);
@@ -385,7 +400,7 @@ export const updatePassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const isMatch = await user.comparePassword(currentPassword);
+    const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) {
       return res.status(401).json({ message: "Current password is incorrect" });
     }

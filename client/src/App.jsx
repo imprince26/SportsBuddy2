@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import SportsBuddyLoader from './components/Loader';
@@ -7,6 +7,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMetadata } from '@/hooks/useMetadata';
 import Layout from '@/components/layout/Layout';
 import AdminLayout from '@/components/layout/AdminLayout';
+import { ThemeProvider } from '@/context/ThemeProvider';
+
 import ScrollToTop from '@/components/ScrollToTop';
 
 // Public Pages
@@ -32,6 +34,15 @@ import MyBookings from './pages/venues/MyBookings';
 import Leaderboard from './pages/leaderboard/Leaderboard';
 // import Community from './pages/community/Community';
 import Athletes from './pages/athletes/Athletes';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminEvents from './pages/admin/AdminEvents';
+import AdminCommunities from './pages/admin/AdminCommunities';
+import AdminVenues from './pages/admin/AdminVenues';
+import AdminBookings from './pages/admin/AdminBookings';
+import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 
 // Protected User Pages
 import Dashboard from './pages/Dashboard';
@@ -53,27 +64,9 @@ import CommunityDetails from './pages/community/CommunityDetails';
 import ManageCommunity from './pages/community/ManageCommunity';
 import PostDetail from './pages/community/PostDetail';
 // import CreateVenue from './pages/venue/CreateVenue';
-// import EditVenue from './pages/venue/EditVenue';
 // import UserProfile from './pages/UserProfile';
 
-// Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ManageUsers from './pages/admin/ManageUsers';
-import ManageEvents from './pages/admin/ManageEvents';
-import ManageCommunities from './pages/admin/ManageCommunities';
-import AdminVenues from './pages/admin/AdminVenues';
-import CreateVenue from './pages/admin/CreateVenue';
-import EditVenue from './pages/admin/EditVenue';
-import VenueBookings from './pages/admin/VenueBookings';
-import AllVenueBookings from './pages/admin/AllVenueBookings';
-import AdminSearch from './pages/admin/AdminSearch';
-import AdminMessages from './pages/admin/AdminMessages';
-import AdminSettings from './pages/admin/AdminSettings';
-import NotificationsPage from './pages/admin/NotificationPage';
-import AdminAnalytics from './pages/admin/AdminAnalytics';
-// import AdminReports from './pages/admin/AdminReports';
-// import ContentModeration from './pages/admin/ContentModeration';
-// import SystemLogs from './pages/admin/SystemLogs';
+
 
 // Error Boundary Component
 import ErrorBoundary from './components/ErrorBoundary';
@@ -125,7 +118,7 @@ const PublicRoute = ({ children, title = "", data = {} }) => {
 
 function App() {
   const location = useLocation();
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
 
   // Show initial loader while auth is being checked
   if (authLoading) {
@@ -181,26 +174,31 @@ function App() {
             <Route path="community/create" element={<ProtectedRoute><CreateCommunity /></ProtectedRoute>} />
             <Route path="community/:id/edit" element={<ProtectedRoute><EditCommunity /></ProtectedRoute>} />
             <Route path="community/:id/manage" element={<ProtectedRoute><ManageCommunity /></ProtectedRoute>} />
-            <Route path="venues/:id/edit" element={<ProtectedRoute><EditVenue /></ProtectedRoute>} />
           </Route>
 
-          {/* Admin Routes */}
-          <Route path="admin" element={<AdminLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <ThemeProvider defaultTheme="system" storageKey="theme">
+                <ProtectedRoute adminOnly>
+                  <AdminLayout />
+                </ProtectedRoute>
+              </ThemeProvider>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
-            <Route path="users" element={<ProtectedRoute adminOnly><ManageUsers /></ProtectedRoute>} />
-            <Route path="events" element={<ProtectedRoute adminOnly><ManageEvents /></ProtectedRoute>} />
-            <Route path="communities" element={<ProtectedRoute adminOnly><ManageCommunities /></ProtectedRoute>} />
-            <Route path="venues" element={<ProtectedRoute adminOnly><AdminVenues /></ProtectedRoute>} />
-            <Route path="venues/:id/bookings" element={<ProtectedRoute adminOnly><VenueBookings /></ProtectedRoute>} />
-            <Route path="venue-bookings" element={<ProtectedRoute adminOnly><AllVenueBookings /></ProtectedRoute>} />
-            <Route path="create-venue" element={<ProtectedRoute adminOnly><CreateVenue /></ProtectedRoute>} />
-            <Route path="edit-venue/:id" element={<ProtectedRoute adminOnly><EditVenue /></ProtectedRoute>} />
-            <Route path="notifications" element={<ProtectedRoute adminOnly><NotificationsPage /></ProtectedRoute>} />
-            <Route path="search" element={<ProtectedRoute adminOnly><AdminSearch /></ProtectedRoute>} />
-            <Route path="messages" element={<ProtectedRoute adminOnly><AdminMessages /></ProtectedRoute>} />
             <Route path="analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
-            <Route path="settings" element={<ProtectedRoute adminOnly><AdminSettings /></ProtectedRoute>} />
+            <Route path="users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
+            <Route path="events" element={<ProtectedRoute adminOnly><AdminEvents /></ProtectedRoute>} />
+            <Route path="communities" element={<ProtectedRoute adminOnly><AdminCommunities /></ProtectedRoute>} />
+            <Route path="venues" element={<ProtectedRoute adminOnly><AdminVenues /></ProtectedRoute>} />
+            <Route path="bookings" element={<ProtectedRoute adminOnly><AdminBookings /></ProtectedRoute>} />
+            <Route path="notifications" element={<ProtectedRoute adminOnly><AdminNotifications /></ProtectedRoute>} />
+            <Route path="audit-logs" element={<ProtectedRoute adminOnly><AdminAuditLogs /></ProtectedRoute>} />
           </Route>
+
+          
 
           {/* Fallback Route */}
           <Route path="*" element={<PublicRoute><NotFound /></PublicRoute>} />

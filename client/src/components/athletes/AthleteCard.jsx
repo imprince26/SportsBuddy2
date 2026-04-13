@@ -14,7 +14,8 @@ import {
     Calendar,
     MessageCircle,
     ChevronRight,
-    Loader2
+    Loader2,
+    CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -83,8 +84,9 @@ const AthleteCard = ({ athlete, onFollow, isFollowing: initialIsFollowing, curre
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
                                         <Link to={`/profile/${athlete._id}`}>
-                                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                                                {athlete.name}
+                                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                                                <span className="truncate">{athlete.name}</span>
+                                                {athlete.isVerified && <CheckCircle className="w-4 h-4 text-primary" />}
                                             </h3>
                                         </Link>
                                         <p className="text-sm text-muted-foreground">@{athlete.username}</p>
@@ -216,8 +218,9 @@ const AthleteCard = ({ athlete, onFollow, isFollowing: initialIsFollowing, curre
                     {/* Name & Username */}
                     <div>
                         <Link to={`/profile/${athlete._id}`}>
-                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                                {athlete.name}
+                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate flex items-center gap-1.5">
+                                <span className="truncate">{athlete.name}</span>
+                                {athlete.isVerified && <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />}
                             </h3>
                         </Link>
                         <p className="text-sm text-muted-foreground">@{athlete.username}</p>

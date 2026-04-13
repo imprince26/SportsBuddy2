@@ -12,6 +12,7 @@ import {
     getCategories
 } from '../controllers/leaderboardController.js';
 import { isAuthenticated, isAdmin } from '../middleware/authMiddleware.js';
+import { publicSearchLimiter, adminWriteLimiter } from "../middleware/rateLimitMiddleware.js";
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get('/', getLeaderboard);
 
 router.get('/categories', getCategories);
 
-router.get('/sport/:sport', getLeaderboardBySport);
+router.get('/sport/:sport', publicSearchLimiter, getLeaderboardBySport);
 
 router.get('/stats', getLeaderboardStats);
 
@@ -38,6 +39,6 @@ router.get('/user/:userId/stats', getUserStats);
 router.get('/monthly', getMonthlyLeaderboard);
 
 // Admin routes (require admin privileges)
-router.post('/user/:userId/score', isAdmin, updateUserScore);
+router.post('/user/:userId/score', isAdmin, adminWriteLimiter, updateUserScore);
 
 export default router;

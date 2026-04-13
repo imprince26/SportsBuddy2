@@ -1,2157 +1,1539 @@
+import mongoose from "mongoose";
+import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
-import Event from '../models/eventModel.js';
-import asyncHandler from 'express-async-handler';
-import sendEmail from '../config/sendEmail.js';
-import { AdminSentEmailHtml } from '../utils/emailTemplate.js';
-import PDFDocument from 'pdfkit';
-import dotenv from 'dotenv';
-dotenv.config();
-
-export const exportAnalyticsPDF = asyncHandler(async (req, res) => {
-    try {
-        // Fetch analytics data
-        const totalUsers = await User.countDocuments();
-        const newUsersToday = await User.countDocuments({
-            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
-        });
-        const usersByRole = await User.aggregate([
-            { $group: { _id: "$role", count: { $sum: 1 } } }
-        ]);
-
-        const totalEvents = await Event.countDocuments();
-        const activeEvents = await Event.countDocuments({
-            date: { $gte: new Date() }
-        });
-        const pastEvents = await Event.countDocuments({
-            date: { $lt: new Date() }
-        });
-        const eventsByCategory = await Event.aggregate([
-            { $group: { _id: "$category", count: { $sum: 1 } } }
-        ]);
-
-        const usersThisMonth = await User.countDocuments({
-            createdAt: { $gte: new Date(new Date().setDate(1)) }
-        });
-        const eventsThisMonth = await Event.countDocuments({
-            createdAt: { $gte: new Date(new Date().setDate(1)) }
-        });
-
-        const recentUsers = await User.find()
-            .sort({ createdAt: -1 })
-            .limit(5)
-            .select('name email role createdAt');
-
-        const popularEvents = await Event.find()
-            .sort({ participants: -1 })
-            .limit(5)
-            .populate('createdBy', 'name')
-            .select('name category participants createdBy');
-
-        // Create PDF document
-        const doc = new PDFDocument({
-            margin: 50,
-            size: 'A4'
-        });
-
-        // Set response headers for PDF
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="sportsbuddy-analytics-${new Date().toISOString().split('T')[0]}.pdf"`);
-        res.setHeader('Cache-Control', 'no-cache');
-
-        // Pipe PDF to response
-        doc.pipe(res);
-
-        // Colors
-        const primaryColor = '#1e40af';
-        const textColor = '#374151';
-
-        // Header
-        doc.fillColor(primaryColor)
-            .fontSize(24)
-            .font('Helvetica-Bold')
-            .text('SportsBuddy Analytics Report', 50, 50);
-
-        doc.fillColor(textColor)
-            .fontSize(12)
-            .font('Helvetica')
-            .text(`Generated on: ${new Date().toLocaleDateString()}`, 50, 80);
-
-        // Add line separator
-        doc.moveTo(50, 110)
-            .lineTo(545, 110)
-            .stroke();
-
-        let yPosition = 130;
-
-        // User Statistics Section
-        doc.fillColor(primaryColor)
-            .fontSize(18)
-            .font('Helvetica-Bold')
-            .text('User Statistics', 50, yPosition);
-
-        yPosition += 30;
-
-        doc.fillColor(textColor)
-            .fontSize(12)
-            .font('Helvetica')
-            .text(`Total Users: ${totalUsers}`, 70, yPosition)
-            .text(`New Users Today: ${newUsersToday}`, 70, yPosition + 20)
-            .text(`Users This Month: ${usersThisMonth}`, 70, yPosition + 40);
-
-        yPosition += 80;
-
-        // Users by Role
-        if (usersByRole.length > 0) {
-            doc.fillColor(textColor)
-                .fontSize(14)
-                .font('Helvetica-Bold')
-                .text('Users by Role:', 70, yPosition);
-
-            yPosition += 25;
-
-            usersByRole.forEach((role, index) => {
-                doc.fillColor(textColor)
-                    .fontSize(11)
-                    .font('Helvetica')
-                    .text(`• ${role._id || 'Unknown'}: ${role.count} users (${((role.count / totalUsers) * 100).toFixed(1)}%)`, 90, yPosition);
-                yPosition += 18;
-            });
-        }
-
-        yPosition += 30;
-
-        // Event Statistics Section
-        doc.fillColor(primaryColor)
-            .fontSize(18)
-            .font('Helvetica-Bold')
-            .text('Event Statistics', 50, yPosition);
-
-        yPosition += 30;
-
-        doc.fillColor(textColor)
-            .fontSize(12)
-            .font('Helvetica')
-            .text(`Total Events: ${totalEvents}`, 70, yPosition)
-            .text(`Active Events: ${activeEvents}`, 70, yPosition + 20)
-            .text(`Past Events: ${pastEvents}`, 70, yPosition + 40)
-            .text(`Events This Month: ${eventsThisMonth}`, 70, yPosition + 60);
-
-        yPosition += 100;
-
-        // Events by Category
-        if (eventsByCategory.length > 0) {
-            doc.fillColor(textColor)
-                .fontSize(14)
-                .font('Helvetica-Bold')
-                .text('Events by Category:', 70, yPosition);
-
-            yPosition += 25;
-
-            eventsByCategory.forEach((category, index) => {
-                doc.fillColor(textColor)
-                    .fontSize(11)
-                    .font('Helvetica')
-                    .text(`• ${category._id || 'Other'}: ${category.count} events`, 90, yPosition);
-                yPosition += 18;
-            });
-        }
-
-        // Check if we need a new page
-        if (yPosition > 650) {
-            doc.addPage();
-            yPosition = 50;
-        } else {
-            yPosition += 30;
-        }
-
-        // Recent Users Section
-        if (recentUsers.length > 0) {
-            doc.fillColor(primaryColor)
-                .fontSize(18)
-                .font('Helvetica-Bold')
-                .text('Recent Users', 50, yPosition);
-
-            yPosition += 30;
-
-            // Table header
-            doc.fillColor(primaryColor)
-                .fontSize(12)
-                .font('Helvetica-Bold')
-                .text('Name', 70, yPosition)
-                .text('Email', 200, yPosition)
-                .text('Role', 350, yPosition)
-                .text('Joined', 450, yPosition);
-
-            yPosition += 20;
-
-            // Table rows
-            recentUsers.forEach((user, index) => {
-                doc.fillColor(textColor)
-                    .fontSize(10)
-                    .font('Helvetica')
-                    .text(user.name, 70, yPosition)
-                    .text(user.email, 200, yPosition)
-                    .text(user.role, 350, yPosition)
-                    .text(new Date(user.createdAt).toLocaleDateString(), 450, yPosition);
-                yPosition += 18;
-            });
-        }
-
-        yPosition += 30;
-
-        // Popular Events Section
-        if (popularEvents.length > 0 && yPosition < 650) {
-            doc.fillColor(primaryColor)
-                .fontSize(18)
-                .font('Helvetica-Bold')
-                .text('Popular Events', 50, yPosition);
-
-            yPosition += 30;
-
-            // Table header
-            doc.fillColor(primaryColor)
-                .fontSize(12)
-                .font('Helvetica-Bold')
-                .text('Event Name', 70, yPosition)
-                .text('Category', 250, yPosition)
-                .text('Participants', 350, yPosition)
-                .text('Organizer', 450, yPosition);
-
-            yPosition += 20;
-
-            // Table rows
-            popularEvents.forEach((event, index) => {
-                doc.fillColor(textColor)
-                    .fontSize(10)
-                    .font('Helvetica')
-                    .text(event.name, 70, yPosition)
-                    .text(event.category || 'General', 250, yPosition)
-                    .text((event.participants?.length || 0).toString(), 350, yPosition)
-                    .text(event.createdBy?.name || 'Unknown', 450, yPosition);
-                yPosition += 18;
-            });
-        }
-
-        // Key Insights Section
-        yPosition += 40;
-
-        if (yPosition > 650) {
-            doc.addPage();
-            yPosition = 50;
-        }
-
-        doc.fillColor(primaryColor)
-            .fontSize(18)
-            .font('Helvetica-Bold')
-            .text('Key Insights', 50, yPosition);
-
-        yPosition += 30;
-
-        const insights = [
-            `User Growth Rate: ${totalUsers > 0 ? ((newUsersToday / totalUsers) * 100).toFixed(2) : 0}% daily`,
-            `Event Completion Rate: ${totalEvents > 0 ? ((pastEvents / totalEvents) * 100).toFixed(1) : 0}%`,
-            `Most Popular Category: ${eventsByCategory[0]?._id || 'N/A'}`,
-            `Average Events per User: ${totalUsers > 0 ? (totalEvents / totalUsers).toFixed(2) : 0}`,
-            `Active to Total Event Ratio: ${totalEvents > 0 ? ((activeEvents / totalEvents) * 100).toFixed(1) : 0}%`
-        ];
-
-        insights.forEach((insight, index) => {
-            doc.fillColor(textColor)
-                .fontSize(12)
-                .font('Helvetica')
-                .text(`• ${insight}`, 70, yPosition);
-            yPosition += 20;
-        });
-
-        // Footer
-        const pageHeight = doc.page.height;
-        doc.fillColor('#6b7280')
-            .fontSize(10)
-            .font('Helvetica')
-            .text('SportsBuddy Analytics Report - Confidential', 50, pageHeight - 50)
-            .text(`Page 1 of 1`, 450, pageHeight - 50);
-
-        // Finalize PDF
-        doc.end();
-
-    } catch (error) {
-        console.error('PDF export error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to export analytics as PDF',
-            error: error.message
-        });
-    }
-});
-
-export const getDashboardAnalytics = asyncHandler(async (req, res) => {
-    // User statistics
-    const totalUsers = await User.countDocuments();
-    const newUsersToday = await User.countDocuments({
-        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
-    });
-    const usersByRole = await User.aggregate([
-        { $group: { _id: "$role", count: { $sum: 1 } } }
-    ]);
-
-    // Event statistics
-    const totalEvents = await Event.countDocuments();
-    const activeEvents = await Event.countDocuments({
-        date: { $gte: new Date() }
-    });
-    const pastEvents = await Event.countDocuments({
-        date: { $lt: new Date() }
-    });
-    const eventsByCategory = await Event.aggregate([
-        { $group: { _id: "$category", count: { $sum: 1 } } }
-    ]);
-    const popularEvents = await Event.find()
-        .sort({ participants: -1 })
-        .limit(5)
-        .populate('createdBy', 'name email');
-
-    // Recent data
-    const recentUsers = await User.find()
-        .sort({ createdAt: -1 })
-        .limit(5)
-        .select('-password');
-    const recentEvents = await Event.find()
-        .sort({ createdAt: -1 })
-        .limit(5)
-        .populate('createdBy', 'name');
-
-    // Time-based analytics
-    const usersThisMonth = await User.countDocuments({
-        createdAt: {
-            $gte: new Date(new Date().setDate(1)) // First day of current month
-        }
-    });
-    const eventsThisMonth = await Event.countDocuments({
-        createdAt: {
-            $gte: new Date(new Date().setDate(1)) // First day of current month
-        }
-    });
-
-    // Community statistics
-    const Community = (await import('../models/communityModel.js')).default;
-    const totalCommunities = await Community.countDocuments();
-    const activeCommunities = await Community.countDocuments({ isActive: true });
-    const privateCommunities = await Community.countDocuments({ isPrivate: true });
-    
-    const communityStats = await Community.aggregate([
-        {
-            $project: {
-                memberCount: {
-                    $size: {
-                        $filter: {
-                            input: '$members',
-                            cond: { $eq: ['$$this.isActive', true] }
-                        }
-                    }
-                }
-            }
-        },
-        {
-            $group: {
-                _id: null,
-                totalMembers: { $sum: '$memberCount' }
-            }
-        }
-    ]);
-
-    const totalMembers = communityStats.length > 0 ? communityStats[0].totalMembers : 0;
-
-    res.json({
-        users: {
-            total: totalUsers,
-            newToday: newUsersToday,
-            byRole: usersByRole,
-            thisMonth: usersThisMonth,
-            recent: recentUsers
-        },
-        events: {
-            total: totalEvents,
-            active: activeEvents,
-            past: pastEvents,
-            byCategory: eventsByCategory,
-            popular: popularEvents,
-            thisMonth: eventsThisMonth,
-            recent: recentEvents
-        },
-        communities: {
-            totalCommunities,
-            activeCommunities,
-            privateCommunities,
-            totalMembers
-        }
-    });
-});
-
-export const manageUsers = asyncHandler(async (req, res) => {
-    try {
-        const {
-            page = 1,
-            limit = 10,
-            search = '',
-            role = '',
-            sortBy = 'createdAt',
-            sortOrder = 'desc'
-        } = req.query;
-
-        // Convert page and limit to numbers
-        const pageNum = parseInt(page);
-        const limitNum = parseInt(limit);
-        const skip = (pageNum - 1) * limitNum;
-
-        // Build search query
-        let searchQuery = {};
-
-        // Add search filter for name and email
-        if (search && search.trim() !== '') {
-            const searchRegex = new RegExp(search.trim(), 'i');
-            searchQuery.$or = [
-                { name: searchRegex },
-                { email: searchRegex }
-            ];
-        }
-
-        // Add role filter
-        if (role && role !== 'all') {
-            searchQuery.role = role;
-        }
-
-        // Build sort object
-        let sortObject = {};
-        if (sortBy) {
-            sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
-        } else {
-            sortObject.createdAt = -1; // Default sort
-        }
-
-        // Get total count for pagination
-        const totalUsers = await User.countDocuments(searchQuery);
-
-        // Fetch users with pagination, search, and sorting
-        const users = await User.find(searchQuery)
-            .select('-password -resetPasswordToken -resetPasswordExpire')
-            .sort(sortObject)
-            .skip(skip)
-            .limit(limitNum)
-            .lean(); // Use lean() for better performance
-
-        // Add computed fields
-        const enhancedUsers = users.map(user => ({
-            ...user,
-            // Add computed fields that might be useful
-            isActive: user.isActive !== false, // Default to true if not set
-            eventsCreated: 0, // This would need to be calculated from Event collection
-            lastActive: user.lastActive || user.updatedAt || user.createdAt
-        }));
-
-        // Calculate pagination info
-        const totalPages = Math.ceil(totalUsers / limitNum);
-        const hasNextPage = pageNum < totalPages;
-        const hasPrevPage = pageNum > 1;
-
-        // Get role statistics
-        const roleStats = await User.aggregate([
-            { $match: searchQuery },
-            { $group: { _id: "$role", count: { $sum: 1 } } }
-        ]);
-
-        // Response with pagination and metadata
-        res.json({
-            success: true,
-            data: enhancedUsers,
-            pagination: {
-                currentPage: pageNum,
-                totalPages,
-                totalUsers,
-                hasNextPage,
-                hasPrevPage,
-                limit: limitNum
-            },
-            filters: {
-                search,
-                role,
-                sortBy,
-                sortOrder
-            },
-            statistics: {
-                totalUsers,
-                roleDistribution: roleStats
-            }
-        });
-
-    } catch (error) {
-        console.error('Error in manageUsers:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch users',
-            error: error.message
-        });
-    }
-});
-
-// Enhanced getUserById with more details
-export const getUserById = asyncHandler(async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id)
-            .select('-password -resetPasswordToken -resetPasswordExpire')
-            .lean();
-
-        if (!user) {
-            res.status(404);
-            throw new Error('User not found');
-        }
-
-        // Get user's events count
-        const eventsCreated = await Event.countDocuments({ createdBy: user._id });
-        const eventsParticipated = await Event.countDocuments({
-            participants: user._id
-        });
-
-        // Enhanced user object
-        const enhancedUser = {
-            ...user,
-            eventsCreated,
-            eventsParticipated,
-            isActive: user.isActive !== false,
-            accountAge: Math.floor((new Date() - new Date(user.createdAt)) / (1000 * 60 * 60 * 24)), // days
-        };
-
-        res.json({
-            success: true,
-            data: enhancedUser
-        });
-
-    } catch (error) {
-        console.error('Error in getUserById:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch user',
-            error: error.message
-        });
-    }
-});
-
-// Enhanced updateUser with validation
-export const updateUser = asyncHandler(async (req, res) => {
-    try {
-        const { name, email, role, isActive } = req.body;
-
-        const user = await User.findById(req.params.id);
-
-        if (!user) {
-            res.status(404);
-            throw new Error('User not found');
-        }
-
-        // Check if email is being changed and if it's already taken
-        if (email && email !== user.email) {
-            const emailExists = await User.findOne({
-                email,
-                _id: { $ne: req.params.id }
-            });
-            if (emailExists) {
-                res.status(400);
-                throw new Error('Email is already registered');
-            }
-        }
-
-        // Update fields if provided
-        if (name !== undefined) user.name = name;
-        if (email !== undefined) user.email = email;
-        if (role !== undefined) user.role = role;
-        if (isActive !== undefined) user.isActive = isActive;
-
-        // Update the updatedAt field
-        user.updatedAt = new Date();
-
-        const updatedUser = await user.save();
-
-        res.json({
-            success: true,
-            message: 'User updated successfully',
-            data: {
-                _id: updatedUser._id,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                role: updatedUser.role,
-                isActive: updatedUser.isActive,
-                updatedAt: updatedUser.updatedAt
-            }
-        });
-
-    } catch (error) {
-        console.error('Error in updateUser:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to update user',
-            error: error.message
-        });
-    }
-});
-
-// Enhanced deleteUser with cascade delete
-export const deleteUser = asyncHandler(async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id);
-
-        if (!user) {
-            res.status(404);
-            throw new Error('User not found');
-        }
-
-        // Prevent deleting the last admin
-        if (user.role === 'admin') {
-            const adminCount = await User.countDocuments({ role: 'admin' });
-            if (adminCount <= 1) {
-                res.status(400);
-                throw new Error('Cannot delete the last admin user');
-            }
-        }
-
-        // Optional: Handle user's events (you might want to transfer ownership or delete them)
-        // For now, we'll just remove the user from events they're participating in
-        await Event.updateMany(
-            { participants: user._id },
-            { $pull: { participants: user._id } }
-        );
-
-        // Delete user's created events or transfer them to another admin
-        // You can implement this based on your business logic
-        await Event.updateMany(
-            { createdBy: user._id },
-            {
-                $set: {
-                    createdBy: null, // or assign to another admin
-                    status: 'archived' // or whatever status you want
-                }
-            }
-        );
-
-        await user.deleteOne();
-
-        // Invalidate admin cache
-        await deleteCachePattern(CacheKeys.ADMIN.ALL());
-        await deleteCachePattern(CacheKeys.USERS.ALL(req.params.id));
-
-        res.json({
-            success: true,
-            message: 'User deleted successfully'
-        });
-
-    } catch (error) {
-        console.error('Error in deleteUser:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to delete user',
-            error: error.message
-        });
-    }
-});
-
-// Enhanced manageEvents with pagination, filtering, and sorting
-export const manageEvents = asyncHandler(async (req, res) => {
-    try {
-        const {
-            page = 1,
-            limit = 12,
-            search = '',
-            category = '',
-            status = '',
-            sortBy = 'createdAt',
-            sortOrder = 'desc'
-        } = req.query;
-
-        // Convert page and limit to numbers
-        const pageNum = parseInt(page);
-        const limitNum = parseInt(limit);
-        const skip = (pageNum - 1) * limitNum;
-
-        // Build search query
-        let searchQuery = {};
-
-        // Add search filter for name, description, and organizer
-        if (search && search.trim() !== '') {
-            const searchRegex = new RegExp(search.trim(), 'i');
-            searchQuery.$or = [
-                { name: searchRegex },
-                { description: searchRegex },
-                { category: searchRegex }
-            ];
-        }
-
-        // Add category filter
-        if (category && category !== 'all') {
-            searchQuery.category = category;
-        }
-
-        // Add status filter
-        if (status && status !== 'all') {
-            searchQuery.status = status;
-        }
-
-        // Build sort object
-        let sortObject = {};
-        if (sortBy) {
-            if (sortBy === 'participants') {
-                // Sort by participants array length
-                sortObject = { 'participantCount': sortOrder === 'desc' ? -1 : 1 };
-            } else {
-                sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
-            }
-        } else {
-            sortObject.createdAt = -1; // Default sort
-        }
-
-        // Get total count for pagination
-        const totalEvents = await Event.countDocuments(searchQuery);
-
-        // Build aggregation pipeline for enhanced data
-        const pipeline = [
-            { $match: searchQuery },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'createdBy',
-                    foreignField: '_id',
-                    as: 'createdBy',
-                    pipeline: [
-                        { $project: { name: 1, email: 1, avatar: 1 } }
-                    ]
-                }
-            },
-            {
-                $unwind: {
-                    path: '$createdBy',
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $addFields: {
-                    participantCount: { $size: { $ifNull: ['$participants', []] } },
-                    isUpcoming: { $gte: ['$date', new Date()] },
-                    isPast: { $lt: ['$date', new Date()] },
-                    daysUntilEvent: {
-                        $divide: [
-                            { $subtract: ['$date', new Date()] },
-                            1000 * 60 * 60 * 24
-                        ]
-                    }
-                }
-            }
-        ];
-
-        // Add sorting
-        if (sortBy === 'participants') {
-            pipeline.push({ $sort: { participantCount: sortOrder === 'desc' ? -1 : 1 } });
-        } else {
-            pipeline.push({ $sort: sortObject });
-        }
-
-        // Add pagination
-        pipeline.push(
-            { $skip: skip },
-            { $limit: limitNum }
-        );
-
-        // Execute aggregation
-        const events = await Event.aggregate(pipeline);
-
-        // Calculate pagination info
-        const totalPages = Math.ceil(totalEvents / limitNum);
-        const hasNextPage = pageNum < totalPages;
-        const hasPrevPage = pageNum > 1;
-
-        // Get category statistics
-        const categoryStats = await Event.aggregate([
-            { $match: searchQuery },
-            { $group: { _id: "$category", count: { $sum: 1 } } },
-            { $sort: { count: -1 } }
-        ]);
-
-        // Get status statistics
-        const statusStats = await Event.aggregate([
-            { $match: searchQuery },
-            { $group: { _id: "$status", count: { $sum: 1 } } }
-        ]);
-
-        // Response with pagination and metadata
-        res.json({
-            success: true,
-            data: events,
-            pagination: {
-                currentPage: pageNum,
-                totalPages,
-                totalEvents,
-                hasNextPage,
-                hasPrevPage,
-                limit: limitNum
-            },
-            filters: {
-                search,
-                category,
-                status,
-                sortBy,
-                sortOrder
-            },
-            statistics: {
-                totalEvents,
-                categoryDistribution: categoryStats,
-                statusDistribution: statusStats
-            }
-        });
-
-    } catch (error) {
-        console.error('Error in manageEvents:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch events',
-            error: error.message
-        });
-    }
-});
-
-// Get single event details
-export const getEventById = asyncHandler(async (req, res) => {
-    try {
-        const event = await Event.findById(req.params.id)
-            .populate('createdBy', 'name email avatar')
-            .populate('participants', 'name email avatar')
-            .lean();
-
-        if (!event) {
-            res.status(404);
-            throw new Error('Event not found');
-        }
-
-        // Add computed fields
-        const enhancedEvent = {
-            ...event,
-            participantCount: event.participants?.length || 0,
-            isUpcoming: new Date(event.date) >= new Date(),
-            isPast: new Date(event.date) < new Date(),
-            spotsRemaining: event.maxParticipants ? event.maxParticipants - (event.participants?.length || 0) : null,
-            daysUntilEvent: Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24))
-        };
-
-        res.json({
-            success: true,
-            data: enhancedEvent
-        });
-
-    } catch (error) {
-        console.error('Error in getEventById:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch event',
-            error: error.message
-        });
-    }
-});
-
-// Enhanced updateEvent with validation
-export const updateEvent = asyncHandler(async (req, res) => {
-    try {
-        const { name, description, category, status, maxParticipants, date, location } = req.body;
-
-        const event = await Event.findById(req.params.id);
-
-        if (!event) {
-            res.status(404);
-            throw new Error('Event not found');
-        }
-
-        // Validate max participants if being updated
-        if (maxParticipants !== undefined) {
-            const currentParticipants = event.participants?.length || 0;
-            if (maxParticipants < currentParticipants) {
-                res.status(400);
-                throw new Error(`Cannot set max participants below current participant count (${currentParticipants})`);
-            }
-        }
-
-        // Update fields if provided
-        if (name !== undefined) event.name = name;
-        if (description !== undefined) event.description = description;
-        if (category !== undefined) event.category = category;
-        if (status !== undefined) event.status = status;
-        if (maxParticipants !== undefined) event.maxParticipants = maxParticipants;
-        if (date !== undefined) event.date = new Date(date);
-        if (location !== undefined) event.location = location;
-
-        // Update the updatedAt field
-        event.updatedAt = new Date();
-
-        const updatedEvent = await event.save();
-
-        // Populate the response
-        await updatedEvent.populate('createdBy', 'name email');
-
-        // Invalidate caches
-        await deleteCachePattern(CacheKeys.ADMIN.ALL());
-        await deleteCachePattern(CacheKeys.EVENTS.ALL_EVENTS());
-
-        res.json({
-            success: true,
-            message: 'Event updated successfully',
-            data: updatedEvent
-        });
-
-    } catch (error) {
-        console.error('Error in updateEvent:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to update event',
-            error: error.message
-        });
-    }
-});
-
-// Enhanced deleteEvent with cascade operations
-export const deleteEvent = asyncHandler(async (req, res) => {
-    try {
-        const event = await Event.findById(req.params.id)
-            .populate('participants', 'email name')
-            .populate('createdBy', 'email name');
-
-        if (!event) {
-            res.status(404);
-            throw new Error('Event not found');
-        }
-
-        // Send notification to participants before deletion (optional)
-        if (event.participants && event.participants.length > 0) {
-            const participantEmails = event.participants.map(p => p.email);
-            
-            try {
-                await sendEmail({
-                    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-                    to: participantEmails,
-                    subject: `Event Cancelled: ${event.name}`,
-                    message: `We regret to inform you that the event "${event.name}" has been cancelled by the administrator.`,
-                    html: AdminSentEmailHtml({
-                        subject: `Event Cancelled: ${event.name}`,
-                        message: `We regret to inform you that the event "${event.name}" has been cancelled by the administrator.`
-                    }),
-                });
-            } catch (emailError) {
-                console.error('Failed to send cancellation emails:', emailError);
-                // Continue with deletion even if email fails
-            }
-        }
-
-        await event.deleteOne();
-
-        // Invalidate caches
-        await deleteCachePattern(CacheKeys.ADMIN.ALL());
-        await deleteCachePattern(CacheKeys.EVENTS.ALL_EVENTS());
-
-        res.json({
-            success: true,
-            message: 'Event deleted successfully'
-        });
-
-    } catch (error) {
-        console.error('Error in deleteEvent:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to delete event',
-            error: error.message
-        });
-    }
-});
-
-// Approve event
-export const approveEvent = asyncHandler(async (req, res) => {
-    try {
-        const event = await Event.findById(req.params.id).populate('createdBy', 'email name');
-
-        if (!event) {
-            res.status(404);
-            throw new Error('Event not found');
-        }
-
-        event.status = 'Upcoming';
-        event.approvedAt = new Date();
-        await event.save();
-
-        // Send approval email to organizer
-        if (event.createdBy?.email) {
-            try {
-                await sendEmail({
-                    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-                    to: event.createdBy.email,
-                    subject: `Event Approved: ${event.name}`,
-                    message: `Great news! Your event "${event.name}" has been approved and is now live on SportsBuddy.`,
-                    html: AdminSentEmailHtml({
-                        subject: `Event Approved: ${event.name}`,
-                        message: `Great news! Your event "${event.name}" has been approved and is now live on SportsBuddy.`
-                    }),
-                });
-            } catch (emailError) {
-                console.error('Failed to send approval email:', emailError);
-            }
-        }
-
-        res.json({
-            success: true,
-            message: 'Event approved successfully',
-            data: event
-        });
-
-    } catch (error) {
-        console.error('Error in approveEvent:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to approve event',
-            error: error.message
-        });
-    }
-});
-
-// Reject event
-export const rejectEvent = asyncHandler(async (req, res) => {
-    try {
-        const { reason } = req.body;
-        const event = await Event.findById(req.params.id).populate('createdBy', 'email name');
-
-        if (!event) {
-            res.status(404);
-            throw new Error('Event not found');
-        }
-
-        event.status = 'Rejected';
-        event.rejectedAt = new Date();
-        event.rejectionReason = reason || 'No reason provided';
-        await event.save();
-
-        // Send rejection email to organizer
-        if (event.createdBy?.email) {
-            try {
-                await sendEmail({
-                    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-                    to: event.createdBy.email,
-                    subject: `Event Rejected: ${event.name}`,
-                    message: `We regret to inform you that your event "${event.name}" has been rejected. Reason: ${reason || 'No specific reason provided'}`,
-                    html: AdminSentEmailHtml({
-                        subject: `Event Rejected: ${event.name}`,
-                        message: `We regret to inform you that your event "${event.name}" has been rejected. Reason: ${reason || 'No specific reason provided'}`
-                    }),
-                });
-            } catch (emailError) {
-                console.error('Failed to send rejection email:', emailError);
-            }
-        }
-
-        res.json({
-            success: true,
-            message: 'Event rejected successfully',
-            data: event
-        });
-
-    } catch (error) {
-        console.error('Error in rejectEvent:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to reject event',
-            error: error.message
-        });
-    }
-});
-
-// Export events data
-export const exportEvents = asyncHandler(async (req, res) => {
-    try {
-        const { format = 'csv' } = req.query;
-
-        const events = await Event.find({})
-            .populate('createdBy', 'name email')
-            .populate('participants', 'name email')
-            .lean();
-
-        if (format === 'csv') {
-            // Create CSV content
-            const headers = [
-                'Event ID',
-                'Name',
-                'Description',
-                'Category',
-                'Status',
-                'Date',
-                'Location (City)',
-                'Location (State)',
-                'Max Participants',
-                'Current Participants',
-                'Organizer Name',
-                'Organizer Email',
-                'Created At',
-                'Updated At'
-            ];
-
-            const csvRows = events.map(event => [
-                event._id.toString(),
-                `"${event.name || ''}"`,
-                `"${(event.description || '').replace(/"/g, '""')}"`,
-                `"${event.category || ''}"`,
-                `"${event.status || ''}"`,
-                `"${event.date ? new Date(event.date).toISOString() : ''}"`,
-                `"${event.location?.city || ''}"`,
-                `"${event.location?.state || ''}"`,
-                event.maxParticipants || '',
-                event.participants?.length || 0,
-                `"${event.createdBy?.name || ''}"`,
-                `"${event.createdBy?.email || ''}"`,
-                `"${new Date(event.createdAt).toISOString()}"`,
-                `"${new Date(event.updatedAt).toISOString()}"`
-            ]);
-
-            const csvContent = [headers.join(','), ...csvRows.map(row => row.join(','))].join('\n');
-
-            res.setHeader('Content-Type', 'text/csv');
-            res.setHeader('Content-Disposition', `attachment; filename="sportsbuddy-events-${new Date().toISOString().split('T')[0]}.csv"`);
-            res.send(csvContent);
-
-        } else if (format === 'json') {
-            // Enhanced JSON export with computed fields
-            const enhancedEvents = events.map(event => ({
-                ...event,
-                participantCount: event.participants?.length || 0,
-                spotsRemaining: event.maxParticipants ? event.maxParticipants - (event.participants?.length || 0) : null,
-                isUpcoming: new Date(event.date) >= new Date(),
-                isPast: new Date(event.date) < new Date(),
-                participantEmails: event.participants?.map(p => p.email) || []
-            }));
-
-            res.setHeader('Content-Type', 'application/json');
-            res.setHeader('Content-Disposition', `attachment; filename="sportsbuddy-events-${new Date().toISOString().split('T')[0]}.json"`);
-            res.json({
-                exportedAt: new Date().toISOString(),
-                totalEvents: events.length,
-                events: enhancedEvents
-            });
-
-        } else {
-            res.status(400);
-            throw new Error('Invalid export format. Use "csv" or "json"');
-        }
-
-    } catch (error) {
-        console.error('Error exporting events:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to export events',
-            error: error.message
-        });
-    }
-});
-
-// Get event statistics
-export const getEventStats = asyncHandler(async (req, res) => {
-    try {
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-
-        // Basic counts
-        const totalEvents = await Event.countDocuments();
-        const activeEvents = await Event.countDocuments({ date: { $gte: now } });
-        const pastEvents = await Event.countDocuments({ date: { $lt: now } });
-        const eventsThisMonth = await Event.countDocuments({ createdAt: { $gte: startOfMonth } });
-        const eventsToday = await Event.countDocuments({ createdAt: { $gte: startOfToday } });
-
-        // Status distribution
-        const statusStats = await Event.aggregate([
-            { $group: { _id: "$status", count: { $sum: 1 } } }
-        ]);
-
-        // Category distribution
-        const categoryStats = await Event.aggregate([
-            { $group: { _id: "$category", count: { $sum: 1 } } }
-        ]);
-
-        // Monthly growth (last 6 months)
-        const monthlyGrowth = await Event.aggregate([
-            {
-                $match: {
-                    createdAt: {
-                        $gte: new Date(new Date().setMonth(new Date().getMonth() - 6))
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: {
-                        year: { $year: "$createdAt" },
-                        month: { $month: "$createdAt" }
-                    },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { "_id.year": 1, "_id.month": 1 } }
-        ]);
-
-        // Participation stats
-        const participationStats = await Event.aggregate([
-            {
-                $addFields: {
-                    participantCount: { $size: { $ifNull: ["$participants", []] } }
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalParticipants: { $sum: "$participantCount" },
-                    avgParticipantsPerEvent: { $avg: "$participantCount" },
-                    maxParticipants: { $max: "$participantCount" },
-                    eventsWithParticipants: {
-                        $sum: { $cond: [{ $gt: ["$participantCount", 0] }, 1, 0] }
-                    }
-                }
-            }
-        ]);
-
-        // Top events by participants
-        const topEvents = await Event.aggregate([
-            {
-                $addFields: {
-                    participantCount: { $size: { $ifNull: ["$participants", []] } }
-                }
-            },
-            { $sort: { participantCount: -1 } },
-            { $limit: 5 },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'createdBy',
-                    foreignField: '_id',
-                    as: 'createdBy'
-                }
-            },
-            { $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true } },
-            {
-                $project: {
-                    name: 1,
-                    category: 1,
-                    participantCount: 1,
-                    'createdBy.name': 1,
-                    date: 1
-                }
-            }
-        ]);
-
-        res.json({
-            success: true,
-            data: {
-                overview: {
-                    total: totalEvents,
-                    active: activeEvents,
-                    past: pastEvents,
-                    thisMonth: eventsThisMonth,
-                    today: eventsToday,
-                    completionRate: totalEvents > 0 ? ((pastEvents / totalEvents) * 100).toFixed(1) : 0
-                },
-                distribution: {
-                    byStatus: statusStats,
-                    byCategory: categoryStats
-                },
-                participation: participationStats[0] || {
-                    totalParticipants: 0,
-                    avgParticipantsPerEvent: 0,
-                    maxParticipants: 0,
-                    eventsWithParticipants: 0
-                },
-                trends: {
-                    monthlyGrowth
-                },
-                topEvents
-            }
-        });
-
-    } catch (error) {
-        console.error('Error getting event stats:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch event statistics',
-            error: error.message
-        });
-    }
-});
-
-// Bulk event operations
-export const bulkEventActions = asyncHandler(async (req, res) => {
-    try {
-        const { action, eventIds, data } = req.body;
-
-        if (!action || !eventIds || !Array.isArray(eventIds)) {
-            res.status(400);
-            throw new Error('Action and eventIds array are required');
-        }
-
-        let result;
-
-        switch (action) {
-            case 'delete':
-                // Get events with participants for notification
-                const eventsToDelete = await Event.find({ _id: { $in: eventIds } })
-                    .populate('participants', 'email name');
-
-                // Send notifications to all participants
-                for (const event of eventsToDelete) {
-                    if (event.participants && event.participants.length > 0) {
-                        const participantEmails = event.participants.map(p => p.email);
-                        try {
-                            await sendEmail({
-                                from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-                                to: participantEmails,
-                                subject: `Event Cancelled: ${event.name}`,
-                                message: `The event "${event.name}" has been cancelled by the administrator.`,
-                                html: AdminSentEmailHtml({
-                                    subject: `Event Cancelled: ${event.name}`,
-                                    message: `The event "${event.name}" has been cancelled by the administrator.`
-                                }),
-                            });
-                        } catch (emailError) {
-                            console.error(`Failed to send cancellation email for event ${event._id}:`, emailError);
-                        }
-                    }
-                }
-
-                result = await Event.deleteMany({ _id: { $in: eventIds } });
-                break;
-
-            case 'updateStatus':
-                if (!data.status) {
-                    res.status(400);
-                    throw new Error('Status is required for bulk status update');
-                }
-                result = await Event.updateMany(
-                    { _id: { $in: eventIds } },
-                    { status: data.status, updatedAt: new Date() }
-                );
-                break;
-
-            case 'approve':
-                result = await Event.updateMany(
-                    { _id: { $in: eventIds } },
-                    { status: 'Upcoming', approvedAt: new Date(), updatedAt: new Date() }
-                );
-                break;
-
-            case 'reject':
-                result = await Event.updateMany(
-                    { _id: { $in: eventIds } },
-                    { 
-                        status: 'Rejected', 
-                        rejectedAt: new Date(), 
-                        rejectionReason: data.reason || 'Bulk rejection',
-                        updatedAt: new Date() 
-                    }
-                );
-                break;
-
-            default:
-                res.status(400);
-                throw new Error('Invalid action');
-        }
-
-        res.json({
-            success: true,
-            message: `Bulk ${action} completed successfully`,
-            affectedCount: result.modifiedCount || result.deletedCount
-        });
-
-    } catch (error) {
-        console.error('Error in bulk event actions:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to perform bulk action',
-            error: error.message
-        });
-    }
-});
-
-export const adminSearch = asyncHandler(async (req, res) => {
-    try {
-        const { 
-            type, 
-            query, 
-            page = 1, 
-            limit = 20,
-            sortBy = 'createdAt',
-            sortOrder = 'desc',
-            filters = {}
-        } = req.query;
-
-        // Validate required parameters
-        if (!type || !query || query.trim().length === 0) {
-            res.status(400);
-            throw new Error("Search type and query are required");
-        }
-
-        if (!['users', 'events', 'notifications', 'all'].includes(type)) {
-            res.status(400);
-            throw new Error("Invalid search type. Use 'users', 'events', 'notifications', or 'all'");
-        }
-
-        // Convert page and limit to numbers
-        const pageNum = parseInt(page);
-        const limitNum = parseInt(limit);
-        const skip = (pageNum - 1) * limitNum;
-
-        // Parse filters if provided as string
-        let parsedFilters = {};
-        if (typeof filters === 'string') {
-            try {
-                parsedFilters = JSON.parse(filters);
-            } catch (error) {
-                parsedFilters = {};
-            }
-        } else {
-            parsedFilters = filters;
-        }
-
-        // Clean up filters - convert empty strings and "all" to undefined
-        Object.keys(parsedFilters).forEach(key => {
-            if (parsedFilters[key] === '' || parsedFilters[key] === 'all') {
-                delete parsedFilters[key];
-            }
-        });
-
-        // Create case-insensitive search regex with word boundary support
-        const searchTerm = query.trim();
-        const searchRegex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-        
-        // Build sort object
-        const sortObject = {};
-        sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
-
-        let results = {};
-
-        if (type === 'users' || type === 'all') {
-            // Advanced user search with better query structure
-            const userQuery = {
-                $or: [
-                    { name: { $regex: searchRegex } },
-                    { email: { $regex: searchRegex } },
-                    { username: { $regex: searchRegex } }
-                ]
-            };
-
-            // Apply user-specific filters
-            if (parsedFilters.role) {
-                userQuery.role = parsedFilters.role;
-            }
-            if (parsedFilters.isActive !== undefined) {
-                userQuery.isActive = parsedFilters.isActive === 'true' || parsedFilters.isActive === true;
-            }
-            if (parsedFilters.dateFrom) {
-                userQuery.createdAt = { 
-                    ...userQuery.createdAt, 
-                    $gte: new Date(parsedFilters.dateFrom) 
-                };
-            }
-            if (parsedFilters.dateTo) {
-                userQuery.createdAt = { 
-                    ...userQuery.createdAt, 
-                    $lte: new Date(parsedFilters.dateTo) 
-                };
-            }
-
-            console.log('User search query:', JSON.stringify(userQuery, null, 2));
-
-            // Get total count for users
-            const totalUsers = await User.countDocuments(userQuery);
-
-            // Enhanced user aggregation pipeline
-            const userPipeline = [
-                { $match: userQuery },
-                {
-                    $lookup: {
-                        from: 'events',
-                        localField: '_id',
-                        foreignField: 'createdBy',
-                        as: 'createdEvents'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'events',
-                        localField: '_id',
-                        foreignField: 'participants',
-                        as: 'participatedEvents'
-                    }
-                },
-                {
-                    $addFields: {
-                        eventsCreated: { $size: { $ifNull: ['$createdEvents', []] } },
-                        eventsParticipated: { $size: { $ifNull: ['$participatedEvents', []] } },
-                        totalEngagement: { 
-                            $add: [
-                                { $size: { $ifNull: ['$createdEvents', []] } }, 
-                                { $size: { $ifNull: ['$participatedEvents', []] } }
-                            ] 
-                        },
-                        accountAge: {
-                            $divide: [
-                                { $subtract: [new Date(), '$createdAt'] },
-                                1000 * 60 * 60 * 24
-                            ]
-                        }
-                    }
-                },
-                {
-                    $project: {
-                        password: 0,
-                        resetPasswordToken: 0,
-                        resetPasswordExpire: 0,
-                        createdEvents: 0,
-                        participatedEvents: 0
-                    }
-                },
-                { $sort: sortObject },
-                { $skip: type === 'all' ? 0 : skip },
-                { $limit: type === 'all' ? 5 : limitNum }
-            ];
-
-            const users = await User.aggregate(userPipeline);
-
-            results.users = {
-                data: users,
-                pagination: type !== 'all' ? {
-                    currentPage: pageNum,
-                    totalPages: Math.ceil(totalUsers / limitNum),
-                    total: totalUsers,
-                    hasNext: pageNum < Math.ceil(totalUsers / limitNum),
-                    hasPrev: pageNum > 1
-                } : { total: totalUsers, showing: users.length }
-            };
-        }
-
-        if (type === 'events' || type === 'all') {
-            // Advanced event search with better query structure
-            const eventQuery = {
-                $or: [
-                    { name: { $regex: searchRegex } },
-                    { description: { $regex: searchRegex } },
-                    { category: { $regex: searchRegex } },
-                    { 'location.city': { $regex: searchRegex } },
-                    { 'location.state': { $regex: searchRegex } },
-                    { 'location.address': { $regex: searchRegex } }
-                ]
-            };
-
-            // Apply event-specific filters
-            if (parsedFilters.category) {
-                eventQuery.category = parsedFilters.category;
-            }
-            if (parsedFilters.status) {
-                eventQuery.status = parsedFilters.status;
-            }
-            if (parsedFilters.difficulty) {
-                eventQuery.difficulty = parsedFilters.difficulty;
-            }
-            if (parsedFilters.dateFrom) {
-                eventQuery.date = { 
-                    ...eventQuery.date, 
-                    $gte: new Date(parsedFilters.dateFrom) 
-                };
-            }
-            if (parsedFilters.dateTo) {
-                eventQuery.date = { 
-                    ...eventQuery.date, 
-                    $lte: new Date(parsedFilters.dateTo) 
-                };
-            }
-
-            console.log('Event search query:', JSON.stringify(eventQuery, null, 2));
-
-            // Get total count for events
-            const totalEvents = await Event.countDocuments(eventQuery);
-
-            // Enhanced event aggregation pipeline
-            const eventPipeline = [
-                { $match: eventQuery },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'createdBy',
-                        foreignField: '_id',
-                        as: 'organizer',
-                        pipeline: [
-                            { $project: { name: 1, email: 1, avatar: 1, role: 1 } }
-                        ]
-                    }
-                },
-                {
-                    $addFields: {
-                        organizer: { $arrayElemAt: ['$organizer', 0] },
-                        participantCount: { $size: { $ifNull: ['$participants', []] } },
-                        spotsRemaining: {
-                            $cond: {
-                                if: '$maxParticipants',
-                                then: { 
-                                    $subtract: [
-                                        '$maxParticipants', 
-                                        { $size: { $ifNull: ['$participants', []] } }
-                                    ] 
-                                },
-                                else: null
-                            }
-                        },
-                        isUpcoming: { $gte: ['$date', new Date()] },
-                        isPast: { $lt: ['$date', new Date()] },
-                        daysUntilEvent: {
-                            $divide: [
-                                { $subtract: ['$date', new Date()] },
-                                1000 * 60 * 60 * 24
-                            ]
-                        },
-                        avgRating: { $avg: { $ifNull: ['$ratings.rating', []] } },
-                        totalRatings: { $size: { $ifNull: ['$ratings', []] } },
-                        searchRelevance: {
-                            $sum: [
-                                { $cond: [{ $regexMatch: { input: { $ifNull: ['$name', ''] }, regex: searchRegex } }, 10, 0] },
-                                { $cond: [{ $regexMatch: { input: { $ifNull: ['$description', ''] }, regex: searchRegex } }, 5, 0] },
-                                { $cond: [{ $regexMatch: { input: { $ifNull: ['$category', ''] }, regex: searchRegex } }, 3, 0] }
-                            ]
-                        }
-                    }
-                },
-                { 
-                    $sort: parsedFilters.relevanceSort ? 
-                        { searchRelevance: -1, ...sortObject } : 
-                        sortObject 
-                },
-                { $skip: type === 'all' ? 0 : skip },
-                { $limit: type === 'all' ? 5 : limitNum }
-            ];
-
-            const events = await Event.aggregate(eventPipeline);
-
-            results.events = {
-                data: events,
-                pagination: type !== 'all' ? {
-                    currentPage: pageNum,
-                    totalPages: Math.ceil(totalEvents / limitNum),
-                    total: totalEvents,
-                    hasNext: pageNum < Math.ceil(totalEvents / limitNum),
-                    hasPrev: pageNum > 1
-                } : { total: totalEvents, showing: events.length }
-            };
-        }
-
-        if (type === 'notifications' || type === 'all') {
-            try {
-                // Try to import notification model
-                const { default: Notification } = await import('../models/notificationModel.js');
-                
-                const notificationQuery = {
-                    $or: [
-                        { title: { $regex: searchRegex } },
-                        { message: { $regex: searchRegex } },
-                        { type: { $regex: searchRegex } }
-                    ]
-                };
-
-                // Apply notification-specific filters
-                if (parsedFilters.notificationType) {
-                    notificationQuery.type = parsedFilters.notificationType;
-                }
-                if (parsedFilters.priority) {
-                    notificationQuery.priority = parsedFilters.priority;
-                }
-                if (parsedFilters.status) {
-                    notificationQuery.status = parsedFilters.status;
-                }
-                if (parsedFilters.dateFrom) {
-                    notificationQuery.createdAt = { 
-                        ...notificationQuery.createdAt, 
-                        $gte: new Date(parsedFilters.dateFrom) 
-                    };
-                }
-                if (parsedFilters.dateTo) {
-                    notificationQuery.createdAt = { 
-                        ...notificationQuery.createdAt, 
-                        $lte: new Date(parsedFilters.dateTo) 
-                    };
-                }
-
-                console.log('Notification search query:', JSON.stringify(notificationQuery, null, 2));
-
-                // Get total count for notifications
-                const totalNotifications = await Notification.countDocuments(notificationQuery);
-
-                // Enhanced notification aggregation pipeline
-                const notificationPipeline = [
-                    { $match: notificationQuery },
-                    {
-                        $lookup: {
-                            from: 'users',
-                            localField: 'createdBy',
-                            foreignField: '_id',
-                            as: 'creator',
-                            pipeline: [
-                                { $project: { name: 1, email: 1, role: 1 } }
-                            ]
-                        }
-                    },
-                    {
-                        $addFields: {
-                            creator: { $arrayElemAt: ['$creator', 0] },
-                            deliveryRate: {
-                                $cond: {
-                                    if: { $gt: [{ $ifNull: ['$recipientCount', 0] }, 0] },
-                                    then: { 
-                                        $multiply: [
-                                            { $divide: [{ $ifNull: ['$deliveredCount', 0] }, { $ifNull: ['$recipientCount', 1] }] },
-                                            100
-                                        ]
-                                    },
-                                    else: 0
-                                }
-                            },
-                            openRate: {
-                                $cond: {
-                                    if: { $gt: [{ $ifNull: ['$deliveredCount', 0] }, 0] },
-                                    then: { 
-                                        $multiply: [
-                                            { $divide: [{ $ifNull: ['$readCount', 0] }, { $ifNull: ['$deliveredCount', 1] }] },
-                                            100
-                                        ]
-                                    },
-                                    else: 0
-                                }
-                            },
-                            daysAgo: {
-                                $divide: [
-                                    { $subtract: [new Date(), '$createdAt'] },
-                                    1000 * 60 * 60 * 24
-                                ]
-                            }
-                        }
-                    },
-                    { $sort: sortObject },
-                    { $skip: type === 'all' ? 0 : skip },
-                    { $limit: type === 'all' ? 5 : limitNum }
-                ];
-
-                const notifications = await Notification.aggregate(notificationPipeline);
-
-                results.notifications = {
-                    data: notifications,
-                    pagination: type !== 'all' ? {
-                        currentPage: pageNum,
-                        totalPages: Math.ceil(totalNotifications / limitNum),
-                        total: totalNotifications,
-                        hasNext: pageNum < Math.ceil(totalNotifications / limitNum),
-                        hasPrev: pageNum > 1
-                    } : { total: totalNotifications, showing: notifications.length }
-                };
-            } catch (notificationError) {
-                console.log('Notification model not available:', notificationError.message);
-                // Skip notifications if model doesn't exist
-                results.notifications = {
-                    data: [],
-                    pagination: { total: 0, showing: 0 }
-                };
-            }
-        }
-
-        // Generate search insights for 'all' type
-        if (type === 'all') {
-            const insights = {
-                totalResults: Object.values(results).reduce((sum, category) => 
-                    sum + (category.pagination?.total || 0), 0
-                ),
-                categoryBreakdown: Object.entries(results).map(([key, value]) => ({
-                    category: key,
-                    count: value.pagination?.total || 0,
-                    showing: value.data?.length || 0
-                })),
-                searchTerm: query,
-                appliedFilters: Object.keys(parsedFilters).length,
-                searchTime: new Date().toISOString()
-            };
-
-            results.insights = insights;
-        }
-
-        // Add search suggestions for low results
-        if (type !== 'all') {
-            const categoryResult = results[type];
-            if (categoryResult && categoryResult.pagination.total < 3) {
-                const suggestions = await generateSearchSuggestions(type, query);
-                categoryResult.suggestions = suggestions;
-            }
-        }
-
-        console.log('Search results summary:', {
-            searchTerm: query,
-            type,
-            totalResults: type === 'all' ? results.insights?.totalResults : results[type]?.pagination?.total,
-            appliedFilters: parsedFilters
-        });
-
-        res.json({
-            success: true,
-            searchQuery: query,
-            searchType: type,
-            appliedFilters: parsedFilters,
-            results,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (error) {
-        console.error('Error in advanced admin search:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Search failed',
-            error: error.message,
-            debug: {
-                query: req.query,
-                searchTerm: req.query.query
-            }
-        });
-    }
-});
-
-// Updated search suggestions function
-export const generateSearchSuggestions = async (type, query) => {
-    try {
-        const suggestions = [];
-        const searchRegex = new RegExp(query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-        
-        if (type === 'users') {
-            // Get popular user search terms
-            const popularUsers = await User.aggregate([
-                {
-                    $addFields: {
-                        eventsCreated: { $size: { $ifNull: ['$createdEvents', []] } }
-                    }
-                },
-                { $sort: { eventsCreated: -1 } },
-                { $limit: 5 },
-                { $project: { name: 1, role: 1, eventsCreated: 1 } }
-            ]);
-            
-            suggestions.push(
-                ...popularUsers.map(user => ({
-                    type: 'user',
-                    suggestion: user.name,
-                    reason: 'Popular organizer'
-                }))
-            );
-            
-            // Add role-based suggestions
-            suggestions.push(
-                { type: 'filter', suggestion: 'admin', reason: 'Search admin users' },
-                { type: 'filter', suggestion: 'user', reason: 'Search regular users' }
-            );
-            
-        } else if (type === 'events') {
-            // Get popular categories
-            const popularCategories = await Event.aggregate([
-                { $group: { _id: '$category', count: { $sum: 1 } } },
-                { $sort: { count: -1 } },
-                { $limit: 5 }
-            ]);
-            
-            suggestions.push(
-                ...popularCategories.map(cat => ({
-                    type: 'category',
-                    suggestion: cat._id,
-                    reason: `${cat.count} events in this category`
-                }))
-            );
-            
-            // Add time-based suggestions
-            suggestions.push(
-                { type: 'filter', suggestion: 'upcoming events', reason: 'Search upcoming events' },
-                { type: 'filter', suggestion: 'football', reason: 'Popular sport category' }
-            );
-            
-        } else if (type === 'notifications') {
-            // Add generic notification suggestions
-            suggestions.push(
-                { type: 'filter', suggestion: 'announcement', reason: 'Announcement notifications' },
-                { type: 'filter', suggestion: 'system', reason: 'System notifications' },
-                { type: 'filter', suggestion: 'event', reason: 'Event notifications' }
-            );
-        }
-        
-        return suggestions.slice(0, 5);
-        
-    } catch (error) {
-        console.error('Error generating suggestions:', error);
-        return [];
-    }
+import Event from "../models/eventModel.js";
+import Community from "../models/communityModel.js";
+import Venue from "../models/venueModel.js";
+import Notification from "../models/notificationModel.js";
+import AdminAuditLog from "../models/adminAuditLogModel.js";
+import { logAdminAction } from "../utils/adminAudit.js";
+import {
+  dispatchAdminNotification,
+  normalizeSpecificRecipients,
+} from "../services/adminNotificationService.js";
+
+const ALLOWED_EVENT_STATUSES = ["Upcoming", "Ongoing", "Completed", "Cancelled"];
+const ALLOWED_USER_ROLES = ["user", "admin"];
+const ALLOWED_ACCOUNT_STATUSES = ["active", "suspended", "banned"];
+const ALLOWED_NOTIFICATION_TYPES = ["announcement", "system", "event", "marketing", "urgent"];
+const ALLOWED_NOTIFICATION_PRIORITIES = ["low", "normal", "high"];
+const ALLOWED_NOTIFICATION_RECIPIENTS = ["all", "users", "admins", "specific"];
+const ALLOWED_BOOKING_STATUSES = ["pending", "confirmed", "cancelled"];
+
+const parsePagination = (query, defaultLimit = 20, maxLimit = 100) => {
+  const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
+  const rawLimit = Number.parseInt(query.limit, 10) || defaultLimit;
+  const limit = Math.min(maxLimit, Math.max(1, rawLimit));
+  const skip = (page - 1) * limit;
+  return { page, limit, skip };
 };
 
-// Get all venue bookings for admin
-export const getAllVenueBookings = asyncHandler(async (req, res) => {
-    try {
-        const { status } = req.query;
-        const Venue = (await import('../models/venueModel.js')).default;
+const parseSort = (sortBy, allowedMap, fallback) => {
+  if (!sortBy || typeof sortBy !== "string") {
+    return fallback;
+  }
 
-        // Get all venues with their bookings
-        const venues = await Venue.find({})
-            .populate('bookings.user', 'name email phone avatar')
-            .populate('bookings.event', 'name date')
-            .lean();
+  const [field, direction] = sortBy.split(":");
+  const mappedField = allowedMap[field];
+  if (!mappedField) {
+    return fallback;
+  }
 
-        // Extract all bookings from all venues
-        let allBookings = [];
-        venues.forEach(venue => {
-            if (venue.bookings && venue.bookings.length > 0) {
-                venue.bookings.forEach(booking => {
-                    allBookings.push({
-                        ...booking,
-                        venue: {
-                            _id: venue._id,
-                            name: venue.name,
-                            location: venue.location
-                        }
-                    });
-                });
-            }
-        });
+  return { [mappedField]: direction === "asc" ? 1 : -1 };
+};
 
-        // Filter by status if provided
-        if (status && status !== 'all') {
-            allBookings = allBookings.filter(booking => booking.status === status);
-        }
+const parseBooleanQuery = (value) => {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return undefined;
+};
 
-        // Sort by most recent bookings first
-        allBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-        res.json({
-            success: true,
-            data: allBookings,
-            count: allBookings.length
-        });
-    } catch (error) {
-        console.error('Get all venue bookings error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to fetch venue bookings'
-        });
+const buildDateRangeMatch = (from, to, fieldName) => {
+  const match = {};
+  if (from) {
+    const fromDate = new Date(from);
+    if (!Number.isNaN(fromDate.getTime())) {
+      match.$gte = fromDate;
     }
-});
+  }
+  if (to) {
+    const toDate = new Date(to);
+    if (!Number.isNaN(toDate.getTime())) {
+      match.$lte = toDate;
+    }
+  }
+  return Object.keys(match).length ? { [fieldName]: match } : {};
+};
 
-// Manage Communities - Admin
-export const manageCommunities = asyncHandler(async (req, res) => {
-    try {
-        const {
-            page = 1,
-            limit = 12,
-            search = '',
-            category = '',
-            privacy = '',
-            sortBy = 'createdAt',
-            sortOrder = 'desc'
-        } = req.query;
+const fillDailySeries = (series, startDate) => {
+  const map = new Map(series.map((item) => [item.date, item.count]));
+  const result = [];
+  const current = new Date(startDate);
+  const end = new Date();
 
-        const pageNum = parseInt(page);
-        const limitNum = parseInt(limit);
-        const skip = (pageNum - 1) * limitNum;
+  while (current <= end) {
+    const dateKey = current.toISOString().slice(0, 10);
+    result.push({ date: dateKey, count: map.get(dateKey) || 0 });
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
 
-        // Build search query
-        let searchQuery = {};
+  return result;
+};
 
-        // Add search filter
-        if (search && search.trim() !== '') {
-            const searchRegex = new RegExp(search.trim(), 'i');
-            searchQuery.$or = [
-                { name: searchRegex },
-                { description: searchRegex }
-            ];
-        }
+export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-        // Add category filter
-        if (category && category !== 'all') {
-            searchQuery.category = category;
-        }
-
-        // Add privacy filter
-        if (privacy && privacy !== 'all') {
-            searchQuery.isPrivate = privacy === 'private';
-        }
-
-        // Build sort object
-        let sortObject = {};
-        if (sortBy === 'members') {
-            sortObject = { 'memberCount': sortOrder === 'desc' ? -1 : 1 };
-        } else {
-            sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
-        }
-
-        // Get total count
-        const Community = (await import('../models/communityModel.js')).default;
-        const totalCommunities = await Community.countDocuments(searchQuery);
-
-        // Build aggregation pipeline
-        const pipeline = [
-            { $match: searchQuery },
-            {
-                $addFields: {
-                    memberCount: {
-                        $size: {
-                            $filter: {
-                                input: '$members',
-                                cond: { $eq: ['$$this.isActive', true] }
-                            }
-                        }
-                    }
-                }
+  const [
+    totalUsers,
+    activeUsers,
+    suspendedUsers,
+    bannedUsers,
+    totalAdmins,
+    usersLast30Days,
+    totalEvents,
+    activeEvents,
+    totalCommunities,
+    activeCommunities,
+    totalVenues,
+    verifiedVenues,
+    bookingsSummary,
+    notificationsSummary,
+  ] = await Promise.all([
+    User.countDocuments(),
+    User.countDocuments({ accountStatus: "active" }),
+    User.countDocuments({ accountStatus: "suspended" }),
+    User.countDocuments({ accountStatus: "banned" }),
+    User.countDocuments({ role: "admin", accountStatus: "active" }),
+    User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
+    Event.countDocuments(),
+    Event.countDocuments({ status: { $in: ["Upcoming", "Ongoing"] } }),
+    Community.countDocuments(),
+    Community.countDocuments({ isActive: true }),
+    Venue.countDocuments(),
+    Venue.countDocuments({ isVerified: true }),
+    Venue.aggregate([
+      { $unwind: { path: "$bookings", preserveNullAndEmptyArrays: false } },
+      {
+        $group: {
+          _id: null,
+          totalBookings: { $sum: 1 },
+          confirmedBookings: {
+            $sum: {
+              $cond: [{ $eq: ["$bookings.status", "confirmed"] }, 1, 0],
             },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'creator',
-                    foreignField: '_id',
-                    as: 'creator',
-                    pipeline: [
-                        { $project: { name: 1, email: 1, avatar: 1, username: 1 } }
-                    ]
-                }
+          },
+          totalRevenue: {
+            $sum: {
+              $cond: [
+                { $eq: ["$bookings.status", "confirmed"] },
+                { $ifNull: ["$bookings.totalAmount", { $ifNull: ["$bookings.amount", 0] }] },
+                0,
+              ],
             },
-            {
-                $unwind: {
-                    path: '$creator',
-                    preserveNullAndEmptyArrays: true
-                }
+          },
+        },
+      },
+    ]),
+    Notification.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          sent: { $sum: { $cond: [{ $eq: ["$status", "sent"] }, 1, 0] } },
+          scheduled: { $sum: { $cond: [{ $eq: ["$status", "scheduled"] }, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+        },
+      },
+    ]),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        suspended: suspendedUsers,
+        banned: bannedUsers,
+        admins: totalAdmins,
+        newLast30Days: usersLast30Days,
+      },
+      events: {
+        total: totalEvents,
+        active: activeEvents,
+      },
+      communities: {
+        total: totalCommunities,
+        active: activeCommunities,
+      },
+      venues: {
+        total: totalVenues,
+        verified: verifiedVenues,
+      },
+      bookings: bookingsSummary[0] || {
+        totalBookings: 0,
+        confirmedBookings: 0,
+        totalRevenue: 0,
+      },
+      notifications: notificationsSummary[0] || {
+        total: 0,
+        sent: 0,
+        scheduled: 0,
+        failed: 0,
+      },
+    },
+  });
+});
+
+export const getAdminGrowthAnalytics = asyncHandler(async (req, res) => {
+  const rangeInDays = Math.max(7, Math.min(180, Number.parseInt(req.query.days, 10) || 30));
+  const startDate = new Date(Date.now() - rangeInDays * 24 * 60 * 60 * 1000);
+
+  const [userSeries, eventSeries, bookingSeries] = await Promise.all([
+    User.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1 } },
+      { $sort: { date: 1 } },
+    ]),
+    Event.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1 } },
+      { $sort: { date: 1 } },
+    ]),
+    Venue.aggregate([
+      { $unwind: { path: "$bookings", preserveNullAndEmptyArrays: false } },
+      { $match: { "bookings.bookingDate": { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$bookings.bookingDate" },
+          },
+          count: { $sum: 1 },
+          revenue: {
+            $sum: {
+              $cond: [
+                { $eq: ["$bookings.status", "confirmed"] },
+                { $ifNull: ["$bookings.totalAmount", { $ifNull: ["$bookings.amount", 0] }] },
+                0,
+              ],
             },
-            { $sort: sortObject },
-            { $skip: skip },
-            { $limit: limitNum },
-            {
-                $project: {
-                    joinRequests: 0,
-                    'members.user': 0,
-                    posts: 0
-                }
-            }
-        ];
+          },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1, revenue: 1 } },
+      { $sort: { date: 1 } },
+    ]),
+  ]);
 
-        const communities = await Community.aggregate(pipeline);
+  const filledUsers = fillDailySeries(userSeries, startDate);
+  const filledEvents = fillDailySeries(eventSeries, startDate);
+  const bookingMap = new Map(bookingSeries.map((item) => [item.date, item]));
 
-        res.json({
-            success: true,
-            data: communities,
-            pagination: {
-                currentPage: pageNum,
-                totalPages: Math.ceil(totalCommunities / limitNum),
-                totalCommunities,
-                limit: limitNum
-            }
-        });
-    } catch (error) {
-        console.error('Manage communities error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to fetch communities'
-        });
-    }
+  const filledBookings = filledUsers.map((item) => ({
+    date: item.date,
+    count: bookingMap.get(item.date)?.count || 0,
+    revenue: bookingMap.get(item.date)?.revenue || 0,
+  }));
+
+  res.status(200).json({
+    success: true,
+    data: {
+      days: rangeInDays,
+      users: filledUsers,
+      events: filledEvents,
+      bookings: filledBookings,
+    },
+  });
 });
 
-// Get Community by ID - Admin
-export const getCommunityById = asyncHandler(async (req, res) => {
-    try {
-        const Community = (await import('../models/communityModel.js')).default;
-        const community = await Community.findById(req.params.id)
-            .populate('creator', 'name email avatar username')
-            .populate('admins', 'name email avatar username')
-            .populate('moderators', 'name email avatar username')
-            .select('-joinRequests -posts');
+export const getAdminUsers = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20, 100);
+  const { search, role, accountStatus } = req.query;
+  const sort = parseSort(
+    req.query.sortBy,
+    {
+      createdAt: "createdAt",
+      name: "name",
+      email: "email",
+      lastLoginAt: "lastLoginAt",
+    },
+    { createdAt: -1 }
+  );
 
-        if (!community) {
-            return res.status(404).json({
-                success: false,
-                message: 'Community not found'
-            });
-        }
+  const query = {};
 
-        res.json({
-            success: true,
-            data: community
-        });
-    } catch (error) {
-        console.error('Get community by ID error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to fetch community'
-        });
-    }
+  if (search && search.trim().length >= 2) {
+    query.$or = [
+      { name: { $regex: search.trim(), $options: "i" } },
+      { email: { $regex: search.trim(), $options: "i" } },
+      { username: { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  if (role && ALLOWED_USER_ROLES.includes(role)) {
+    query.role = role;
+  }
+
+  if (accountStatus && ALLOWED_ACCOUNT_STATUSES.includes(accountStatus)) {
+    query.accountStatus = accountStatus;
+  }
+
+  const [users, total] = await Promise.all([
+    User.find(query)
+      .select("name username email role accountStatus avatar createdAt lastLoginAt stats moderation")
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    User.countDocuments(query),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: users,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    },
+  });
 });
 
-// Update Community - Admin
-export const updateCommunityAdmin = asyncHandler(async (req, res) => {
-    try {
-        const Community = (await import('../models/communityModel.js')).default;
-        const community = await Community.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        ).populate('creator', 'name email avatar username');
+export const getAdminUserDetails = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.userId)
+    .select("-password -resetPasswordCode -resetPasswordExpire -resetPasswordBlockedUntil")
+    .populate("followers", "_id name username avatar")
+    .populate("following", "_id name username avatar")
+    .lean();
 
-        if (!community) {
-            return res.status(404).json({
-                success: false,
-                message: 'Community not found'
-            });
-        }
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
 
-        res.json({
-            success: true,
-            message: 'Community updated successfully',
-            data: community
-        });
-    } catch (error) {
-        console.error('Update community error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to update community'
-        });
-    }
+  const [createdEventsCount, participatingEventsCount] = await Promise.all([
+    Event.countDocuments({ createdBy: user._id }),
+    Event.countDocuments({ "participants.user": user._id }),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      ...user,
+      metrics: {
+        createdEventsCount,
+        participatingEventsCount,
+      },
+    },
+  });
 });
 
-// Delete Community - Admin
-export const deleteCommunityAdmin = asyncHandler(async (req, res) => {
-    try {
-        const Community = (await import('../models/communityModel.js')).default;
-        const community = await Community.findById(req.params.id);
+export const updateAdminUserRole = asyncHandler(async (req, res) => {
+  const { role } = req.body;
 
-        if (!community) {
-            return res.status(404).json({
-                success: false,
-                message: 'Community not found'
-            });
-        }
+  if (!ALLOWED_USER_ROLES.includes(role)) {
+    return res.status(400).json({ success: false, message: "Invalid role" });
+  }
 
-        // Delete community image from Cloudinary if exists
-        if (community.image?.public_id) {
-            const cloudinary = (await import('../config/cloudinary.js')).default;
-            try {
-                await cloudinary.uploader.destroy(community.image.public_id);
-            } catch (error) {
-                console.error('Error deleting community image:', error);
-            }
-        }
+  const user = await User.findById(req.params.userId);
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
 
-        await community.deleteOne();
+  if (user._id.toString() === req.user._id.toString() && role !== "admin") {
+    return res.status(400).json({ success: false, message: "You cannot remove your own admin role" });
+  }
 
-        res.json({
-            success: true,
-            message: 'Community deleted successfully'
-        });
-    } catch (error) {
-        console.error('Delete community error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to delete community'
-        });
+  if (user.role === "admin" && role !== "admin") {
+    const activeAdmins = await User.countDocuments({ role: "admin", accountStatus: "active" });
+    if (activeAdmins <= 1) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one active admin account is required",
+      });
     }
+  }
+
+  const previousRole = user.role;
+  user.role = role;
+  await user.save();
+
+  await logAdminAction({
+    req,
+    action: "user.role.update",
+    entityType: "user",
+    entityId: user._id,
+    metadata: {
+      previousRole,
+      newRole: role,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "User role updated successfully",
+    data: {
+      id: user._id,
+      role: user.role,
+    },
+  });
+});
+
+export const updateAdminUserStatus = asyncHandler(async (req, res) => {
+  const { accountStatus, reason, note } = req.body;
+
+  if (!ALLOWED_ACCOUNT_STATUSES.includes(accountStatus)) {
+    return res.status(400).json({ success: false, message: "Invalid account status" });
+  }
+
+  const user = await User.findById(req.params.userId);
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  const isSelf = user._id.toString() === req.user._id.toString();
+  if (isSelf && accountStatus !== "active") {
+    return res.status(400).json({ success: false, message: "You cannot suspend or ban your own account" });
+  }
+
+  if (user.role === "admin" && accountStatus !== "active") {
+    const activeAdmins = await User.countDocuments({ role: "admin", accountStatus: "active" });
+    if (activeAdmins <= 1) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one active admin account is required",
+      });
+    }
+  }
+
+  const previousStatus = user.accountStatus;
+  user.accountStatus = accountStatus;
+  user.moderation = {
+    reason: reason || user.moderation?.reason,
+    note: note || user.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await user.save();
+
+  await logAdminAction({
+    req,
+    action: "user.status.update",
+    entityType: "user",
+    entityId: user._id,
+    metadata: {
+      previousStatus,
+      newStatus: accountStatus,
+      reason,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "User status updated successfully",
+    data: {
+      id: user._id,
+      accountStatus: user.accountStatus,
+      moderation: user.moderation,
+    },
+  });
+});
+
+export const getAdminEvents = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20, 100);
+  const { search, status, category, createdBy, dateFrom, dateTo } = req.query;
+
+  const sort = parseSort(
+    req.query.sortBy,
+    {
+      createdAt: "createdAt",
+      date: "date",
+      name: "name",
+    },
+    { createdAt: -1 }
+  );
+
+  const query = {
+    ...buildDateRangeMatch(dateFrom, dateTo, "date"),
+  };
+
+  if (search && search.trim().length >= 2) {
+    query.$or = [
+      { name: { $regex: search.trim(), $options: "i" } },
+      { description: { $regex: search.trim(), $options: "i" } },
+      { "location.city": { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  if (status && ALLOWED_EVENT_STATUSES.includes(status)) {
+    query.status = status;
+  }
+
+  if (category) {
+    query.category = category;
+  }
+
+  if (createdBy && mongoose.Types.ObjectId.isValid(createdBy)) {
+    query.createdBy = createdBy;
+  }
+
+  const [events, total] = await Promise.all([
+    Event.find(query)
+      .populate("createdBy", "_id name username email")
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Event.countDocuments(query),
+  ]);
+
+  const mappedEvents = events.map((event) => ({
+    ...event,
+    participantCount: Array.isArray(event.participants) ? event.participants.length : 0,
+    ratingsCount: Array.isArray(event.ratings) ? event.ratings.length : 0,
+    averageRating:
+      Array.isArray(event.ratings) && event.ratings.length > 0
+        ? Number(
+            (
+              event.ratings.reduce((sum, entry) => sum + (entry.rating || 0), 0) /
+              event.ratings.length
+            ).toFixed(1)
+          )
+        : 0,
+    waitlistCount: Array.isArray(event.waitlist) ? event.waitlist.length : 0,
+  }));
+
+  res.status(200).json({
+    success: true,
+    data: mappedEvents,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    },
+  });
+});
+
+export const updateAdminEventStatus = asyncHandler(async (req, res) => {
+  const { status, note } = req.body;
+
+  if (!ALLOWED_EVENT_STATUSES.includes(status)) {
+    return res.status(400).json({ success: false, message: "Invalid event status" });
+  }
+
+  const event = await Event.findById(req.params.eventId);
+  if (!event) {
+    return res.status(404).json({ success: false, message: "Event not found" });
+  }
+
+  const previousStatus = event.status;
+  event.status = status;
+  event.moderation = {
+    ...(event.moderation || {}),
+    note: note || event.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await event.save();
+
+  await logAdminAction({
+    req,
+    action: "event.status.update",
+    entityType: "event",
+    entityId: event._id,
+    metadata: {
+      previousStatus,
+      newStatus: status,
+      note,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Event status updated successfully",
+    data: {
+      id: event._id,
+      status: event.status,
+    },
+  });
+});
+
+export const updateAdminEventFeatured = asyncHandler(async (req, res) => {
+  const { isFeatured } = req.body;
+
+  if (typeof isFeatured !== "boolean") {
+    return res.status(400).json({ success: false, message: "isFeatured must be a boolean" });
+  }
+
+  const event = await Event.findById(req.params.eventId);
+  if (!event) {
+    return res.status(404).json({ success: false, message: "Event not found" });
+  }
+
+  const previousValue = event.isFeatured;
+  event.isFeatured = isFeatured;
+  event.moderation = {
+    ...(event.moderation || {}),
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await event.save();
+
+  await logAdminAction({
+    req,
+    action: "event.featured.update",
+    entityType: "event",
+    entityId: event._id,
+    metadata: {
+      previousValue,
+      newValue: isFeatured,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Event featured flag updated",
+    data: {
+      id: event._id,
+      isFeatured: event.isFeatured,
+    },
+  });
+});
+
+export const deleteAdminEvent = asyncHandler(async (req, res) => {
+  const event = await Event.findById(req.params.eventId);
+
+  if (!event) {
+    return res.status(404).json({ success: false, message: "Event not found" });
+  }
+
+  await Promise.all([
+    Event.findByIdAndDelete(event._id),
+    User.updateMany(
+      { $or: [{ createdEvents: event._id }, { participatedEvents: event._id }] },
+      {
+        $pull: {
+          createdEvents: event._id,
+          participatedEvents: event._id,
+        },
+      }
+    ),
+    Community.updateMany({ events: event._id }, { $pull: { events: event._id } }),
+  ]);
+
+  await logAdminAction({
+    req,
+    action: "event.delete",
+    entityType: "event",
+    entityId: event._id,
+    metadata: {
+      name: event.name,
+      category: event.category,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Event deleted successfully",
+  });
+});
+
+export const getAdminCommunities = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20, 100);
+  const { search, category, isActive, isPrivate } = req.query;
+
+  const query = {};
+  const isActiveParsed = parseBooleanQuery(isActive);
+  const isPrivateParsed = parseBooleanQuery(isPrivate);
+
+  if (search && search.trim().length >= 2) {
+    query.$or = [
+      { name: { $regex: search.trim(), $options: "i" } },
+      { description: { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  if (category) {
+    query.category = category;
+  }
+
+  if (typeof isActiveParsed === "boolean") {
+    query.isActive = isActiveParsed;
+  }
+
+  if (typeof isPrivateParsed === "boolean") {
+    query.isPrivate = isPrivateParsed;
+  }
+
+  const [communities, total] = await Promise.all([
+    Community.find(query)
+      .populate("creator", "_id name username email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Community.countDocuments(query),
+  ]);
+
+  const mappedCommunities = communities.map((community) => ({
+    ...community,
+    activeMemberCount: Array.isArray(community.members)
+      ? community.members.filter((member) => member.isActive).length
+      : 0,
+    postCount: Array.isArray(community.posts) ? community.posts.length : 0,
+    eventCount: Array.isArray(community.events) ? community.events.length : 0,
+    joinRequestCount: Array.isArray(community.joinRequests)
+      ? community.joinRequests.filter((request) => request.status === "pending").length
+      : 0,
+  }));
+
+  res.status(200).json({
+    success: true,
+    data: mappedCommunities,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    },
+  });
+});
+
+export const updateAdminCommunityStatus = asyncHandler(async (req, res) => {
+  const { isActive, note } = req.body;
+
+  if (typeof isActive !== "boolean") {
+    return res.status(400).json({ success: false, message: "isActive must be a boolean" });
+  }
+
+  const community = await Community.findById(req.params.communityId);
+  if (!community) {
+    return res.status(404).json({ success: false, message: "Community not found" });
+  }
+
+  const previousStatus = community.isActive;
+  community.isActive = isActive;
+  community.moderation = {
+    ...(community.moderation || {}),
+    note: note || community.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await community.save();
+
+  await logAdminAction({
+    req,
+    action: "community.status.update",
+    entityType: "community",
+    entityId: community._id,
+    metadata: {
+      previousStatus,
+      newStatus: isActive,
+      note,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Community status updated successfully",
+    data: {
+      id: community._id,
+      isActive: community.isActive,
+    },
+  });
+});
+
+export const updateAdminCommunityFeatured = asyncHandler(async (req, res) => {
+  const { isFeatured } = req.body;
+
+  if (typeof isFeatured !== "boolean") {
+    return res.status(400).json({ success: false, message: "isFeatured must be a boolean" });
+  }
+
+  const community = await Community.findById(req.params.communityId);
+  if (!community) {
+    return res.status(404).json({ success: false, message: "Community not found" });
+  }
+
+  const previousValue = community.isFeatured;
+  community.isFeatured = isFeatured;
+  community.moderation = {
+    ...(community.moderation || {}),
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await community.save();
+
+  await logAdminAction({
+    req,
+    action: "community.featured.update",
+    entityType: "community",
+    entityId: community._id,
+    metadata: {
+      previousValue,
+      newValue: isFeatured,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Community featured flag updated",
+    data: {
+      id: community._id,
+      isFeatured: community.isFeatured,
+    },
+  });
+});
+
+export const deleteAdminCommunity = asyncHandler(async (req, res) => {
+  const community = await Community.findById(req.params.communityId);
+  if (!community) {
+    return res.status(404).json({ success: false, message: "Community not found" });
+  }
+
+  await Community.findByIdAndDelete(community._id);
+
+  await logAdminAction({
+    req,
+    action: "community.delete",
+    entityType: "community",
+    entityId: community._id,
+    metadata: {
+      name: community.name,
+      category: community.category,
+    },
+  });
+
+  res.status(200).json({ success: true, message: "Community deleted successfully" });
+});
+
+export const getAdminVenues = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20, 100);
+  const { search, city, isVerified, isActive, ownerId } = req.query;
+
+  const query = {};
+  const isVerifiedParsed = parseBooleanQuery(isVerified);
+  const isActiveParsed = parseBooleanQuery(isActive);
+
+  if (search && search.trim().length >= 2) {
+    query.$or = [
+      { name: { $regex: search.trim(), $options: "i" } },
+      { description: { $regex: search.trim(), $options: "i" } },
+      { "location.address": { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  if (city) {
+    query["location.city"] = { $regex: city.trim(), $options: "i" };
+  }
+
+  if (typeof isVerifiedParsed === "boolean") {
+    query.isVerified = isVerifiedParsed;
+  }
+
+  if (typeof isActiveParsed === "boolean") {
+    query.isActive = isActiveParsed;
+  }
+
+  if (ownerId && mongoose.Types.ObjectId.isValid(ownerId)) {
+    query.owner = ownerId;
+  }
+
+  const [venues, total] = await Promise.all([
+    Venue.find(query)
+      .populate("owner", "_id name username email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Venue.countDocuments(query),
+  ]);
+
+  const mappedVenues = venues.map((venue) => {
+    const ratings = Array.isArray(venue.ratings) ? venue.ratings : [];
+    const bookings = Array.isArray(venue.bookings) ? venue.bookings : [];
+    const averageRating =
+      ratings.length > 0
+        ? Number((ratings.reduce((sum, rating) => sum + (rating.rating || 0), 0) / ratings.length).toFixed(1))
+        : 0;
+
+    return {
+      ...venue,
+      averageRating,
+      ratingsCount: ratings.length,
+      totalBookings: bookings.length,
+      confirmedBookings: bookings.filter((booking) => booking.status === "confirmed").length,
+    };
+  });
+
+  res.status(200).json({
+    success: true,
+    data: mappedVenues,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    },
+  });
+});
+
+export const updateAdminVenueVerification = asyncHandler(async (req, res) => {
+  const { isVerified, note } = req.body;
+
+  if (typeof isVerified !== "boolean") {
+    return res.status(400).json({ success: false, message: "isVerified must be a boolean" });
+  }
+
+  const venue = await Venue.findById(req.params.venueId);
+  if (!venue) {
+    return res.status(404).json({ success: false, message: "Venue not found" });
+  }
+
+  const previousVerification = venue.isVerified;
+  venue.isVerified = isVerified;
+  venue.moderation = {
+    ...(venue.moderation || {}),
+    note: note || venue.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await venue.save();
+
+  await logAdminAction({
+    req,
+    action: "venue.verification.update",
+    entityType: "venue",
+    entityId: venue._id,
+    metadata: {
+      previousVerification,
+      newVerification: isVerified,
+      note,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Venue verification updated successfully",
+    data: {
+      id: venue._id,
+      isVerified: venue.isVerified,
+    },
+  });
+});
+
+export const updateAdminVenueStatus = asyncHandler(async (req, res) => {
+  const { isActive, note } = req.body;
+
+  if (typeof isActive !== "boolean") {
+    return res.status(400).json({ success: false, message: "isActive must be a boolean" });
+  }
+
+  const venue = await Venue.findById(req.params.venueId);
+  if (!venue) {
+    return res.status(404).json({ success: false, message: "Venue not found" });
+  }
+
+  const previousStatus = venue.isActive;
+  venue.isActive = isActive;
+  venue.moderation = {
+    ...(venue.moderation || {}),
+    note: note || venue.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await venue.save();
+
+  await logAdminAction({
+    req,
+    action: "venue.status.update",
+    entityType: "venue",
+    entityId: venue._id,
+    metadata: {
+      previousStatus,
+      newStatus: isActive,
+      note,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Venue status updated successfully",
+    data: {
+      id: venue._id,
+      isActive: venue.isActive,
+    },
+  });
+});
+
+export const updateAdminVenueFeatured = asyncHandler(async (req, res) => {
+  const { isFeatured } = req.body;
+
+  if (typeof isFeatured !== "boolean") {
+    return res.status(400).json({ success: false, message: "isFeatured must be a boolean" });
+  }
+
+  const venue = await Venue.findById(req.params.venueId);
+  if (!venue) {
+    return res.status(404).json({ success: false, message: "Venue not found" });
+  }
+
+  const previousValue = venue.isFeatured;
+  venue.isFeatured = isFeatured;
+  venue.moderation = {
+    ...(venue.moderation || {}),
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await venue.save();
+
+  await logAdminAction({
+    req,
+    action: "venue.featured.update",
+    entityType: "venue",
+    entityId: venue._id,
+    metadata: {
+      previousValue,
+      newValue: isFeatured,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Venue featured flag updated",
+    data: {
+      id: venue._id,
+      isFeatured: venue.isFeatured,
+    },
+  });
+});
+
+export const getAdminBookings = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20, 100);
+  const { status, venueId, dateFrom, dateTo } = req.query;
+
+  const venueMatch = {};
+  const bookingMatch = {};
+
+  if (venueId && mongoose.Types.ObjectId.isValid(venueId)) {
+    venueMatch._id = new mongoose.Types.ObjectId(venueId);
+  }
+
+  if (status && ALLOWED_BOOKING_STATUSES.includes(status)) {
+    bookingMatch["bookings.status"] = status;
+  }
+
+  Object.assign(bookingMatch, buildDateRangeMatch(dateFrom, dateTo, "bookings.startTime"));
+
+  const result = await Venue.aggregate([
+    { $match: venueMatch },
+    { $unwind: { path: "$bookings", preserveNullAndEmptyArrays: false } },
+    { $match: bookingMatch },
+    {
+      $facet: {
+        data: [
+          { $sort: { "bookings.bookingDate": -1 } },
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $lookup: {
+              from: "users",
+              localField: "bookings.user",
+              foreignField: "_id",
+              as: "bookingUser",
+              pipeline: [{ $project: { name: 1, email: 1, username: 1, avatar: 1 } }],
+            },
+          },
+          {
+            $lookup: {
+              from: "events",
+              localField: "bookings.event",
+              foreignField: "_id",
+              as: "bookingEvent",
+              pipeline: [{ $project: { name: 1, date: 1, status: 1 } }],
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              bookingId: "$bookings._id",
+              status: "$bookings.status",
+              startTime: "$bookings.startTime",
+              endTime: "$bookings.endTime",
+              amount: "$bookings.amount",
+              totalAmount: "$bookings.totalAmount",
+              duration: "$bookings.duration",
+              notes: "$bookings.notes",
+              bookingDate: "$bookings.bookingDate",
+              venue: {
+                _id: "$_id",
+                name: "$name",
+                location: "$location",
+              },
+              user: { $arrayElemAt: ["$bookingUser", 0] },
+              event: { $arrayElemAt: ["$bookingEvent", 0] },
+            },
+          },
+        ],
+        total: [{ $count: "count" }],
+        stats: [
+          {
+            $group: {
+              _id: null,
+              totalBookings: { $sum: 1 },
+              pending: {
+                $sum: {
+                  $cond: [{ $eq: ["$bookings.status", "pending"] }, 1, 0],
+                },
+              },
+              confirmed: {
+                $sum: {
+                  $cond: [{ $eq: ["$bookings.status", "confirmed"] }, 1, 0],
+                },
+              },
+              cancelled: {
+                $sum: {
+                  $cond: [{ $eq: ["$bookings.status", "cancelled"] }, 1, 0],
+                },
+              },
+              totalRevenue: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$bookings.status", "confirmed"] },
+                    { $ifNull: ["$bookings.totalAmount", { $ifNull: ["$bookings.amount", 0] }] },
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  const response = result[0] || { data: [], total: [], stats: [] };
+  const total = response.total[0]?.count || 0;
+
+  res.status(200).json({
+    success: true,
+    data: response.data,
+    stats: response.stats[0] || {
+      totalBookings: 0,
+      pending: 0,
+      confirmed: 0,
+      cancelled: 0,
+      totalRevenue: 0,
+    },
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    },
+  });
+});
+
+export const updateAdminBookingStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  if (!ALLOWED_BOOKING_STATUSES.includes(status)) {
+    return res.status(400).json({ success: false, message: "Invalid booking status" });
+  }
+
+  const venue = await Venue.findById(req.params.venueId);
+  if (!venue) {
+    return res.status(404).json({ success: false, message: "Venue not found" });
+  }
+
+  const booking = venue.bookings.id(req.params.bookingId);
+  if (!booking) {
+    return res.status(404).json({ success: false, message: "Booking not found" });
+  }
+
+  const previousStatus = booking.status;
+  booking.status = status;
+  await venue.save();
+
+  await logAdminAction({
+    req,
+    action: "booking.status.update",
+    entityType: "booking",
+    entityId: booking._id,
+    metadata: {
+      venueId: venue._id,
+      previousStatus,
+      newStatus: status,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Booking status updated successfully",
+    data: {
+      bookingId: booking._id,
+      status: booking.status,
+      venueId: venue._id,
+    },
+  });
+});
+
+export const getAdminNotificationRecipients = asyncHandler(async (req, res) => {
+  const search = (req.query.search || "").trim();
+  const role = req.query.role;
+  const limit = Math.min(500, Math.max(1, Number.parseInt(req.query.limit, 10) || 200));
+
+  const query = {
+    accountStatus: "active",
+  };
+
+  if (role && ALLOWED_USER_ROLES.includes(role)) {
+    query.role = role;
+  }
+
+  if (search.length >= 2) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { username: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const users = await User.find(query)
+    .select("_id name username email role avatar")
+    .sort({ name: 1, createdAt: -1 })
+    .limit(limit)
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    data: users,
+  });
+});
+
+export const getAdminNotifications = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20, 100);
+  const { status, type, priority, search } = req.query;
+
+  const query = {};
+
+  if (status) query.status = status;
+  if (type) query.type = type;
+  if (priority) query.priority = priority;
+
+  if (search && search.trim().length >= 2) {
+    query.$or = [
+      { title: { $regex: search.trim(), $options: "i" } },
+      { message: { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  const [notifications, total] = await Promise.all([
+    Notification.find(query)
+      .populate("createdBy", "_id name email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Notification.countDocuments(query),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: notifications,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    },
+  });
+});
+
+export const createAdminNotification = asyncHandler(async (req, res) => {
+  const {
+    title,
+    message,
+    type = "announcement",
+    priority = "normal",
+    recipients = "all",
+    specificRecipientIds = [],
+    metadata = {},
+    scheduledAt,
+    sendNow = false,
+  } = req.body;
+
+  if (!title || !message) {
+    return res.status(400).json({ success: false, message: "Title and message are required" });
+  }
+
+  if (!ALLOWED_NOTIFICATION_TYPES.includes(type)) {
+    return res.status(400).json({ success: false, message: "Invalid notification type" });
+  }
+
+  if (!ALLOWED_NOTIFICATION_PRIORITIES.includes(priority)) {
+    return res.status(400).json({ success: false, message: "Invalid notification priority" });
+  }
+
+  if (!ALLOWED_NOTIFICATION_RECIPIENTS.includes(recipients)) {
+    return res.status(400).json({ success: false, message: "Invalid recipients value" });
+  }
+
+  const specificRecipients = await normalizeSpecificRecipients(specificRecipientIds);
+  const normalizedScheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+
+  if (normalizedScheduledAt && Number.isNaN(normalizedScheduledAt.getTime())) {
+    return res.status(400).json({ success: false, message: "Invalid scheduledAt value" });
+  }
+
+  if (normalizedScheduledAt && normalizedScheduledAt <= new Date()) {
+    return res.status(400).json({
+      success: false,
+      message: "scheduledAt must be in the future",
+    });
+  }
+
+  if (recipients === "specific" && specificRecipients.length === 0) {
+    return res.status(400).json({ success: false, message: "No valid recipients provided" });
+  }
+
+  const notification = await Notification.create({
+    title,
+    message,
+    type,
+    priority,
+    recipients,
+    specificRecipients,
+    status: normalizedScheduledAt ? "scheduled" : "draft",
+    scheduledAt: normalizedScheduledAt,
+    metadata: metadata || {},
+    createdBy: req.user._id,
+  });
+
+  let delivery = null;
+  if (sendNow && !normalizedScheduledAt) {
+    delivery = await dispatchAdminNotification(notification);
+  }
+
+  await logAdminAction({
+    req,
+    action: "notification.create",
+    entityType: "notification",
+    entityId: notification._id,
+    metadata: {
+      type,
+      priority,
+      recipients,
+      sentImmediately: Boolean(sendNow && !normalizedScheduledAt),
+    },
+  });
+
+  res.status(201).json({
+    success: true,
+    message: sendNow && !scheduledAt ? "Notification created and sent" : "Notification created successfully",
+    data: notification,
+    delivery,
+  });
+});
+
+export const sendAdminNotification = asyncHandler(async (req, res) => {
+  const notification = await Notification.findById(req.params.notificationId);
+
+  if (!notification) {
+    return res.status(404).json({ success: false, message: "Notification not found" });
+  }
+
+  if (notification.status === "sent") {
+    return res.status(400).json({ success: false, message: "Notification has already been sent" });
+  }
+
+  const delivery = await dispatchAdminNotification(notification);
+
+  await logAdminAction({
+    req,
+    action: "notification.send",
+    entityType: "notification",
+    entityId: notification._id,
+    metadata: {
+      delivered: delivery.delivered,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Notification sent successfully",
+    data: {
+      id: notification._id,
+      status: notification.status,
+      delivered: delivery.delivered,
+    },
+  });
+});
+
+export const getAdminAuditLogs = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20, 100);
+  const { action, entityType, status, adminId, dateFrom, dateTo } = req.query;
+
+  const query = {
+    ...buildDateRangeMatch(dateFrom, dateTo, "createdAt"),
+  };
+
+  if (action) query.action = action;
+  if (entityType) query.entityType = entityType;
+  if (status) query.status = status;
+  if (adminId && mongoose.Types.ObjectId.isValid(adminId)) {
+    query.admin = adminId;
+  }
+
+  const [logs, total] = await Promise.all([
+    AdminAuditLog.find(query)
+      .populate("admin", "_id name email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    AdminAuditLog.countDocuments(query),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: logs,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    },
+  });
+});
+
+export const adminGlobalSearch = asyncHandler(async (req, res) => {
+  const queryText = (req.query.q || "").trim();
+  const limit = Math.min(20, Math.max(1, Number.parseInt(req.query.limit, 10) || 8));
+
+  if (queryText.length < 2) {
+    return res.status(400).json({
+      success: false,
+      message: "Query must be at least 2 characters long",
+    });
+  }
+
+  const searchRegex = new RegExp(queryText, "i");
+
+  const [users, events, communities, venues] = await Promise.all([
+    User.find({
+      $or: [
+        { name: searchRegex },
+        { username: searchRegex },
+        { email: searchRegex },
+      ],
+    })
+      .select("_id name username email role accountStatus")
+      .limit(limit)
+      .lean(),
+    Event.find({
+      $or: [{ name: searchRegex }, { description: searchRegex }, { "location.city": searchRegex }],
+    })
+      .select("_id name category status date")
+      .limit(limit)
+      .lean(),
+    Community.find({
+      $or: [{ name: searchRegex }, { description: searchRegex }],
+    })
+      .select("_id name category isPrivate isActive")
+      .limit(limit)
+      .lean(),
+    Venue.find({
+      $or: [{ name: searchRegex }, { description: searchRegex }, { "location.city": searchRegex }],
+    })
+      .select("_id name isActive isVerified location.city")
+      .limit(limit)
+      .lean(),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      users,
+      events,
+      communities,
+      venues,
+    },
+    counts: {
+      users: users.length,
+      events: events.length,
+      communities: communities.length,
+      venues: venues.length,
+      total: users.length + events.length + communities.length + venues.length,
+    },
+  });
+});
+
+export const getAdminSystemHealth = asyncHandler(async (req, res) => {
+  const memory = process.memoryUsage();
+  const uptimeSeconds = process.uptime();
+
+  let dbStats = null;
+  try {
+    if (mongoose.connection?.db) {
+      dbStats = await mongoose.connection.db.stats();
+    }
+  } catch (error) {
+    dbStats = { error: error.message };
+  }
+
+  res.status(200).json({
+    success: true,
+    data: {
+      environment: process.env.NODE_ENV || "development",
+      uptimeSeconds,
+      timestamp: new Date().toISOString(),
+      process: {
+        nodeVersion: process.version,
+        pid: process.pid,
+        memory: {
+          rss: memory.rss,
+          heapTotal: memory.heapTotal,
+          heapUsed: memory.heapUsed,
+          external: memory.external,
+        },
+      },
+      database: {
+        state: mongoose.connection.readyState,
+        name: mongoose.connection.name,
+        stats: dbStats,
+      },
+    },
+  });
 });

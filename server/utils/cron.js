@@ -1,17 +1,13 @@
 import cron from "cron";
 import https from "https";
+import { processDueScheduledAdminNotifications } from "../services/adminNotificationService.js";
 
 // Configuration for free tier optimization
 const ENABLE_KEEP_ALIVE = process.env.ENABLE_KEEP_ALIVE === "true";
 const KEEP_ALIVE_START_HOUR = parseInt(process.env.KEEP_ALIVE_START_HOUR || "9"); // 9 AM
 const KEEP_ALIVE_END_HOUR = parseInt(process.env.KEEP_ALIVE_END_HOUR || "21"); // 9 PM
 
-/**
- * Cron job to keep server alive during specified hours
- * For Render free tier: Set ENABLE_KEEP_ALIVE=false to disable and save hours
- * Or configure KEEP_ALIVE_START_HOUR and KEEP_ALIVE_END_HOUR to limit active hours
- */
-const job = new cron.CronJob("*/14 * * * *", function () {
+const keepAliveJob = new cron.CronJob("*/14 * * * *", function () {
     // Skip if keep-alive is disabled
     if (!ENABLE_KEEP_ALIVE) {
         console.log("Keep-alive is disabled via environment variable");
@@ -46,5 +42,29 @@ const job = new cron.CronJob("*/14 * * * *", function () {
             console.error("Error while sending keep-alive request:", e.message);
         });
 });
+
+const notificationDispatchJob = new cron.CronJob("*/1 * * * *", async function () {
+    try {
+        const result = await processDueScheduledAdminNotifications(25);
+        if (result.due > 0) {
+            console.log(
+                `Scheduled notifications processed: ${result.processed}, failed: ${result.failed}`
+            );
+        }
+    } catch (error) {
+        console.error("Failed to process scheduled notifications:", error.message);
+    }
+});
+
+const job = {
+    start() {
+        keepAliveJob.start();
+        notificationDispatchJob.start();
+    },
+    stop() {
+        keepAliveJob.stop();
+        notificationDispatchJob.stop();
+    }
+};
 
 export default job;

@@ -14,6 +14,7 @@ import athletesRoute from './routes/athletesRoute.js';
 import communityRoute from './routes/communityRoute.js';
 import leaderboardRoute from './routes/leaderboardRoute.js';
 import venueRoute from './routes/venueRoute.js';
+import { apiGlobalLimiter } from "./middleware/rateLimitMiddleware.js";
 
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
@@ -47,7 +48,7 @@ app.use(morgan("dev"));
 
 // app.use(upstashRateLimiters.global);
 
-if (process.env.NODE_ENV === "production") job.start();
+job.start();
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -58,7 +59,7 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
@@ -72,6 +73,7 @@ app.get("/health", (req, res) => {
 });
 
 // Routes
+app.use("/api", apiGlobalLimiter);
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/users", userRoute);
@@ -104,10 +106,32 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  const statusCode = err.statusCode || err.status || 500;
+  const isValidationError =
+    (typeof err.name === 'string' && err.name.includes('Zod')) ||
+    (typeof err.message === 'string' && err.message.includes('_zod'));
+
+  const normalizedStatusCode = isValidationError ? 400 : statusCode;
+
+  res.status(normalizedStatusCode).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+    message:
+      process.env.NODE_ENV === 'production' && normalizedStatusCode === 500
+        ? 'Internal server error'
+        : err.message
   });
+});
+
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled promise rejection:', error);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
 });
 
 const PORT = process.env.PORT || 5000;

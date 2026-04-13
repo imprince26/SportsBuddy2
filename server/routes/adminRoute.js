@@ -1,55 +1,216 @@
-import express from 'express';
-const router = express.Router();
+import express from "express";
 import {
-    getDashboardAnalytics,
-    exportAnalyticsPDF,
-    manageUsers,
-    getUserById,
-    updateUser,
-    deleteUser,
-    manageEvents,
-    getEventById,
-    updateEvent,
-    deleteEvent,
-    approveEvent,
-    rejectEvent,
-    exportEvents,
-    getEventStats,
-    manageCommunities,
-    getCommunityById,
-    updateCommunityAdmin,
-    deleteCommunityAdmin,
-    adminSearch,
-    getAllVenueBookings,
-} from '../controllers/adminController.js';
-import { isAuthenticated, isAdmin } from '../middleware/authMiddleware.js';
+  getAdminDashboardOverview,
+  getAdminGrowthAnalytics,
+  getAdminUsers,
+  getAdminUserDetails,
+  updateAdminUserRole,
+  updateAdminUserStatus,
+  getAdminEvents,
+  updateAdminEventStatus,
+  updateAdminEventFeatured,
+  deleteAdminEvent,
+  getAdminCommunities,
+  updateAdminCommunityStatus,
+  updateAdminCommunityFeatured,
+  deleteAdminCommunity,
+  getAdminVenues,
+  updateAdminVenueVerification,
+  updateAdminVenueStatus,
+  updateAdminVenueFeatured,
+  getAdminBookings,
+  updateAdminBookingStatus,
+  getAdminNotificationRecipients,
+  getAdminNotifications,
+  createAdminNotification,
+  sendAdminNotification,
+  getAdminAuditLogs,
+  adminGlobalSearch,
+  getAdminSystemHealth,
+} from "../controllers/adminController.js";
+import { isAuthenticated, isAdmin } from "../middleware/authMiddleware.js";
+import {
+  adminReadLimiter,
+  adminWriteLimiter,
+  notificationSendLimiter,
+} from "../middleware/rateLimitMiddleware.js";
+import { validateRequest } from "../middleware/validateRequest.js";
+import {
+  adminGrowthQuerySchema,
+  adminSearchQuerySchema,
+  adminUserListQuerySchema,
+  adminUserIdParamsSchema,
+  adminUserRoleBodySchema,
+  adminUserStatusBodySchema,
+  adminEventListQuerySchema,
+  adminEventIdParamsSchema,
+  adminEventStatusBodySchema,
+  adminEventFeaturedBodySchema,
+  adminCommunityListQuerySchema,
+  adminCommunityIdParamsSchema,
+  adminCommunityStatusBodySchema,
+  adminCommunityFeaturedBodySchema,
+  adminVenueListQuerySchema,
+  adminVenueIdParamsSchema,
+  adminVenueVerificationBodySchema,
+  adminVenueStatusBodySchema,
+  adminVenueFeaturedBodySchema,
+  adminBookingListQuerySchema,
+  adminBookingParamsSchema,
+  adminBookingStatusBodySchema,
+  adminNotificationListQuerySchema,
+  adminNotificationRecipientsQuerySchema,
+  adminNotificationCreateBodySchema,
+  adminNotificationIdParamsSchema,
+  adminAuditLogsQuerySchema,
+} from "../validators/adminValidators.js";
+
+const router = express.Router();
 
 router.use(isAuthenticated, isAdmin);
 
-// Dashboard & Analytics
-router.route('/analytics').get(getDashboardAnalytics);
-router.route('/analytics/export').get(exportAnalyticsPDF);
+router.get("/dashboard/overview", adminReadLimiter, getAdminDashboardOverview);
+router.get(
+  "/dashboard/growth",
+  adminReadLimiter,
+  validateRequest({ query: adminGrowthQuerySchema }),
+  getAdminGrowthAnalytics
+);
+router.get("/search", adminReadLimiter, validateRequest({ query: adminSearchQuerySchema }), adminGlobalSearch);
+router.get("/system/health", adminReadLimiter, getAdminSystemHealth);
 
-// User Management
-router.route('/users').get(manageUsers);
-router.route('/users/:id').get(getUserById).put(updateUser).delete(deleteUser);
+router.get("/users", adminReadLimiter, validateRequest({ query: adminUserListQuerySchema }), getAdminUsers);
+router.get(
+  "/users/:userId",
+  adminReadLimiter,
+  validateRequest({ params: adminUserIdParamsSchema }),
+  getAdminUserDetails
+);
+router.patch(
+  "/users/:userId/role",
+  adminWriteLimiter,
+  validateRequest({ params: adminUserIdParamsSchema, body: adminUserRoleBodySchema }),
+  updateAdminUserRole
+);
+router.patch(
+  "/users/:userId/status",
+  adminWriteLimiter,
+  validateRequest({ params: adminUserIdParamsSchema, body: adminUserStatusBodySchema }),
+  updateAdminUserStatus
+);
 
-// Event Management
-router.route('/events').get(manageEvents);
-router.route('/events/stats').get(getEventStats);
-router.route('/events/export').get(exportEvents);
-router.route('/events/:id').get(getEventById).put(updateEvent).delete(deleteEvent);
-router.route('/events/:id/approve').put(approveEvent);
-router.route('/events/:id/reject').put(rejectEvent);
+router.get("/events", adminReadLimiter, validateRequest({ query: adminEventListQuerySchema }), getAdminEvents);
+router.patch(
+  "/events/:eventId/status",
+  adminWriteLimiter,
+  validateRequest({ params: adminEventIdParamsSchema, body: adminEventStatusBodySchema }),
+  updateAdminEventStatus
+);
+router.patch(
+  "/events/:eventId/featured",
+  adminWriteLimiter,
+  validateRequest({ params: adminEventIdParamsSchema, body: adminEventFeaturedBodySchema }),
+  updateAdminEventFeatured
+);
+router.delete(
+  "/events/:eventId",
+  adminWriteLimiter,
+  validateRequest({ params: adminEventIdParamsSchema }),
+  deleteAdminEvent
+);
 
-// Community Management
-router.route('/communities').get(manageCommunities);
-router.route('/communities/:id').get(getCommunityById).put(updateCommunityAdmin).delete(deleteCommunityAdmin);
+router.get(
+  "/communities",
+  adminReadLimiter,
+  validateRequest({ query: adminCommunityListQuerySchema }),
+  getAdminCommunities
+);
+router.patch(
+  "/communities/:communityId/status",
+  adminWriteLimiter,
+  validateRequest({ params: adminCommunityIdParamsSchema, body: adminCommunityStatusBodySchema }),
+  updateAdminCommunityStatus
+);
+router.patch(
+  "/communities/:communityId/featured",
+  adminWriteLimiter,
+  validateRequest({ params: adminCommunityIdParamsSchema, body: adminCommunityFeaturedBodySchema }),
+  updateAdminCommunityFeatured
+);
+router.delete(
+  "/communities/:communityId",
+  adminWriteLimiter,
+  validateRequest({ params: adminCommunityIdParamsSchema }),
+  deleteAdminCommunity
+);
 
-// Search
-router.route('/search').get(adminSearch);
+router.get("/venues", adminReadLimiter, validateRequest({ query: adminVenueListQuerySchema }), getAdminVenues);
+router.patch(
+  "/venues/:venueId/verification",
+  adminWriteLimiter,
+  validateRequest({ params: adminVenueIdParamsSchema, body: adminVenueVerificationBodySchema }),
+  updateAdminVenueVerification
+);
+router.patch(
+  "/venues/:venueId/status",
+  adminWriteLimiter,
+  validateRequest({ params: adminVenueIdParamsSchema, body: adminVenueStatusBodySchema }),
+  updateAdminVenueStatus
+);
+router.patch(
+  "/venues/:venueId/featured",
+  adminWriteLimiter,
+  validateRequest({ params: adminVenueIdParamsSchema, body: adminVenueFeaturedBodySchema }),
+  updateAdminVenueFeatured
+);
 
-// Venue Bookings
-router.route('/venue-bookings').get(getAllVenueBookings);
+router.get("/bookings", adminReadLimiter, validateRequest({ query: adminBookingListQuerySchema }), getAdminBookings);
+router.patch(
+  "/venues/:venueId/bookings/:bookingId/status",
+  adminWriteLimiter,
+  validateRequest({ params: adminBookingParamsSchema, body: adminBookingStatusBodySchema }),
+  updateAdminBookingStatus
+);
+
+router.get(
+  "/notifications/recipients",
+  adminReadLimiter,
+  validateRequest({ query: adminNotificationRecipientsQuerySchema }),
+  getAdminNotificationRecipients
+);
+router.get(
+  "/notifications",
+  adminReadLimiter,
+  validateRequest({ query: adminNotificationListQuerySchema }),
+  getAdminNotifications
+);
+router.post(
+  "/notifications",
+  adminWriteLimiter,
+  (req, res, next) => {
+    if (req.body?.scheduledAt === "") {
+      delete req.body.scheduledAt;
+    }
+    if (req.body?.metadata?.actionUrl === "") {
+      delete req.body.metadata.actionUrl;
+    }
+    next();
+  },
+  validateRequest({ body: adminNotificationCreateBodySchema }),
+  createAdminNotification
+);
+router.post(
+  "/notifications/:notificationId/send",
+  notificationSendLimiter,
+  validateRequest({ params: adminNotificationIdParamsSchema }),
+  sendAdminNotification
+);
+
+router.get(
+  "/audit-logs",
+  adminReadLimiter,
+  validateRequest({ query: adminAuditLogsQuerySchema }),
+  getAdminAuditLogs
+);
 
 export default router;

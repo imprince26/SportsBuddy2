@@ -29,6 +29,20 @@ export const isAuthenticated = async (req, res, next) => {
       });
     }
 
+    if (user.accountStatus === "suspended") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is suspended. Contact support for assistance.",
+      });
+    }
+
+    if (user.accountStatus === "banned") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been banned.",
+      });
+    }
+
     req.user = user;
     next();
   } catch (error) {

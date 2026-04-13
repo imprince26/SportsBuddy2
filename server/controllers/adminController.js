@@ -1205,6 +1205,39 @@ export const updateAdminBookingStatus = asyncHandler(async (req, res) => {
   });
 });
 
+export const getAdminNotificationRecipients = asyncHandler(async (req, res) => {
+  const search = (req.query.search || "").trim();
+  const role = req.query.role;
+  const limit = Math.min(500, Math.max(1, Number.parseInt(req.query.limit, 10) || 200));
+
+  const query = {
+    accountStatus: "active",
+  };
+
+  if (role && ALLOWED_USER_ROLES.includes(role)) {
+    query.role = role;
+  }
+
+  if (search.length >= 2) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { username: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const users = await User.find(query)
+    .select("_id name username email role avatar")
+    .sort({ name: 1, createdAt: -1 })
+    .limit(limit)
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    data: users,
+  });
+});
+
 export const getAdminNotifications = asyncHandler(async (req, res) => {
   const { page, limit, skip } = parsePagination(req.query, 20, 100);
   const { status, type, priority, search } = req.query;

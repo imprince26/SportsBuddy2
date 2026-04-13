@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { format, isToday, isTomorrow, differenceInDays } from "date-fns"
 import {
-  MapPin, Users, Clock, Calendar, ArrowRight, Bookmark, CheckCircle2
+  MapPin, Users, Clock, Calendar, ArrowRight, Bookmark, CheckCircle2, Sparkles
 } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
@@ -101,6 +101,11 @@ const EventCard = ({ event, index = 0, viewMode = "grid", user = null }) => {
                 <div>
                   {/* Category & Status */}
                   <div className="flex flex-wrap items-center gap-2 mb-2">
+                    {event.isFeatured && (
+                      <Badge className="bg-amber-500/10 text-amber-700 border-amber-300/40 text-xs">
+                        <Sparkles className="w-3 h-3 mr-1" /> Featured
+                      </Badge>
+                    )}
                     <Badge variant="outline" className="rounded-md text-xs border-primary/20 text-primary bg-primary/5">
                       {event.category || "Sports"}
                     </Badge>
@@ -244,6 +249,11 @@ const EventCard = ({ event, index = 0, viewMode = "grid", user = null }) => {
             {/* Bottom: Category badge */}
             <div className="absolute bottom-3 left-3 right-3">
               <div className="flex flex-wrap gap-1.5">
+                {event.isFeatured && (
+                  <Badge className="bg-amber-500/90 text-white border-0 text-xs backdrop-blur-sm">
+                    <Sparkles className="w-3 h-3 mr-1" /> Featured
+                  </Badge>
+                )}
                 <Badge className="bg-primary/90 text-primary-foreground border-0 text-xs backdrop-blur-sm">
                   {event.category || "Sports"}
                 </Badge>

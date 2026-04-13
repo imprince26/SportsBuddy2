@@ -20,6 +20,7 @@ import {
   updateAdminVenueFeatured,
   getAdminBookings,
   updateAdminBookingStatus,
+  getAdminNotificationRecipients,
   getAdminNotifications,
   createAdminNotification,
   sendAdminNotification,
@@ -58,6 +59,7 @@ import {
   adminBookingParamsSchema,
   adminBookingStatusBodySchema,
   adminNotificationListQuerySchema,
+  adminNotificationRecipientsQuerySchema,
   adminNotificationCreateBodySchema,
   adminNotificationIdParamsSchema,
   adminAuditLogsQuerySchema,
@@ -170,6 +172,12 @@ router.patch(
   updateAdminBookingStatus
 );
 
+router.get(
+  "/notifications/recipients",
+  adminReadLimiter,
+  validateRequest({ query: adminNotificationRecipientsQuerySchema }),
+  getAdminNotificationRecipients
+);
 router.get(
   "/notifications",
   adminReadLimiter,

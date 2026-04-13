@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -7,10 +7,10 @@ import { notificationFormSchema } from "@/schemas/adminSchemas";
 import { useAdminUiStore } from "@/store/adminUiStore";
 import {
   useAdminNotifications,
+  useAdminNotificationRecipients,
   useCreateAdminNotification,
   useSendAdminNotification,
 } from "@/hooks/admin/useAdminNotifications";
-import { useAdminUsers } from "@/hooks/admin/useAdminUsers";
 import AdminSectionHeader from "@/components/admin/AdminSectionHeader";
 import AdminLoadingBlock from "@/components/admin/AdminLoadingBlock";
 import AdminEmptyState from "@/components/admin/AdminEmptyState";
@@ -43,23 +43,74 @@ const AdminNotifications = () => {
   const { filters, updateFilter } = useAdminUiStore();
   const notificationsFilter = filters.notifications;
 
-  const notificationsQuery = useAdminNotifications(notificationsFilter);
-  const usersQuery = useAdminUsers({ page: 1, limit: 100, accountStatus: "active" });
-  const createMutation = useCreateAdminNotification();
-  const sendMutation = useSendAdminNotification();
-
   const form = useForm({
     resolver: zodResolver(notificationFormSchema),
     defaultValues: defaultFormValues,
   });
+  const [recipientSearch, setRecipientSearch] = useState("");
+  const [specificRoleFilter, setSpecificRoleFilter] = useState("all");
+
+  const notificationsQuery = useAdminNotifications(notificationsFilter);
+  const recipientScope = form.watch("recipients");
+  const trimmedRecipientSearch = recipientSearch.trim();
+
+  useEffect(() => {
+    if (recipientScope !== "specific") {
+      const currentRecipients = form.getValues("specificRecipientIds") || [];
+      if (currentRecipients.length > 0) {
+        form.setValue("specificRecipientIds", [], { shouldValidate: true });
+      }
+      setRecipientSearch("");
+      setSpecificRoleFilter("all");
+    }
+  }, [form, recipientScope]);
+
+  const recipientsQuery = useAdminNotificationRecipients({
+    limit: 500,
+    search: trimmedRecipientSearch.length >= 2 ? trimmedRecipientSearch : undefined,
+    role:
+      recipientScope === "users"
+        ? "user"
+        : recipientScope === "admins"
+          ? "admin"
+          : recipientScope === "specific" && specificRoleFilter !== "all"
+            ? specificRoleFilter
+            : undefined,
+  });
+  const createMutation = useCreateAdminNotification();
+  const sendMutation = useSendAdminNotification();
 
   const recipientOptions = useMemo(() => {
-    const users = usersQuery.data?.data || [];
+    const users = recipientsQuery.data?.data || [];
     return users.map((user) => ({
       id: user._id,
       label: `${user.name} (${user.email})`,
+      role: user.role,
     }));
-  }, [usersQuery.data]);
+  }, [recipientsQuery.data]);
+
+  const recipientOptionsByScope = useMemo(() => {
+    let options = recipientOptions;
+
+    if (recipientScope === "admins") {
+      options = options.filter((option) => option.role === "admin");
+    }
+
+    if (recipientScope === "users") {
+      options = options.filter((option) => option.role === "user");
+    }
+
+    if (recipientScope === "specific" && specificRoleFilter !== "all") {
+      options = options.filter((option) => option.role === specificRoleFilter);
+    }
+
+    if (trimmedRecipientSearch.length === 1) {
+      const normalizedSearch = trimmedRecipientSearch.toLowerCase();
+      options = options.filter((option) => option.label.toLowerCase().includes(normalizedSearch));
+    }
+
+    return options;
+  }, [recipientOptions, recipientScope, specificRoleFilter, trimmedRecipientSearch]);
 
   const selectedRecipients = form.watch("specificRecipientIds") || [];
 
@@ -178,17 +229,54 @@ const AdminNotifications = () => {
               </div>
             </div>
 
-            {form.watch("recipients") === "specific" ? (
-              <div className="max-h-40 space-y-2 overflow-auto rounded-xl border border-border/60 bg-secondary/40 p-3">
-                {recipientOptions.map((option) => (
-                  <label key={option.id} className="flex cursor-pointer items-center gap-2 text-xs text-foreground">
-                    <Checkbox
-                      checked={selectedRecipients.includes(option.id)}
-                      onCheckedChange={() => toggleRecipient(option.id)}
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                ))}
+            {recipientScope === "specific" ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_180px]">
+                  <Input
+                    placeholder="Search recipients"
+                    value={recipientSearch}
+                    onChange={(event) => setRecipientSearch(event.target.value)}
+                  />
+                  <Select value={specificRoleFilter} onValueChange={setSpecificRoleFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All roles</SelectItem>
+                      <SelectItem value="user">Users only</SelectItem>
+                      <SelectItem value="admin">Admins only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{selectedRecipients.length} selected</span>
+                  {trimmedRecipientSearch.length === 1 ? <span>Type 2+ chars for full search</span> : null}
+                </div>
+
+                <div className="max-h-48 space-y-2 overflow-auto rounded-xl border border-border/60 bg-secondary/40 p-3">
+                  {recipientsQuery.isLoading ? (
+                    <p className="text-xs text-muted-foreground">Loading recipients...</p>
+                  ) : recipientsQuery.isError ? (
+                    <p className="text-xs text-rose-600">Failed to load recipients. Try again.</p>
+                  ) : recipientOptionsByScope.length ? (
+                    recipientOptionsByScope.map((option) => (
+                      <label key={option.id} className="flex cursor-pointer items-center gap-2 text-xs text-foreground">
+                        <Checkbox
+                          checked={selectedRecipients.includes(option.id)}
+                          onCheckedChange={() => toggleRecipient(option.id)}
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      {trimmedRecipientSearch.length >= 2
+                        ? "No recipients match this search."
+                        : "No active recipients available for this scope."}
+                    </p>
+                  )}
+                </div>
               </div>
             ) : null}
 

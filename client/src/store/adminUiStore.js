@@ -57,6 +57,7 @@ const defaultFilters = {
 
 export const useAdminUiStore = create((set) => ({
   sidebarOpen: false,
+  sidebarCollapsed: false,
   currentWorkspace: "overview",
   adminSearchOpen: false,
   growthDays: 30,
@@ -64,6 +65,8 @@ export const useAdminUiStore = create((set) => ({
 
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
   setCurrentWorkspace: (workspace) => set({ currentWorkspace: workspace }),
 

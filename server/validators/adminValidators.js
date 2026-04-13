@@ -142,6 +142,12 @@ export const adminNotificationListQuerySchema = paginationQuerySchema.extend({
   search: z.string().trim().min(2).optional(),
 });
 
+export const adminNotificationRecipientsQuerySchema = z.object({
+  search: z.string().trim().min(2).optional(),
+  role: userRoleSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+});
+
 export const adminNotificationCreateBodySchema = z.object({
   title: z.string().trim().min(3).max(200),
   message: z.string().trim().min(3).max(1000),

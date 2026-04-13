@@ -129,6 +129,11 @@ export const adminApi = {
     return response.data;
   },
 
+  getNotificationRecipients: async (params = {}) => {
+    const response = await api.get(withQuery("/admin/notifications/recipients", params));
+    return response.data;
+  },
+
   createNotification: async (payload) => {
     const response = await api.post("/admin/notifications", payload);
     return response.data;

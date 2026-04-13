@@ -10,6 +10,14 @@ export const useAdminNotifications = (filters) => {
   });
 };
 
+export const useAdminNotificationRecipients = (filters = {}) => {
+  return useQuery({
+    queryKey: ["admin", "notification-recipients", filters],
+    queryFn: () => adminApi.getNotificationRecipients(filters),
+    staleTime: 60 * 1000,
+  });
+};
+
 export const useCreateAdminNotification = () => {
   const queryClient = useQueryClient();
 

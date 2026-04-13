@@ -18,6 +18,7 @@ import {
     UserPlus,
     Loader2,
     CheckCircle,
+    Sparkles,
     Trophy,
     Activity,
     Bike,
@@ -102,7 +103,12 @@ const EventHeroSection = ({
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
                         {/* Category Badge */}
                         <div className="inline-block animate-in zoom-in-90 fade-in duration-600 delay-200">
-                            <div className="group relative">
+                            <div className="group relative flex flex-wrap items-center gap-2">
+                                {event.isFeatured && (
+                                    <span className="inline-flex items-center rounded-full bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-700 border border-amber-300/50">
+                                        <Sparkles className="w-3.5 h-3.5 mr-1" /> Featured
+                                    </span>
+                                )}
                                 <div className="relative px-4 sm:px-6 py-2 sm:py-3 bg-card rounded-full border border-border flex items-center gap-2 sm:gap-3 shadow-sm">
                                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary/10 flex items-center justify-center">
                                         {(() => {

@@ -26,6 +26,22 @@ export const useUpdateAdminEventStatus = () => {
   });
 };
 
+export const useUpdateAdminEventFeatured = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: adminApi.updateEventFeatured,
+    onSuccess: () => {
+      showToast.success("Event featured flag updated");
+      queryClient.invalidateQueries({ queryKey: ["admin", "events"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "overview"] });
+    },
+    onError: (error) => {
+      showToast.error(error?.response?.data?.message || "Failed to update featured flag");
+    },
+  });
+};
+
 export const useDeleteAdminEvent = () => {
   const queryClient = useQueryClient();
 

@@ -26,6 +26,7 @@ const statusStyles = {
   booking: "border-amber-300/50 bg-amber-500/10 text-amber-700 dark:text-amber-400",
   notification: "border-fuchsia-300/50 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-400",
   system: "border-zinc-300/50 bg-zinc-500/10 text-zinc-700 dark:text-zinc-400",
+  featured: "border-primary/30 bg-primary/10 text-primary",
 };
 
 const toLabel = (value = "") => {

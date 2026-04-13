@@ -170,6 +170,23 @@ const eventSchema = new mongoose.Schema(
       },
       default: "Upcoming",
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    moderation: {
+      note: {
+        type: String,
+        trim: true,
+      },
+      moderatedAt: {
+        type: Date,
+      },
+      moderatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
     registrationFee: {
       type: Number,
       min: [0, "Registration fee cannot be negative"],
@@ -302,6 +319,7 @@ eventSchema.index({ "location.coordinates": "2dsphere" });
 eventSchema.index({ status: 1, date: 1, createdAt: -1 });
 eventSchema.index({ createdBy: 1, createdAt: -1 });
 eventSchema.index({ category: 1, status: 1, date: 1 });
+eventSchema.index({ isFeatured: 1, status: 1, date: 1 });
 
 // Virtual for calculating average rating
 eventSchema.virtual("averageRating").get(function () {

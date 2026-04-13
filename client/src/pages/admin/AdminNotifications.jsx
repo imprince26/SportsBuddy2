@@ -98,7 +98,7 @@ const AdminNotifications = () => {
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.15fr_1fr]">
-        <Card className="rounded-2xl border-border/60 bg-card/70">
+        <Card className="rounded-2xl border-border/60 bg-card">
           <CardHeader>
             <CardTitle className="text-base">Compose Notification</CardTitle>
           </CardHeader>
@@ -179,7 +179,7 @@ const AdminNotifications = () => {
             </div>
 
             {form.watch("recipients") === "specific" ? (
-              <div className="max-h-40 space-y-2 overflow-auto rounded-xl border border-border/60 bg-secondary/30 p-3">
+              <div className="max-h-40 space-y-2 overflow-auto rounded-xl border border-border/60 bg-secondary/40 p-3">
                 {recipientOptions.map((option) => (
                   <label key={option.id} className="flex cursor-pointer items-center gap-2 text-xs text-foreground">
                     <Checkbox
@@ -249,7 +249,7 @@ const AdminNotifications = () => {
         </Card>
 
         <div className="space-y-4">
-          <Card className="rounded-2xl border-border/60 bg-card/70">
+          <Card className="rounded-2xl border-border/60 bg-card">
             <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-2">
               <Input
                 placeholder="Search notifications"
@@ -279,7 +279,7 @@ const AdminNotifications = () => {
           ) : notificationsQuery.data?.data?.length ? (
             <div className="space-y-3">
               {notificationsQuery.data.data.map((notification) => (
-                <Card key={notification._id} className="rounded-2xl border-border/60 bg-card/70">
+                <Card key={notification._id} className="rounded-2xl border-border/60 bg-card">
                   <CardContent className="space-y-2 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <p className="line-clamp-1 text-sm font-semibold text-foreground">{notification.title}</p>

@@ -505,9 +505,25 @@ export const getAdminEvents = asyncHandler(async (req, res) => {
     Event.countDocuments(query),
   ]);
 
+  const mappedEvents = events.map((event) => ({
+    ...event,
+    participantCount: Array.isArray(event.participants) ? event.participants.length : 0,
+    ratingsCount: Array.isArray(event.ratings) ? event.ratings.length : 0,
+    averageRating:
+      Array.isArray(event.ratings) && event.ratings.length > 0
+        ? Number(
+            (
+              event.ratings.reduce((sum, entry) => sum + (entry.rating || 0), 0) /
+              event.ratings.length
+            ).toFixed(1)
+          )
+        : 0,
+    waitlistCount: Array.isArray(event.waitlist) ? event.waitlist.length : 0,
+  }));
+
   res.status(200).json({
     success: true,
-    data: events,
+    data: mappedEvents,
     pagination: {
       page,
       limit,
@@ -520,7 +536,7 @@ export const getAdminEvents = asyncHandler(async (req, res) => {
 });
 
 export const updateAdminEventStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
+  const { status, note } = req.body;
 
   if (!ALLOWED_EVENT_STATUSES.includes(status)) {
     return res.status(400).json({ success: false, message: "Invalid event status" });
@@ -533,6 +549,12 @@ export const updateAdminEventStatus = asyncHandler(async (req, res) => {
 
   const previousStatus = event.status;
   event.status = status;
+  event.moderation = {
+    ...(event.moderation || {}),
+    note: note || event.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
   await event.save();
 
   await logAdminAction({
@@ -543,6 +565,7 @@ export const updateAdminEventStatus = asyncHandler(async (req, res) => {
     metadata: {
       previousStatus,
       newStatus: status,
+      note,
     },
   });
 
@@ -552,6 +575,48 @@ export const updateAdminEventStatus = asyncHandler(async (req, res) => {
     data: {
       id: event._id,
       status: event.status,
+    },
+  });
+});
+
+export const updateAdminEventFeatured = asyncHandler(async (req, res) => {
+  const { isFeatured } = req.body;
+
+  if (typeof isFeatured !== "boolean") {
+    return res.status(400).json({ success: false, message: "isFeatured must be a boolean" });
+  }
+
+  const event = await Event.findById(req.params.eventId);
+  if (!event) {
+    return res.status(404).json({ success: false, message: "Event not found" });
+  }
+
+  const previousValue = event.isFeatured;
+  event.isFeatured = isFeatured;
+  event.moderation = {
+    ...(event.moderation || {}),
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await event.save();
+
+  await logAdminAction({
+    req,
+    action: "event.featured.update",
+    entityType: "event",
+    entityId: event._id,
+    metadata: {
+      previousValue,
+      newValue: isFeatured,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Event featured flag updated",
+    data: {
+      id: event._id,
+      isFeatured: event.isFeatured,
     },
   });
 });
@@ -631,9 +696,21 @@ export const getAdminCommunities = asyncHandler(async (req, res) => {
     Community.countDocuments(query),
   ]);
 
+  const mappedCommunities = communities.map((community) => ({
+    ...community,
+    activeMemberCount: Array.isArray(community.members)
+      ? community.members.filter((member) => member.isActive).length
+      : 0,
+    postCount: Array.isArray(community.posts) ? community.posts.length : 0,
+    eventCount: Array.isArray(community.events) ? community.events.length : 0,
+    joinRequestCount: Array.isArray(community.joinRequests)
+      ? community.joinRequests.filter((request) => request.status === "pending").length
+      : 0,
+  }));
+
   res.status(200).json({
     success: true,
-    data: communities,
+    data: mappedCommunities,
     pagination: {
       page,
       limit,
@@ -646,7 +723,7 @@ export const getAdminCommunities = asyncHandler(async (req, res) => {
 });
 
 export const updateAdminCommunityStatus = asyncHandler(async (req, res) => {
-  const { isActive } = req.body;
+  const { isActive, note } = req.body;
 
   if (typeof isActive !== "boolean") {
     return res.status(400).json({ success: false, message: "isActive must be a boolean" });
@@ -659,6 +736,12 @@ export const updateAdminCommunityStatus = asyncHandler(async (req, res) => {
 
   const previousStatus = community.isActive;
   community.isActive = isActive;
+  community.moderation = {
+    ...(community.moderation || {}),
+    note: note || community.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
   await community.save();
 
   await logAdminAction({
@@ -669,6 +752,7 @@ export const updateAdminCommunityStatus = asyncHandler(async (req, res) => {
     metadata: {
       previousStatus,
       newStatus: isActive,
+      note,
     },
   });
 
@@ -678,6 +762,48 @@ export const updateAdminCommunityStatus = asyncHandler(async (req, res) => {
     data: {
       id: community._id,
       isActive: community.isActive,
+    },
+  });
+});
+
+export const updateAdminCommunityFeatured = asyncHandler(async (req, res) => {
+  const { isFeatured } = req.body;
+
+  if (typeof isFeatured !== "boolean") {
+    return res.status(400).json({ success: false, message: "isFeatured must be a boolean" });
+  }
+
+  const community = await Community.findById(req.params.communityId);
+  if (!community) {
+    return res.status(404).json({ success: false, message: "Community not found" });
+  }
+
+  const previousValue = community.isFeatured;
+  community.isFeatured = isFeatured;
+  community.moderation = {
+    ...(community.moderation || {}),
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await community.save();
+
+  await logAdminAction({
+    req,
+    action: "community.featured.update",
+    entityType: "community",
+    entityId: community._id,
+    metadata: {
+      previousValue,
+      newValue: isFeatured,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Community featured flag updated",
+    data: {
+      id: community._id,
+      isFeatured: community.isFeatured,
     },
   });
 });
@@ -746,9 +872,26 @@ export const getAdminVenues = asyncHandler(async (req, res) => {
     Venue.countDocuments(query),
   ]);
 
+  const mappedVenues = venues.map((venue) => {
+    const ratings = Array.isArray(venue.ratings) ? venue.ratings : [];
+    const bookings = Array.isArray(venue.bookings) ? venue.bookings : [];
+    const averageRating =
+      ratings.length > 0
+        ? Number((ratings.reduce((sum, rating) => sum + (rating.rating || 0), 0) / ratings.length).toFixed(1))
+        : 0;
+
+    return {
+      ...venue,
+      averageRating,
+      ratingsCount: ratings.length,
+      totalBookings: bookings.length,
+      confirmedBookings: bookings.filter((booking) => booking.status === "confirmed").length,
+    };
+  });
+
   res.status(200).json({
     success: true,
-    data: venues,
+    data: mappedVenues,
     pagination: {
       page,
       limit,
@@ -761,7 +904,7 @@ export const getAdminVenues = asyncHandler(async (req, res) => {
 });
 
 export const updateAdminVenueVerification = asyncHandler(async (req, res) => {
-  const { isVerified } = req.body;
+  const { isVerified, note } = req.body;
 
   if (typeof isVerified !== "boolean") {
     return res.status(400).json({ success: false, message: "isVerified must be a boolean" });
@@ -774,6 +917,12 @@ export const updateAdminVenueVerification = asyncHandler(async (req, res) => {
 
   const previousVerification = venue.isVerified;
   venue.isVerified = isVerified;
+  venue.moderation = {
+    ...(venue.moderation || {}),
+    note: note || venue.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
   await venue.save();
 
   await logAdminAction({
@@ -784,6 +933,7 @@ export const updateAdminVenueVerification = asyncHandler(async (req, res) => {
     metadata: {
       previousVerification,
       newVerification: isVerified,
+      note,
     },
   });
 
@@ -798,7 +948,7 @@ export const updateAdminVenueVerification = asyncHandler(async (req, res) => {
 });
 
 export const updateAdminVenueStatus = asyncHandler(async (req, res) => {
-  const { isActive } = req.body;
+  const { isActive, note } = req.body;
 
   if (typeof isActive !== "boolean") {
     return res.status(400).json({ success: false, message: "isActive must be a boolean" });
@@ -811,6 +961,12 @@ export const updateAdminVenueStatus = asyncHandler(async (req, res) => {
 
   const previousStatus = venue.isActive;
   venue.isActive = isActive;
+  venue.moderation = {
+    ...(venue.moderation || {}),
+    note: note || venue.moderation?.note,
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
   await venue.save();
 
   await logAdminAction({
@@ -821,6 +977,7 @@ export const updateAdminVenueStatus = asyncHandler(async (req, res) => {
     metadata: {
       previousStatus,
       newStatus: isActive,
+      note,
     },
   });
 
@@ -830,6 +987,48 @@ export const updateAdminVenueStatus = asyncHandler(async (req, res) => {
     data: {
       id: venue._id,
       isActive: venue.isActive,
+    },
+  });
+});
+
+export const updateAdminVenueFeatured = asyncHandler(async (req, res) => {
+  const { isFeatured } = req.body;
+
+  if (typeof isFeatured !== "boolean") {
+    return res.status(400).json({ success: false, message: "isFeatured must be a boolean" });
+  }
+
+  const venue = await Venue.findById(req.params.venueId);
+  if (!venue) {
+    return res.status(404).json({ success: false, message: "Venue not found" });
+  }
+
+  const previousValue = venue.isFeatured;
+  venue.isFeatured = isFeatured;
+  venue.moderation = {
+    ...(venue.moderation || {}),
+    moderatedAt: new Date(),
+    moderatedBy: req.user._id,
+  };
+  await venue.save();
+
+  await logAdminAction({
+    req,
+    action: "venue.featured.update",
+    entityType: "venue",
+    entityId: venue._id,
+    metadata: {
+      previousValue,
+      newValue: isFeatured,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Venue featured flag updated",
+    data: {
+      id: venue._id,
+      isFeatured: venue.isFeatured,
     },
   });
 });

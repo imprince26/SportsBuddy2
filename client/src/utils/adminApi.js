@@ -59,8 +59,13 @@ export const adminApi = {
     return response.data;
   },
 
-  updateEventStatus: async ({ eventId, status }) => {
-    const response = await api.patch(`/admin/events/${eventId}/status`, { status });
+  updateEventStatus: async ({ eventId, status, note }) => {
+    const response = await api.patch(`/admin/events/${eventId}/status`, { status, note });
+    return response.data;
+  },
+
+  updateEventFeatured: async ({ eventId, isFeatured }) => {
+    const response = await api.patch(`/admin/events/${eventId}/featured`, { isFeatured });
     return response.data;
   },
 
@@ -74,8 +79,13 @@ export const adminApi = {
     return response.data;
   },
 
-  updateCommunityStatus: async ({ communityId, isActive }) => {
-    const response = await api.patch(`/admin/communities/${communityId}/status`, { isActive });
+  updateCommunityStatus: async ({ communityId, isActive, note }) => {
+    const response = await api.patch(`/admin/communities/${communityId}/status`, { isActive, note });
+    return response.data;
+  },
+
+  updateCommunityFeatured: async ({ communityId, isFeatured }) => {
+    const response = await api.patch(`/admin/communities/${communityId}/featured`, { isFeatured });
     return response.data;
   },
 
@@ -89,13 +99,18 @@ export const adminApi = {
     return response.data;
   },
 
-  updateVenueVerification: async ({ venueId, isVerified }) => {
-    const response = await api.patch(`/admin/venues/${venueId}/verification`, { isVerified });
+  updateVenueVerification: async ({ venueId, isVerified, note }) => {
+    const response = await api.patch(`/admin/venues/${venueId}/verification`, { isVerified, note });
     return response.data;
   },
 
-  updateVenueStatus: async ({ venueId, isActive }) => {
-    const response = await api.patch(`/admin/venues/${venueId}/status`, { isActive });
+  updateVenueStatus: async ({ venueId, isActive, note }) => {
+    const response = await api.patch(`/admin/venues/${venueId}/status`, { isActive, note });
+    return response.data;
+  },
+
+  updateVenueFeatured: async ({ venueId, isFeatured }) => {
+    const response = await api.patch(`/admin/venues/${venueId}/featured`, { isFeatured });
     return response.data;
   },
 

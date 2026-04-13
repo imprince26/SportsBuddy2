@@ -8,13 +8,16 @@ import {
   updateAdminUserStatus,
   getAdminEvents,
   updateAdminEventStatus,
+  updateAdminEventFeatured,
   deleteAdminEvent,
   getAdminCommunities,
   updateAdminCommunityStatus,
+  updateAdminCommunityFeatured,
   deleteAdminCommunity,
   getAdminVenues,
   updateAdminVenueVerification,
   updateAdminVenueStatus,
+  updateAdminVenueFeatured,
   getAdminBookings,
   updateAdminBookingStatus,
   getAdminNotifications,
@@ -41,13 +44,16 @@ import {
   adminEventListQuerySchema,
   adminEventIdParamsSchema,
   adminEventStatusBodySchema,
+  adminEventFeaturedBodySchema,
   adminCommunityListQuerySchema,
   adminCommunityIdParamsSchema,
   adminCommunityStatusBodySchema,
+  adminCommunityFeaturedBodySchema,
   adminVenueListQuerySchema,
   adminVenueIdParamsSchema,
   adminVenueVerificationBodySchema,
   adminVenueStatusBodySchema,
+  adminVenueFeaturedBodySchema,
   adminBookingListQuerySchema,
   adminBookingParamsSchema,
   adminBookingStatusBodySchema,
@@ -98,6 +104,12 @@ router.patch(
   validateRequest({ params: adminEventIdParamsSchema, body: adminEventStatusBodySchema }),
   updateAdminEventStatus
 );
+router.patch(
+  "/events/:eventId/featured",
+  adminWriteLimiter,
+  validateRequest({ params: adminEventIdParamsSchema, body: adminEventFeaturedBodySchema }),
+  updateAdminEventFeatured
+);
 router.delete(
   "/events/:eventId",
   adminWriteLimiter,
@@ -116,6 +128,12 @@ router.patch(
   adminWriteLimiter,
   validateRequest({ params: adminCommunityIdParamsSchema, body: adminCommunityStatusBodySchema }),
   updateAdminCommunityStatus
+);
+router.patch(
+  "/communities/:communityId/featured",
+  adminWriteLimiter,
+  validateRequest({ params: adminCommunityIdParamsSchema, body: adminCommunityFeaturedBodySchema }),
+  updateAdminCommunityFeatured
 );
 router.delete(
   "/communities/:communityId",
@@ -137,6 +155,12 @@ router.patch(
   validateRequest({ params: adminVenueIdParamsSchema, body: adminVenueStatusBodySchema }),
   updateAdminVenueStatus
 );
+router.patch(
+  "/venues/:venueId/featured",
+  adminWriteLimiter,
+  validateRequest({ params: adminVenueIdParamsSchema, body: adminVenueFeaturedBodySchema }),
+  updateAdminVenueFeatured
+);
 
 router.get("/bookings", adminReadLimiter, validateRequest({ query: adminBookingListQuerySchema }), getAdminBookings);
 router.patch(
@@ -155,6 +179,15 @@ router.get(
 router.post(
   "/notifications",
   adminWriteLimiter,
+  (req, res, next) => {
+    if (req.body?.scheduledAt === "") {
+      delete req.body.scheduledAt;
+    }
+    if (req.body?.metadata?.actionUrl === "") {
+      delete req.body.metadata.actionUrl;
+    }
+    next();
+  },
   validateRequest({ body: adminNotificationCreateBodySchema }),
   createAdminNotification
 );

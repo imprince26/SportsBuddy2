@@ -12,7 +12,7 @@ const AdminStatsCard = ({
   return (
     <Card
       className={cn(
-        "border-border/60 bg-card/75 shadow-sm transition-all hover:shadow-md",
+        "border-border/60 bg-card shadow-sm transition-all hover:shadow-md",
         compact ? "rounded-xl" : "rounded-2xl"
       )}
     >

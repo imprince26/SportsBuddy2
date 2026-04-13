@@ -25,7 +25,7 @@ const AdminBookings = () => {
         description="Track reservation throughput, confirmations, and booking quality."
       />
 
-      <Card className="rounded-2xl border-border/60 bg-card/70">
+      <Card className="rounded-2xl border-border/60 bg-card">
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-3">
           <Select
             value={bookingsFilter.status}
@@ -66,7 +66,7 @@ const AdminBookings = () => {
         </CardContent>
       </Card>
 
-      <Card className="rounded-2xl border-border/60 bg-card/70">
+      <Card className="rounded-2xl border-border/60 bg-card">
         <CardContent className="grid grid-cols-2 gap-3 p-4 md:grid-cols-5">
           <div>
             <p className="text-xs text-muted-foreground">Total bookings</p>
@@ -96,7 +96,7 @@ const AdminBookings = () => {
       ) : bookingsQuery.data?.data?.length ? (
         <div className="space-y-3">
           {bookingsQuery.data.data.map((booking) => (
-            <Card key={booking.bookingId} className="rounded-2xl border-border/60 bg-card/70">
+            <Card key={booking.bookingId} className="rounded-2xl border-border/60 bg-card">
               <CardContent className="space-y-3 p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div>

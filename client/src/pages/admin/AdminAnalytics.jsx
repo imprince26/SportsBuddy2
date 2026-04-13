@@ -69,51 +69,51 @@ const AdminAnalytics = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Card className="rounded-2xl border-border/60 bg-card/75">
+        <Card className="rounded-2xl border-border/60 bg-card">
           <CardHeader>
             <CardTitle className="text-base">Server Heartbeat</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="flex items-center gap-2 text-foreground">
                 <HeartPulse className="h-4 w-4 text-primary" />
                 Environment
               </span>
               <span className="font-medium uppercase">{healthQuery.data?.environment || "development"}</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-foreground">PID</span>
               <span className="font-medium">{processStats?.pid || "-"}</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-foreground">RSS</span>
               <span className="font-medium">{toMb(processStats?.memory?.rss || 0)}</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-foreground">External memory</span>
               <span className="font-medium">{toMb(processStats?.memory?.external || 0)}</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-border/60 bg-card/75">
+        <Card className="rounded-2xl border-border/60 bg-card">
           <CardHeader>
             <CardTitle className="text-base">Database Snapshot</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-foreground">Connection state</span>
               <span className="font-medium">{healthQuery.data?.database?.state ?? "-"}</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-foreground">Database</span>
               <span className="font-medium">{healthQuery.data?.database?.name || "-"}</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-foreground">Storage size</span>
               <span className="font-medium">{toMb(dbStats?.storageSize || 0)}</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-foreground">Data size</span>
               <span className="font-medium">{toMb(dbStats?.dataSize || 0)}</span>
             </div>

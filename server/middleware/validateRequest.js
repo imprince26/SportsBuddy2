@@ -21,6 +21,10 @@ const normalizeValidationErrors = (issues, source) => {
   }));
 };
 
+const isZodSchemaLike = (schema) => {
+  return Boolean(schema && typeof schema.safeParse === "function");
+};
+
 export const validateRequest = ({ body, query, params } = {}) => {
   return (req, res, next) => {
     try {
@@ -34,6 +38,15 @@ export const validateRequest = ({ body, query, params } = {}) => {
 
       for (const validator of validators) {
         if (!validator.schema) {
+          continue;
+        }
+
+        if (!isZodSchemaLike(validator.schema)) {
+          errors.push({
+            source: validator.source,
+            path: "schema",
+            message: "Validation schema is misconfigured",
+          });
           continue;
         }
 

@@ -22,7 +22,7 @@ const AdminAuditLogs = () => {
         description="Track administrative actions with metadata and actor attribution."
       />
 
-      <Card className="rounded-2xl border-border/60 bg-card/70">
+      <Card className="rounded-2xl border-border/60 bg-card">
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
           <Input
             placeholder="Action key"
@@ -84,7 +84,7 @@ const AdminAuditLogs = () => {
       ) : logsQuery.data?.data?.length ? (
         <div className="space-y-3">
           {logsQuery.data.data.map((log) => (
-            <Card key={log._id} className="rounded-2xl border-border/60 bg-card/70">
+            <Card key={log._id} className="rounded-2xl border-border/60 bg-card">
               <CardContent className="space-y-2 p-4">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm font-semibold text-foreground">{log.action}</p>

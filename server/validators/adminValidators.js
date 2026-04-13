@@ -66,6 +66,11 @@ export const adminEventIdParamsSchema = z.object({
 
 export const adminEventStatusBodySchema = z.object({
   status: eventStatusSchema,
+  note: z.string().trim().max(500).optional(),
+});
+
+export const adminEventFeaturedBodySchema = z.object({
+  isFeatured: z.boolean(),
 });
 
 export const adminCommunityListQuerySchema = paginationQuerySchema.extend({
@@ -81,6 +86,11 @@ export const adminCommunityIdParamsSchema = z.object({
 
 export const adminCommunityStatusBodySchema = z.object({
   isActive: z.boolean(),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const adminCommunityFeaturedBodySchema = z.object({
+  isFeatured: z.boolean(),
 });
 
 export const adminVenueListQuerySchema = paginationQuerySchema.extend({
@@ -97,10 +107,16 @@ export const adminVenueIdParamsSchema = z.object({
 
 export const adminVenueVerificationBodySchema = z.object({
   isVerified: z.boolean(),
+  note: z.string().trim().max(500).optional(),
 });
 
 export const adminVenueStatusBodySchema = z.object({
   isActive: z.boolean(),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const adminVenueFeaturedBodySchema = z.object({
+  isFeatured: z.boolean(),
 });
 
 export const adminBookingListQuerySchema = paginationQuerySchema.extend({
@@ -133,7 +149,13 @@ export const adminNotificationCreateBodySchema = z.object({
   priority: notificationPrioritySchema.optional(),
   recipients: notificationRecipientsSchema.optional(),
   specificRecipientIds: z.array(objectIdSchema).max(1000).optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: z
+    .object({
+      actionUrl: z.string().trim().url("Invalid actionUrl").optional(),
+      emailSent: z.boolean().optional(),
+    })
+    .passthrough()
+    .optional(),
   scheduledAt: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid scheduledAt").optional(),
   sendNow: z.boolean().optional(),
 });

@@ -108,7 +108,7 @@ const AdminDashboard = () => {
 
       <AdminMetricGrid items={metrics} />
 
-      <Card className="rounded-2xl border-border/60 bg-card/75 shadow-sm">
+      <Card className="rounded-2xl border-border/60 bg-card shadow-sm">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-base font-semibold">Growth Trends</CardTitle>
           <div className="w-full sm:w-[180px]">

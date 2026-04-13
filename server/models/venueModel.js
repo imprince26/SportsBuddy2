@@ -129,6 +129,23 @@ const venueSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    moderation: {
+      note: {
+        type: String,
+        trim: true,
+      },
+      moderatedAt: {
+        type: Date,
+      },
+      moderatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
     eventsHosted: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Event",
@@ -170,6 +187,7 @@ const venueSchema = new mongoose.Schema(
 venueSchema.index({ "location.coordinates": "2dsphere" });
 venueSchema.index({ isActive: 1, isVerified: 1, createdAt: -1 });
 venueSchema.index({ owner: 1, createdAt: -1 });
+venueSchema.index({ isFeatured: 1, isActive: 1, createdAt: -1 });
 
 // Virtual for average rating
 venueSchema.virtual("averageRating").get(function () {

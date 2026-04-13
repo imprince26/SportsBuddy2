@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Shield, UserCog } from "lucide-react";
+import { Eye, Shield, Star, UserCog } from "lucide-react";
 import { userRoleSchema, userStatusSchema } from "@/schemas/adminSchemas";
 import { useAdminUiStore } from "@/store/adminUiStore";
 import { useAdminUsers, useUpdateAdminUserRole, useUpdateAdminUserStatus } from "@/hooks/admin/useAdminUsers";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ const AdminUsers = () => {
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [dialogType, setDialogType] = useState(null);
+  const [detailsUser, setDetailsUser] = useState(null);
 
   const roleForm = useForm({
     resolver: zodResolver(userRoleSchema),
@@ -91,7 +93,7 @@ const AdminUsers = () => {
         description="Manage identities, permissions, and account moderation across the platform."
       />
 
-      <Card className="rounded-2xl border-border/60 bg-card/70">
+      <Card className="rounded-2xl border-border/60 bg-card">
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
           <Input
             placeholder="Search name, username, email"
@@ -150,7 +152,7 @@ const AdminUsers = () => {
       ) : usersQuery.data?.data?.length ? (
         <div className="space-y-3">
           {usersQuery.data.data.map((user) => (
-            <Card key={user._id} className="rounded-2xl border-border/60 bg-card/70">
+            <Card key={user._id} className="rounded-2xl border-border/60 bg-card">
               <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-3">
@@ -178,6 +180,22 @@ const AdminUsers = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setDetailsUser(user)}>
+                    <Eye className="mr-1 h-4 w-4" />
+                    View
+                  </Button>
+
+                  <div className="flex items-center gap-2 rounded-lg border border-border/60 px-2 py-1">
+                    <span className="text-xs text-muted-foreground">Featured role</span>
+                    <Switch
+                      checked={Boolean(user.role === "admin")}
+                      onCheckedChange={(checked) =>
+                        updateRoleMutation.mutate({ userId: user._id, role: checked ? "admin" : "user" })
+                      }
+                    />
+                    <Star className="h-3.5 w-3.5 text-primary" />
+                  </div>
+
                   <Button variant="outline" size="sm" onClick={() => openRoleDialog(user)}>
                     <Shield className="mr-1 h-4 w-4" />
                     Role
@@ -302,6 +320,41 @@ const AdminUsers = () => {
           ) : null}
           {statusForm.formState.errors.note ? (
             <p className="text-xs text-rose-600">{statusForm.formState.errors.note.message}</p>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(detailsUser)} onOpenChange={(open) => (!open ? setDetailsUser(null) : null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{detailsUser?.name || "User details"}</DialogTitle>
+            <DialogDescription>{detailsUser?.email || "No email"}</DialogDescription>
+          </DialogHeader>
+
+          {detailsUser ? (
+            <div className="grid grid-cols-1 gap-3 text-sm">
+              <div className="rounded-lg border border-border/60 bg-card p-3">
+                <p className="text-xs text-muted-foreground">Username</p>
+                <p className="font-medium">@{detailsUser.username || "-"}</p>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-card p-3">
+                <p className="text-xs text-muted-foreground">Role and status</p>
+                <div className="mt-1 flex gap-2">
+                  <AdminStatusBadge value={detailsUser.role} />
+                  <AdminStatusBadge value={detailsUser.accountStatus} />
+                </div>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-card p-3">
+                <p className="text-xs text-muted-foreground">Joined</p>
+                <p className="font-medium">
+                  {detailsUser.createdAt ? format(new Date(detailsUser.createdAt), "dd MMM yyyy hh:mm a") : "-"}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-card p-3">
+                <p className="text-xs text-muted-foreground">Moderation note</p>
+                <p className="font-medium">{detailsUser.moderation?.note || "-"}</p>
+              </div>
+            </div>
           ) : null}
         </DialogContent>
       </Dialog>

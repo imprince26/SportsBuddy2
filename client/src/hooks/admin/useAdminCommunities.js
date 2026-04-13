@@ -25,6 +25,21 @@ export const useUpdateAdminCommunityStatus = () => {
   });
 };
 
+export const useUpdateAdminCommunityFeatured = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: adminApi.updateCommunityFeatured,
+    onSuccess: () => {
+      showToast.success("Community featured flag updated");
+      queryClient.invalidateQueries({ queryKey: ["admin", "communities"] });
+    },
+    onError: (error) => {
+      showToast.error(error?.response?.data?.message || "Failed to update featured flag");
+    },
+  });
+};
+
 export const useDeleteAdminCommunity = () => {
   const queryClient = useQueryClient();
 

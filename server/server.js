@@ -59,7 +59,7 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
@@ -106,14 +106,32 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
+  if (res.headersSent) {
+    return next(err);
+  }
+
   const statusCode = err.statusCode || err.status || 500;
-  res.status(statusCode).json({
+  const isValidationError =
+    (typeof err.name === 'string' && err.name.includes('Zod')) ||
+    (typeof err.message === 'string' && err.message.includes('_zod'));
+
+  const normalizedStatusCode = isValidationError ? 400 : statusCode;
+
+  res.status(normalizedStatusCode).json({
     success: false,
     message:
-      process.env.NODE_ENV === 'production' && statusCode === 500
+      process.env.NODE_ENV === 'production' && normalizedStatusCode === 500
         ? 'Internal server error'
         : err.message
   });
+});
+
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled promise rejection:', error);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
 });
 
 const PORT = process.env.PORT || 5000;

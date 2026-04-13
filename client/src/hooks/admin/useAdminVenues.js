@@ -39,3 +39,18 @@ export const useUpdateAdminVenueStatus = () => {
     },
   });
 };
+
+export const useUpdateAdminVenueFeatured = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: adminApi.updateVenueFeatured,
+    onSuccess: () => {
+      showToast.success("Venue featured flag updated");
+      queryClient.invalidateQueries({ queryKey: ["admin", "venues"] });
+    },
+    onError: (error) => {
+      showToast.error(error?.response?.data?.message || "Failed to update featured flag");
+    },
+  });
+};

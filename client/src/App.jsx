@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMetadata } from '@/hooks/useMetadata';
 import Layout from '@/components/layout/Layout';
 import AdminLayout from '@/components/layout/AdminLayout';
+import { ThemeProvider } from '@/context/ThemeProvider';
 
 import ScrollToTop from '@/components/ScrollToTop';
 
@@ -173,19 +174,28 @@ function App() {
             <Route path="community/create" element={<ProtectedRoute><CreateCommunity /></ProtectedRoute>} />
             <Route path="community/:id/edit" element={<ProtectedRoute><EditCommunity /></ProtectedRoute>} />
             <Route path="community/:id/manage" element={<ProtectedRoute><ManageCommunity /></ProtectedRoute>} />
+          </Route>
 
-            <Route path="admin" element={<ProtectedRoute adminOnly><AdminLayout /></ProtectedRoute>}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
-              <Route path="analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
-              <Route path="users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
-              <Route path="events" element={<ProtectedRoute adminOnly><AdminEvents /></ProtectedRoute>} />
-              <Route path="communities" element={<ProtectedRoute adminOnly><AdminCommunities /></ProtectedRoute>} />
-              <Route path="venues" element={<ProtectedRoute adminOnly><AdminVenues /></ProtectedRoute>} />
-              <Route path="bookings" element={<ProtectedRoute adminOnly><AdminBookings /></ProtectedRoute>} />
-              <Route path="notifications" element={<ProtectedRoute adminOnly><AdminNotifications /></ProtectedRoute>} />
-              <Route path="audit-logs" element={<ProtectedRoute adminOnly><AdminAuditLogs /></ProtectedRoute>} />
-            </Route>
+          <Route
+            path="/admin"
+            element={
+              <ThemeProvider defaultTheme="system" storageKey="theme">
+                <ProtectedRoute adminOnly>
+                  <AdminLayout />
+                </ProtectedRoute>
+              </ThemeProvider>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+            <Route path="analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
+            <Route path="users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
+            <Route path="events" element={<ProtectedRoute adminOnly><AdminEvents /></ProtectedRoute>} />
+            <Route path="communities" element={<ProtectedRoute adminOnly><AdminCommunities /></ProtectedRoute>} />
+            <Route path="venues" element={<ProtectedRoute adminOnly><AdminVenues /></ProtectedRoute>} />
+            <Route path="bookings" element={<ProtectedRoute adminOnly><AdminBookings /></ProtectedRoute>} />
+            <Route path="notifications" element={<ProtectedRoute adminOnly><AdminNotifications /></ProtectedRoute>} />
+            <Route path="audit-logs" element={<ProtectedRoute adminOnly><AdminAuditLogs /></ProtectedRoute>} />
           </Route>
 
           

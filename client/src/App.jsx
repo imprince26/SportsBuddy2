@@ -1,11 +1,12 @@
 /* eslint-disable react/prop-types */
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import SportsBuddyLoader from './components/Loader';
 import { useAuth } from '@/hooks/useAuth';
 import { useMetadata } from '@/hooks/useMetadata';
 import Layout from '@/components/layout/Layout';
+import AdminLayout from '@/components/layout/AdminLayout';
 
 import ScrollToTop from '@/components/ScrollToTop';
 
@@ -32,6 +33,15 @@ import MyBookings from './pages/venues/MyBookings';
 import Leaderboard from './pages/leaderboard/Leaderboard';
 // import Community from './pages/community/Community';
 import Athletes from './pages/athletes/Athletes';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminEvents from './pages/admin/AdminEvents';
+import AdminCommunities from './pages/admin/AdminCommunities';
+import AdminVenues from './pages/admin/AdminVenues';
+import AdminBookings from './pages/admin/AdminBookings';
+import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 
 // Protected User Pages
 import Dashboard from './pages/Dashboard';
@@ -53,7 +63,6 @@ import CommunityDetails from './pages/community/CommunityDetails';
 import ManageCommunity from './pages/community/ManageCommunity';
 import PostDetail from './pages/community/PostDetail';
 // import CreateVenue from './pages/venue/CreateVenue';
-// import EditVenue from './pages/venue/EditVenue';
 // import UserProfile from './pages/UserProfile';
 
 
@@ -83,9 +92,9 @@ const ProtectedRoute = ({ children, adminOnly = false, title = "", data = {} }) 
     return <Navigate to="/login" replace />;
   }
 
-  // if (adminOnly && user?.role !== 'admin') {
-  //   return <Navigate to="/dashboard" replace />;
-  // }
+  if (adminOnly && user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <Suspense fallback={<PageLoader message={`Loading ${title || 'content'}...`} />}>
@@ -108,7 +117,7 @@ const PublicRoute = ({ children, title = "", data = {} }) => {
 
 function App() {
   const location = useLocation();
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
 
   // Show initial loader while auth is being checked
   if (authLoading) {
@@ -164,7 +173,19 @@ function App() {
             <Route path="community/create" element={<ProtectedRoute><CreateCommunity /></ProtectedRoute>} />
             <Route path="community/:id/edit" element={<ProtectedRoute><EditCommunity /></ProtectedRoute>} />
             <Route path="community/:id/manage" element={<ProtectedRoute><ManageCommunity /></ProtectedRoute>} />
-            <Route path="venues/:id/edit" element={<ProtectedRoute><EditVenue /></ProtectedRoute>} />
+
+            <Route path="admin" element={<ProtectedRoute adminOnly><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+              <Route path="analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
+              <Route path="users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
+              <Route path="events" element={<ProtectedRoute adminOnly><AdminEvents /></ProtectedRoute>} />
+              <Route path="communities" element={<ProtectedRoute adminOnly><AdminCommunities /></ProtectedRoute>} />
+              <Route path="venues" element={<ProtectedRoute adminOnly><AdminVenues /></ProtectedRoute>} />
+              <Route path="bookings" element={<ProtectedRoute adminOnly><AdminBookings /></ProtectedRoute>} />
+              <Route path="notifications" element={<ProtectedRoute adminOnly><AdminNotifications /></ProtectedRoute>} />
+              <Route path="audit-logs" element={<ProtectedRoute adminOnly><AdminAuditLogs /></ProtectedRoute>} />
+            </Route>
           </Route>
 
           

@@ -55,8 +55,8 @@ export const adminEventListQuerySchema = paginationQuerySchema.extend({
   status: eventStatusSchema.optional(),
   category: z.string().trim().min(2).max(40).optional(),
   createdBy: objectIdSchema.optional(),
-  dateFrom: z.string().datetime().optional(),
-  dateTo: z.string().datetime().optional(),
+  dateFrom: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateFrom").optional(),
+  dateTo: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateTo").optional(),
   sortBy: sortBySchema,
 });
 
@@ -106,8 +106,8 @@ export const adminVenueStatusBodySchema = z.object({
 export const adminBookingListQuerySchema = paginationQuerySchema.extend({
   status: bookingStatusSchema.optional(),
   venueId: objectIdSchema.optional(),
-  dateFrom: z.string().datetime().optional(),
-  dateTo: z.string().datetime().optional(),
+  dateFrom: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateFrom").optional(),
+  dateTo: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateTo").optional(),
 });
 
 export const adminBookingParamsSchema = z.object({
@@ -133,8 +133,8 @@ export const adminNotificationCreateBodySchema = z.object({
   priority: notificationPrioritySchema.optional(),
   recipients: notificationRecipientsSchema.optional(),
   specificRecipientIds: z.array(objectIdSchema).max(1000).optional(),
-  metadata: z.record(z.any()).optional(),
-  scheduledAt: z.string().datetime().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+  scheduledAt: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid scheduledAt").optional(),
   sendNow: z.boolean().optional(),
 });
 
@@ -147,6 +147,6 @@ export const adminAuditLogsQuerySchema = paginationQuerySchema.extend({
   entityType: z.enum(["user", "event", "community", "venue", "booking", "notification", "system"]).optional(),
   status: z.enum(["success", "failed"]).optional(),
   adminId: objectIdSchema.optional(),
-  dateFrom: z.string().datetime().optional(),
-  dateTo: z.string().datetime().optional(),
+  dateFrom: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateFrom").optional(),
+  dateTo: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateTo").optional(),
 });

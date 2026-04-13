@@ -8,7 +8,7 @@ import authRoute from "./routes/authRoute.js";
 import eventRoute from "./routes/eventRoute.js";
 import uploadRoute from "./routes/uploadRoute.js";
 import userRoute from "./routes/userRoute.js";
-import adminRoute from "./routes/adminRoute.js";
+// import adminRoute from "./routes/adminRoute.js";
 import notificationRoute from './routes/notificationRoute.js';
 import athletesRoute from './routes/athletesRoute.js';
 import communityRoute from './routes/communityRoute.js';
@@ -75,7 +75,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/users", userRoute);
-app.use('/api/admin', adminRoute);
+// app.use('/api/admin', adminRoute);
 app.use('/api/notifications', notificationRoute);
 app.use("/api/upload",  uploadRoute);
 app.use("/api/athletes", athletesRoute);

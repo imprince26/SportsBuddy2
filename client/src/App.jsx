@@ -6,7 +6,7 @@ import SportsBuddyLoader from './components/Loader';
 import { useAuth } from '@/hooks/useAuth';
 import { useMetadata } from '@/hooks/useMetadata';
 import Layout from '@/components/layout/Layout';
-import AdminLayout from '@/components/layout/AdminLayout';
+
 import ScrollToTop from '@/components/ScrollToTop';
 
 // Public Pages
@@ -56,24 +56,7 @@ import PostDetail from './pages/community/PostDetail';
 // import EditVenue from './pages/venue/EditVenue';
 // import UserProfile from './pages/UserProfile';
 
-// Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ManageUsers from './pages/admin/ManageUsers';
-import ManageEvents from './pages/admin/ManageEvents';
-import ManageCommunities from './pages/admin/ManageCommunities';
-import AdminVenues from './pages/admin/AdminVenues';
-import CreateVenue from './pages/admin/CreateVenue';
-import EditVenue from './pages/admin/EditVenue';
-import VenueBookings from './pages/admin/VenueBookings';
-import AllVenueBookings from './pages/admin/AllVenueBookings';
-import AdminSearch from './pages/admin/AdminSearch';
-import AdminMessages from './pages/admin/AdminMessages';
-import AdminSettings from './pages/admin/AdminSettings';
-import NotificationsPage from './pages/admin/NotificationPage';
-import AdminAnalytics from './pages/admin/AdminAnalytics';
-// import AdminReports from './pages/admin/AdminReports';
-// import ContentModeration from './pages/admin/ContentModeration';
-// import SystemLogs from './pages/admin/SystemLogs';
+
 
 // Error Boundary Component
 import ErrorBoundary from './components/ErrorBoundary';
@@ -100,9 +83,9 @@ const ProtectedRoute = ({ children, adminOnly = false, title = "", data = {} }) 
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // if (adminOnly && user?.role !== 'admin') {
+  //   return <Navigate to="/dashboard" replace />;
+  // }
 
   return (
     <Suspense fallback={<PageLoader message={`Loading ${title || 'content'}...`} />}>
@@ -184,23 +167,7 @@ function App() {
             <Route path="venues/:id/edit" element={<ProtectedRoute><EditVenue /></ProtectedRoute>} />
           </Route>
 
-          {/* Admin Routes */}
-          <Route path="admin" element={<AdminLayout />}>
-            <Route path="dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
-            <Route path="users" element={<ProtectedRoute adminOnly><ManageUsers /></ProtectedRoute>} />
-            <Route path="events" element={<ProtectedRoute adminOnly><ManageEvents /></ProtectedRoute>} />
-            <Route path="communities" element={<ProtectedRoute adminOnly><ManageCommunities /></ProtectedRoute>} />
-            <Route path="venues" element={<ProtectedRoute adminOnly><AdminVenues /></ProtectedRoute>} />
-            <Route path="venues/:id/bookings" element={<ProtectedRoute adminOnly><VenueBookings /></ProtectedRoute>} />
-            <Route path="venue-bookings" element={<ProtectedRoute adminOnly><AllVenueBookings /></ProtectedRoute>} />
-            <Route path="create-venue" element={<ProtectedRoute adminOnly><CreateVenue /></ProtectedRoute>} />
-            <Route path="edit-venue/:id" element={<ProtectedRoute adminOnly><EditVenue /></ProtectedRoute>} />
-            <Route path="notifications" element={<ProtectedRoute adminOnly><NotificationsPage /></ProtectedRoute>} />
-            <Route path="search" element={<ProtectedRoute adminOnly><AdminSearch /></ProtectedRoute>} />
-            <Route path="messages" element={<ProtectedRoute adminOnly><AdminMessages /></ProtectedRoute>} />
-            <Route path="analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
-            <Route path="settings" element={<ProtectedRoute adminOnly><AdminSettings /></ProtectedRoute>} />
-          </Route>
+          
 
           {/* Fallback Route */}
           <Route path="*" element={<PublicRoute><NotFound /></PublicRoute>} />

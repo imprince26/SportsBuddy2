@@ -48,14 +48,6 @@ const parseBooleanQuery = (value) => {
   return undefined;
 };
 
-const ensureObjectId = (value, fieldName = "id") => {
-  if (!mongoose.Types.ObjectId.isValid(value)) {
-    const error = new Error(`Invalid ${fieldName}`);
-    error.statusCode = 400;
-    throw error;
-  }
-};
-
 const buildDateRangeMatch = (from, to, fieldName) => {
   const match = {};
   if (from) {
@@ -327,8 +319,6 @@ export const getAdminUsers = asyncHandler(async (req, res) => {
 });
 
 export const getAdminUserDetails = asyncHandler(async (req, res) => {
-  ensureObjectId(req.params.userId, "user id");
-
   const user = await User.findById(req.params.userId)
     .select("-password -resetPasswordCode -resetPasswordExpire -resetPasswordBlockedUntil")
     .populate("followers", "_id name username avatar")
@@ -358,7 +348,6 @@ export const getAdminUserDetails = asyncHandler(async (req, res) => {
 
 export const updateAdminUserRole = asyncHandler(async (req, res) => {
   const { role } = req.body;
-  ensureObjectId(req.params.userId, "user id");
 
   if (!ALLOWED_USER_ROLES.includes(role)) {
     return res.status(400).json({ success: false, message: "Invalid role" });
@@ -410,7 +399,6 @@ export const updateAdminUserRole = asyncHandler(async (req, res) => {
 
 export const updateAdminUserStatus = asyncHandler(async (req, res) => {
   const { accountStatus, reason, note } = req.body;
-  ensureObjectId(req.params.userId, "user id");
 
   if (!ALLOWED_ACCOUNT_STATUSES.includes(accountStatus)) {
     return res.status(400).json({ success: false, message: "Invalid account status" });
@@ -533,7 +521,6 @@ export const getAdminEvents = asyncHandler(async (req, res) => {
 
 export const updateAdminEventStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  ensureObjectId(req.params.eventId, "event id");
 
   if (!ALLOWED_EVENT_STATUSES.includes(status)) {
     return res.status(400).json({ success: false, message: "Invalid event status" });
@@ -570,7 +557,6 @@ export const updateAdminEventStatus = asyncHandler(async (req, res) => {
 });
 
 export const deleteAdminEvent = asyncHandler(async (req, res) => {
-  ensureObjectId(req.params.eventId, "event id");
   const event = await Event.findById(req.params.eventId);
 
   if (!event) {
@@ -661,7 +647,6 @@ export const getAdminCommunities = asyncHandler(async (req, res) => {
 
 export const updateAdminCommunityStatus = asyncHandler(async (req, res) => {
   const { isActive } = req.body;
-  ensureObjectId(req.params.communityId, "community id");
 
   if (typeof isActive !== "boolean") {
     return res.status(400).json({ success: false, message: "isActive must be a boolean" });
@@ -698,8 +683,6 @@ export const updateAdminCommunityStatus = asyncHandler(async (req, res) => {
 });
 
 export const deleteAdminCommunity = asyncHandler(async (req, res) => {
-  ensureObjectId(req.params.communityId, "community id");
-
   const community = await Community.findById(req.params.communityId);
   if (!community) {
     return res.status(404).json({ success: false, message: "Community not found" });
@@ -779,7 +762,6 @@ export const getAdminVenues = asyncHandler(async (req, res) => {
 
 export const updateAdminVenueVerification = asyncHandler(async (req, res) => {
   const { isVerified } = req.body;
-  ensureObjectId(req.params.venueId, "venue id");
 
   if (typeof isVerified !== "boolean") {
     return res.status(400).json({ success: false, message: "isVerified must be a boolean" });
@@ -817,7 +799,6 @@ export const updateAdminVenueVerification = asyncHandler(async (req, res) => {
 
 export const updateAdminVenueStatus = asyncHandler(async (req, res) => {
   const { isActive } = req.body;
-  ensureObjectId(req.params.venueId, "venue id");
 
   if (typeof isActive !== "boolean") {
     return res.status(400).json({ success: false, message: "isActive must be a boolean" });
@@ -983,8 +964,6 @@ export const getAdminBookings = asyncHandler(async (req, res) => {
 
 export const updateAdminBookingStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  ensureObjectId(req.params.venueId, "venue id");
-  ensureObjectId(req.params.bookingId, "booking id");
 
   if (!ALLOWED_BOOKING_STATUSES.includes(status)) {
     return res.status(400).json({ success: false, message: "Invalid booking status" });
@@ -1155,7 +1134,6 @@ export const createAdminNotification = asyncHandler(async (req, res) => {
 });
 
 export const sendAdminNotification = asyncHandler(async (req, res) => {
-  ensureObjectId(req.params.notificationId, "notification id");
   const notification = await Notification.findById(req.params.notificationId);
 
   if (!notification) {

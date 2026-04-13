@@ -8,12 +8,13 @@ import authRoute from "./routes/authRoute.js";
 import eventRoute from "./routes/eventRoute.js";
 import uploadRoute from "./routes/uploadRoute.js";
 import userRoute from "./routes/userRoute.js";
-// import adminRoute from "./routes/adminRoute.js";
+import adminRoute from "./routes/adminRoute.js";
 import notificationRoute from './routes/notificationRoute.js';
 import athletesRoute from './routes/athletesRoute.js';
 import communityRoute from './routes/communityRoute.js';
 import leaderboardRoute from './routes/leaderboardRoute.js';
 import venueRoute from './routes/venueRoute.js';
+import { apiGlobalLimiter } from "./middleware/rateLimitMiddleware.js";
 
 import connectDB from "./config/db.js";
 import setupSocket from "./config/socket.js";
@@ -47,7 +48,7 @@ app.use(morgan("dev"));
 
 // app.use(upstashRateLimiters.global);
 
-if (process.env.NODE_ENV === "production") job.start();
+job.start();
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -72,10 +73,11 @@ app.get("/health", (req, res) => {
 });
 
 // Routes
+app.use("/api", apiGlobalLimiter);
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/users", userRoute);
-// app.use('/api/admin', adminRoute);
+app.use('/api/admin', adminRoute);
 app.use('/api/notifications', notificationRoute);
 app.use("/api/upload",  uploadRoute);
 app.use("/api/athletes", athletesRoute);
@@ -104,9 +106,13 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({
+  const statusCode = err.statusCode || err.status || 500;
+  res.status(statusCode).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+    message:
+      process.env.NODE_ENV === 'production' && statusCode === 500
+        ? 'Internal server error'
+        : err.message
   });
 });
 

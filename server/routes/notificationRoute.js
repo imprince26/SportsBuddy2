@@ -17,46 +17,52 @@ import {
     getNotificationTemplates
 } from '../controllers/notificationController.js';
 import { isAuthenticated, isAdmin } from '../middleware/authMiddleware.js';
+import {
+    adminReadLimiter,
+    adminWriteLimiter,
+    notificationSendLimiter,
+    userWriteLimiter,
+} from "../middleware/rateLimitMiddleware.js";
 
 const router = express.Router();
 
 router.route('/bulk')
-    .post(isAuthenticated, isAdmin, createBulkNotification)
-    .get(isAuthenticated, isAdmin, getBulkNotifications);
+    .post(isAuthenticated, isAdmin, notificationSendLimiter, createBulkNotification)
+    .get(isAuthenticated, isAdmin, adminReadLimiter, getBulkNotifications);
 
 router.route('/bulk/:id')
-    .get(isAuthenticated, isAdmin, getBulkNotificationById)
-    .put(isAuthenticated, isAdmin, updateBulkNotification)
-    .delete(isAuthenticated, isAdmin, deleteBulkNotification);
+    .get(isAuthenticated, isAdmin, adminReadLimiter, getBulkNotificationById)
+    .put(isAuthenticated, isAdmin, adminWriteLimiter, updateBulkNotification)
+    .delete(isAuthenticated, isAdmin, adminWriteLimiter, deleteBulkNotification);
 
 router.route('/bulk/:id/send')
-    .post(isAuthenticated, isAdmin, (req, res) => sendBulkNotificationNow(req.params.id, res));
+    .post(isAuthenticated, isAdmin, notificationSendLimiter, (req, res) => sendBulkNotificationNow(req.params.id, res));
 
 router.route('/bulk/:id/archive')
-    .put(isAuthenticated, isAdmin, archiveBulkNotification);
+    .put(isAuthenticated, isAdmin, adminWriteLimiter, archiveBulkNotification);
 
 router.route('/user')
     .get(isAuthenticated, getUserNotifications);
 
 router.route('/user/read-all')
-    .put(isAuthenticated, markAllNotificationsAsRead);
+    .put(isAuthenticated, userWriteLimiter, markAllNotificationsAsRead);
 
 router.route('/user/:notificationId')
-    .delete(isAuthenticated, deleteUserNotification);
+    .delete(isAuthenticated, userWriteLimiter, deleteUserNotification);
 
 router.route('/user/:notificationId/read')
-    .put(isAuthenticated, markNotificationAsRead);
+    .put(isAuthenticated, userWriteLimiter, markNotificationAsRead);
 
 router.route('/user/:userId/send')
-    .post(isAuthenticated, isAdmin, sendPersonalNotification);
+    .post(isAuthenticated, isAdmin, notificationSendLimiter, sendPersonalNotification);
 
 router.route('/event/:eventId')
-    .post(isAuthenticated, sendEventNotification);
+    .post(isAuthenticated, userWriteLimiter, sendEventNotification);
 
 router.route('/stats')
-    .get(isAuthenticated, isAdmin, getNotificationStats);
+    .get(isAuthenticated, isAdmin, adminReadLimiter, getNotificationStats);
 
 router.route('/templates')
-    .get(isAuthenticated, isAdmin, getNotificationTemplates);
+    .get(isAuthenticated, isAdmin, adminReadLimiter, getNotificationTemplates);
 
 export default router;

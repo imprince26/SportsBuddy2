@@ -1,5 +1,10 @@
 import express from 'express';
 import {
+    publicSearchLimiter,
+    userWriteLimiter,
+} from "../middleware/rateLimitMiddleware.js";
+
+import {
     getAllAthletes,
     getAthleteById,
     toggleFollowAthlete,
@@ -14,7 +19,7 @@ const router = express.Router();
 // Public routes
 router.get('/', getAllAthletes);
 
-router.get('/search', searchAthletes);
+router.get('/search', publicSearchLimiter, searchAthletes);
 
 router.get('/top', getTopAthletes);
 
@@ -24,6 +29,6 @@ router.get('/:id/achievements', getAthleteAchievements);
 
 // Protected routes
 router.use(isAuthenticated);
-router.post('/:id/follow', toggleFollowAthlete);
+router.post('/:id/follow', userWriteLimiter, toggleFollowAthlete);
 
 export default router;

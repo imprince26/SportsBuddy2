@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { type } from "os";
 
 const notificationSchema = new mongoose.Schema({
   type: {
@@ -105,6 +104,31 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    accountStatus: {
+      type: String,
+      enum: ["active", "suspended", "banned"],
+      default: "active",
+    },
+    moderation: {
+      reason: {
+        type: String,
+        trim: true,
+      },
+      note: {
+        type: String,
+        trim: true,
+      },
+      moderatedAt: {
+        type: Date,
+      },
+      moderatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
+    lastLoginAt: {
+      type: Date,
     },
     avatar: {
       url: {
@@ -417,6 +441,9 @@ userSchema.methods.clearResetPassword = function () {
   this.resetPasswordAttempts = 0;
   this.resetPasswordBlockedUntil = undefined;
 };
+
+userSchema.index({ role: 1, accountStatus: 1, createdAt: -1 });
+userSchema.index({ email: 1, username: 1 });
 
 const User = mongoose.model("User", userSchema);
 

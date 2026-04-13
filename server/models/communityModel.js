@@ -227,6 +227,9 @@ communitySchema.virtual("memberCount").get(function () {
   return this.members.filter(member => member.isActive).length;
 });
 
+communitySchema.index({ isActive: 1, createdAt: -1 });
+communitySchema.index({ category: 1, isActive: 1, createdAt: -1 });
+
 // Virtual for recent activity
 communitySchema.virtual("recentActivity").get(function () {
   if (!this.posts || !Array.isArray(this.posts)) {

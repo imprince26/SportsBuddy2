@@ -2,8 +2,10 @@ import asyncHandler from 'express-async-handler';
 import Notification from '../models/notificationModel.js';
 import User from '../models/userModel.js';
 import Event from '../models/eventModel.js';
-import sendEmail from '../config/sendEmail.js';
-import { AdminSentEmailHtml } from '../utils/emailTemplate.js';
+import {
+    dispatchAdminNotification,
+    normalizeSpecificRecipients,
+} from '../services/adminNotificationService.js';
 
 export const createBulkNotification = asyncHandler(async (req, res) => {
     const { title, message, type, priority, recipients, specificRecipients, scheduledAt, metadata } = req.body;
@@ -14,15 +16,20 @@ export const createBulkNotification = asyncHandler(async (req, res) => {
         throw new Error('Title and message are required');
     }
 
+    const resolvedSpecificRecipients = recipients === 'specific'
+        ? await normalizeSpecificRecipients(specificRecipients || [])
+        : [];
+
     const notification = await Notification.create({
         title,
         message,
         type: type || 'announcement',
         priority: priority || 'normal',
         recipients: recipients || 'all',
-        specificRecipients: specificRecipients || [],
+        specificRecipients: resolvedSpecificRecipients,
         createdBy: req.user._id,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+        status: scheduledAt ? 'scheduled' : 'draft',
         metadata: metadata || {}
     });
 
@@ -56,63 +63,12 @@ export const sendBulkNotificationNow = asyncHandler(async (notificationId, res =
     }
 
     try {
-        // Get target users
-        let users = [];
-        if (notification.recipients === 'all') {
-            users = await User.find({});
-        } else if (notification.recipients === 'users') {
-            users = await User.find({ role: 'user' });
-        } else if (notification.recipients === 'admins') {
-            users = await User.find({ role: 'admin' });
-        } else if (notification.recipients === 'specific') {
-            const userIds = notification.specificRecipients.map(r => r.user);
-            users = await User.find({ _id: { $in: userIds } });
-        }
-
-        // Add in-app notifications to users
-        for (const user of users) {
-            await user.addBulkNotification(notification);
-
-            // Log delivery
-            notification.deliveryLogs.push({
-                recipient: user._id,
-                email: user.email,
-                deliveryStatus: 'delivered',
-                deliveredAt: new Date()
-            });
-        }
-
-        // Send emails if enabled
-        if (notification.metadata.emailSent !== false && users.length > 0) {
-            const emails = users.map(user => user.email);
-
-            try {
-                await sendEmail({
-                    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-                    to: emails,
-                    subject: notification.title,
-                    message: notification.message,
-                    html: AdminSentEmailHtml({
-                        subject: notification.title,
-                        message: notification.message
-                    })
-                });
-
-                notification.metadata.emailSent = true;
-            } catch (emailError) {
-                console.error('Email sending failed:', emailError);
-                notification.metadata.emailSent = false;
-            }
-        }
-
-        // Update notification status
-        await notification.markAsSent();
-        await notification.updateStatistics();
+        const result = await dispatchAdminNotification(notification);
 
         if (res) {
             res.status(200).json({
                 success: true,
-                message: `Notification sent to ${users.length} users`,
+                message: `Notification sent to ${result.delivered} users`,
                 data: notification
             });
         }

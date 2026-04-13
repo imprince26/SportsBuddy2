@@ -1,6 +1,8 @@
 import express from 'express';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
-import { upload } from '../config/cloudinary.js';
+import { cloudinary, upload } from '../config/cloudinary.js';
+import { uploadLimiter } from '../middleware/rateLimitMiddleware.js';
+import User from '../models/userModel.js';
 
 const router = express.Router();
 
@@ -8,6 +10,7 @@ const router = express.Router();
 router.post(
   '/event',
   isAuthenticated,
+  uploadLimiter,
   upload.array('eventImages', 5),
   async (req, res) => {
     try {
@@ -41,6 +44,7 @@ router.post(
 router.post(
   '/avatar',
   isAuthenticated,
+  uploadLimiter,
   upload.single('avatar'),
   async (req, res) => {
     try {
@@ -58,12 +62,14 @@ router.post(
       }
 
       // Delete old avatar from Cloudinary if it exists
-      if (user.avatar && user.avatar.includes('cloudinary')) {
-        const publicId = user.avatar.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`avatars/${publicId}`);
+      if (user.avatar?.public_id) {
+        await cloudinary.uploader.destroy(user.avatar.public_id);
       }
 
-      user.avatar = req.file.path;
+      user.avatar = {
+        url: req.file.path,
+        public_id: req.file.filename,
+      };
       await user.save();
 
       res.status(200).json({

@@ -168,6 +168,8 @@ const venueSchema = new mongoose.Schema(
 
 // Create geospatial index
 venueSchema.index({ "location.coordinates": "2dsphere" });
+venueSchema.index({ isActive: 1, isVerified: 1, createdAt: -1 });
+venueSchema.index({ owner: 1, createdAt: -1 });
 
 // Virtual for average rating
 venueSchema.virtual("averageRating").get(function () {

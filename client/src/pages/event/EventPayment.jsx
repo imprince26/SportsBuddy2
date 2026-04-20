@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -46,6 +46,18 @@ const EventPayment = () => {
   const { user, isAuthenticated } = useAuth();
   const { getEventById, getEventPaymentStatus, createEventPaymentOrder, verifyEventPayment } = useEvents();
 
+  const eventActionsRef = useRef({
+    getEventById,
+    getEventPaymentStatus,
+  });
+
+  useEffect(() => {
+    eventActionsRef.current = {
+      getEventById,
+      getEventPaymentStatus,
+    };
+  }, [getEventById, getEventPaymentStatus]);
+
   const [event, setEvent] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
@@ -60,8 +72,8 @@ const EventPayment = () => {
 
     try {
       const [eventResponse, paymentResponse] = await Promise.all([
-        getEventById(id),
-        getEventPaymentStatus(id),
+        eventActionsRef.current.getEventById(id),
+        eventActionsRef.current.getEventPaymentStatus(id),
       ]);
 
       if (!eventResponse?.success || !eventResponse?.data) {
@@ -82,7 +94,7 @@ const EventPayment = () => {
     } finally {
       setIsBootstrapping(false);
     }
-  }, [getEventById, getEventPaymentStatus, id, navigate]);
+  }, [id, navigate]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -140,7 +152,7 @@ const EventPayment = () => {
 
     return {
       label: "Secure Checkout",
-      description: "We verify every payment on server before confirming your event registration.",
+      description: "Complete payment to confirm your seat for this event.",
       tone: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
     };
   }, [hasPaidButNotJoined, isAlreadyParticipant, isPaid, paymentStatus?.latestPayment?.status]);
@@ -294,7 +306,7 @@ const EventPayment = () => {
               <div>
                 <h1 className="text-2xl font-semibold leading-tight text-foreground sm:text-3xl">Complete your event booking</h1>
                 <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-                  Pay once and reserve your seat instantly. We validate payment signature on server before allowing access.
+                  Pay once and reserve your seat instantly with Razorpay checkout.
                 </p>
               </div>
 
@@ -330,7 +342,7 @@ const EventPayment = () => {
                   </div>
                   <div className="flex items-start gap-2 text-sm text-foreground">
                     <ShieldCheck className="mt-0.5 h-4 w-4 text-primary" />
-                    <span>Signature is verified server-side using HMAC SHA256.</span>
+                    <span>Use UPI, cards, net banking, or wallets in one checkout flow.</span>
                   </div>
                   <div className="flex items-start gap-2 text-sm text-foreground">
                     <Ticket className="mt-0.5 h-4 w-4 text-amber-600 dark:text-amber-400" />

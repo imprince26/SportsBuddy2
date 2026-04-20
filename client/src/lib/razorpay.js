@@ -51,6 +51,8 @@ export const openRazorpayCheckout = ({
   notes,
   theme,
   modal,
+  method,
+  config,
   onSuccess,
   onFailure,
 }) => {
@@ -70,6 +72,8 @@ export const openRazorpayCheckout = ({
     notes,
     theme,
     modal,
+    method,
+    config,
     handler: (response) => {
       if (typeof onSuccess === "function") {
         onSuccess(response);

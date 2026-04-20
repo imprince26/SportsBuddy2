@@ -181,8 +181,8 @@ console.log(response);
     try {
       const response = await api.get(`/events/${eventId}`);
 
-      if (response.data) {
-        setCurrentEvent(response.data);
+      if (response.data?.success) {
+        setCurrentEvent(response.data.data);
 
         // Join event room for real-time updates
         joinEventRoom(eventId);
@@ -227,9 +227,10 @@ console.log(response);
         }
       });
 
-      if (response.data) {
-        setEvents(prev => [response.data, ...prev]);
-        setUserEvents(prev => [response.data, ...prev]);
+      if (response.data?.success) {
+        const createdEvent = response.data.data;
+        setEvents(prev => [createdEvent, ...prev]);
+        setUserEvents(prev => [createdEvent, ...prev]);
         return { success: true, event: response.data.data };
       }
     } catch (error) {
@@ -253,23 +254,25 @@ console.log(response);
         }
       });
 
-      if (response.data) {
+      if (response.data?.success) {
+        const updatedEvent = response.data.data;
+
         // Update events list
         setEvents(prev =>
-          prev.map(event => event._id === eventId ? response.data : event)
+          prev.map(event => event._id === eventId ? updatedEvent : event)
         );
 
         // Update user events list
         setUserEvents(prev =>
-          prev.map(event => event._id === eventId ? response.data : event)
+          prev.map(event => event._id === eventId ? updatedEvent : event)
         );
 
         // Update current event if it's the one being edited
         if (currentEvent && currentEvent._id === eventId) {
-          setCurrentEvent(response.data);
+          setCurrentEvent(updatedEvent);
         }
 
-        return { success: true, event: response.data };
+        return { success: true, event: updatedEvent };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to update event';
@@ -320,31 +323,109 @@ console.log(response);
     try {
       const response = await api.post(`/events/${eventId}/join`);
 
-      if (response.data) {
+      if (response.data?.success) {
+        const updatedEvent = response.data.data;
+
         // Update event in events list
         setEvents(prev =>
-          prev.map(event => event._id === eventId ? response.data : event)
+          prev.map(event => event._id === eventId ? updatedEvent : event)
         );
 
         // Add to user events if not already there
         setUserEvents(prev => {
           const exists = prev.some(event => event._id === eventId);
-          return exists ? prev.map(event => event._id === eventId ? response.data : event) : [...prev, response.data];
+          return exists
+            ? prev.map(event => event._id === eventId ? updatedEvent : event)
+            : [...prev, updatedEvent];
         });
 
         // Update current event if it's the one being joined
         if (currentEvent && currentEvent._id === eventId) {
-          setCurrentEvent(response.data);
+          setCurrentEvent(updatedEvent);
         }
 
-        return { success: true, event: response.data };
+        return { success: true, event: updatedEvent };
       }
     } catch (error) {
+      if (error.response?.status === 402 && error.response?.data?.requiresPayment) {
+        return {
+          success: false,
+          requiresPayment: true,
+          message: error.response?.data?.message || 'Payment is required for this event',
+          data: error.response?.data?.data,
+        };
+      }
+
       const message = error.response?.data?.message || 'Failed to join event';
       setError(message);
       return { success: false, message };
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createEventPaymentOrder = async (eventId) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.post(`/events/${eventId}/payment/order`);
+      if (response.data?.success) {
+        return { success: true, data: response.data.data };
+      }
+      return { success: false, message: response.data?.message || 'Unable to create payment order' };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Unable to create payment order';
+      setError(message);
+      return { success: false, message, details: error.response?.data };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyEventPayment = async (eventId, payload) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.post(`/events/${eventId}/payment/verify`, payload);
+      if (response.data?.success) {
+        const updatedEvent = response.data.data?.event;
+
+        if (updatedEvent) {
+          setEvents(prev => prev.map((event) => (event._id === eventId ? updatedEvent : event)));
+          setUserEvents((prev) => {
+            const exists = prev.some((event) => event._id === eventId);
+            return exists
+              ? prev.map((event) => (event._id === eventId ? updatedEvent : event))
+              : [...prev, updatedEvent];
+          });
+          setCurrentEvent((prev) => (prev && prev._id === eventId ? updatedEvent : prev));
+        }
+
+        return { success: true, data: response.data.data };
+      }
+
+      return { success: false, message: response.data?.message || 'Payment verification failed' };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Payment verification failed';
+      setError(message);
+      return { success: false, message, details: error.response?.data };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getEventPaymentStatus = async (eventId) => {
+    try {
+      const response = await api.get(`/events/${eventId}/payment/status`);
+      if (response.data?.success) {
+        return { success: true, data: response.data.data };
+      }
+      return { success: false, message: response.data?.message || 'Unable to fetch payment status' };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Unable to fetch payment status';
+      return { success: false, message, details: error.response?.data };
     }
   };
 
@@ -356,23 +437,25 @@ console.log(response);
     try {
       const response = await api.post(`/events/${eventId}/leave`);
 
-      if (response.data) {
+      if (response.data?.success) {
+        const updatedEvent = response.data.data;
+
         // Update event in events list
         setEvents(prev =>
-          prev.map(event => event._id === eventId ? response.data : event)
+          prev.map(event => event._id === eventId ? updatedEvent : event)
         );
 
         // Update in user events
         setUserEvents(prev =>
-          prev.map(event => event._id === eventId ? response.data : event)
+          prev.map(event => event._id === eventId ? updatedEvent : event)
         );
 
         // Update current event if it's the one being left
         if (currentEvent && currentEvent._id === eventId) {
-          setCurrentEvent(response.data);
+          setCurrentEvent(updatedEvent);
         }
 
-        return { success: true, event: response.data };
+        return { success: true, event: updatedEvent };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to leave event';
@@ -391,13 +474,15 @@ console.log(response);
     try {
       const response = await api.post(`/events/${eventId}/teams`, teamData);
 
-      if (response.data) {
+      if (response.data?.success) {
+        const updatedEvent = response.data.data;
+
         // Update current event
         if (currentEvent && currentEvent._id === eventId) {
-          setCurrentEvent(response.data);
+          setCurrentEvent(updatedEvent);
         }
 
-        return { success: true, event: response.data };
+        return { success: true, event: updatedEvent };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to create team';
@@ -416,13 +501,15 @@ console.log(response);
     try {
       const response = await api.post(`/events/${eventId}/ratings`, ratingData);
 
-      if (response.data) {
+      if (response.data?.success) {
+        const updatedEvent = response.data.data;
+
         // Update current event
         if (currentEvent && currentEvent._id === eventId) {
-          setCurrentEvent(response.data);
+          setCurrentEvent(updatedEvent);
         }
 
-        return { success: true, event: response.data };
+        return { success: true, event: updatedEvent };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to submit rating';
@@ -438,8 +525,8 @@ console.log(response);
     try {
       const response = await api.post(`/events/${eventId}/messages`, { message });
 
-      if (response.data) {
-        return { success: true, message: response.data };
+      if (response.data?.success) {
+        return { success: true, message: response.data.data };
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to send message';
@@ -484,6 +571,9 @@ console.log(response);
     updateEvent,
     deleteEvent,
     joinEvent,
+    createEventPaymentOrder,
+    verifyEventPayment,
+    getEventPaymentStatus,
     leaveEvent,
     addTeam,
     addRating,

@@ -4,6 +4,7 @@ import {
   Bell,
   BookCopy,
   Building2,
+  Receipt,
   BarChart3,
   ChevronLeft,
   ChevronRight,
@@ -33,9 +34,14 @@ const navItems = [
   { to: "/admin/communities", label: "Communities", icon: Activity },
   { to: "/admin/venues", label: "Venues", icon: Building2 },
   { to: "/admin/bookings", label: "Bookings", icon: ClipboardList },
+  { to: "/admin/event-payments", label: "Event Payments", icon: Receipt },
   { to: "/admin/notifications", label: "Notifications", icon: Bell },
   { to: "/admin/audit-logs", label: "Audit Logs", icon: BookCopy },
 ];
+
+const workspaceAliases = {
+  "event-payments": "event payments",
+};
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -54,6 +60,11 @@ const AdminLayout = () => {
     const found = navItems.find((item) => location.pathname.startsWith(item.to));
     return found?.label || "Admin";
   }, [location.pathname]);
+
+  const workspaceLabel = useMemo(() => {
+    const workspace = currentWorkspace || currentLabel.toLowerCase();
+    return workspaceAliases[workspace] || workspace;
+  }, [currentLabel, currentWorkspace]);
 
   const handleLogout = async () => {
     await logout();
@@ -191,7 +202,7 @@ const AdminLayout = () => {
 
                 <div>
                   <h1 className="text-lg font-semibold leading-tight lg:text-xl">{currentLabel}</h1>
-                  <p className="text-xs text-muted-foreground">Workspace: {currentWorkspace || currentLabel.toLowerCase()}</p>
+                  <p className="text-xs text-muted-foreground">Workspace: {workspaceLabel}</p>
                 </div>
               </div>
 

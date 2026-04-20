@@ -1,433 +1,229 @@
-import { useEffect, useState } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '@/context/ThemeProvider';
+import { useEffect, useState } from "react";
+import { Toaster, toast } from "react-hot-toast";
+import { useTheme } from "@/context/ThemeProvider";
+import { cn } from "@/lib/utils";
 import {
-  CheckCircle2,
-  XCircle,
-  Loader2,
   AlertTriangle,
-  X,
+  CheckCircle2,
   Info,
-  Trophy,
-  Zap,
-  Heart,
-  Star,
+  Loader2,
+  Medal,
   Sparkles,
-  Target
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+  Trophy,
+  XCircle,
+  Zap,
+} from "lucide-react";
 
-// Premium toast animation variants
-const toastVariants = {
-  initial: {
-    opacity: 0,
-    y: -20,
-    x: 100,
-    scale: 0.9,
+const TOAST_TYPES = {
+  success: {
+    icon: CheckCircle2,
+    tone: {
+      light: "border-emerald-300 bg-emerald-50 text-emerald-900",
+      dark: "border-emerald-400/40 bg-emerald-950/55 text-emerald-100",
+    },
+    iconTone: {
+      light: "bg-emerald-500/15 text-emerald-700",
+      dark: "bg-emerald-400/20 text-emerald-200",
+    },
+    rail: "from-emerald-400 via-emerald-500 to-emerald-600",
   },
-  animate: {
-    opacity: 1,
-    y: 0,
-    x: 0,
-    scale: 1,
-    transition: {
-      type: "spring",
-      stiffness: 260,
-      damping: 20,
-    }
+  error: {
+    icon: XCircle,
+    tone: {
+      light: "border-red-300 bg-red-50 text-red-900",
+      dark: "border-red-400/45 bg-red-950/50 text-red-100",
+    },
+    iconTone: {
+      light: "bg-red-500/15 text-red-700",
+      dark: "bg-red-400/20 text-red-200",
+    },
+    rail: "from-red-400 via-red-500 to-rose-600",
   },
-  exit: {
-    opacity: 0,
-    y: -10,
-    x: 100,
-    scale: 0.95,
-    transition: {
-      duration: 0.2,
-      ease: "easeInOut"
-    }
+  warning: {
+    icon: AlertTriangle,
+    tone: {
+      light: "border-amber-300 bg-amber-50 text-amber-900",
+      dark: "border-amber-400/45 bg-amber-950/45 text-amber-100",
+    },
+    iconTone: {
+      light: "bg-amber-500/15 text-amber-800",
+      dark: "bg-amber-400/20 text-amber-200",
+    },
+    rail: "from-amber-400 via-amber-500 to-orange-600",
+  },
+  info: {
+    icon: Info,
+    tone: {
+      light: "border-blue-300 bg-blue-50 text-blue-900",
+      dark: "border-blue-400/45 bg-blue-950/45 text-blue-100",
+    },
+    iconTone: {
+      light: "bg-blue-500/15 text-blue-800",
+      dark: "bg-blue-400/20 text-blue-200",
+    },
+    rail: "from-blue-400 via-blue-500 to-cyan-600",
+  },
+  loading: {
+    icon: Loader2,
+    tone: {
+      light: "border-slate-300 bg-slate-50 text-slate-900",
+      dark: "border-slate-400/35 bg-slate-900/75 text-slate-100",
+    },
+    iconTone: {
+      light: "bg-slate-600/10 text-slate-700",
+      dark: "bg-slate-300/15 text-slate-200",
+    },
+    rail: "from-slate-400 via-slate-500 to-slate-600",
+  },
+  achievement: {
+    icon: Trophy,
+    tone: {
+      light: "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900",
+      dark: "border-fuchsia-400/40 bg-fuchsia-950/45 text-fuchsia-100",
+    },
+    iconTone: {
+      light: "bg-fuchsia-500/15 text-fuchsia-800",
+      dark: "bg-fuchsia-400/20 text-fuchsia-200",
+    },
+    rail: "from-fuchsia-400 via-pink-500 to-rose-600",
+  },
+  sports: {
+    icon: Zap,
+    tone: {
+      light: "border-indigo-300 bg-indigo-50 text-indigo-900",
+      dark: "border-indigo-400/40 bg-indigo-950/45 text-indigo-100",
+    },
+    iconTone: {
+      light: "bg-indigo-500/15 text-indigo-800",
+      dark: "bg-indigo-400/20 text-indigo-200",
+    },
+    rail: "from-indigo-400 via-indigo-500 to-blue-600",
   },
 };
 
-const iconVariants = {
-  initial: { scale: 0, rotate: -90 },
-  animate: {
-    scale: 1,
-    rotate: 0,
-    transition: {
-      type: "spring",
-      stiffness: 400,
-      damping: 15,
-      delay: 0.05
-    }
+const resolveTheme = (theme) => {
+  if (typeof window === "undefined") {
+    return "light";
   }
+
+  if (theme === "system") {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+
+  return theme;
 };
 
-const shimmerVariants = {
-  animate: {
-    backgroundPosition: ['200% 0', '-200% 0'],
-    transition: {
-      duration: 3,
-      ease: 'linear',
-      repeat: Infinity,
-    }
-  }
+const getToastConfig = (type) => {
+  return TOAST_TYPES[type] || TOAST_TYPES.info;
+};
+
+const ToastCard = ({ t, resolvedTheme }) => {
+  const config = getToastConfig(t.type);
+  const Icon = config.icon;
+
+  return (
+    <div
+      className={cn(
+        "relative w-full max-w-[380px] overflow-hidden rounded-2xl border shadow-[0_20px_50px_-28px_rgba(15,23,42,0.5)]",
+        "backdrop-blur-xl",
+        resolvedTheme === "dark" ? config.tone.dark : config.tone.light,
+        t.visible ? "animate-in slide-in-from-right-5 fade-in duration-300" : "animate-out slide-out-to-right-8 fade-out duration-200"
+      )}
+    >
+      <div className={cn("absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b", config.rail)} />
+      <div className="relative flex items-start gap-3 px-4 py-3.5">
+        <div
+          className={cn(
+            "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+            resolvedTheme === "dark" ? config.iconTone.dark : config.iconTone.light
+          )}
+        >
+          <Icon className={cn("h-4 w-4", t.type === "loading" && "animate-spin")} />
+        </div>
+
+        <div className="min-w-0 flex-1 text-sm leading-relaxed">
+          {typeof t.message === "string" ? (
+            <p className="font-medium">{t.message}</p>
+          ) : (
+            <div>{t.message}</div>
+          )}
+        </div>
+
+        {t.type !== "loading" ? (
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className={cn(
+              "rounded-md px-1.5 py-1 text-xs font-semibold transition-colors",
+              resolvedTheme === "dark"
+                ? "text-slate-300 hover:bg-white/10 hover:text-white"
+                : "text-slate-600 hover:bg-black/5 hover:text-slate-900"
+            )}
+          >
+            Close
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
 };
 
 const CustomToast = () => {
   const { theme } = useTheme();
-  const [isMounted, setIsMounted] = useState(false);
+  const [resolvedTheme, setResolvedTheme] = useState(() => resolveTheme(theme));
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null;
-
-  const getToastIcon = (type) => {
-    switch (type) {
-      case 'success':
-        return CheckCircle2;
-      case 'error':
-        return XCircle;
-      case 'loading':
-        return Loader2;
-      case 'warning':
-        return AlertTriangle;
-      case 'info':
-        return Info;
-      case 'achievement':
-        return Trophy;
-      case 'sports':
-        return Zap;
-      default:
-        return Info;
+    if (typeof window === "undefined") {
+      return undefined;
     }
-  };
 
-  const getToastStyles = (type, currentTheme) => {
-    const isDark = currentTheme === 'dark';
-    
-    // Base styles for both themes
-    const baseLight = "bg-white/95 backdrop-blur-xl border shadow-xl";
-    const baseDark = "bg-slate-900/95 backdrop-blur-xl border shadow-2xl";
-    const base = isDark ? baseDark : baseLight;
-
-    switch (type) {
-      case 'success':
-        return cn(
-          base,
-          isDark 
-            ? 'border-green-500/30 shadow-green-500/10' 
-            : 'border-green-200/60 shadow-green-100/50'
-        );
-      case 'error':
-        return cn(
-          base,
-          isDark 
-            ? 'border-red-500/30 shadow-red-500/10' 
-            : 'border-red-200/60 shadow-red-100/50'
-        );
-      case 'warning':
-        return cn(
-          base,
-          isDark 
-            ? 'border-yellow-500/30 shadow-yellow-500/10' 
-            : 'border-yellow-200/60 shadow-yellow-100/50'
-        );
-      case 'info':
-        return cn(
-          base,
-          isDark 
-            ? 'border-blue-500/30 shadow-blue-500/10' 
-            : 'border-blue-200/60 shadow-blue-100/50'
-        );
-      case 'loading':
-        return cn(
-          base,
-          isDark 
-            ? 'border-slate-700/40 shadow-slate-900/20' 
-            : 'border-slate-200/60 shadow-slate-100/50'
-        );
-      case 'achievement':
-        return cn(
-          base,
-          isDark 
-            ? 'border-purple-500/30 shadow-purple-500/10' 
-            : 'border-purple-200/60 shadow-purple-100/50'
-        );
-      case 'sports':
-        return cn(
-          base,
-          isDark 
-            ? 'border-primary/30 shadow-primary/10' 
-            : 'border-primary/30 shadow-primary/20'
-        );
-      default:
-        return cn(
-          base,
-          isDark 
-            ? 'border-slate-700/40 shadow-slate-900/20' 
-            : 'border-slate-200/60 shadow-slate-100/50'
-        );
+    if (theme !== "system") {
+      setResolvedTheme(resolveTheme(theme));
+      return undefined;
     }
-  };
 
-  const getIconWrapperStyles = (type, currentTheme) => {
-    const isDark = currentTheme === 'dark';
-    
-    switch (type) {
-      case 'success':
-        return isDark 
-          ? 'bg-green-500/15 text-green-400' 
-          : 'bg-green-50 text-green-600';
-      case 'error':
-        return isDark 
-          ? 'bg-red-500/15 text-red-400' 
-          : 'bg-red-50 text-red-600';
-      case 'warning':
-        return isDark 
-          ? 'bg-yellow-500/15 text-yellow-400' 
-          : 'bg-yellow-50 text-yellow-600';
-      case 'info':
-        return isDark 
-          ? 'bg-blue-500/15 text-blue-400' 
-          : 'bg-blue-50 text-blue-600';
-      case 'loading':
-        return isDark 
-          ? 'bg-slate-700/30 text-slate-400' 
-          : 'bg-slate-100 text-slate-600';
-      case 'achievement':
-        return isDark 
-          ? 'bg-purple-500/15 text-purple-400' 
-          : 'bg-purple-50 text-purple-600';
-      case 'sports':
-        return isDark 
-          ? 'bg-primary/15 text-primary' 
-          : 'bg-primary/10 text-primary';
-      default:
-        return isDark 
-          ? 'bg-slate-700/30 text-slate-400' 
-          : 'bg-slate-100 text-slate-600';
-    }
-  };
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
 
-  const getAccentColor = (type) => {
-    switch (type) {
-      case 'success': return 'from-green-500 to-emerald-500';
-      case 'error': return 'from-red-500 to-rose-500';
-      case 'warning': return 'from-yellow-500 to-orange-500';
-      case 'info': return 'from-blue-500 to-cyan-500';
-      case 'achievement': return 'from-purple-500 to-pink-500';
-      case 'sports': return 'from-primary to-blue-600';
-      default: return 'from-slate-500 to-slate-600';
-    }
-  };
+    const applySystemTheme = () => {
+      setResolvedTheme(media.matches ? "dark" : "light");
+    };
+
+    applySystemTheme();
+    media.addEventListener("change", applySystemTheme);
+
+    return () => media.removeEventListener("change", applySystemTheme);
+  }, [theme]);
 
   return (
     <Toaster
       position="bottom-right"
-      containerStyle={{
-        bottom: 24,
-        right: 24,
-        zIndex: 9999,
-      }}
-      gutter={12}
+      gutter={10}
+      containerStyle={{ bottom: 20, right: 20, zIndex: 10000 }}
       toastOptions={{
-        duration: 4000,
+        duration: 4200,
         style: {
-          background: 'transparent',
-          boxShadow: 'none',
-          padding: '0',
-          margin: '0',
-          maxWidth: '450px',
-          width: '100%',
+          background: "transparent",
+          boxShadow: "none",
+          padding: 0,
+          margin: 0,
+          maxWidth: "380px",
         },
       }}
     >
-      {(t) => (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={t.id}
-            variants={toastVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            layout
-            className={cn(
-              'rounded-2xl p-4 min-w-[340px] max-w-[450px] relative overflow-hidden group cursor-pointer',
-              getToastStyles(t.type, theme)
-            )}
-            onClick={() => toast.dismiss(t.id)}
-            whileHover={{ scale: 1.01, y: -2 }}
-            whileTap={{ scale: 0.99 }}
-          >
-            {/* Top accent bar with gradient */}
-            <div className={cn(
-              'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r',
-              getAccentColor(t.type)
-            )} />
-
-            {/* Shimmer effect on hover */}
-            <motion.div
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-              style={{
-                background: `linear-gradient(90deg, 
-                  transparent 0%, 
-                  ${theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'} 50%, 
-                  transparent 100%)`,
-                backgroundSize: '200% 100%',
-              }}
-              variants={shimmerVariants}
-              animate="animate"
-            />
-
-            {/* Main content */}
-            <div className="relative z-10 flex items-start gap-3.5">
-              {/* Icon container */}
-              <motion.div
-                variants={iconVariants}
-                initial="initial"
-                animate="animate"
-                className={cn(
-                  'flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center relative',
-                  getIconWrapperStyles(t.type, theme)
-                )}
-              >
-                {/* Icon glow effect */}
-                <div className={cn(
-                  'absolute inset-0 rounded-xl blur-xl opacity-40',
-                  getIconWrapperStyles(t.type, theme)
-                )} />
-                
-                {(() => {
-                  const IconComponent = getToastIcon(t.type);
-                  return (
-                    <IconComponent
-                      className={cn(
-                        'w-5 h-5 relative z-10',
-                        t.type === 'loading' && 'animate-spin'
-                      )}
-                      strokeWidth={2.5}
-                    />
-                  );
-                })()}
-
-                {/* Pulsing ring for loading */}
-                {t.type === 'loading' && (
-                  <motion.div
-                    className="absolute inset-0 rounded-xl border-2 border-current opacity-30"
-                    animate={{
-                      scale: [1, 1.3, 1],
-                      opacity: [0.3, 0, 0.3],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
-                )}
-              </motion.div>
-
-              {/* Message content */}
-              <div className="flex-1 min-w-0 pt-0.5">
-                {typeof t.message === 'string' ? (
-                  <motion.p
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.08 }}
-                    className={cn(
-                      'text-[15px] font-semibold leading-relaxed',
-                      theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
-                    )}
-                  >
-                    {t.message}
-                  </motion.p>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.08 }}
-                    className={theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}
-                  >
-                    {t.message}
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Close button */}
-              {t.type !== 'loading' && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.15 }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toast.dismiss(t.id);
-                  }}
-                  className={cn(
-                    'flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200',
-                    theme === 'dark'
-                      ? 'hover:bg-white/10 text-slate-400 hover:text-slate-200'
-                      : 'hover:bg-black/5 text-slate-500 hover:text-slate-700'
-                  )}
-                >
-                  <X className="w-4 h-4" strokeWidth={2.5} />
-                </motion.button>
-              )}
-            </div>
-
-            {/* Decorative particles for achievement/sports */}
-            {(t.type === 'achievement' || t.type === 'sports') && (
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className={cn(
-                      'absolute w-1.5 h-1.5 rounded-full',
-                      theme === 'dark' ? 'bg-white/20' : 'bg-black/10'
-                    )}
-                    initial={{
-                      x: Math.random() * 400,
-                      y: Math.random() * 80,
-                      scale: 0,
-                      opacity: 0,
-                    }}
-                    animate={{
-                      y: [null, Math.random() * -30],
-                      scale: [0, 1, 0],
-                      opacity: [0, 1, 0],
-                    }}
-                    transition={{
-                      duration: 1.5 + Math.random(),
-                      delay: i * 0.15,
-                      ease: "easeOut"
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Gradient overlay for depth */}
-            <div 
-              className={cn(
-                'absolute inset-0 rounded-2xl pointer-events-none',
-                theme === 'dark'
-                  ? 'bg-gradient-to-br from-white/[0.02] to-transparent'
-                  : 'bg-gradient-to-br from-white/40 to-transparent'
-              )}
-            />
-          </motion.div>
-        </AnimatePresence>
-      )}
+      {(t) => <ToastCard t={t} resolvedTheme={resolvedTheme} />}
     </Toaster>
   );
 };
 
-// Enhanced toast methods with SportsBuddy theming
+const richBlock = (title, description, icon = null) => (
+  <div className="space-y-0.5">
+    <div className="flex items-center gap-2">
+      {icon}
+      <p className="text-sm font-semibold leading-tight">{title}</p>
+    </div>
+    <p className="text-xs opacity-90">{description}</p>
+  </div>
+);
+
 export const showToast = {
   success: (message, options = {}) =>
     toast.success(message, {
@@ -443,15 +239,15 @@ export const showToast = {
 
   warning: (message, options = {}) =>
     toast(message, {
-      type: 'warning',
+      type: "warning",
       duration: 4500,
       ...options,
     }),
 
   info: (message, options = {}) =>
     toast(message, {
-      type: 'info',
-      duration: 4000,
+      type: "info",
+      duration: 4200,
       ...options,
     }),
 
@@ -461,141 +257,82 @@ export const showToast = {
       ...options,
     }),
 
-  // Special SportsBuddy-specific toast types
   achievement: (message, options = {}) =>
     toast(message, {
-      type: 'achievement',
-      duration: 5000,
+      type: "achievement",
+      duration: 5200,
       ...options,
     }),
 
   sports: (message, options = {}) =>
     toast(message, {
-      type: 'sports',
-      duration: 4500,
+      type: "sports",
+      duration: 4600,
       ...options,
     }),
 
-  // Rich content toasts
   richSuccess: (title, description, options = {}) =>
-    toast.success(
-      <div className="space-y-1">
-        <div className="font-bold text-base leading-tight">{title}</div>
-        <div className="text-sm opacity-75 leading-snug">{description}</div>
-      </div>,
-      {
-        duration: 5000,
-        ...options,
-      }
-    ),
+    toast.success(richBlock(title, description, <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />), {
+      duration: 5000,
+      ...options,
+    }),
 
   richError: (title, description, options = {}) =>
-    toast.error(
-      <div className="space-y-1">
-        <div className="font-bold text-base leading-tight">{title}</div>
-        <div className="text-sm opacity-75 leading-snug">{description}</div>
-      </div>,
-      {
-        duration: 6000,
-        ...options,
-      }
-    ),
+    toast.error(richBlock(title, description, <XCircle className="h-4 w-4 text-red-600 dark:text-red-300" />), {
+      duration: 5600,
+      ...options,
+    }),
 
   richInfo: (title, description, options = {}) =>
-    toast(
-      <div className="space-y-1">
-        <div className="font-bold text-base leading-tight">{title}</div>
-        <div className="text-sm opacity-75 leading-snug">{description}</div>
-      </div>,
-      {
-        type: 'info',
-        duration: 5000,
-        ...options,
-      }
-    ),
+    toast(richBlock(title, description, <Info className="h-4 w-4 text-blue-600 dark:text-blue-300" />), {
+      type: "info",
+      duration: 5000,
+      ...options,
+    }),
 
   richWarning: (title, description, options = {}) =>
-    toast(
-      <div className="space-y-1">
-        <div className="font-bold text-base leading-tight">{title}</div>
-        <div className="text-sm opacity-75 leading-snug">{description}</div>
-      </div>,
-      {
-        type: 'warning',
-        duration: 5000,
-        ...options,
-      }
-    ),
+    toast(richBlock(title, description, <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-300" />), {
+      type: "warning",
+      duration: 5000,
+      ...options,
+    }),
 
-  // SportsBuddy specific rich toasts
   eventJoined: (eventName, options = {}) =>
     toast(
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-500/20">
-          <Heart className="w-5 h-5 text-white" strokeWidth={2.5} fill="white" />
-        </div>
-        <div className="flex-1 space-y-0.5">
-          <div className="font-bold text-base leading-tight">Event Joined!</div>
-          <div className="text-sm opacity-75 leading-snug">You're now part of {eventName}</div>
-        </div>
-      </div>,
+      richBlock("Event joined", `You are now registered for ${eventName}.`, <Medal className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />),
       {
-        type: 'sports',
-        duration: 5000,
+        type: "sports",
+        duration: 5200,
         ...options,
       }
     ),
 
   eventCreated: (eventName, options = {}) =>
     toast(
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
-          <Sparkles className="w-5 h-5 text-white" strokeWidth={2.5} />
-        </div>
-        <div className="flex-1 space-y-0.5">
-          <div className="font-bold text-base leading-tight">Event Created!</div>
-          <div className="text-sm opacity-75 leading-snug">{eventName} is ready for participants</div>
-        </div>
-      </div>,
+      richBlock("Event created", `${eventName} is live for participants.`, <Sparkles className="h-4 w-4 text-fuchsia-600 dark:text-fuchsia-300" />),
       {
-        type: 'achievement',
-        duration: 5000,
+        type: "achievement",
+        duration: 5200,
         ...options,
       }
     ),
 
   goalAchieved: (goalName, options = {}) =>
     toast(
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-yellow-500/20">
-          <Target className="w-5 h-5 text-white" strokeWidth={2.5} />
-        </div>
-        <div className="flex-1 space-y-0.5">
-          <div className="font-bold text-base leading-tight">Goal Achieved! 🎯</div>
-          <div className="text-sm opacity-75 leading-snug">{goalName}</div>
-        </div>
-      </div>,
+      richBlock("Goal achieved", goalName, <Trophy className="h-4 w-4 text-amber-600 dark:text-amber-300" />),
       {
-        type: 'achievement',
-        duration: 5000,
+        type: "achievement",
+        duration: 5400,
         ...options,
       }
     ),
 
   newAchievement: (achievementName, options = {}) =>
     toast(
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
-          <Trophy className="w-5 h-5 text-white" strokeWidth={2.5} />
-        </div>
-        <div className="flex-1 space-y-0.5">
-          <div className="font-bold text-base leading-tight">New Achievement! 🏆</div>
-          <div className="text-sm opacity-75 leading-snug">{achievementName}</div>
-        </div>
-      </div>,
+      richBlock("New achievement unlocked", achievementName, <Trophy className="h-4 w-4 text-fuchsia-600 dark:text-fuchsia-300" />),
       {
-        type: 'achievement',
-        duration: 6000,
+        type: "achievement",
+        duration: 5600,
         ...options,
       }
     ),

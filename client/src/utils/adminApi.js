@@ -59,6 +59,16 @@ export const adminApi = {
     return response.data;
   },
 
+  getEventPayments: async (params = {}) => {
+    const response = await api.get(withQuery("/admin/event-payments", params));
+    return response.data;
+  },
+
+  getEventPaymentDetails: async (paymentId) => {
+    const response = await api.get(`/admin/event-payments/${paymentId}`);
+    return response.data;
+  },
+
   updateEventStatus: async ({ eventId, status, note }) => {
     const response = await api.patch(`/admin/events/${eventId}/status`, { status, note });
     return response.data;

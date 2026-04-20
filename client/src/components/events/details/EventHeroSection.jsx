@@ -22,7 +22,8 @@ import {
     Trophy,
     Activity,
     Bike,
-    Waves
+    Waves,
+    CreditCard
 } from "lucide-react"
 import { FaMoneyBillWave } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
@@ -254,10 +255,16 @@ const EventActionButtons = ({
                     >
                         {loadingAction ? (
                             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        ) : event.registrationFee > 0 ? (
+                            <CreditCard className="w-5 h-5 mr-2" />
                         ) : (
                             <UserPlus className="w-5 h-5 mr-2" />
                         )}
-                        {event.participantCount >= event.maxParticipants ? "Event Full" : "Join Event"}
+                        {event.participantCount >= event.maxParticipants
+                            ? "Event Full"
+                            : event.registrationFee > 0
+                                ? `Pay & Join (₹${event.registrationFee})`
+                                : "Join Event"}
                     </Button>
                 </div>
             )}

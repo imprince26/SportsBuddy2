@@ -158,14 +158,30 @@ const EventDetails = () => {
       return
     }
 
+    if ((Number(event?.registrationFee) || 0) > 0) {
+      navigate(`/events/${id}/payment`)
+      return
+    }
+
     setLoadingAction(true)
     try {
-      await joinEvent(id)
-      toast.success("Successfully joined the event! 🎉")
-      window.location.reload()
+      const result = await joinEvent(id)
+
+      if (result?.success) {
+        toast.success("Successfully joined the event")
+        window.location.reload()
+        return
+      }
+
+      if (result?.requiresPayment) {
+        navigate(`/events/${id}/payment`)
+        return
+      }
+
+      toast.error(result?.message || "Failed to join event")
     } catch (err) {
       console.error("Error joining event:", err)
-      toast.error("Failed to join event")
+      toast.error(err?.message || "Failed to join event")
     } finally {
       setLoadingAction(false)
     }

@@ -151,6 +151,15 @@ export const createEventPaymentOrder = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    const userPhone = String(user.phone || "").replace(/\D/g, "");
+    if (!/^\d{10}$/.test(userPhone)) {
+      return res.status(400).json({
+        success: false,
+        requiresPhone: true,
+        message: "Please add your 10-digit mobile number in profile before payment",
+      });
+    }
+
     if (String(event.createdBy) === String(userId)) {
       return res.status(400).json({
         success: false,
@@ -205,6 +214,7 @@ export const createEventPaymentOrder = async (req, res) => {
     const amountInPaise = toPaise(registrationFee);
 
     let razorpayOrder;
+    let reusedExistingOrder = false;
 
     if (recentPendingPayment?.razorpayOrderId) {
       try {
@@ -252,6 +262,8 @@ export const createEventPaymentOrder = async (req, res) => {
           eventTime: event.time,
         },
       });
+    } else {
+      reusedExistingOrder = true;
     }
 
     return res.status(200).json({
@@ -266,6 +278,7 @@ export const createEventPaymentOrder = async (req, res) => {
           currency: razorpayOrder.currency,
           receipt: razorpayOrder.receipt,
           status: razorpayOrder.status,
+          reusedExistingOrder,
         },
         event: {
           id: String(event._id),
@@ -276,7 +289,7 @@ export const createEventPaymentOrder = async (req, res) => {
         user: {
           name: user.name,
           email: user.email,
-          contact: user.phone || "",
+          contact: userPhone,
         },
       },
     });

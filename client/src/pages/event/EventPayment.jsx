@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEvents";
@@ -34,6 +35,14 @@ const formatCurrency = (amount = 0) => {
   }).format(value);
 };
 
+const normalizePhone = (value) => {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) {
+    return digits.slice(2);
+  }
+  return digits;
+};
+
 const surfaceMotion = {
   initial: { opacity: 0, y: 24 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
@@ -43,7 +52,7 @@ const EventPayment = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateProfile } = useAuth();
   const { getEventById, getEventPaymentStatus, createEventPaymentOrder, verifyEventPayment } = useEvents();
 
   const eventActionsRef = useRef({
@@ -62,6 +71,12 @@ const EventPayment = () => {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
+  const [isSavingPhone, setIsSavingPhone] = useState(false);
+
+  useEffect(() => {
+    setPhoneInput(user?.phone || "");
+  }, [user?.phone]);
 
   const fetchPaymentContext = useCallback(async () => {
     if (!id) {
@@ -124,6 +139,10 @@ const EventPayment = () => {
   const isAlreadyParticipant = Boolean(paymentStatus?.isParticipant);
   const isPaid = paymentStatus?.participantPayment?.paymentStatus === "paid";
   const hasPaidButNotJoined = Boolean(paymentStatus?.hasPaidButNotJoined);
+  const savedPhone = normalizePhone(user?.phone || "");
+  const draftPhone = normalizePhone(phoneInput || "");
+  const hasSavedPhone = /^\d{10}$/.test(savedPhone);
+  const hasValidDraftPhone = /^\d{10}$/.test(draftPhone);
 
   const heroStatus = useMemo(() => {
     if (isAlreadyParticipant && isPaid) {
@@ -175,8 +194,13 @@ const EventPayment = () => {
     }
 
     if (hasPaidButNotJoined) {
-      showToast.info("Payment is already captured. Refreshing status.");
+      showToast.info("Payment already received. Syncing your registration status.");
       await fetchPaymentContext();
+      return;
+    }
+
+    if (!hasSavedPhone) {
+      showToast.warning("Please save your 10-digit mobile number before proceeding to payment.");
       return;
     }
 
@@ -185,6 +209,10 @@ const EventPayment = () => {
     try {
       const orderResponse = await createEventPaymentOrder(id);
       if (!orderResponse?.success) {
+        if (orderResponse?.details?.requiresPhone) {
+          showToast.warning(orderResponse?.message || "Add mobile number in profile to continue.");
+          return;
+        }
         showToast.error(orderResponse?.message || "Failed to initialize payment");
         return;
       }
@@ -196,6 +224,10 @@ const EventPayment = () => {
       }
 
       const payload = orderResponse.data;
+
+      if (payload?.order?.reusedExistingOrder) {
+        showToast.info("Continuing your existing pending payment order.");
+      }
 
       openRazorpayCheckout({
         key: payload?.keyId,
@@ -218,19 +250,19 @@ const EventPayment = () => {
         },
         modal: {
           ondismiss: () => {
-            showToast.info("Payment popup closed");
+            showToast.info("Payment window closed. You can retry when ready.");
           },
         },
         onSuccess: async (response) => {
           const verifyResponse = await verifyEventPayment(id, response);
 
           if (!verifyResponse?.success) {
-            showToast.error(verifyResponse?.message || "Payment verification failed");
+            showToast.error(verifyResponse?.message || "Payment was received, but confirmation failed. Please retry.");
             await fetchPaymentContext();
             return;
           }
 
-          showToast.success("Payment successful. Your seat is now confirmed.");
+          showToast.success("Payment successful. Your seat is confirmed.");
           navigate(`/events/${id}`);
         },
         onFailure: (failureEvent) => {
@@ -246,6 +278,33 @@ const EventPayment = () => {
       showToast.error(error?.message || "Something went wrong while starting payment");
     } finally {
       setIsProcessingPayment(false);
+    }
+  };
+
+  const handleSavePhone = async () => {
+    const sanitizedPhone = normalizePhone(phoneInput);
+
+    if (!/^\d{10}$/.test(sanitizedPhone)) {
+      showToast.warning("Enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    setIsSavingPhone(true);
+    try {
+      const formData = new FormData();
+      formData.append("phone", sanitizedPhone);
+
+      const result = await updateProfile(formData);
+      if (result?.success) {
+        showToast.success("Mobile number saved. You can continue to payment.");
+        return;
+      }
+
+      showToast.error(result?.message || "Unable to save mobile number.");
+    } catch (error) {
+      showToast.error(error?.response?.data?.message || "Unable to save mobile number.");
+    } finally {
+      setIsSavingPhone(false);
     }
   };
 
@@ -379,6 +438,36 @@ const EventPayment = () => {
                     </div>
                   </div>
 
+                  {!hasSavedPhone ? (
+                    <div className="space-y-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                        Mobile number required
+                      </p>
+                      <p className="text-xs text-amber-700/90 dark:text-amber-300/90">
+                        Add your 10-digit mobile number to continue in Razorpay checkout.
+                      </p>
+                      <div className="flex gap-2">
+                        <Input
+                          inputMode="numeric"
+                          maxLength={10}
+                          value={phoneInput}
+                          onChange={(event) => setPhoneInput(normalizePhone(event.target.value).slice(0, 10))}
+                          placeholder="Enter mobile number"
+                          className="h-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-10"
+                          onClick={handleSavePhone}
+                          disabled={isSavingPhone || !hasValidDraftPhone}
+                        >
+                          {isSavingPhone ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+
                   {paymentStatus?.latestPayment?.status === "failed" ? (
                     <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-700 dark:text-red-300">
                       Last attempt: {paymentStatus?.latestPayment?.failureReason || "Payment failed"}
@@ -388,7 +477,7 @@ const EventPayment = () => {
                   <Button
                     className="h-12 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={handleStartPayment}
-                    disabled={isProcessingPayment || isAlreadyParticipant || hasPaidButNotJoined}
+                    disabled={isProcessingPayment || isAlreadyParticipant || hasPaidButNotJoined || !hasSavedPhone}
                   >
                     {isProcessingPayment ? (
                       <>
@@ -403,6 +492,11 @@ const EventPayment = () => {
                     ) : isAlreadyParticipant ? (
                       <>
                         Already Registered
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </>
+                    ) : !hasSavedPhone ? (
+                      <>
+                        Add Mobile Number to Continue
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </>
                     ) : (

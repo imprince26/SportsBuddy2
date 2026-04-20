@@ -91,14 +91,15 @@ const Profile = () => {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: "",
-      username: "",
-      email: "",
-      bio: "",
-      location: { city: "", state: "", country: "" },
-      socialLinks: { facebook: "", twitter: "", instagram: "" },
-      sportsPreferences: [],
+      defaultValues: {
+        name: "",
+        username: "",
+        email: "",
+        phone: "",
+        bio: "",
+        location: { city: "", state: "", country: "" },
+        socialLinks: { facebook: "", twitter: "", instagram: "" },
+        sportsPreferences: [],
     },
   })
 
@@ -144,6 +145,7 @@ const Profile = () => {
         name: user.name || "",
         username: user.username || "",
         email: user.email || "",
+        phone: user.phone || "",
         bio: user.bio || "",
         location: user.location || { city: "", state: "", country: "" },
         socialLinks: user.socialLinks || { facebook: "", twitter: "", instagram: "" },
@@ -461,6 +463,17 @@ const Profile = () => {
                         placeholder="your.email@example.com"
                       />
                       {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
+                    </div>
+                    <div className="md:col-span-2 space-y-2">
+                      <Label htmlFor="phone">Mobile Number</Label>
+                      <Input
+                        id="phone"
+                        inputMode="numeric"
+                        maxLength={10}
+                        {...register("phone")}
+                        placeholder="10-digit mobile number"
+                      />
+                      {errors.phone && <p className="text-destructive text-xs">{errors.phone.message}</p>}
                     </div>
                     <div className="md:col-span-2 space-y-2">
                       <Label htmlFor="bio">Bio</Label>

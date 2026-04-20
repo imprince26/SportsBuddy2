@@ -776,6 +776,20 @@ export const joinEvent = async (req, res) => {
       return res.status(400).json({ message: "Already participating" });
     }
 
+    const registrationFee = Number(event.registrationFee) || 0;
+    if (registrationFee > 0) {
+      return res.status(402).json({
+        success: false,
+        requiresPayment: true,
+        message: "This is a paid event. Complete payment to join.",
+        data: {
+          eventId: String(event._id),
+          registrationFee,
+          currency: "INR",
+        },
+      });
+    }
+
     event.participants.push({
       user: req.user._id,
       status: "confirmed",

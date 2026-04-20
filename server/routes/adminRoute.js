@@ -7,6 +7,8 @@ import {
   updateAdminUserRole,
   updateAdminUserStatus,
   getAdminEvents,
+  getAdminEventPayments,
+  getAdminEventPaymentDetails,
   updateAdminEventStatus,
   updateAdminEventFeatured,
   deleteAdminEvent,
@@ -44,6 +46,8 @@ import {
   adminUserStatusBodySchema,
   adminEventListQuerySchema,
   adminEventIdParamsSchema,
+  adminEventPaymentListQuerySchema,
+  adminEventPaymentIdParamsSchema,
   adminEventStatusBodySchema,
   adminEventFeaturedBodySchema,
   adminCommunityListQuerySchema,
@@ -100,6 +104,18 @@ router.patch(
 );
 
 router.get("/events", adminReadLimiter, validateRequest({ query: adminEventListQuerySchema }), getAdminEvents);
+router.get(
+  "/event-payments",
+  adminReadLimiter,
+  validateRequest({ query: adminEventPaymentListQuerySchema }),
+  getAdminEventPayments
+);
+router.get(
+  "/event-payments/:paymentId",
+  adminReadLimiter,
+  validateRequest({ params: adminEventPaymentIdParamsSchema }),
+  getAdminEventPaymentDetails
+);
 router.patch(
   "/events/:eventId/status",
   adminWriteLimiter,

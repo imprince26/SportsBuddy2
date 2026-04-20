@@ -4,6 +4,16 @@ export const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name cannot exceed 50 characters"),
   username: z.string().min(3, "Username must be at least 3 characters").max(30, "Username cannot exceed 30 characters"),
   email: z.string().email("Please enter a valid email"),
+  phone: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .refine((value) => {
+      if (!value) return true;
+      const digits = value.replace(/\D/g, "");
+      const normalized = digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
+      return /^\d{10}$/.test(normalized);
+    }, "Enter a valid 10-digit mobile number"),
   bio: z.string().max(500, "Bio cannot exceed 500 characters").optional().or(z.literal("")),
   location: z.object({
     city: z.string().optional().or(z.literal("")),

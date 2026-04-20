@@ -41,7 +41,14 @@ app.set("io", io);
 app.set('trust proxy', 1);
 
 // Middleware
-app.use(express.json({ limit: '10mb' })); // Limit JSON payload size
+app.use(
+  express.json({
+    limit: '10mb',
+    verify: (req, _res, buffer) => {
+      req.rawBody = buffer?.toString('utf8') || '';
+    },
+  })
+); // Limit JSON payload size
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(morgan("dev"));

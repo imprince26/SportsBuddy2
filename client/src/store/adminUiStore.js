@@ -38,6 +38,15 @@ const defaultFilters = {
     status: "all",
     venueId: "",
   },
+  eventPayments: {
+    page: 1,
+    limit: 20,
+    search: "",
+    status: "all",
+    eventId: "",
+    userId: "",
+    sortBy: "createdAt:desc",
+  },
   notifications: {
     page: 1,
     limit: 20,

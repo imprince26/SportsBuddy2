@@ -142,6 +142,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         username: user.username,
+        phone: user.phone,
         role: user.role,
         avatar: user.avatar
       }
@@ -203,6 +204,7 @@ export const getCurrentUser = async (req, res) => {
         name: user.name,
         username: user.username,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         avatar: user.avatar,
         coverImage: user.coverImage,
@@ -277,6 +279,7 @@ export const updateProfile = async (req, res) => {
       "name",
       "username",
       "email",
+      "phone",
       "bio",
       "location",
       "socialLinks",
@@ -311,6 +314,14 @@ export const updateProfile = async (req, res) => {
 
     if (updates.email && !validator.isEmail(updates.email)) {
       return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    if (Object.prototype.hasOwnProperty.call(updates, "phone")) {
+      const normalizedPhone = String(updates.phone || "").replace(/\D/g, "").trim();
+      if (normalizedPhone && !/^\d{10}$/.test(normalizedPhone)) {
+        return res.status(400).json({ message: "Phone number must be a valid 10-digit mobile number" });
+      }
+      updates.phone = normalizedPhone;
     }
 
     if (updates.bio && updates.bio.length > 500) {

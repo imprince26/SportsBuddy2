@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
 import Event from "../models/eventModel.js";
+import EventPayment from "../models/eventPaymentModel.js";
 import Community from "../models/communityModel.js";
 import Venue from "../models/venueModel.js";
 import Notification from "../models/notificationModel.js";
@@ -19,6 +20,7 @@ const ALLOWED_NOTIFICATION_TYPES = ["announcement", "system", "event", "marketin
 const ALLOWED_NOTIFICATION_PRIORITIES = ["low", "normal", "high"];
 const ALLOWED_NOTIFICATION_RECIPIENTS = ["all", "users", "admins", "specific"];
 const ALLOWED_BOOKING_STATUSES = ["pending", "confirmed", "cancelled"];
+const ALLOWED_EVENT_PAYMENT_STATUSES = ["created", "paid", "failed", "cancelled", "refunded"];
 
 const parsePagination = (query, defaultLimit = 20, maxLimit = 100) => {
   const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
@@ -96,6 +98,7 @@ export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
     activeCommunities,
     totalVenues,
     verifiedVenues,
+    eventPaymentsSummary,
     bookingsSummary,
     notificationsSummary,
   ] = await Promise.all([
@@ -111,6 +114,23 @@ export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
     Community.countDocuments({ isActive: true }),
     Venue.countDocuments(),
     Venue.countDocuments({ isVerified: true }),
+    EventPayment.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          paid: { $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+          pending: { $sum: { $cond: [{ $eq: ["$status", "created"] }, 1, 0] } },
+          refunded: { $sum: { $cond: [{ $eq: ["$status", "refunded"] }, 1, 0] } },
+          paidRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "paid"] }, { $ifNull: ["$amount", 0] }, 0],
+            },
+          },
+        },
+      },
+    ]),
     Venue.aggregate([
       { $unwind: { path: "$bookings", preserveNullAndEmptyArrays: false } },
       {
@@ -170,6 +190,14 @@ export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
         total: totalVenues,
         verified: verifiedVenues,
       },
+      eventPayments: eventPaymentsSummary[0] || {
+        total: 0,
+        paid: 0,
+        failed: 0,
+        pending: 0,
+        refunded: 0,
+        paidRevenue: 0,
+      },
       bookings: bookingsSummary[0] || {
         totalBookings: 0,
         confirmedBookings: 0,
@@ -182,6 +210,149 @@ export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
         failed: 0,
       },
     },
+  });
+});
+
+export const getAdminEventPayments = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query, 20, 100);
+  const { search, status, eventId, userId, dateFrom, dateTo } = req.query;
+
+  const sort = parseSort(
+    req.query.sortBy,
+    {
+      createdAt: "createdAt",
+      paidAt: "paidAt",
+      amount: "amount",
+      status: "status",
+    },
+    { createdAt: -1 }
+  );
+
+  const query = {
+    ...buildDateRangeMatch(dateFrom, dateTo, "createdAt"),
+  };
+
+  if (status && ALLOWED_EVENT_PAYMENT_STATUSES.includes(status)) {
+    query.status = status;
+  }
+
+  if (eventId && mongoose.Types.ObjectId.isValid(eventId)) {
+    query.event = eventId;
+  }
+
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    query.user = userId;
+  }
+
+  if (search && search.trim().length >= 2) {
+    const searchRegex = new RegExp(search.trim(), "i");
+    const [matchedUsers, matchedEvents] = await Promise.all([
+      User.find({
+        $or: [
+          { name: searchRegex },
+          { email: searchRegex },
+          { username: searchRegex },
+        ],
+      })
+        .select("_id")
+        .limit(200)
+        .lean(),
+      Event.find({
+        $or: [
+          { name: searchRegex },
+          { category: searchRegex },
+          { "location.city": searchRegex },
+        ],
+      })
+        .select("_id")
+        .limit(200)
+        .lean(),
+    ]);
+
+    const userIds = matchedUsers.map((entry) => entry._id);
+    const eventIds = matchedEvents.map((entry) => entry._id);
+
+    query.$or = [
+      { razorpayOrderId: searchRegex },
+      { razorpayPaymentId: searchRegex },
+      { receipt: searchRegex },
+      { failureReason: searchRegex },
+      ...(userIds.length > 0 ? [{ user: { $in: userIds } }] : []),
+      ...(eventIds.length > 0 ? [{ event: { $in: eventIds } }] : []),
+    ];
+  }
+
+  const [payments, total, stats] = await Promise.all([
+    EventPayment.find(query)
+      .populate("event", "_id name category date status registrationFee")
+      .populate("user", "_id name username email avatar")
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    EventPayment.countDocuments(query),
+    EventPayment.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          paid: { $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+          pending: { $sum: { $cond: [{ $eq: ["$status", "created"] }, 1, 0] } },
+          refunded: { $sum: { $cond: [{ $eq: ["$status", "refunded"] }, 1, 0] } },
+          paidRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "paid"] }, { $ifNull: ["$amount", 0] }, 0],
+            },
+          },
+        },
+      },
+    ]),
+  ]);
+
+  const mappedPayments = payments.map((payment) => ({
+    ...payment,
+    eventName: payment.event?.name || "Unknown event",
+    userName: payment.user?.name || "Unknown user",
+    userEmail: payment.user?.email || "",
+  }));
+
+  res.status(200).json({
+    success: true,
+    data: mappedPayments,
+    stats: stats[0] || {
+      total: 0,
+      paid: 0,
+      failed: 0,
+      pending: 0,
+      refunded: 0,
+      paidRevenue: 0,
+    },
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
+    },
+  });
+});
+
+export const getAdminEventPaymentDetails = asyncHandler(async (req, res) => {
+  const payment = await EventPayment.findById(req.params.paymentId)
+    .populate("event", "_id name category date status registrationFee maxParticipants participants")
+    .populate("user", "_id name username email avatar accountStatus")
+    .lean();
+
+  if (!payment) {
+    return res.status(404).json({ success: false, message: "Payment not found" });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: payment,
   });
 });
 

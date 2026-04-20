@@ -82,6 +82,24 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
     },
+    phone: {
+      type: String,
+      trim: true,
+      set: (value) => {
+        if (!value) {
+          return "";
+        }
+        const digits = String(value).replace(/\D/g, "");
+        if (digits.length === 12 && digits.startsWith("91")) {
+          return digits.slice(2);
+        }
+        return digits;
+      },
+      validate: {
+        validator: (value) => !value || /^\d{10}$/.test(value),
+        message: "Phone number must be a valid 10-digit mobile number",
+      },
+    },
     password: {
       type: String,
       required: [true, "Password is required"],

@@ -4,6 +4,7 @@ import {
   Building2,
   CalendarDays,
   BarChart3,
+  Receipt,
   Shield,
   Users,
 } from "lucide-react";
@@ -23,6 +24,14 @@ const chartConfig = [
   { key: "bookings", label: "Bookings", color: "hsl(160 84% 39%)" },
 ];
 
+const formatCurrency = (value = 0) => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+};
+
 const AdminDashboard = () => {
   const { growthDays, setGrowthDays } = useAdminUiStore();
   const overviewQuery = useAdminOverview();
@@ -33,6 +42,7 @@ const AdminDashboard = () => {
     const events = overviewQuery.data?.events;
     const communities = overviewQuery.data?.communities;
     const venues = overviewQuery.data?.venues;
+    const eventPayments = overviewQuery.data?.eventPayments;
     const notifications = overviewQuery.data?.notifications;
 
     return [
@@ -63,6 +73,13 @@ const AdminDashboard = () => {
         hint: `${notifications?.scheduled ?? 0} scheduled`,
         icon: Bell,
         trend: "neutral",
+      },
+      {
+        title: "Paid event payments",
+        value: eventPayments?.paid ?? 0,
+        hint: `${formatCurrency(eventPayments?.paidRevenue || 0)} captured`,
+        icon: Receipt,
+        trend: "up",
       },
       {
         title: "Communities",

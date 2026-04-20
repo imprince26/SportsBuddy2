@@ -15,6 +15,7 @@ const accountStatusSchema = z.enum(["active", "suspended", "banned"]);
 const userRoleSchema = z.enum(["user", "admin"]);
 const eventStatusSchema = z.enum(["Upcoming", "Ongoing", "Completed", "Cancelled"]);
 const bookingStatusSchema = z.enum(["pending", "confirmed", "cancelled"]);
+const eventPaymentStatusSchema = z.enum(["created", "paid", "failed", "cancelled", "refunded"]);
 
 const notificationTypeSchema = z.enum(["announcement", "system", "event", "marketing", "urgent"]);
 const notificationPrioritySchema = z.enum(["low", "normal", "high"]);
@@ -62,6 +63,20 @@ export const adminEventListQuerySchema = paginationQuerySchema.extend({
 
 export const adminEventIdParamsSchema = z.object({
   eventId: objectIdSchema,
+});
+
+export const adminEventPaymentListQuerySchema = paginationQuerySchema.extend({
+  search: z.string().trim().min(2).optional(),
+  status: eventPaymentStatusSchema.optional(),
+  eventId: objectIdSchema.optional(),
+  userId: objectIdSchema.optional(),
+  dateFrom: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateFrom").optional(),
+  dateTo: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateTo").optional(),
+  sortBy: sortBySchema,
+});
+
+export const adminEventPaymentIdParamsSchema = z.object({
+  paymentId: objectIdSchema,
 });
 
 export const adminEventStatusBodySchema = z.object({

@@ -19,6 +19,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import Events from './pages/event/Events';
 import EventDetails from './pages/event/EventDetails';
+import EventPayment from './pages/event/EventPayment';
 import PublicProfile from './pages/PublicProfile';
 import GlobalSearch from './pages/GlobalSearch';
 import About from './pages/public/About';
@@ -41,6 +42,7 @@ import AdminEvents from './pages/admin/AdminEvents';
 import AdminCommunities from './pages/admin/AdminCommunities';
 import AdminVenues from './pages/admin/AdminVenues';
 import AdminBookings from './pages/admin/AdminBookings';
+import AdminEventPayments from './pages/admin/AdminEventPayments';
 import AdminNotifications from './pages/admin/AdminNotifications';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 
@@ -139,6 +141,7 @@ function App() {
             <Route path="reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
             <Route path="events" element={<PublicRoute><Events /></PublicRoute>} />
             <Route path="events/:id" element={<PublicRoute><EventDetails /></PublicRoute>} />
+            <Route path="events/:id/payment" element={<ProtectedRoute><EventPayment /></ProtectedRoute>} />
             <Route path="profile/:userId" element={<PublicRoute><PublicProfile /></PublicRoute>} />
             <Route path="search" element={<PublicRoute><GlobalSearch /></PublicRoute>} />
             <Route path="venues" element={<PublicRoute><Venues /></PublicRoute>} />
@@ -179,7 +182,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ThemeProvider defaultTheme="system" storageKey="theme">
+              <ThemeProvider defaultTheme="system" storageKey="sportsbuddy-theme">
                 <ProtectedRoute adminOnly>
                   <AdminLayout />
                 </ProtectedRoute>
@@ -194,6 +197,7 @@ function App() {
             <Route path="communities" element={<ProtectedRoute adminOnly><AdminCommunities /></ProtectedRoute>} />
             <Route path="venues" element={<ProtectedRoute adminOnly><AdminVenues /></ProtectedRoute>} />
             <Route path="bookings" element={<ProtectedRoute adminOnly><AdminBookings /></ProtectedRoute>} />
+            <Route path="event-payments" element={<ProtectedRoute adminOnly><AdminEventPayments /></ProtectedRoute>} />
             <Route path="notifications" element={<ProtectedRoute adminOnly><AdminNotifications /></ProtectedRoute>} />
             <Route path="audit-logs" element={<ProtectedRoute adminOnly><AdminAuditLogs /></ProtectedRoute>} />
           </Route>

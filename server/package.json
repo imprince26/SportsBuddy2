@@ -39,7 +39,7 @@
     "razorpay": "^2.9.6",
     "recharts": "^3.2.1",
     "socket.io": "^4.7.2",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {

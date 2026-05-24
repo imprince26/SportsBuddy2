@@ -1,13 +1,30 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigationType } from "react-router-dom";
+
+const getScrollKey = (location) => location.pathname;
 
 const ScrollToTop = () => {
-    const { pathname } = useLocation();
-    
+    const location = useLocation();
+    const navigationType = useNavigationType();
+
     useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [pathname]);
-    
+        const scrollKey = getScrollKey(location);
+        const savedPosition = sessionStorage.getItem(`scroll:${scrollKey}`);
+
+        requestAnimationFrame(() => {
+            if (navigationType === "POP" && savedPosition) {
+                window.scrollTo(0, Number(savedPosition));
+                return;
+            }
+
+            window.scrollTo(0, 0);
+        });
+
+        return () => {
+            sessionStorage.setItem(`scroll:${scrollKey}`, String(window.scrollY));
+        };
+    }, [location.pathname, navigationType]);
+
     return null;
 }
     

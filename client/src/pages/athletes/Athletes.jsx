@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAthletes } from '@/hooks/useAthletes';
 import { useAuth } from '@/hooks/useAuth';
+import useDebounce from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -162,12 +163,25 @@ const Athletes = () => {
   } = useAthletes();
   const { user } = useAuth();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(filters.search || "");
   const [viewMode, setViewMode] = useState("grid"); // grid or list
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const searchReadyRef = useRef(false);
 
   useEffect(() => {
     getAllAthletes();
   }, []);
+
+  useEffect(() => {
+    if (!searchReadyRef.current) {
+      searchReadyRef.current = true;
+      return;
+    }
+
+    const newFilters = { ...filters, search: debouncedSearchQuery };
+    setFilters(newFilters);
+    getAllAthletes(newFilters, 1);
+  }, [debouncedSearchQuery]);
 
   const handleSearch = (e) => {
     e?.preventDefault();

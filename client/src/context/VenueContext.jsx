@@ -95,11 +95,7 @@ export const VenueProvider = ({ children }) => {
       const response = await api.get(`/venues?${queryParams}`);
 
       if (response.data.success) {
-        if (newPage === 1) {
-          setVenues(response.data.data);
-        } else {
-          setVenues(prev => [...prev, ...response.data.data]);
-        }
+        setVenues(response.data.data);
         setPagination(response.data.pagination);
         return response.data.data;
       }

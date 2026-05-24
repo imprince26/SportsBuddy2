@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -19,6 +19,7 @@ import {
   IndianRupee
 } from 'lucide-react';
 import { MdStadium } from "react-icons/md";
+import useDebounce from '@/hooks/useDebounce';
 import { useVenue } from '@/hooks/useVenue';
 import VenueCard from '@/components/venues/VenueCard';
 import { Button } from '@/components/ui/button';
@@ -178,12 +179,25 @@ const Venues = () => {
   } = useVenue();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(filters.search || "");
   const [viewMode, setViewMode] = useState("grid");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const searchReadyRef = useRef(false);
 
   useEffect(() => {
     getVenues();
   }, []);
+
+  useEffect(() => {
+    if (!searchReadyRef.current) {
+      searchReadyRef.current = true;
+      return;
+    }
+
+    const newFilters = { ...filters, search: debouncedSearchQuery };
+    setFilters(newFilters);
+    getVenues(newFilters, 1);
+  }, [debouncedSearchQuery]);
 
   const handleSearch = (e) => {
     e?.preventDefault();

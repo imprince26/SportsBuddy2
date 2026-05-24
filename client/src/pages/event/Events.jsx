@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import {
   Plus, Grid3X3, List, ChevronLeft, ChevronRight,
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import { Card } from '@/components/ui/card'
 import { Skeleton } from "@/components/ui/skeleton"
+import useDebounce from "@/hooks/useDebounce"
 
 const Events = () => {
   const { isAuthenticated, user } = useAuth()
@@ -36,6 +37,8 @@ const Events = () => {
   const [viewMode, setViewMode] = useState("grid")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const debouncedSearchQuery = useDebounce(searchQuery, 500)
+  const searchReadyRef = useRef(false)
 
   // Filters state
   const [filters, setFilters] = useState({
@@ -190,6 +193,15 @@ const Events = () => {
     e?.preventDefault()
     handleFilterChange("search", searchQuery)
   }
+
+  useEffect(() => {
+    if (!searchReadyRef.current) {
+      searchReadyRef.current = true
+      return
+    }
+
+    handleFilterChange("search", debouncedSearchQuery)
+  }, [debouncedSearchQuery])
 
   // Handle pagination
   const handlePageChange = (newPage) => {

@@ -108,25 +108,6 @@ A powerful administrative interface for platform management. Admins can search, 
 
 ---
 
-## Local Setup
-
-1. Copy `client/.env.example` to `client/.env` and `server/.env.example` to `server/.env`.
-2. Fill in MongoDB, JWT, Cloudinary, email, Razorpay, and optional Upstash Redis values.
-3. Install dependencies in both apps with `npm install`.
-4. Run the server from `server` with `npm run dev` and the client from `client` with `npm run dev`.
-
-## Verification
-
-- Client: `npm run lint`, `npm run build`, `npm audit --audit-level=high`
-- Server: `npm run check`, `npm audit --audit-level=high`
-
-<!-- ### Mobile (Expo)
-- **React Native** with **Expo Router**
-- **NativeWind** (Tailwind for React Native)
-- **TypeScript** -->
-
----
-
 ## Live Demo & Repository
 
 - **Live Demo:** [SportsBuddy](https://sports-buddy2.vercel.app)

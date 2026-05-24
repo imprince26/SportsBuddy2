@@ -341,7 +341,7 @@ const VenueDetails = () => {
                 <Button
                   size="icon"
                   className="rounded-full w-10 h-10 shadow-lg backdrop-blur-md bg-black/30 hover:bg-blue-600/50 text-white border border-white/20 transition-all hover:scale-105"
-                  onClick={() => navigate(`/admin/venues/${id}/edit`)}
+                  onClick={() => navigate(`/venues/${id}/edit`)}
                   title="Edit Venue"
                 >
                   <Edit3 className="w-4 h-4" />

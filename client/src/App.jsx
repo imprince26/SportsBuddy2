@@ -29,6 +29,7 @@ const Help = lazy(() => import('./pages/public/Help'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Venues = lazy(() => import('./pages/venues/Venues'));
 const VenueDetails = lazy(() => import('./pages/venues/VenueDetails'));
+const EditVenue = lazy(() => import('./pages/venues/EditVenue'));
 const VenueBooking = lazy(() => import('./pages/venues/VenueBooking'));
 const MyBookings = lazy(() => import('./pages/venues/MyBookings'));
 const Leaderboard = lazy(() => import('./pages/leaderboard/Leaderboard'));
@@ -138,6 +139,7 @@ function App() {
             <Route path="venues" element={<PublicRoute><Venues /></PublicRoute>} />
             <Route path="venues/:id" element={<PublicRoute><VenueDetails /></PublicRoute>} />
             <Route path="venues/:id/book" element={<ProtectedRoute><VenueBooking /></ProtectedRoute>} />
+            <Route path="venues/:id/edit" element={<ProtectedRoute><EditVenue /></ProtectedRoute>} />
             <Route path="my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
             <Route path="athletes" element={<PublicRoute><Athletes /></PublicRoute>} />
             <Route path="leaderboard" element={<PublicRoute><Leaderboard /></PublicRoute>} />

@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 
 const VenueContext = createContext();
+const VENUES_PAGE_LIMIT = 12;
 
 export const VenueProvider = ({ children }) => {
   const { user } = useAuth();
@@ -24,7 +25,7 @@ export const VenueProvider = ({ children }) => {
     total: 0,
     hasNext: false,
     hasPrev: false,
-    limit: 12
+    limit: VENUES_PAGE_LIMIT
   });
   const [filters, setFilters] = useState({
     search: '',
@@ -89,14 +90,21 @@ export const VenueProvider = ({ children }) => {
         }
       });
 
-      queryParams.append('page', newPage);
-      queryParams.append('limit', pagination.limit);
+      queryParams.append('page', String(newPage));
+      queryParams.append('limit', String(VENUES_PAGE_LIMIT));
 
       const response = await api.get(`/venues?${queryParams}`);
 
       if (response.data.success) {
         setVenues(response.data.data);
-        setPagination(response.data.pagination);
+        setPagination({
+          currentPage: response.data.pagination?.currentPage || newPage,
+          totalPages: response.data.pagination?.totalPages || 1,
+          total: response.data.pagination?.total || response.data.data.length,
+          hasNext: Boolean(response.data.pagination?.hasNext),
+          hasPrev: Boolean(response.data.pagination?.hasPrev),
+          limit: VENUES_PAGE_LIMIT,
+        });
         return response.data.data;
       }
     } catch (error) {

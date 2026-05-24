@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -57,6 +57,22 @@ const priceRanges = [
   { value: '1000-2000', label: '₹1000 - ₹2000/hr' },
   { value: '2000-plus', label: '₹2000+/hr' },
 ];
+
+const buildPageNumbers = (currentPage = 1, totalPages = 1) => {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, 'end-ellipsis', totalPages];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, 'start-ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+  }
+
+  return [1, 'start-ellipsis', currentPage - 1, currentPage, currentPage + 1, 'end-ellipsis', totalPages];
+};
 
 // Featured Venues Section
 const FeaturedVenues = ({ venues }) => {
@@ -183,6 +199,10 @@ const Venues = () => {
   const [viewMode, setViewMode] = useState("grid");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const searchReadyRef = useRef(false);
+  const pageNumbers = useMemo(
+    () => buildPageNumbers(pagination?.currentPage, pagination?.totalPages),
+    [pagination?.currentPage, pagination?.totalPages]
+  );
 
   useEffect(() => {
     getVenues();
@@ -201,13 +221,15 @@ const Venues = () => {
 
   const handleSearch = (e) => {
     e?.preventDefault();
-    getVenues({ ...filters, search: searchQuery });
+    const newFilters = { ...filters, search: searchQuery };
+    setFilters(newFilters);
+    getVenues(newFilters, 1);
   };
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    getVenues(newFilters);
+    getVenues(newFilters, 1);
   };
 
   const clearFilters = () => {
@@ -220,7 +242,16 @@ const Venues = () => {
       sortBy: 'createdAt:desc'
     };
     setFilters(defaultFilters);
-    getVenues(defaultFilters);
+    getVenues(defaultFilters, 1);
+  };
+
+  const handlePageChange = (page) => {
+    if (page < 1 || page > pagination.totalPages || page === pagination.currentPage) {
+      return;
+    }
+
+    getVenues(filters, page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const hasActiveFilters = filters.sport !== 'all' || filters.priceRange !== 'all' || searchQuery;
@@ -498,7 +529,7 @@ const Venues = () => {
                   variant="outline"
                   size="sm"
                   disabled={!pagination.hasPrev}
-                  onClick={() => getVenues(filters, pagination.currentPage - 1)}
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
                   className="border-border hover:bg-primary/10"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
@@ -506,8 +537,13 @@ const Venues = () => {
                 </Button>
 
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    const page = i + 1;
+                  {pageNumbers.map((page) => {
+                    if (typeof page === 'string') {
+                      return (
+                        <span key={page} className="px-2 text-muted-foreground">...</span>
+                      );
+                    }
+
                     return (
                       <Button
                         key={page}
@@ -517,32 +553,19 @@ const Venues = () => {
                           "w-10 h-10",
                           pagination.currentPage === page && "bg-primary text-primary-foreground"
                         )}
-                        onClick={() => getVenues(filters, page)}
+                        onClick={() => handlePageChange(page)}
                       >
                         {page}
                       </Button>
                     );
                   })}
-                  {pagination.totalPages > 5 && (
-                    <>
-                      <span className="px-2 text-muted-foreground">...</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-10 h-10"
-                        onClick={() => getVenues(filters, pagination.totalPages)}
-                      >
-                        {pagination.totalPages}
-                      </Button>
-                    </>
-                  )}
                 </div>
 
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={!pagination.hasNext}
-                  onClick={() => getVenues(filters, pagination.currentPage + 1)}
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
                   className="border-border hover:bg-primary/10"
                 >
                   Next

@@ -22,6 +22,11 @@ export const getAllVenues = async (req, res) => {
       radius = 10
     } = req.query;
 
+    const parsedPage = Number.parseInt(page, 10);
+    const parsedLimit = Number.parseInt(limit, 10);
+    const safePage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+    const safeLimit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 24) : 12;
+
     const query = { isActive: true };
 
     // Allow admins to see all venues
@@ -106,7 +111,7 @@ export const getAllVenues = async (req, res) => {
         sort.createdAt = -1;
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip = (safePage - 1) * safeLimit;
 
     let venues, total;
 
@@ -132,7 +137,7 @@ export const getAllVenues = async (req, res) => {
         },
         { $sort: { averageRating: sortOrder === "desc" ? -1 : 1 } },
         { $skip: skip },
-        { $limit: parseInt(limit) }
+        { $limit: safeLimit }
       ];
 
       venues = await Venue.aggregate([
@@ -154,7 +159,7 @@ export const getAllVenues = async (req, res) => {
       venues = await Venue.find(query)
         .sort(sort)
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(safeLimit)
         .populate("owner", "name avatar username")
         .populate("eventsHosted", "name date participantCount")
         .lean();
@@ -178,11 +183,12 @@ export const getAllVenues = async (req, res) => {
       success: true,
       data: venuesWithMetadata,
       pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        currentPage: safePage,
+        totalPages: Math.ceil(total / safeLimit),
         total,
-        hasNext: parseInt(page) < Math.ceil(total / parseInt(limit)),
-        hasPrev: parseInt(page) > 1
+        limit: safeLimit,
+        hasNext: safePage < Math.ceil(total / safeLimit),
+        hasPrev: safePage > 1
       }
     });
   } catch (error) {

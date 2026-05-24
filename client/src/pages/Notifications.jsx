@@ -199,7 +199,7 @@ const NotificationCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
       className={cn(
-        "group relative flex items-start gap-4 p-4 rounded-xl border transition-all duration-200",
+        "group relative flex items-start gap-3 rounded-2xl border p-3 transition-all duration-200 sm:gap-4 sm:p-4",
         "hover:shadow-md hover:border-primary/30",
         notification.read
           ? "bg-card border-border"
@@ -219,7 +219,7 @@ const NotificationCard = ({
 
       {/* Icon */}
       <div className={cn(
-        "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center",
+        "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full sm:h-12 sm:w-12",
         config.bgColor
       )}>
         <Icon className={cn("w-5 h-5", config.iconColor)} />
@@ -227,7 +227,7 @@ const NotificationCard = ({
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 min-w-0">
             {notification.title && (
               <h4 className={cn(
@@ -245,15 +245,15 @@ const NotificationCard = ({
             </p>
           </div>
 
-          <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+          <span className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap text-xs text-muted-foreground sm:justify-end">
             <Clock className="w-3 h-3" />
             {formatTime(notification.timestamp)}
           </span>
         </div>
 
         {/* Tags & Actions */}
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center gap-2">
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant="secondary"
               className="text-xs px-2 py-0.5 bg-muted text-muted-foreground border-0"
@@ -271,15 +271,16 @@ const NotificationCard = ({
           </div>
 
           {/* Quick Actions */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex w-full items-center justify-end gap-1 rounded-xl bg-muted/40 p-1 opacity-100 transition-opacity sm:w-auto sm:bg-transparent sm:p-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
             {!notification.read && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onMarkAsRead(notification._id)}
-                className="h-8 px-2 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                className="h-9 flex-1 gap-1.5 px-3 text-primary hover:bg-primary/10 sm:h-8 sm:flex-none sm:px-2 sm:text-muted-foreground sm:hover:text-primary"
               >
                 <Check className="w-4 h-4" />
+                <span className="text-xs font-medium sm:hidden">Mark read</span>
               </Button>
             )}
             <DropdownMenu>
@@ -287,9 +288,10 @@ const NotificationCard = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                  className="h-9 flex-1 gap-1.5 px-3 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8 sm:flex-none sm:p-0"
                 >
                   <MoreHorizontal className="w-4 h-4" />
+                  <span className="text-xs font-medium sm:hidden">More</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">

@@ -355,9 +355,6 @@ const Notifications = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
       const response = await api.get("/auth/profile");
       const rawNotifications = response.data.data.notifications || [];
       const sorted = rawNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));

@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 import dotenv from 'dotenv';
 
@@ -11,21 +10,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'SportsBuddy-2',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }],
-    public_id: (req, file) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      return `${file.fieldname}-${uniqueSuffix}`;
-    },
-  },
-});
-
-const upload = multer({
-  storage: storage,
+const multerUpload = multer({
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB file size limit
     files: 5, // Maximum number of files
@@ -39,6 +25,67 @@ const upload = multer({
     }
   },
 })
+
+const uploadBufferToCloudinary = (file) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'SportsBuddy-2',
+        public_id: `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}`,
+        transformation: [{ width: 500, height: 500, crop: 'limit' }],
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(result);
+      }
+    );
+
+    uploadStream.end(file.buffer);
+  });
+};
+
+const normalizeFiles = (req) => {
+  if (req.file) return [req.file];
+  if (Array.isArray(req.files)) return req.files;
+  if (req.files && typeof req.files === 'object') {
+    return Object.values(req.files).flat();
+  }
+  return [];
+};
+
+const attachCloudinaryUploads = async (req, _res, next) => {
+  try {
+    const files = normalizeFiles(req);
+    if (files.length === 0) {
+      next();
+      return;
+    }
+
+    const results = await Promise.all(files.map(uploadBufferToCloudinary));
+    files.forEach((file, index) => {
+      const result = results[index];
+      file.path = result.secure_url;
+      file.filename = result.public_id;
+      file.width = result.width;
+      file.height = result.height;
+      file.format = result.format;
+    });
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+const upload = {
+  single: (fieldName) => [multerUpload.single(fieldName), attachCloudinaryUploads],
+  array: (fieldName, maxCount) => [multerUpload.array(fieldName, maxCount), attachCloudinaryUploads],
+  fields: (fields) => [multerUpload.fields(fields), attachCloudinaryUploads],
+};
 
 const deleteImage = async (publicId) => {
   try {

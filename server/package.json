@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "check": "node --check server.js",
+    "audit:high": "npm audit --audit-level=high"
   },
   "keywords": [
     "sports",
@@ -19,7 +21,7 @@
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.6",
     "bcryptjs": "^3.0.2",
-    "cloudinary": "^1.41.3",
+    "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cron": "^4.3.3",
@@ -32,8 +34,7 @@
     "mongoose": "^8.19.2",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "multer-storage-cloudinary": "^4.0.0",
-    "nodemailer": "^7.0.10",
+    "nodemailer": "^8.0.8",
     "pdfkit": "^0.17.2",
     "razorpay": "^2.9.6",
     "recharts": "^3.2.1",

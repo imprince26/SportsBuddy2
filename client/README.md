@@ -10,7 +10,7 @@ The SportsBuddy client is a modern React single-page application built with Vite
 
 ### Core Framework
 - **React 18.2.0** - Modern React with hooks and concurrent features
-- **Vite 5.1.5** - Fast build tool and development server
+- **Vite 7.x** - Fast build tool and development server
 - **React Router 6.8.0** - Client-side routing and navigation
 
 ### UI & Styling
@@ -20,7 +20,7 @@ The SportsBuddy client is a modern React single-page application built with Vite
 - **Framer Motion 10.12.16** - Animation library for React
 
 ### State Management & Data
-- **Axios 1.4.0** - HTTP client for API communication
+- **Axios** - HTTP client for API communication
 - **React Hook Form 7.43.9** - Performant forms with easy validation
 - **Zod 3.21.4** - TypeScript-first schema validation
 - **React Context** - State management for global app state
@@ -135,7 +135,14 @@ npm run preview
 
 # Run ESLint
 npm run lint
+
+# Build and verify production bundle
+npm run build
 ```
+
+## Environment
+
+Create `client/.env` from `client/.env.example` and set `VITE_API_URL` plus `VITE_SOCKET_URL` for the target backend.
 
 ## Component Architecture
 

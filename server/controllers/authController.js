@@ -10,6 +10,8 @@ const isAccountAllowedToLogin = (accountStatus) => {
   return accountStatus !== "suspended" && accountStatus !== "banned";
 };
 
+const AUTH_COOKIE_NAME = "SportsBuddyToken";
+
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "7d",
@@ -52,7 +54,7 @@ export const register = async (req, res) => {
 
     const token = generateToken(newUser);
 
-    res.cookie("SportsBuddyToken", token, cookieOptions);
+    res.cookie(AUTH_COOKIE_NAME, token, cookieOptions);
 
     // Send welcome email
     // await sendEmail({
@@ -130,13 +132,12 @@ export const login = async (req, res) => {
     const token = generateToken(user);
 
     // Set cookie
-    res.cookie("SportsBuddyToken", token, cookieOptions);
+    res.cookie(AUTH_COOKIE_NAME, token, cookieOptions);
 
     // Success response
     res.status(200).json({
       success: true,
       message: "Login successful",
-      token,
       user: {
         id: user._id,
         name: user.name,
@@ -161,7 +162,7 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   try {
 
-    res.clearCookie("SportsBuddyToken");
+    res.clearCookie(AUTH_COOKIE_NAME, cookieOptions);
 
     res.status(200).json({
       success: true,

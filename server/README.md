@@ -9,16 +9,15 @@ The SportsBuddy server is a robust RESTful API built with Express.js, providing 
 ## Technology Stack
 
 ### Core Framework
-- **Node.js 18.x** - JavaScript runtime environment
-- **Express.js 4.18.2** - Fast, unopinionated web framework
+- **Node.js 20.x** - JavaScript runtime environment
+- **Express.js 5.x** - Fast, unopinionated web framework
 - **MongoDB 7.0** - NoSQL document database
-- **Mongoose 7.5.0** - MongoDB object modeling
+- **Mongoose 8.x** - MongoDB object modeling
 
 ### Authentication & Security
 - **JWT (jsonwebtoken 9.0.1)** - JSON Web Token authentication
 - **bcryptjs 2.4.3** - Password hashing
-- **express-rate-limit 6.10.0** - Rate limiting middleware
-- **helmet 6.1.5** - Security headers
+- **express-rate-limit** - Rate limiting middleware
 - **cors 2.8.5** - Cross-origin resource sharing
 
 ### Real-time Communication
@@ -26,8 +25,8 @@ The SportsBuddy server is a robust RESTful API built with Express.js, providing 
 - **Redis 4.6.8** - In-memory data structure store for caching
 
 ### File Upload & Media
-- **Cloudinary 1.40.0** - Cloud-based media management
-- **multer 1.4.5** - Middleware for handling file uploads
+- **Cloudinary 2.x** - Cloud-based media management
+- **multer 2.x** - Middleware for handling file uploads
 
 ### Email & Notifications
 - **Nodemailer 6.9.5** - Email sending functionality
@@ -215,8 +214,8 @@ The SportsBuddy server is a robust RESTful API built with Express.js, providing 
 ## Key Features
 
 ### Authentication & Authorization
-- **JWT Authentication**: Secure token-based authentication with refresh tokens
-- **Role-based Access Control**: User, Admin, and Athlete roles
+- **JWT Authentication**: Secure cookie-based authentication
+- **Role-based Access Control**: User and Admin roles
 - **Password Security**: Bcrypt hashing with salt rounds
 - **Email Verification**: Account activation via email
 - **Password Reset**: Secure password recovery flow

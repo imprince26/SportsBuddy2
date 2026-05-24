@@ -8,15 +8,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const existingToken = localStorage.getItem('token');
-      if (!existingToken) {
-        setLoading(false);
-        return;
-      }
       try {
         const response = await api.get(`/auth/me`);
         if (response.data.success) {
@@ -41,8 +35,6 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post(`/auth/register`, userData);
 
       if (response.data.success) {
-        setToken(response.data.token);
-        localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
         toast.success('Registration successful! Redirecting to dashboard...');
         return { success: true };
@@ -65,8 +57,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post(`/auth/login`, credentials);
       if (response.data.success) {
-        setToken(response.data.token);
-        localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
         toast.success('Login successful! Redirecting to dashboard...');
         return { success: true };
@@ -87,8 +77,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token');
-      setToken(null);
       setUser(null);
       toast.success('Logged out successfully');
     }
@@ -293,10 +281,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getCurrentUser = async () => {
-    if (!token) {
-      return { success: false, message: 'No authentication token found' };
-    }
-
     try {
       const response = await api.get(`/auth/me`);
 

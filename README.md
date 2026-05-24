@@ -19,6 +19,7 @@ Secure user authentication system with industry-standard practices. Users can re
 - Password hashing with bcrypt
 - Multi-tier rate limiting via Upstash Redis (global, auth, API, uploads)
 - Role-based access control (User/Admin)
+- Socket.io connections authenticated from the secure auth cookie
 
 ### Event Management
 The core feature of SportsBuddy—a complete event lifecycle management system. Users can create sports events with detailed information including sport type, location, date/time, skill level requirements, and participant limits. Event creators can upload multiple images, define custom rules, and specify required equipment. Participants can join events, and once joined, they gain access to a real-time chat room to coordinate with other participants.
@@ -104,6 +105,20 @@ A powerful administrative interface for platform management. Admins can search, 
 - **Upstash Redis** for rate limiting
 - **PDFKit** for report generation
 - **Zod** for server-side validation
+
+---
+
+## Local Setup
+
+1. Copy `client/.env.example` to `client/.env` and `server/.env.example` to `server/.env`.
+2. Fill in MongoDB, JWT, Cloudinary, email, Razorpay, and optional Upstash Redis values.
+3. Install dependencies in both apps with `npm install`.
+4. Run the server from `server` with `npm run dev` and the client from `client` with `npm run dev`.
+
+## Verification
+
+- Client: `npm run lint`, `npm run build`, `npm audit --audit-level=high`
+- Server: `npm run check`, `npm audit --audit-level=high`
 
 <!-- ### Mobile (Expo)
 - **React Native** with **Expo Router**

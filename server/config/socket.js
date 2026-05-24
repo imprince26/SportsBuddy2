@@ -1,8 +1,25 @@
 import { Server } from "socket.io"
+import jwt from "jsonwebtoken"
 import User from "../models/userModel.js"
 
+const parseCookieHeader = (cookieHeader = "") => {
+  return cookieHeader.split(";").reduce((cookies, cookie) => {
+    const [rawName, ...rawValue] = cookie.trim().split("=")
+    if (!rawName || rawValue.length === 0) return cookies
+
+    cookies[rawName] = decodeURIComponent(rawValue.join("="))
+    return cookies
+  }, {})
+}
+
 export default function setupSocket(server) {
-  const allowedOrigins = [process.env.CLIENT_URL, "https://sports-buddy2.vercel.app", "http://localhost:5173"].filter(Boolean);
+  const allowedOrigins = [
+    process.env.CLIENT_URL,
+    "https://sports-buddy2.vercel.app",
+    "https://sportsbuddy.princepatel.me",
+    "http://localhost:3000",
+    "http://localhost:5173",
+  ].filter(Boolean);
   const io = new Server(server, {
     cors: {
       origin: allowedOrigins,
@@ -14,10 +31,13 @@ export default function setupSocket(server) {
   // Socket authentication middleware
   io.use(async (socket, next) => {
     try {
-      const userId = socket.handshake.auth.userId
-      if (!userId) return next(new Error("Authentication error"))
+      const cookies = parseCookieHeader(socket.handshake.headers.cookie)
+      const token = cookies.SportsBuddyToken
+      if (!token) return next(new Error("Authentication error"))
 
-      const user = await User.findById(userId).select("-password")
+      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
+      const user = await User.findById(decoded.id).select("-password")
 
       if (!user) return next(new Error("User not found"))
 

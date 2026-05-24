@@ -30,9 +30,6 @@ export const SocketProvider = ({ children }) => {
 
     const socketInstance = io(API_URL, {
       withCredentials: true,
-      auth: {
-        userId: user.id,
-      },
     })
 
     socketInstance.on("connect", () => {

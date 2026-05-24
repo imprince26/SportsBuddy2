@@ -100,6 +100,8 @@ const CommunityDetails = () => {
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [galleryImages, setGalleryImages] = useState([])
   const [galleryIndex, setGalleryIndex] = useState(0)
+  const [communityFetchComplete, setCommunityFetchComplete] = useState(false)
+  const [communityLoadFailed, setCommunityLoadFailed] = useState(false)
 
   // Use metadata hook
   useMetadata(currentCommunity ? { community: currentCommunity } : {})
@@ -107,10 +109,53 @@ const CommunityDetails = () => {
   // Refs
   const fileInputRef = useRef(null)
 
+  useEffect(() => {
+    const hasOpenOverlay =
+      showJoinDialog ||
+      showLeaveDialog ||
+      showDeleteDialog ||
+      showDeletePostDialog ||
+      showCreatePost ||
+      showEditPost ||
+      galleryOpen
+
+    if (!hasOpenOverlay) {
+      document.body.style.pointerEvents = ''
+    }
+
+    return () => {
+      document.body.style.pointerEvents = ''
+    }
+  }, [
+    showJoinDialog,
+    showLeaveDialog,
+    showDeleteDialog,
+    showDeletePostDialog,
+    showCreatePost,
+    showEditPost,
+    galleryOpen,
+  ])
+
   // Fetch community data
   useEffect(() => {
+    let cancelled = false
+
     if (id) {
-      fetchCommunity(id)
+      setCommunityFetchComplete(false)
+      setCommunityLoadFailed(false)
+
+      fetchCommunity(id).then((community) => {
+        if (cancelled) return
+        setCommunityLoadFailed(!community)
+      }).finally(() => {
+        if (!cancelled) {
+          setCommunityFetchComplete(true)
+        }
+      })
+    }
+
+    return () => {
+      cancelled = true
     }
   }, [id])
 
@@ -320,13 +365,16 @@ const CommunityDetails = () => {
     }
   }
 
-  // Loading state - only show skeleton during actual loading, not when data is present
-  if (loading && !currentCommunity) {
+  const hasCurrentCommunity = currentCommunity?._id === id
+  const isInitialCommunityLoad = !communityFetchComplete || (!hasCurrentCommunity && loading)
+
+  // Loading state - do not flash the not-found state before the community request finishes.
+  if (isInitialCommunityLoad) {
     return <CommunityDetailsSkeleton />
   }
 
   // If not loading but no community, show error
-  if (!loading && !currentCommunity) {
+  if (communityLoadFailed || !hasCurrentCommunity) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
@@ -348,7 +396,7 @@ const CommunityDetails = () => {
   }
 
   // Error state
-  if (error) {
+  if (error && !hasCurrentCommunity) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
@@ -697,8 +745,8 @@ const CommunityDetails = () => {
 
       {/* Image Gallery Modal */}
       <ImageGalleryModal
-        open={galleryOpen}
-        onOpenChange={setGalleryOpen}
+        isOpen={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
         images={galleryImages}
         initialIndex={galleryIndex}
       />

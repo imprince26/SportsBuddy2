@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -6,6 +6,12 @@ import { Dialog, DialogContent } from '../ui/dialog';
 
 const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialIndex);
+    }
+  }, [initialIndex, isOpen]);
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -22,11 +28,10 @@ const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-black/95 border-0"
         onKeyDown={handleKeyDown}
-        showCloseButton={false}
       >
         <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
           {/* Close Button */}

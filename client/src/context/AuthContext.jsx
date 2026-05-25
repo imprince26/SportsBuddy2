@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import api from '@/utils/api';
+import api, { clearStoredAuthToken, setStoredAuthToken } from '@/utils/api';
 
 const AuthContext = createContext();
 
@@ -18,6 +18,9 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Auth check failed:', error?.response?.status, error?.response?.data);
+        if (error?.response?.status === 401) {
+          clearStoredAuthToken();
+        }
         setUser(null);
       } finally {
         setLoading(false);
@@ -35,6 +38,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post(`/auth/register`, userData);
 
       if (response.data.success) {
+        setStoredAuthToken(response.data.token);
         setUser(response.data.user);
         toast.success('Registration successful! Redirecting to dashboard...');
         return { success: true };
@@ -57,6 +61,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post(`/auth/login`, credentials);
       if (response.data.success) {
+        setStoredAuthToken(response.data.token);
         setUser(response.data.user);
         toast.success('Login successful! Redirecting to dashboard...');
         return { success: true };
@@ -77,6 +82,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      clearStoredAuthToken();
       setUser(null);
       toast.success('Logged out successfully');
     }
@@ -290,6 +296,9 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Get current user failed:', error);
+      if (error?.response?.status === 401) {
+        clearStoredAuthToken();
+      }
       const message = error.response?.data?.message || 'Failed to fetch user data';
 
       return { success: false, message };

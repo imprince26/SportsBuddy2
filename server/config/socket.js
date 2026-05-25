@@ -32,7 +32,7 @@ export default function setupSocket(server) {
   io.use(async (socket, next) => {
     try {
       const cookies = parseCookieHeader(socket.handshake.headers.cookie)
-      const token = cookies.SportsBuddyToken
+      const token = cookies.SportsBuddyToken || socket.handshake.auth?.token
       if (!token) return next(new Error("Authentication error"))
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET)

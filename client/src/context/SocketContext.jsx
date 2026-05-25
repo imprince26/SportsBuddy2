@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { io } from 'socket.io-client'
 import { useAuth } from '@/hooks/useAuth'
+import { getStoredAuthToken } from '@/utils/api'
 
 const SocketContext = createContext()
 
@@ -30,6 +31,9 @@ export const SocketProvider = ({ children }) => {
 
     const socketInstance = io(API_URL, {
       withCredentials: true,
+      auth: {
+        token: getStoredAuthToken(),
+      },
     })
 
     socketInstance.on("connect", () => {

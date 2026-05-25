@@ -29,10 +29,13 @@ const app = express();
 const httpServer = createServer(app);
 
 const allowedOrigins = [
+  process.env.CLIENT_URL,
   "http://localhost:3000",
+  "http://localhost:5173",
   "https://sports-buddy2.vercel.app",
-  "https://sportsbuddy.princepatel.me"
-];
+  "https://sportsbuddy.princepatel.me",
+  "https://www.sportsbuddy.princepatel.me",
+].filter(Boolean);
 
 // Configure Socket.io
 const io = setupSocket(httpServer);

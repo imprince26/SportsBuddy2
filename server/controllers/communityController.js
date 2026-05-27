@@ -3,6 +3,7 @@ import User from '../models/userModel.js';
 import { cloudinary } from '../config/cloudinary.js';
 import fs from 'fs';
 import { completeUserAction, POINT_VALUES } from '../utils/userStatsHelper.js';
+import { addUserNotification } from '../utils/notificationHelper.js';
 
 // Get all communities
 export const getCommunities = async (req, res) => {
@@ -966,14 +967,13 @@ export const joinCommunity = async (req, res) => {
           checkAchievements: true
         });
 
-        // Add notification to user about joining community
-        const user = await User.findById(req.user.id);
-        await user.addNotification({
+        await addUserNotification(req.user.id, {
           type: 'community',
           title: 'Community Joined',
           message: `You've joined "${community.name}" and earned ${POINT_VALUES.COMMUNITY_JOIN} points!`,
           relatedCommunity: communityId,
-          priority: 'normal'
+          priority: 'normal',
+          actionUrl: `/communities/${communityId}`
         });
       } catch (statsError) {
         console.error('Error updating user stats:', statsError);
@@ -1143,14 +1143,13 @@ export const createPost = async (req, res) => {
         checkAchievements: true
       });
 
-      // Add notification to user about post creation
-      const user = await User.findById(req.user.id);
-      await user.addNotification({
+      await addUserNotification(req.user.id, {
         type: 'community',
         title: 'Post Created',
         message: `Your post in "${community.name}" earned you ${POINT_VALUES.POST_CREATE} points!`,
         relatedCommunity: communityId,
-        priority: 'normal'
+        priority: 'normal',
+        actionUrl: `/communities/${communityId}`
       });
     } catch (statsError) {
       console.error('Error updating user stats:', statsError);
@@ -2619,13 +2618,13 @@ export const handleJoinRequest = async (req, res) => {
           checkAchievements: true
         });
 
-        const user = await User.findById(request.user._id);
-        await user.addNotification({
+        await addUserNotification(request.user._id, {
           type: 'community',
           title: 'Request Approved',
-          message: `Your request to join "${community.name}" has been approved!`,
+          message: `Your request to join "${community.name}" has been approved and you earned ${POINT_VALUES.COMMUNITY_JOIN} points!`,
           relatedCommunity: id,
-          priority: 'normal'
+          priority: 'normal',
+          actionUrl: `/communities/${id}`
         });
       } catch (statsError) {
         console.error('Error updating user stats:', statsError);
@@ -2634,13 +2633,13 @@ export const handleJoinRequest = async (req, res) => {
       request.status = 'rejected';
 
       try {
-        const user = await User.findById(request.user._id);
-        await user.addNotification({
+        await addUserNotification(request.user._id, {
           type: 'community',
           title: 'Request Declined',
           message: `Your request to join "${community.name}" was declined.`,
           relatedCommunity: id,
-          priority: 'low'
+          priority: 'low',
+          actionUrl: `/communities/${id}`
         });
       } catch (notifyError) {
         console.error('Error sending notification:', notifyError);
@@ -2740,13 +2739,13 @@ export const updateMemberRole = async (req, res) => {
     await community.save();
 
     try {
-      const user = await User.findById(memberId);
-      await user.addNotification({
+      await addUserNotification(memberId, {
         type: 'community',
         title: 'Role Updated',
         message: `Your role in "${community.name}" has been changed from ${previousRole} to ${role}.`,
         relatedCommunity: id,
-        priority: 'normal'
+        priority: 'normal',
+        actionUrl: `/communities/${id}`
       });
     } catch (notifyError) {
       console.error('Error sending notification:', notifyError);
@@ -2820,8 +2819,7 @@ export const removeMember = async (req, res) => {
     await community.save();
 
     try {
-      const user = await User.findById(memberId);
-      await user.addNotification({
+      await addUserNotification(memberId, {
         type: 'community',
         title: 'Removed from Community',
         message: `You have been removed from "${community.name}".`,

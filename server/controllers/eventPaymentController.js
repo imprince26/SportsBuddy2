@@ -2,6 +2,7 @@ import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
 import EventPayment from "../models/eventPaymentModel.js";
 import { completeUserAction, POINT_VALUES } from "../utils/userStatsHelper.js";
+import { addUserNotification } from "../utils/notificationHelper.js";
 import {
   formatINR,
   getRazorpayClient,
@@ -94,17 +95,16 @@ const finalizePaidRegistration = async ({
     }
   }
 
-  try {
-    await user.addNotification({
-      type: "event",
-      title: "Payment successful",
-      message: `Your payment for "${event.name}" is confirmed and your seat is reserved.`,
-      relatedEvent: event._id,
-      priority: "normal",
-    });
-  } catch (notificationError) {
-    // Non-blocking notification failure.
-  }
+  await addUserNotification(user, {
+    type: "event",
+    title: "Payment successful",
+    message: shouldAwardPoints
+      ? `Your payment for "${event.name}" is confirmed, your seat is reserved, and you earned ${POINT_VALUES.EVENT_JOIN} points!`
+      : `Your payment for "${event.name}" is confirmed and your seat is reserved.`,
+    relatedEvent: event._id,
+    priority: "normal",
+    actionUrl: `/events/${event._id}`,
+  });
 
   const organizerMessageName = actorDisplayName || user.name || "A participant";
   await User.findByIdAndUpdate(event.createdBy, {

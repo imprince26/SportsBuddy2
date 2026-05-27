@@ -6,7 +6,7 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ["event", "chat", "team", "system", "announcement", "marketing", "follow"],
+    enum: ["event", "chat", "team", "system", "announcement", "marketing", "follow", "community", "venue", "achievement"],
   },
   message: {
     type: String,
@@ -275,7 +275,20 @@ const userSchema = new mongoose.Schema(
     activityLog: [{
       action: {
         type: String,
-        enum: ["event_join", "event_create", "post_create", "venue_review", "achievement_earned"]
+        enum: [
+          "event_join",
+          "event_create",
+          "event_leave",
+          "event_review",
+          "community_join",
+          "community_leave",
+          "post_create",
+          "post_like",
+          "post_comment",
+          "venue_review",
+          "venue_book",
+          "achievement_earned"
+        ]
       },
       points: Number,
       category: String,

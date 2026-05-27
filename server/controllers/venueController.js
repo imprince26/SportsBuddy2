@@ -3,6 +3,7 @@ import User from '../models/userModel.js';
 import { cloudinary } from '../config/cloudinary.js';
 import { extractPublicIdFromUrl } from '../config/cloudinary.js';
 import { completeUserAction, POINT_VALUES } from '../utils/userStatsHelper.js';
+import { addUserNotification } from '../utils/notificationHelper.js';
 
 // Get all venues with filters
 export const getAllVenues = async (req, res) => {
@@ -378,6 +379,15 @@ export const rateVenue = async (req, res) => {
           statUpdates: {},
           relatedId: venueId,
           checkAchievements: true
+        });
+
+        await addUserNotification(req.user.id, {
+          type: 'venue',
+          title: 'Venue Review Submitted',
+          message: `Your review for "${venue.name}" earned you ${POINT_VALUES.VENUE_RATE} points!`,
+          relatedVenue: venueId,
+          priority: 'normal',
+          actionUrl: `/venues/${venueId}`
         });
       } catch (statsError) {
         console.error('Error updating user stats:', statsError);

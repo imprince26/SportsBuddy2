@@ -2,6 +2,7 @@ import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
 import { cloudinary, deleteImage } from "../config/cloudinary.js";
 import { completeUserAction, POINT_VALUES } from "../utils/userStatsHelper.js";
+import { addUserNotification } from "../utils/notificationHelper.js";
 
 // Create Event Controller
 export const createEvent = async (req, res) => {
@@ -85,6 +86,15 @@ export const createEvent = async (req, res) => {
         },
         relatedId: savedEvent._id,
         checkAchievements: true
+      });
+
+      await addUserNotification(req.user._id, {
+        type: 'event',
+        title: 'Event Created',
+        message: `Your event "${savedEvent.name}" is live and you earned ${POINT_VALUES.EVENT_CREATE} points!`,
+        relatedEvent: savedEvent._id,
+        priority: 'normal',
+        actionUrl: `/events/${savedEvent._id}`
       });
     } catch (statsError) {
       console.error('Error updating user stats:', statsError);
@@ -813,14 +823,13 @@ export const joinEvent = async (req, res) => {
         checkAchievements: true
       });
 
-      // Add notification to user about joining event
-      const user = await User.findById(req.user._id);
-      await user.addNotification({
+      await addUserNotification(req.user._id, {
         type: 'event',
         title: 'Event Joined',
         message: `You've joined "${event.name}" and earned ${POINT_VALUES.EVENT_JOIN} points!`,
         relatedEvent: event._id,
-        priority: 'normal'
+        priority: 'normal',
+        actionUrl: `/events/${event._id}`
       });
 
       // Notify about new achievements

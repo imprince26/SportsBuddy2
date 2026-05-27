@@ -44,3 +44,11 @@ export const userStatusSchema = z.object({
   reason: z.string().trim().max(300, "Reason is too long").optional(),
   note: z.string().trim().max(500, "Note is too long").optional(),
 });
+
+export const userNotificationSchema = z.object({
+  title: z.string().trim().min(3, "Title is too short").max(120, "Title is too long"),
+  message: z.string().trim().min(3, "Message is too short").max(600, "Message is too long"),
+  type: z.enum(["announcement", "system", "event", "marketing"]),
+  priority: z.enum(["low", "normal", "high"]),
+  actionUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+});

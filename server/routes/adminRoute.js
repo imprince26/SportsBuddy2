@@ -6,6 +6,7 @@ import {
   getAdminUserDetails,
   updateAdminUserRole,
   updateAdminUserStatus,
+  sendAdminUserNotification,
   getAdminEvents,
   getAdminEventPayments,
   getAdminEventPaymentDetails,
@@ -44,6 +45,7 @@ import {
   adminUserIdParamsSchema,
   adminUserRoleBodySchema,
   adminUserStatusBodySchema,
+  adminUserNotificationBodySchema,
   adminEventListQuerySchema,
   adminEventIdParamsSchema,
   adminEventPaymentListQuerySchema,
@@ -101,6 +103,12 @@ router.patch(
   adminWriteLimiter,
   validateRequest({ params: adminUserIdParamsSchema, body: adminUserStatusBodySchema }),
   updateAdminUserStatus
+);
+router.post(
+  "/users/:userId/notification",
+  adminWriteLimiter,
+  validateRequest({ params: adminUserIdParamsSchema, body: adminUserNotificationBodySchema }),
+  sendAdminUserNotification
 );
 
 router.get("/events", adminReadLimiter, validateRequest({ query: adminEventListQuerySchema }), getAdminEvents);

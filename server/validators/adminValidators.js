@@ -51,6 +51,14 @@ export const adminUserStatusBodySchema = z.object({
   note: z.string().trim().max(500).optional(),
 });
 
+export const adminUserNotificationBodySchema = z.object({
+  title: z.string().trim().min(3).max(120),
+  message: z.string().trim().min(3).max(600),
+  type: z.enum(["announcement", "system", "event", "marketing"]).optional(),
+  priority: notificationPrioritySchema.optional(),
+  actionUrl: z.string().trim().url("Invalid actionUrl").optional(),
+});
+
 export const adminEventListQuerySchema = paginationQuerySchema.extend({
   search: z.string().trim().min(2).optional(),
   status: eventStatusSchema.optional(),

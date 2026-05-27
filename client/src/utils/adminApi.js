@@ -40,6 +40,11 @@ export const adminApi = {
     return response.data;
   },
 
+  getUserDetails: async (userId) => {
+    const response = await api.get(`/admin/users/${userId}`);
+    return response.data?.data;
+  },
+
   updateUserRole: async ({ userId, role }) => {
     const response = await api.patch(`/admin/users/${userId}/role`, { role });
     return response.data;
@@ -50,6 +55,17 @@ export const adminApi = {
       accountStatus,
       reason,
       note,
+    });
+    return response.data;
+  },
+
+  sendUserNotification: async ({ userId, title, message, type, priority, actionUrl }) => {
+    const response = await api.post(`/admin/users/${userId}/notification`, {
+      title,
+      message,
+      type,
+      priority,
+      ...(actionUrl ? { actionUrl } : {}),
     });
     return response.data;
   },

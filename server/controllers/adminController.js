@@ -8,6 +8,7 @@ import Venue from "../models/venueModel.js";
 import Notification from "../models/notificationModel.js";
 import AdminAuditLog from "../models/adminAuditLogModel.js";
 import { logAdminAction } from "../utils/adminAudit.js";
+import { addUserNotification } from "../utils/notificationHelper.js";
 import {
   dispatchAdminNotification,
   normalizeSpecificRecipients,
@@ -17,6 +18,7 @@ const ALLOWED_EVENT_STATUSES = ["Upcoming", "Ongoing", "Completed", "Cancelled"]
 const ALLOWED_USER_ROLES = ["user", "admin"];
 const ALLOWED_ACCOUNT_STATUSES = ["active", "suspended", "banned"];
 const ALLOWED_NOTIFICATION_TYPES = ["announcement", "system", "event", "marketing", "urgent"];
+const ALLOWED_USER_NOTIFICATION_TYPES = ["announcement", "system", "event", "marketing"];
 const ALLOWED_NOTIFICATION_PRIORITIES = ["low", "normal", "high"];
 const ALLOWED_NOTIFICATION_RECIPIENTS = ["all", "users", "admins", "specific"];
 const ALLOWED_BOOKING_STATUSES = ["pending", "confirmed", "cancelled"];
@@ -465,19 +467,56 @@ export const getAdminUsers = asyncHandler(async (req, res) => {
     query.accountStatus = accountStatus;
   }
 
-  const [users, total] = await Promise.all([
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const [users, total, stats] = await Promise.all([
     User.find(query)
-      .select("name username email role accountStatus avatar createdAt lastLoginAt stats moderation")
+      .select("name username email phone role accountStatus avatar createdAt lastLoginAt stats moderation sportsPreferences location bio followers following notifications")
       .sort(sort)
       .skip(skip)
       .limit(limit)
       .lean(),
     User.countDocuments(query),
+    User.aggregate([
+      {
+        $facet: {
+          total: [{ $count: "count" }],
+          active: [{ $match: { accountStatus: "active" } }, { $count: "count" }],
+          suspended: [{ $match: { accountStatus: "suspended" } }, { $count: "count" }],
+          banned: [{ $match: { accountStatus: "banned" } }, { $count: "count" }],
+          admins: [{ $match: { role: "admin" } }, { $count: "count" }],
+          newLast30Days: [{ $match: { createdAt: { $gte: thirtyDaysAgo } } }, { $count: "count" }],
+        },
+      },
+    ]),
   ]);
+
+  const counts = stats[0] || {};
+  const getCount = (key) => counts[key]?.[0]?.count || 0;
+
+  const mappedUsers = users.map((user) => ({
+    ...user,
+    followerCount: Array.isArray(user.followers) ? user.followers.length : 0,
+    followingCount: Array.isArray(user.following) ? user.following.length : 0,
+    unreadNotificationsCount: Array.isArray(user.notifications)
+      ? user.notifications.filter((notification) => !notification.read).length
+      : 0,
+    followers: undefined,
+    following: undefined,
+    notifications: undefined,
+  }));
 
   res.status(200).json({
     success: true,
-    data: users,
+    data: mappedUsers,
+    stats: {
+      total: getCount("total"),
+      active: getCount("active"),
+      suspended: getCount("suspended"),
+      banned: getCount("banned"),
+      admins: getCount("admins"),
+      newLast30Days: getCount("newLast30Days"),
+    },
     pagination: {
       page,
       limit,
@@ -624,6 +663,71 @@ export const updateAdminUserStatus = asyncHandler(async (req, res) => {
       id: user._id,
       accountStatus: user.accountStatus,
       moderation: user.moderation,
+    },
+  });
+});
+
+export const sendAdminUserNotification = asyncHandler(async (req, res) => {
+  const {
+    title,
+    message,
+    type = "system",
+    priority = "normal",
+    actionUrl,
+  } = req.body;
+
+  if (!title || !message) {
+    return res.status(400).json({ success: false, message: "Title and message are required" });
+  }
+
+  if (!ALLOWED_USER_NOTIFICATION_TYPES.includes(type)) {
+    return res.status(400).json({ success: false, message: "Invalid notification type" });
+  }
+
+  if (!ALLOWED_NOTIFICATION_PRIORITIES.includes(priority)) {
+    return res.status(400).json({ success: false, message: "Invalid notification priority" });
+  }
+
+  const user = await User.findById(req.params.userId).select("_id name email accountStatus").lean();
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  if (user.accountStatus === "banned") {
+    return res.status(400).json({ success: false, message: "Cannot notify a banned account" });
+  }
+
+  const delivered = await addUserNotification(user._id.toString(), {
+    title,
+    message,
+    type,
+    priority,
+    actionUrl,
+  });
+
+  if (!delivered) {
+    return res.status(500).json({ success: false, message: "Failed to deliver notification" });
+  }
+
+  await logAdminAction({
+    req,
+    action: "user.notification.send",
+    entityType: "user",
+    entityId: user._id,
+    metadata: {
+      title,
+      type,
+      priority,
+      actionUrl,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Notification sent successfully",
+    data: {
+      userId: user._id,
+      delivered: true,
     },
   });
 });

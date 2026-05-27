@@ -10,6 +10,14 @@ export const useAdminUsers = (filters) => {
   });
 };
 
+export const useAdminUserDetails = (userId) => {
+  return useQuery({
+    queryKey: ["admin", "users", userId, "details"],
+    queryFn: () => adminApi.getUserDetails(userId),
+    enabled: Boolean(userId),
+  });
+};
+
 export const useUpdateAdminUserRole = () => {
   const queryClient = useQueryClient();
 
@@ -22,6 +30,24 @@ export const useUpdateAdminUserRole = () => {
     },
     onError: (error) => {
       showToast.error(error?.response?.data?.message || "Failed to update role");
+    },
+  });
+};
+
+export const useSendAdminUserNotification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: adminApi.sendUserNotification,
+    onSuccess: (_, variables) => {
+      showToast.success("Notification sent to user");
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      if (variables?.userId) {
+        queryClient.invalidateQueries({ queryKey: ["admin", "users", variables.userId, "details"] });
+      }
+    },
+    onError: (error) => {
+      showToast.error(error?.response?.data?.message || "Failed to send notification");
     },
   });
 };

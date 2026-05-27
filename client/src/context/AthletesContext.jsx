@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 
 const AthletesContext = createContext();
+const ATHLETES_PAGE_LIMIT = 12;
 
 export const AthletesProvider = ({ children }) => {
   const { user } = useAuth();
@@ -23,14 +24,14 @@ export const AthletesProvider = ({ children }) => {
     total: 0,
     hasNext: false,
     hasPrev: false,
-    limit: 12
+    limit: ATHLETES_PAGE_LIMIT
   });
   const [filters, setFilters] = useState({
     search: '',
     sport: 'all',
     skillLevel: 'all',
     location: '',
-    sortBy: 'joinedDate:desc'
+    sortBy: 'recommended:desc'
   });
 
   // Socket event handlers
@@ -96,18 +97,21 @@ export const AthletesProvider = ({ children }) => {
         }
       });
 
-      queryParams.append('page', newPage);
-      queryParams.append('limit', pagination.limit);
+      queryParams.append('page', String(newPage));
+      queryParams.append('limit', String(ATHLETES_PAGE_LIMIT));
 
       const response = await api.get(`/athletes?${queryParams}`);
 
       if (response.data.success) {
-        if (newPage === 1) {
-          setAthletes(response.data.data);
-        } else {
-          setAthletes(prev => [...prev, ...response.data.data]);
-        }
-        setPagination(response.data.pagination);
+        setAthletes(response.data.data);
+        setPagination({
+          currentPage: response.data.pagination?.currentPage || response.data.pagination?.page || newPage,
+          totalPages: response.data.pagination?.totalPages || response.data.pagination?.pages || 1,
+          total: response.data.pagination?.total || response.data.data.length,
+          hasNext: Boolean(response.data.pagination?.hasNext),
+          hasPrev: Boolean(response.data.pagination?.hasPrev),
+          limit: ATHLETES_PAGE_LIMIT,
+        });
         return response.data.data;
       }
     } catch (error) {

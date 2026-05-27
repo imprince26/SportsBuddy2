@@ -185,13 +185,15 @@ const Athletes = () => {
 
   const handleSearch = (e) => {
     e?.preventDefault();
-    getAllAthletes({ ...filters, search: searchQuery });
+    const newFilters = { ...filters, search: searchQuery };
+    setFilters(newFilters);
+    getAllAthletes(newFilters, 1);
   };
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    getAllAthletes(newFilters);
+    getAllAthletes(newFilters, 1);
   };
 
   const clearFilters = () => {
@@ -201,10 +203,10 @@ const Athletes = () => {
       sport: 'all',
       skillLevel: 'all',
       location: '',
-      sortBy: 'joinedDate:desc'
+      sortBy: 'recommended:desc'
     };
     setFilters(defaultFilters);
-    getAllAthletes(defaultFilters);
+    getAllAthletes(defaultFilters, 1);
   };
 
   const hasActiveFilters = filters.sport !== 'all' || filters.skillLevel !== 'all' || searchQuery;
@@ -362,8 +364,9 @@ const Athletes = () => {
                       <SelectValue placeholder="Sort By" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="recommended:desc">Recommended</SelectItem>
                       <SelectItem value="joinedDate:desc">Newest Members</SelectItem>
-                      <SelectItem value="rating:desc">Highest Rated</SelectItem>
+                      <SelectItem value="eventsCount:desc">Most Active</SelectItem>
                       <SelectItem value="followers:desc">Most Popular</SelectItem>
                       <SelectItem value="name:asc">Name (A-Z)</SelectItem>
                     </SelectContent>

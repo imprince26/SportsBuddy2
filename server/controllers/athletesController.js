@@ -12,7 +12,7 @@ export const getAllAthletes = asyncHandler(async (req, res) => {
             sport = "",
             skillLevel = "",
             location = "",
-            sortBy = "joinedDate:desc"
+            sortBy = "recommended:desc"
         } = req.query;
 
         // Build query
@@ -58,6 +58,11 @@ export const getAllAthletes = asyncHandler(async (req, res) => {
         if (sortBy) {
             const [field, order] = sortBy.split(":");
             switch (field) {
+                case "recommended":
+                    sort.recommendationScore = order === "asc" ? 1 : -1;
+                    sort.lastLoginAt = -1;
+                    sort.createdAt = -1;
+                    break;
                 case "joinedDate":
                     sort.createdAt = order === "desc" ? -1 : 1;
                     break;
@@ -103,10 +108,30 @@ export const getAllAthletes = asyncHandler(async (req, res) => {
                     eventsCreated: { $size: "$createdEvents" },
                     followersCount: { $size: { $ifNull: ["$followers", []] } },
                     followingCount: { $size: { $ifNull: ["$following", []] } },
+                    sportsCount: { $size: { $ifNull: ["$sportsPreferences", []] } },
+                    achievementsCount: { $size: { $ifNull: ["$achievements", []] } },
                     totalEvents: {
                         $add: [
                             { $size: "$participatedEvents" },
                             { $size: "$createdEvents" }
+                        ]
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    recommendationScore: {
+                        $add: [
+                            { $multiply: [{ $min: ["$followersCount", 100] }, 3] },
+                            { $multiply: [{ $min: ["$totalEvents", 25] }, 6] },
+                            { $multiply: [{ $min: ["$achievementsCount", 20] }, 4] },
+                            { $cond: [{ $gt: ["$sportsCount", 0] }, 20, 0] },
+                            { $cond: [{ $ifNull: ["$avatar.url", false] }, 12, 0] },
+                            { $cond: [{ $ifNull: ["$coverImage.url", false] }, 6, 0] },
+                            { $cond: [{ $ifNull: ["$bio", false] }, 10, 0] },
+                            { $cond: [{ $ifNull: ["$location.city", false] }, 8, 0] },
+                            { $cond: [{ $ifNull: ["$lastLoginAt", false] }, 10, 0] },
+                            { $divide: [{ $ifNull: ["$stats.totalPoints", 0] }, 20] }
                         ]
                     }
                 }
@@ -149,7 +174,7 @@ export const getAllAthletes = asyncHandler(async (req, res) => {
                 sport: sport || "all",
                 skillLevel: skillLevel || "all",
                 location: location || "",
-                sortBy: sortBy || "joinedDate:desc"
+                sortBy: sortBy || "recommended:desc"
             },
             stats: {
                 totalAthletes: total,

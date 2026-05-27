@@ -26,6 +26,14 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 })
 
+const HeroBg = () => (
+  <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="absolute -top-32 -right-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+    <div className="absolute -bottom-32 -left-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_35%)]" />
+  </div>
+)
+
 const ForgotPassword = () => {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)

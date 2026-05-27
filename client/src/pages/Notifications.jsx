@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
@@ -20,7 +21,11 @@ import {
   UserPlus,
   Zap,
   BellOff,
-  Loader2
+  Loader2,
+  ArrowRight,
+  Sparkles,
+  Award,
+  Star
 } from "lucide-react";
 import { format, isToday, isYesterday, formatDistanceToNow } from "date-fns";
 import api from "@/utils/api";
@@ -54,68 +59,90 @@ const notificationConfig = {
   event: {
     icon: Calendar,
     label: "Event",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-blue-500/10 to-blue-500/5",
+    iconBg: "bg-gradient-to-br from-blue-500/20 to-blue-500/10",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    gradient: "from-blue-500/20 via-transparent to-transparent"
   },
   message: {
     icon: MessageSquare,
     label: "Message",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-purple-500/10 to-purple-500/5",
+    iconBg: "bg-gradient-to-br from-purple-500/20 to-purple-500/10",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    gradient: "from-purple-500/20 via-transparent to-transparent"
   },
   chat: {
     icon: MessageSquare,
     label: "Message",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-purple-500/10 to-purple-500/5",
+    iconBg: "bg-gradient-to-br from-purple-500/20 to-purple-500/10",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    gradient: "from-purple-500/20 via-transparent to-transparent"
   },
   community: {
     icon: Users,
     label: "Community",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-emerald-500/10 to-emerald-500/5",
+    iconBg: "bg-gradient-to-br from-emerald-500/20 to-emerald-500/10",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    gradient: "from-emerald-500/20 via-transparent to-transparent"
   },
   team: {
     icon: Users,
     label: "Team",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-cyan-500/10 to-cyan-500/5",
+    iconBg: "bg-gradient-to-br from-cyan-500/20 to-cyan-500/10",
+    iconColor: "text-cyan-600 dark:text-cyan-400",
+    gradient: "from-cyan-500/20 via-transparent to-transparent"
   },
   follow: {
     icon: UserPlus,
     label: "Follow",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-pink-500/10 to-pink-500/5",
+    iconBg: "bg-gradient-to-br from-pink-500/20 to-pink-500/10",
+    iconColor: "text-pink-600 dark:text-pink-400",
+    gradient: "from-pink-500/20 via-transparent to-transparent"
   },
   like: {
     icon: Heart,
     label: "Like",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-red-500/10 to-red-500/5",
+    iconBg: "bg-gradient-to-br from-red-500/20 to-red-500/10",
+    iconColor: "text-red-600 dark:text-red-400",
+    gradient: "from-red-500/20 via-transparent to-transparent"
   },
   achievement: {
     icon: Trophy,
     label: "Achievement",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-amber-500/10 to-amber-500/5",
+    iconBg: "bg-gradient-to-br from-amber-500/20 to-amber-500/10",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    gradient: "from-amber-500/20 via-transparent to-transparent"
   },
   venue: {
     icon: MapPin,
     label: "Venue",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-orange-500/10 to-orange-500/5",
+    iconBg: "bg-gradient-to-br from-orange-500/20 to-orange-500/10",
+    iconColor: "text-orange-600 dark:text-orange-400",
+    gradient: "from-orange-500/20 via-transparent to-transparent"
   },
   system: {
     icon: Settings,
     label: "System",
-    bgColor: "bg-muted",
-    iconColor: "text-muted-foreground"
+    bgColor: "from-slate-500/10 to-slate-500/5",
+    iconBg: "bg-gradient-to-br from-slate-500/20 to-slate-500/10",
+    iconColor: "text-slate-600 dark:text-slate-400",
+    gradient: "from-slate-500/20 via-transparent to-transparent"
   },
   default: {
     icon: Bell,
     label: "Notification",
-    bgColor: "bg-primary/10",
-    iconColor: "text-primary"
+    bgColor: "from-primary/10 to-primary/5",
+    iconBg: "bg-gradient-to-br from-primary/20 to-primary/10",
+    iconColor: "text-primary",
+    gradient: "from-primary/20 via-transparent to-transparent"
   }
 };
 
@@ -174,6 +201,31 @@ const QuickStats = ({ notifications }) => {
   );
 };
 
+// Achievement Badge Component
+const AchievementBadge = ({ achievementData }) => {
+  if (!achievementData) return null;
+
+  return (
+    <motion.div
+      initial={{ scale: 0, rotate: -180 }}
+      animate={{ scale: 1, rotate: 0 }}
+      className="mt-3 p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 flex items-center gap-3"
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white">
+        <Star className="w-5 h-5" />
+      </div>
+      <div>
+        <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+          {achievementData.title}
+        </p>
+        <p className="text-xs text-amber-600 dark:text-amber-300">
+          +{achievementData.points} points
+        </p>
+      </div>
+    </motion.div>
+  );
+};
+
 // Single Notification Card
 const NotificationCard = ({
   notification,
@@ -181,10 +233,12 @@ const NotificationCard = ({
   isSelected,
   onSelect,
   onMarkAsRead,
-  onDelete
+  onDelete,
+  onNavigate
 }) => {
   const config = notificationConfig[notification.type] || notificationConfig.default;
   const Icon = config.icon;
+  const hasAction = !!notification.actionUrl;
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -193,123 +247,196 @@ const NotificationCard = ({
     return formatDistanceToNow(date, { addSuffix: true });
   };
 
+  const handleCardClick = () => {
+    if (hasAction && !isSelectionMode) {
+      onNavigate(notification.actionUrl);
+      if (!notification.read) {
+        onMarkAsRead(notification._id);
+      }
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      onClick={handleCardClick}
       className={cn(
-        "group relative flex items-start gap-3 rounded-2xl border p-3 transition-all duration-200 sm:gap-4 sm:p-4",
-        "hover:shadow-md hover:border-primary/30",
+        "group relative rounded-2xl border p-3 transition-all duration-300 sm:gap-4 sm:p-4",
+        hasAction && "cursor-pointer",
         notification.read
-          ? "bg-card border-border"
-          : "bg-primary/5 border-primary/20"
+          ? "bg-card border-border hover:border-border hover:shadow-sm"
+          : "border-gradient bg-gradient-to-br",
+        !notification.read && config.bgColor,
+        hasAction && !notification.read && "hover:shadow-lg hover:border-primary/40",
+        hasAction && notification.read && "hover:shadow-md hover:border-primary/20"
       )}
     >
-      {/* Selection Checkbox */}
-      {isSelectionMode && (
-        <div className="flex items-center pt-1">
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={() => onSelect(notification._id)}
-            className="border-primary data-[state=checked]:bg-primary"
-          />
-        </div>
+      {/* Background Gradient */}
+      {!notification.read && (
+        <div className={cn("absolute inset-0 rounded-2xl bg-gradient-to-r opacity-5 pointer-events-none", config.gradient)} />
       )}
 
-      {/* Icon */}
-      <div className={cn(
-        "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full sm:h-12 sm:w-12",
-        config.bgColor
-      )}>
-        <Icon className={cn("w-5 h-5", config.iconColor)} />
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex-1 min-w-0">
-            {notification.title && (
-              <h4 className={cn(
-                "text-sm font-semibold truncate",
-                notification.read ? "text-foreground" : "text-primary"
-              )}>
-                {notification.title}
-              </h4>
-            )}
-            <p className={cn(
-              "text-sm text-muted-foreground mt-1 leading-relaxed",
-              notification.title ? "line-clamp-2" : "line-clamp-3"
-            )}>
-              {notification.message}
-            </p>
+      <div className="relative flex items-start gap-3 sm:gap-4">
+        {/* Selection Checkbox */}
+        {isSelectionMode && (
+          <div className="flex items-center pt-1">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onSelect(notification._id)}
+              className="border-primary data-[state=checked]:bg-primary"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
+        )}
 
-          <span className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap text-xs text-muted-foreground sm:justify-end">
-            <Clock className="w-3 h-3" />
-            {formatTime(notification.timestamp)}
-          </span>
+        {/* Icon with Badge */}
+        <div className="relative flex-shrink-0">
+          <div className={cn(
+            "flex h-11 w-11 items-center justify-center rounded-full sm:h-12 sm:w-12",
+            config.iconBg
+          )}>
+            <Icon className={cn("w-5 h-5 sm:w-6 sm:h-6", config.iconColor)} />
+          </div>
+          {notification.type === 'achievement' && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-amber-600"
+            >
+              <Sparkles className="w-3 h-3 text-white" />
+            </motion.div>
+          )}
         </div>
 
-        {/* Tags & Actions */}
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="secondary"
-              className="text-xs px-2 py-0.5 bg-muted text-muted-foreground border-0"
-            >
-              {config.label}
-            </Badge>
-            {notification.priority === 'high' && (
-              <Badge className="text-xs px-2 py-0.5 bg-destructive/10 text-destructive border-0">
-                Urgent
-              </Badge>
-            )}
-            {!notification.read && (
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            )}
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex-1 min-w-0">
+              {notification.title && (
+                <h4 className={cn(
+                  "text-sm font-semibold truncate",
+                  notification.read ? "text-foreground" : "text-primary"
+                )}>
+                  {notification.title}
+                </h4>
+              )}
+              <p className={cn(
+                "text-sm mt-1 leading-relaxed",
+                notification.read ? "text-muted-foreground" : "text-foreground/90"
+              )}>
+                {notification.message}
+              </p>
+            </div>
+
+            <span className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap text-xs text-muted-foreground sm:justify-end">
+              <Clock className="w-3 h-3" />
+              {formatTime(notification.timestamp)}
+            </span>
           </div>
 
-          {/* Quick Actions */}
-          <div className="flex w-full items-center justify-end gap-1 rounded-xl bg-muted/40 p-1 opacity-100 transition-opacity sm:w-auto sm:bg-transparent sm:p-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
-            {!notification.read && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onMarkAsRead(notification._id)}
-                className="h-9 flex-1 gap-1.5 px-3 text-primary hover:bg-primary/10 sm:h-8 sm:flex-none sm:px-2 sm:text-muted-foreground sm:hover:text-primary"
+          {/* Achievement Badge */}
+          {notification.achievementData && (
+            <AchievementBadge achievementData={notification.achievementData} />
+          )}
+
+          {/* Tags & Actions */}
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="secondary"
+                className="text-xs px-2 py-0.5 bg-muted text-muted-foreground border-0"
               >
-                <Check className="w-4 h-4" />
-                <span className="text-xs font-medium sm:hidden">Mark read</span>
-              </Button>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+                {config.label}
+              </Badge>
+              {notification.priority === 'high' && (
+                <Badge className="text-xs px-2 py-0.5 bg-destructive/10 text-destructive border-0">
+                  Urgent
+                </Badge>
+              )}
+              {hasAction && (
+                <Badge className="text-xs px-2 py-0.5 bg-primary text-primary-foreground border-0 gap-1 flex items-center font-semibold hover:bg-primary/90 transition-colors">
+                  <ArrowRight className="w-3 h-3" />
+                  View
+                </Badge>
+              )}
+              {!notification.read && (
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-2 h-2 rounded-full bg-primary"
+                />
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="flex w-full items-center justify-end gap-1 rounded-xl bg-muted/40 p-1 opacity-100 transition-opacity sm:w-auto sm:bg-transparent sm:p-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+              {!notification.read && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 flex-1 gap-1.5 px-3 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8 sm:flex-none sm:p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMarkAsRead(notification._id);
+                  }}
+                  className="h-9 flex-1 gap-1.5 px-3 text-primary hover:bg-primary/10 sm:h-8 sm:flex-none sm:px-2 sm:text-muted-foreground sm:hover:text-primary"
                 >
-                  <MoreHorizontal className="w-4 h-4" />
-                  <span className="text-xs font-medium sm:hidden">More</span>
+                  <Check className="w-4 h-4" />
+                  <span className="text-xs font-medium sm:hidden">Mark read</span>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                {!notification.read && (
-                  <DropdownMenuItem onClick={() => onMarkAsRead(notification._id)}>
-                    <Check className="w-4 h-4 mr-2" />
-                    Mark as read
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-9 flex-1 gap-1.5 px-3 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8 sm:flex-none sm:p-0"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                    <span className="text-xs font-medium sm:hidden">More</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  {hasAction && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNavigate(notification.actionUrl);
+                        }}
+                      >
+                        <ArrowRight className="w-4 h-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  {!notification.read && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMarkAsRead(notification._id);
+                      }}
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Mark as read
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(notification._id);
+                    }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  onClick={() => onDelete(notification._id)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
@@ -345,6 +472,7 @@ const EmptyState = ({ filter, onReset }) => (
 );
 
 const Notifications = () => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -473,6 +601,12 @@ const Notifications = () => {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleNavigate = useCallback((actionUrl) => {
+    if (actionUrl) {
+      navigate(actionUrl);
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -682,22 +816,23 @@ const Notifications = () => {
                     </Badge>
                   </div>
 
-                  {/* Notification Items */}
-                  <div className="space-y-3">
-                    <AnimatePresence>
-                      {items.map((notification) => (
-                        <NotificationCard
-                          key={notification._id}
-                          notification={notification}
-                          isSelectionMode={isSelectionMode}
-                          isSelected={selectedIds.includes(notification._id)}
-                          onSelect={toggleSelection}
-                          onMarkAsRead={markAsRead}
-                          onDelete={deleteNotification}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
+                   {/* Notification Items */}
+                   <div className="space-y-3">
+                     <AnimatePresence>
+                       {items.map((notification) => (
+                         <NotificationCard
+                           key={notification._id}
+                           notification={notification}
+                           isSelectionMode={isSelectionMode}
+                           isSelected={selectedIds.includes(notification._id)}
+                           onSelect={toggleSelection}
+                           onMarkAsRead={markAsRead}
+                           onDelete={deleteNotification}
+                           onNavigate={handleNavigate}
+                         />
+                       ))}
+                     </AnimatePresence>
+                   </div>
                 </div>
               ))}
             </div>

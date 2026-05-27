@@ -224,7 +224,7 @@ export const checkAchievements = async (userId) => {
 
                 // Add notification
                 await user.addNotification({
-                    type: 'system',
+                    type: 'achievement',
                     title: '🏆 Achievement Unlocked!',
                     message: `You've earned the "${achievement.title}" achievement! +${achievement.points} points`,
                     achievementData: {
@@ -233,6 +233,7 @@ export const checkAchievements = async (userId) => {
                         points: achievement.points
                     },
                     priority: 'high',
+                    actionUrl: '/profile?tab=achievements',
                     timestamp: new Date()
                 });
 

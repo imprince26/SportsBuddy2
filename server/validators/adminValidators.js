@@ -143,6 +143,8 @@ export const adminVenueFeaturedBodySchema = z.object({
 });
 
 export const adminBookingListQuerySchema = paginationQuerySchema.extend({
+  search: z.string().trim().min(2).optional(),
+  city: z.string().trim().min(2).max(100).optional(),
   status: bookingStatusSchema.optional(),
   venueId: objectIdSchema.optional(),
   dateFrom: z.string().trim().refine((value) => !Number.isNaN(new Date(value).getTime()), "Invalid dateFrom").optional(),

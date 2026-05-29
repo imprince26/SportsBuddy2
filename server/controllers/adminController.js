@@ -84,38 +84,151 @@ const fillDailySeries = (series, startDate) => {
   return result;
 };
 
+const fillDailyMetricSeries = (series, startDate, metricKeys = ["count"]) => {
+  const map = new Map(series.map((item) => [item.date, item]));
+  const result = [];
+  const current = new Date(startDate);
+  const end = new Date();
+
+  while (current <= end) {
+    const dateKey = current.toISOString().slice(0, 10);
+    const source = map.get(dateKey) || {};
+    const entry = { date: dateKey };
+    metricKeys.forEach((key) => {
+      entry[key] = Number(source[key]) || 0;
+    });
+    result.push(entry);
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+
+  return result;
+};
+
 export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const now = new Date();
 
   const [
-    totalUsers,
-    activeUsers,
-    suspendedUsers,
-    bannedUsers,
-    totalAdmins,
-    usersLast30Days,
-    totalEvents,
-    activeEvents,
-    totalCommunities,
-    activeCommunities,
-    totalVenues,
-    verifiedVenues,
+    usersSummary,
+    eventsSummary,
+    communitiesSummary,
+    venuesSummary,
     eventPaymentsSummary,
     bookingsSummary,
     notificationsSummary,
+    auditSummary,
+    eventCategories,
+    eventStatuses,
+    communityCategories,
+    venueCities,
+    recentUsers,
+    upcomingEvents,
+    topVenues,
+    topCommunities,
+    recentPayments,
+    recentAuditLogs,
   ] = await Promise.all([
-    User.countDocuments(),
-    User.countDocuments({ accountStatus: "active" }),
-    User.countDocuments({ accountStatus: "suspended" }),
-    User.countDocuments({ accountStatus: "banned" }),
-    User.countDocuments({ role: "admin", accountStatus: "active" }),
-    User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
-    Event.countDocuments(),
-    Event.countDocuments({ status: { $in: ["Upcoming", "Ongoing"] } }),
-    Community.countDocuments(),
-    Community.countDocuments({ isActive: true }),
-    Venue.countDocuments(),
-    Venue.countDocuments({ isVerified: true }),
+    User.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          active: { $sum: { $cond: [{ $eq: ["$accountStatus", "active"] }, 1, 0] } },
+          suspended: { $sum: { $cond: [{ $eq: ["$accountStatus", "suspended"] }, 1, 0] } },
+          banned: { $sum: { $cond: [{ $eq: ["$accountStatus", "banned"] }, 1, 0] } },
+          admins: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ["$role", "admin"] }, { $eq: ["$accountStatus", "active"] }] },
+                1,
+                0,
+              ],
+            },
+          },
+          newLast7Days: { $sum: { $cond: [{ $gte: ["$createdAt", sevenDaysAgo] }, 1, 0] } },
+          newLast30Days: { $sum: { $cond: [{ $gte: ["$createdAt", thirtyDaysAgo] }, 1, 0] } },
+          profilePhotos: { $sum: { $cond: [{ $ne: ["$avatar.url", null] }, 1, 0] } },
+        },
+      },
+    ]),
+    Event.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          active: { $sum: { $cond: [{ $in: ["$status", ["Upcoming", "Ongoing"]] }, 1, 0] } },
+          upcoming: { $sum: { $cond: [{ $eq: ["$status", "Upcoming"] }, 1, 0] } },
+          ongoing: { $sum: { $cond: [{ $eq: ["$status", "Ongoing"] }, 1, 0] } },
+          completed: { $sum: { $cond: [{ $eq: ["$status", "Completed"] }, 1, 0] } },
+          cancelled: { $sum: { $cond: [{ $eq: ["$status", "Cancelled"] }, 1, 0] } },
+          featured: { $sum: { $cond: ["$isFeatured", 1, 0] } },
+          paidEvents: { $sum: { $cond: [{ $gt: [{ $ifNull: ["$registrationFee", 0] }, 0] }, 1, 0] } },
+          totalParticipants: { $sum: { $size: { $ifNull: ["$participants", []] } } },
+          totalCapacity: { $sum: { $ifNull: ["$maxParticipants", 0] } },
+          startingSoon: { $sum: { $cond: [{ $and: [{ $gte: ["$date", now] }, { $lte: ["$date", new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)] }] }, 1, 0] } },
+        },
+      },
+    ]),
+    Community.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          active: { $sum: { $cond: ["$isActive", 1, 0] } },
+          private: { $sum: { $cond: ["$isPrivate", 1, 0] } },
+          featured: { $sum: { $cond: ["$isFeatured", 1, 0] } },
+          totalMembers: {
+            $sum: {
+              $size: {
+                $filter: {
+                  input: { $ifNull: ["$members", []] },
+                  as: "member",
+                  cond: { $eq: ["$$member.isActive", true] },
+                },
+              },
+            },
+          },
+          totalPosts: { $sum: { $size: { $ifNull: ["$posts", []] } } },
+          pendingJoinRequests: {
+            $sum: {
+              $size: {
+                $filter: {
+                  input: { $ifNull: ["$joinRequests", []] },
+                  as: "request",
+                  cond: { $eq: ["$$request.status", "pending"] },
+                },
+              },
+            },
+          },
+        },
+      },
+    ]),
+    Venue.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          active: { $sum: { $cond: ["$isActive", 1, 0] } },
+          inactive: { $sum: { $cond: ["$isActive", 0, 1] } },
+          verified: { $sum: { $cond: ["$isVerified", 1, 0] } },
+          unverified: { $sum: { $cond: ["$isVerified", 0, 1] } },
+          featured: { $sum: { $cond: ["$isFeatured", 1, 0] } },
+          totalBookings: { $sum: { $size: { $ifNull: ["$bookings", []] } } },
+          pendingBookings: {
+            $sum: {
+              $size: {
+                $filter: {
+                  input: { $ifNull: ["$bookings", []] },
+                  as: "booking",
+                  cond: { $eq: ["$$booking.status", "pending"] },
+                },
+              },
+            },
+          },
+        },
+      },
+    ]),
     EventPayment.aggregate([
       {
         $group: {
@@ -125,9 +238,15 @@ export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
           failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
           pending: { $sum: { $cond: [{ $eq: ["$status", "created"] }, 1, 0] } },
           refunded: { $sum: { $cond: [{ $eq: ["$status", "refunded"] }, 1, 0] } },
+          cancelled: { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
           paidRevenue: {
             $sum: {
               $cond: [{ $eq: ["$status", "paid"] }, { $ifNull: ["$amount", 0] }, 0],
+            },
+          },
+          averagePaidAmount: {
+            $avg: {
+              $cond: [{ $eq: ["$status", "paid"] }, { $ifNull: ["$amount", 0] }, null],
             },
           },
         },
@@ -144,6 +263,17 @@ export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
               $cond: [{ $eq: ["$bookings.status", "confirmed"] }, 1, 0],
             },
           },
+          pendingBookings: {
+            $sum: {
+              $cond: [{ $eq: ["$bookings.status", "pending"] }, 1, 0],
+            },
+          },
+          cancelledBookings: {
+            $sum: {
+              $cond: [{ $eq: ["$bookings.status", "cancelled"] }, 1, 0],
+            },
+          },
+          totalHours: { $sum: { $ifNull: ["$bookings.duration", 0] } },
           totalRevenue: {
             $sum: {
               $cond: [
@@ -163,53 +293,287 @@ export const getAdminDashboardOverview = asyncHandler(async (req, res) => {
           total: { $sum: 1 },
           sent: { $sum: { $cond: [{ $eq: ["$status", "sent"] }, 1, 0] } },
           scheduled: { $sum: { $cond: [{ $eq: ["$status", "scheduled"] }, 1, 0] } },
+          draft: { $sum: { $cond: [{ $eq: ["$status", "draft"] }, 1, 0] } },
           failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+          highPriority: { $sum: { $cond: [{ $eq: ["$priority", "high"] }, 1, 0] } },
+          totalRecipients: { $sum: { $ifNull: ["$recipientCount", 0] } },
+          delivered: { $sum: { $ifNull: ["$deliveredCount", 0] } },
+          read: { $sum: { $ifNull: ["$readCount", 0] } },
         },
       },
     ]),
+    AdminAuditLog.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          success: { $sum: { $cond: [{ $eq: ["$status", "success"] }, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+          last24Hours: {
+            $sum: {
+              $cond: [{ $gte: ["$createdAt", new Date(Date.now() - 24 * 60 * 60 * 1000)] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]),
+    Event.aggregate([{ $group: { _id: "$category", count: { $sum: 1 } } }, { $sort: { count: -1, _id: 1 } }, { $limit: 8 }]),
+    Event.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }, { $sort: { count: -1, _id: 1 } }]),
+    Community.aggregate([{ $group: { _id: "$category", count: { $sum: 1 } } }, { $sort: { count: -1, _id: 1 } }, { $limit: 8 }]),
+    Venue.aggregate([{ $group: { _id: "$location.city", count: { $sum: 1 } } }, { $sort: { count: -1, _id: 1 } }, { $limit: 8 }]),
+    User.find()
+      .select("_id name username email avatar role accountStatus createdAt lastLoginAt")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean(),
+    Event.find({ status: { $in: ["Upcoming", "Ongoing"] }, date: { $gte: now } })
+      .select("_id name category date time status images location participants maxParticipants registrationFee isFeatured")
+      .sort({ date: 1 })
+      .limit(5)
+      .lean(),
+    Venue.aggregate([
+      {
+        $project: {
+          name: 1,
+          location: 1,
+          sports: 1,
+          isVerified: 1,
+          isActive: 1,
+          isFeatured: 1,
+          primaryImage: { $arrayElemAt: ["$images", 0] },
+          bookingCount: { $size: { $ifNull: ["$bookings", []] } },
+          confirmedBookings: {
+            $size: {
+              $filter: {
+                input: { $ifNull: ["$bookings", []] },
+                as: "booking",
+                cond: { $eq: ["$$booking.status", "confirmed"] },
+              },
+            },
+          },
+          pendingBookings: {
+            $size: {
+              $filter: {
+                input: { $ifNull: ["$bookings", []] },
+                as: "booking",
+                cond: { $eq: ["$$booking.status", "pending"] },
+              },
+            },
+          },
+          bookingRevenue: {
+            $reduce: {
+              input: { $ifNull: ["$bookings", []] },
+              initialValue: 0,
+              in: {
+                $add: [
+                  "$$value",
+                  {
+                    $cond: [
+                      { $eq: ["$$this.status", "confirmed"] },
+                      { $ifNull: ["$$this.totalAmount", { $ifNull: ["$$this.amount", 0] }] },
+                      0,
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      { $sort: { bookingRevenue: -1, bookingCount: -1, isFeatured: -1 } },
+      { $limit: 5 },
+    ]),
+    Community.aggregate([
+      {
+        $project: {
+          name: 1,
+          category: 1,
+          location: 1,
+          image: 1,
+          isActive: 1,
+          isFeatured: 1,
+          memberCount: {
+            $size: {
+              $filter: {
+                input: { $ifNull: ["$members", []] },
+                as: "member",
+                cond: { $eq: ["$$member.isActive", true] },
+              },
+            },
+          },
+          postCount: { $size: { $ifNull: ["$posts", []] } },
+          joinRequestCount: {
+            $size: {
+              $filter: {
+                input: { $ifNull: ["$joinRequests", []] },
+                as: "request",
+                cond: { $eq: ["$$request.status", "pending"] },
+              },
+            },
+          },
+        },
+      },
+      { $sort: { memberCount: -1, postCount: -1, isFeatured: -1 } },
+      { $limit: 5 },
+    ]),
+    EventPayment.find()
+      .populate("event", "_id name category date images location")
+      .populate("user", "_id name email avatar")
+      .select("_id event user amount currency status paymentMethod createdAt paidAt razorpayPaymentId")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean(),
+    AdminAuditLog.find()
+      .populate("admin", "_id name email role")
+      .select("_id action entityType status admin ipAddress createdAt errorMessage")
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .lean(),
   ]);
+
+  const users = usersSummary[0] || {
+    total: 0,
+    active: 0,
+    suspended: 0,
+    banned: 0,
+    admins: 0,
+    newLast7Days: 0,
+    newLast30Days: 0,
+    profilePhotos: 0,
+  };
+  const events = eventsSummary[0] || {
+    total: 0,
+    active: 0,
+    upcoming: 0,
+    ongoing: 0,
+    completed: 0,
+    cancelled: 0,
+    featured: 0,
+    paidEvents: 0,
+    totalParticipants: 0,
+    totalCapacity: 0,
+    startingSoon: 0,
+  };
+  const communities = communitiesSummary[0] || {
+    total: 0,
+    active: 0,
+    private: 0,
+    featured: 0,
+    totalMembers: 0,
+    totalPosts: 0,
+    pendingJoinRequests: 0,
+  };
+  const venues = venuesSummary[0] || {
+    total: 0,
+    active: 0,
+    inactive: 0,
+    verified: 0,
+    unverified: 0,
+    featured: 0,
+    totalBookings: 0,
+    pendingBookings: 0,
+  };
+  const eventPayments = eventPaymentsSummary[0] || {
+    total: 0,
+    paid: 0,
+    failed: 0,
+    pending: 0,
+    refunded: 0,
+    cancelled: 0,
+    paidRevenue: 0,
+    averagePaidAmount: 0,
+  };
+  const bookings = bookingsSummary[0] || {
+    totalBookings: 0,
+    confirmedBookings: 0,
+    pendingBookings: 0,
+    cancelledBookings: 0,
+    totalHours: 0,
+    totalRevenue: 0,
+  };
+  const notifications = notificationsSummary[0] || {
+    total: 0,
+    sent: 0,
+    scheduled: 0,
+    draft: 0,
+    failed: 0,
+    highPriority: 0,
+    totalRecipients: 0,
+    delivered: 0,
+    read: 0,
+  };
+  const audits = auditSummary[0] || { total: 0, success: 0, failed: 0, last24Hours: 0 };
 
   res.status(200).json({
     success: true,
     data: {
       users: {
-        total: totalUsers,
-        active: activeUsers,
-        suspended: suspendedUsers,
-        banned: bannedUsers,
-        admins: totalAdmins,
-        newLast30Days: usersLast30Days,
+        ...users,
+        activeRate: users.total > 0 ? Math.round((users.active / users.total) * 100) : 0,
+        profileCompletionRate: users.total > 0 ? Math.round((users.profilePhotos / users.total) * 100) : 0,
       },
       events: {
-        total: totalEvents,
-        active: activeEvents,
+        ...events,
+        fillRate: events.totalCapacity > 0 ? Math.round((events.totalParticipants / events.totalCapacity) * 100) : 0,
+        freeEvents: Math.max(0, events.total - events.paidEvents),
       },
       communities: {
-        total: totalCommunities,
-        active: activeCommunities,
+        ...communities,
+        averageMembers: communities.total > 0 ? Math.round(communities.totalMembers / communities.total) : 0,
       },
       venues: {
-        total: totalVenues,
-        verified: verifiedVenues,
+        ...venues,
+        verificationRate: venues.total > 0 ? Math.round((venues.verified / venues.total) * 100) : 0,
       },
-      eventPayments: eventPaymentsSummary[0] || {
-        total: 0,
-        paid: 0,
-        failed: 0,
-        pending: 0,
-        refunded: 0,
-        paidRevenue: 0,
+      eventPayments,
+      bookings: {
+        ...bookings,
+        confirmationRate: bookings.totalBookings > 0 ? Math.round((bookings.confirmedBookings / bookings.totalBookings) * 100) : 0,
       },
-      bookings: bookingsSummary[0] || {
-        totalBookings: 0,
-        confirmedBookings: 0,
-        totalRevenue: 0,
+      notifications: {
+        ...notifications,
+        deliveryRate:
+          notifications.totalRecipients > 0 ? Math.round((notifications.delivered / notifications.totalRecipients) * 100) : 0,
+        readRate: notifications.totalRecipients > 0 ? Math.round((notifications.read / notifications.totalRecipients) * 100) : 0,
       },
-      notifications: notificationsSummary[0] || {
-        total: 0,
-        sent: 0,
-        scheduled: 0,
-        failed: 0,
+      audits,
+      breakdowns: {
+        eventCategories: eventCategories.map((item) => ({ category: item._id || "Unknown", count: item.count })),
+        eventStatuses: eventStatuses.map((item) => ({ status: item._id || "Unknown", count: item.count })),
+        communityCategories: communityCategories.map((item) => ({ category: item._id || "Unknown", count: item.count })),
+        venueCities: venueCities.map((item) => ({ city: item._id || "Unknown", count: item.count })),
+      },
+      highlights: {
+        recentUsers,
+        upcomingEvents: upcomingEvents.map((event) => ({
+          ...event,
+          primaryImage: Array.isArray(event.images) ? event.images[0] || null : null,
+          participantCount: Array.isArray(event.participants) ? event.participants.length : 0,
+          fillRate:
+            Number(event.maxParticipants) > 0 && Array.isArray(event.participants)
+              ? Math.round((event.participants.length / Number(event.maxParticipants)) * 100)
+              : 0,
+          images: undefined,
+          participants: undefined,
+        })),
+        topVenues,
+        topCommunities,
+        recentPayments: recentPayments.map((payment) => ({
+          ...payment,
+          eventName: payment.event?.name || "Unknown event",
+          eventImage: payment.event?.images?.[0] || null,
+          userName: payment.user?.name || "Unknown user",
+          userEmail: payment.user?.email || "",
+        })),
+        recentAuditLogs,
+      },
+      actionQueue: {
+        venueReviews: venues.unverified,
+        pendingBookings: bookings.pendingBookings,
+        failedPayments: eventPayments.failed,
+        scheduledNotifications: notifications.scheduled,
+        failedAuditLogs: audits.failed,
+        pendingJoinRequests: communities.pendingJoinRequests,
       },
     },
   });
@@ -284,9 +648,9 @@ export const getAdminEventPayments = asyncHandler(async (req, res) => {
     ];
   }
 
-  const [payments, total, stats] = await Promise.all([
+  const [payments, total, stats, statusBreakdown, methodBreakdown] = await Promise.all([
     EventPayment.find(query)
-      .populate("event", "_id name category date status registrationFee")
+      .populate("event", "_id name category date status registrationFee images location")
       .populate("user", "_id name username email avatar")
       .sort(sort)
       .skip(skip)
@@ -311,13 +675,27 @@ export const getAdminEventPayments = asyncHandler(async (req, res) => {
         },
       },
     ]),
+    EventPayment.aggregate([
+      { $match: query },
+      { $group: { _id: "$status", count: { $sum: 1 }, amount: { $sum: { $ifNull: ["$amount", 0] } } } },
+      { $sort: { count: -1 } },
+    ]),
+    EventPayment.aggregate([
+      { $match: query },
+      { $group: { _id: "$paymentMethod", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+      { $limit: 8 },
+    ]),
   ]);
 
   const mappedPayments = payments.map((payment) => ({
     ...payment,
     eventName: payment.event?.name || "Unknown event",
+    eventImage: payment.event?.images?.[0] || null,
+    eventCity: payment.event?.location?.city || "",
     userName: payment.user?.name || "Unknown user",
     userEmail: payment.user?.email || "",
+    webhookEventCount: Array.isArray(payment.webhookEvents) ? payment.webhookEvents.length : 0,
   }));
 
   res.status(200).json({
@@ -330,6 +708,17 @@ export const getAdminEventPayments = asyncHandler(async (req, res) => {
       pending: 0,
       refunded: 0,
       paidRevenue: 0,
+    },
+    breakdowns: {
+      statuses: statusBreakdown.map((item) => ({
+        status: item._id || "unknown",
+        count: item.count,
+        amount: item.amount,
+      })),
+      paymentMethods: methodBreakdown.map((item) => ({
+        method: item._id || "unknown",
+        count: item.count,
+      })),
     },
     pagination: {
       page,
@@ -362,7 +751,16 @@ export const getAdminGrowthAnalytics = asyncHandler(async (req, res) => {
   const rangeInDays = Math.max(7, Math.min(180, Number.parseInt(req.query.days, 10) || 30));
   const startDate = new Date(Date.now() - rangeInDays * 24 * 60 * 60 * 1000);
 
-  const [userSeries, eventSeries, bookingSeries] = await Promise.all([
+  const [
+    userSeries,
+    eventSeries,
+    communitySeries,
+    venueSeries,
+    bookingSeries,
+    paymentSeries,
+    notificationSeries,
+    auditSeries,
+  ] = await Promise.all([
     User.aggregate([
       { $match: { createdAt: { $gte: startDate } } },
       {
@@ -389,6 +787,33 @@ export const getAdminGrowthAnalytics = asyncHandler(async (req, res) => {
       { $project: { _id: 0, date: "$_id", count: 1 } },
       { $sort: { date: 1 } },
     ]),
+    Community.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1 } },
+      { $sort: { date: 1 } },
+    ]),
+    Venue.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          verified: { $sum: { $cond: ["$isVerified", 1, 0] } },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1, verified: 1 } },
+      { $sort: { date: 1 } },
+    ]),
     Venue.aggregate([
       { $unwind: { path: "$bookings", preserveNullAndEmptyArrays: false } },
       { $match: { "bookings.bookingDate": { $gte: startDate } } },
@@ -412,17 +837,67 @@ export const getAdminGrowthAnalytics = asyncHandler(async (req, res) => {
       { $project: { _id: 0, date: "$_id", count: 1, revenue: 1 } },
       { $sort: { date: 1 } },
     ]),
+    EventPayment.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          paid: { $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+          revenue: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "paid"] }, { $ifNull: ["$amount", 0] }, 0],
+            },
+          },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1, paid: 1, failed: 1, revenue: 1 } },
+      { $sort: { date: 1 } },
+    ]),
+    Notification.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          sent: { $sum: { $cond: [{ $eq: ["$status", "sent"] }, 1, 0] } },
+          delivered: { $sum: { $ifNull: ["$deliveredCount", 0] } },
+          read: { $sum: { $ifNull: ["$readCount", 0] } },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1, sent: 1, delivered: 1, read: 1 } },
+      { $sort: { date: 1 } },
+    ]),
+    AdminAuditLog.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+          success: { $sum: { $cond: [{ $eq: ["$status", "success"] }, 1, 0] } },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1, failed: 1, success: 1 } },
+      { $sort: { date: 1 } },
+    ]),
   ]);
 
   const filledUsers = fillDailySeries(userSeries, startDate);
   const filledEvents = fillDailySeries(eventSeries, startDate);
-  const bookingMap = new Map(bookingSeries.map((item) => [item.date, item]));
-
-  const filledBookings = filledUsers.map((item) => ({
-    date: item.date,
-    count: bookingMap.get(item.date)?.count || 0,
-    revenue: bookingMap.get(item.date)?.revenue || 0,
-  }));
+  const filledCommunities = fillDailySeries(communitySeries, startDate);
+  const filledVenues = fillDailyMetricSeries(venueSeries, startDate, ["count", "verified"]);
+  const filledBookings = fillDailyMetricSeries(bookingSeries, startDate, ["count", "revenue"]);
+  const filledPayments = fillDailyMetricSeries(paymentSeries, startDate, ["count", "paid", "failed", "revenue"]);
+  const filledNotifications = fillDailyMetricSeries(notificationSeries, startDate, ["count", "sent", "delivered", "read"]);
+  const filledAuditLogs = fillDailyMetricSeries(auditSeries, startDate, ["count", "success", "failed"]);
 
   res.status(200).json({
     success: true,
@@ -430,7 +905,23 @@ export const getAdminGrowthAnalytics = asyncHandler(async (req, res) => {
       days: rangeInDays,
       users: filledUsers,
       events: filledEvents,
+      communities: filledCommunities,
+      venues: filledVenues,
       bookings: filledBookings,
+      payments: filledPayments,
+      notifications: filledNotifications,
+      auditLogs: filledAuditLogs,
+      summary: {
+        users: filledUsers.reduce((sum, item) => sum + item.count, 0),
+        events: filledEvents.reduce((sum, item) => sum + item.count, 0),
+        communities: filledCommunities.reduce((sum, item) => sum + item.count, 0),
+        venues: filledVenues.reduce((sum, item) => sum + item.count, 0),
+        bookings: filledBookings.reduce((sum, item) => sum + item.count, 0),
+        bookingRevenue: filledBookings.reduce((sum, item) => sum + item.revenue, 0),
+        paymentRevenue: filledPayments.reduce((sum, item) => sum + item.revenue, 0),
+        failedPayments: filledPayments.reduce((sum, item) => sum + item.failed, 0),
+        auditFailures: filledAuditLogs.reduce((sum, item) => sum + item.failed, 0),
+      },
     },
   });
 });
@@ -770,35 +1261,99 @@ export const getAdminEvents = asyncHandler(async (req, res) => {
     query.createdBy = createdBy;
   }
 
-  const [events, total] = await Promise.all([
+  const [events, total, statsResult, categoryBreakdown] = await Promise.all([
     Event.find(query)
       .populate("createdBy", "_id name username email")
+      .populate("venue", "_id name location")
+      .populate("community", "_id name image")
       .sort(sort)
       .skip(skip)
       .limit(limit)
       .lean(),
     Event.countDocuments(query),
+    Event.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          upcoming: { $sum: { $cond: [{ $eq: ["$status", "Upcoming"] }, 1, 0] } },
+          ongoing: { $sum: { $cond: [{ $eq: ["$status", "Ongoing"] }, 1, 0] } },
+          completed: { $sum: { $cond: [{ $eq: ["$status", "Completed"] }, 1, 0] } },
+          cancelled: { $sum: { $cond: [{ $eq: ["$status", "Cancelled"] }, 1, 0] } },
+          featured: { $sum: { $cond: ["$isFeatured", 1, 0] } },
+          withImages: {
+            $sum: {
+              $cond: [{ $gt: [{ $size: { $ifNull: ["$images", []] } }, 0] }, 1, 0],
+            },
+          },
+          paidEvents: { $sum: { $cond: [{ $gt: [{ $ifNull: ["$registrationFee", 0] }, 0] }, 1, 0] } },
+          totalParticipants: { $sum: { $size: { $ifNull: ["$participants", []] } } },
+          totalWaitlist: { $sum: { $size: { $ifNull: ["$waitlist", []] } } },
+          totalCapacity: { $sum: { $ifNull: ["$maxParticipants", 0] } },
+        },
+      },
+    ]),
+    Event.aggregate([
+      { $match: query },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+      { $limit: 8 },
+    ]),
   ]);
 
-  const mappedEvents = events.map((event) => ({
-    ...event,
-    participantCount: Array.isArray(event.participants) ? event.participants.length : 0,
-    ratingsCount: Array.isArray(event.ratings) ? event.ratings.length : 0,
-    averageRating:
-      Array.isArray(event.ratings) && event.ratings.length > 0
-        ? Number(
-            (
-              event.ratings.reduce((sum, entry) => sum + (entry.rating || 0), 0) /
-              event.ratings.length
-            ).toFixed(1)
-          )
-        : 0,
-    waitlistCount: Array.isArray(event.waitlist) ? event.waitlist.length : 0,
-  }));
+  const mappedEvents = events.map((event) => {
+    const participants = Array.isArray(event.participants) ? event.participants : [];
+    const ratings = Array.isArray(event.ratings) ? event.ratings : [];
+    const waitlist = Array.isArray(event.waitlist) ? event.waitlist : [];
+    const images = Array.isArray(event.images) ? event.images : [];
+    const maxParticipants = Number(event.maxParticipants) || 0;
+    const participantCount = participants.length;
+
+    return {
+      ...event,
+      primaryImage: images[0] || null,
+      imageCount: images.length,
+      participantCount,
+      ratingsCount: ratings.length,
+      averageRating:
+        ratings.length > 0
+          ? Number((ratings.reduce((sum, entry) => sum + (entry.rating || 0), 0) / ratings.length).toFixed(1))
+          : 0,
+      waitlistCount: waitlist.length,
+      fillRate: maxParticipants > 0 ? Math.min(100, Math.round((participantCount / maxParticipants) * 100)) : 0,
+      paymentType: Number(event.registrationFee) > 0 ? "paid" : "free",
+    };
+  });
+
+  const stats = statsResult[0] || {
+    total: 0,
+    upcoming: 0,
+    ongoing: 0,
+    completed: 0,
+    cancelled: 0,
+    featured: 0,
+    withImages: 0,
+    paidEvents: 0,
+    totalParticipants: 0,
+    totalWaitlist: 0,
+    totalCapacity: 0,
+  };
 
   res.status(200).json({
     success: true,
     data: mappedEvents,
+    stats: {
+      ...stats,
+      freeEvents: Math.max(0, (stats.total || 0) - (stats.paidEvents || 0)),
+      fillRate: stats.totalCapacity > 0 ? Math.round((stats.totalParticipants / stats.totalCapacity) * 100) : 0,
+    },
+    breakdowns: {
+      categories: categoryBreakdown.map((item) => ({
+        category: item._id || "Uncategorized",
+        count: item.count,
+      })),
+    },
     pagination: {
       page,
       limit,
@@ -961,7 +1516,7 @@ export const getAdminCommunities = asyncHandler(async (req, res) => {
     query.isPrivate = isPrivateParsed;
   }
 
-  const [communities, total] = await Promise.all([
+  const [communities, total, statsResult, categoryBreakdown] = await Promise.all([
     Community.find(query)
       .populate("creator", "_id name username email")
       .sort({ createdAt: -1 })
@@ -969,23 +1524,88 @@ export const getAdminCommunities = asyncHandler(async (req, res) => {
       .limit(limit)
       .lean(),
     Community.countDocuments(query),
+    Community.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          active: { $sum: { $cond: ["$isActive", 1, 0] } },
+          inactive: { $sum: { $cond: ["$isActive", 0, 1] } },
+          private: { $sum: { $cond: ["$isPrivate", 1, 0] } },
+          public: { $sum: { $cond: ["$isPrivate", 0, 1] } },
+          featured: { $sum: { $cond: ["$isFeatured", 1, 0] } },
+          withImages: { $sum: { $cond: [{ $ifNull: ["$image.url", false] }, 1, 0] } },
+          totalMembers: { $sum: { $size: { $ifNull: ["$members", []] } } },
+          totalPosts: { $sum: { $size: { $ifNull: ["$posts", []] } } },
+          totalEvents: { $sum: { $size: { $ifNull: ["$events", []] } } },
+          pendingJoinRequests: {
+            $sum: {
+              $size: {
+                $filter: {
+                  input: { $ifNull: ["$joinRequests", []] },
+                  as: "request",
+                  cond: { $eq: ["$$request.status", "pending"] },
+                },
+              },
+            },
+          },
+        },
+      },
+    ]),
+    Community.aggregate([
+      { $match: query },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+      { $limit: 8 },
+    ]),
   ]);
 
-  const mappedCommunities = communities.map((community) => ({
-    ...community,
-    activeMemberCount: Array.isArray(community.members)
-      ? community.members.filter((member) => member.isActive).length
-      : 0,
-    postCount: Array.isArray(community.posts) ? community.posts.length : 0,
-    eventCount: Array.isArray(community.events) ? community.events.length : 0,
-    joinRequestCount: Array.isArray(community.joinRequests)
-      ? community.joinRequests.filter((request) => request.status === "pending").length
-      : 0,
-  }));
+  const mappedCommunities = communities.map((community) => {
+    const members = Array.isArray(community.members) ? community.members : [];
+    const posts = Array.isArray(community.posts) ? community.posts : [];
+    const events = Array.isArray(community.events) ? community.events : [];
+    const joinRequests = Array.isArray(community.joinRequests) ? community.joinRequests : [];
+
+    return {
+      ...community,
+      primaryImage: community.image || null,
+      activeMemberCount: members.filter((member) => member.isActive).length,
+      moderatorCount:
+        (Array.isArray(community.admins) ? community.admins.length : 0) +
+        (Array.isArray(community.moderators) ? community.moderators.length : 0),
+      postCount: posts.length,
+      eventCount: events.length,
+      joinRequestCount: joinRequests.filter((request) => request.status === "pending").length,
+      pinnedPostCount: posts.filter((post) => post.isPinned).length,
+      engagementScore: members.length > 0 ? Math.round(((posts.length + events.length) / members.length) * 100) : 0,
+    };
+  });
+
+  const stats = statsResult[0] || {
+    total: 0,
+    active: 0,
+    inactive: 0,
+    private: 0,
+    public: 0,
+    featured: 0,
+    withImages: 0,
+    totalMembers: 0,
+    totalPosts: 0,
+    totalEvents: 0,
+    pendingJoinRequests: 0,
+  };
 
   res.status(200).json({
     success: true,
     data: mappedCommunities,
+    stats,
+    breakdowns: {
+      categories: categoryBreakdown.map((item) => ({
+        category: item._id || "Uncategorized",
+        count: item.count,
+      })),
+    },
     pagination: {
       page,
       limit,
@@ -1137,7 +1757,7 @@ export const getAdminVenues = asyncHandler(async (req, res) => {
     query.owner = ownerId;
   }
 
-  const [venues, total] = await Promise.all([
+  const [venues, total, statsResult, cityBreakdown, sportBreakdown] = await Promise.all([
     Venue.find(query)
       .populate("owner", "_id name username email")
       .sort({ createdAt: -1 })
@@ -1145,6 +1765,71 @@ export const getAdminVenues = asyncHandler(async (req, res) => {
       .limit(limit)
       .lean(),
     Venue.countDocuments(query),
+    Venue.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          active: { $sum: { $cond: ["$isActive", 1, 0] } },
+          inactive: { $sum: { $cond: ["$isActive", 0, 1] } },
+          verified: { $sum: { $cond: ["$isVerified", 1, 0] } },
+          unverified: { $sum: { $cond: ["$isVerified", 0, 1] } },
+          featured: { $sum: { $cond: ["$isFeatured", 1, 0] } },
+          withImages: {
+            $sum: {
+              $cond: [{ $gt: [{ $size: { $ifNull: ["$images", []] } }, 0] }, 1, 0],
+            },
+          },
+          totalCapacity: { $sum: { $ifNull: ["$capacity", 0] } },
+          totalBookings: { $sum: { $size: { $ifNull: ["$bookings", []] } } },
+          confirmedBookings: {
+            $sum: {
+              $size: {
+                $filter: {
+                  input: { $ifNull: ["$bookings", []] },
+                  as: "booking",
+                  cond: { $eq: ["$$booking.status", "confirmed"] },
+                },
+              },
+            },
+          },
+          bookingRevenue: {
+            $sum: {
+              $reduce: {
+                input: { $ifNull: ["$bookings", []] },
+                initialValue: 0,
+                in: {
+                  $add: [
+                    "$$value",
+                    {
+                      $cond: [
+                        { $eq: ["$$this.status", "confirmed"] },
+                        { $ifNull: ["$$this.totalAmount", { $ifNull: ["$$this.amount", 0] }] },
+                        0,
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    ]),
+    Venue.aggregate([
+      { $match: query },
+      { $group: { _id: "$location.city", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+      { $limit: 8 },
+    ]),
+    Venue.aggregate([
+      { $match: query },
+      { $unwind: { path: "$sports", preserveNullAndEmptyArrays: false } },
+      { $group: { _id: "$sports", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+      { $limit: 8 },
+    ]),
   ]);
 
   const mappedVenues = venues.map((venue) => {
@@ -1157,16 +1842,48 @@ export const getAdminVenues = asyncHandler(async (req, res) => {
 
     return {
       ...venue,
+      primaryImage: Array.isArray(venue.images) ? venue.images[0] || null : null,
+      imageCount: Array.isArray(venue.images) ? venue.images.length : 0,
       averageRating,
       ratingsCount: ratings.length,
       totalBookings: bookings.length,
       confirmedBookings: bookings.filter((booking) => booking.status === "confirmed").length,
+      pendingBookings: bookings.filter((booking) => booking.status === "pending").length,
+      bookingRevenue: bookings.reduce((sum, booking) => {
+        if (booking.status !== "confirmed") return sum;
+        return sum + (booking.totalAmount || booking.amount || 0);
+      }, 0),
     };
   });
+
+  const stats = statsResult[0] || {
+    total: 0,
+    active: 0,
+    inactive: 0,
+    verified: 0,
+    unverified: 0,
+    featured: 0,
+    withImages: 0,
+    totalCapacity: 0,
+    totalBookings: 0,
+    confirmedBookings: 0,
+    bookingRevenue: 0,
+  };
 
   res.status(200).json({
     success: true,
     data: mappedVenues,
+    stats,
+    breakdowns: {
+      cities: cityBreakdown.map((item) => ({
+        city: item._id || "Unknown",
+        count: item.count,
+      })),
+      sports: sportBreakdown.map((item) => ({
+        sport: item._id || "Other",
+        count: item.count,
+      })),
+    },
     pagination: {
       page,
       limit,
@@ -1310,7 +2027,7 @@ export const updateAdminVenueFeatured = asyncHandler(async (req, res) => {
 
 export const getAdminBookings = asyncHandler(async (req, res) => {
   const { page, limit, skip } = parsePagination(req.query, 20, 100);
-  const { status, venueId, dateFrom, dateTo } = req.query;
+  const { status, venueId, dateFrom, dateTo, search, city } = req.query;
 
   const venueMatch = {};
   const bookingMatch = {};
@@ -1319,40 +2036,66 @@ export const getAdminBookings = asyncHandler(async (req, res) => {
     venueMatch._id = new mongoose.Types.ObjectId(venueId);
   }
 
+  if (city) {
+    venueMatch["location.city"] = { $regex: city.trim(), $options: "i" };
+  }
+
   if (status && ALLOWED_BOOKING_STATUSES.includes(status)) {
     bookingMatch["bookings.status"] = status;
   }
 
   Object.assign(bookingMatch, buildDateRangeMatch(dateFrom, dateTo, "bookings.startTime"));
 
-  const result = await Venue.aggregate([
+  const pipeline = [
     { $match: venueMatch },
     { $unwind: { path: "$bookings", preserveNullAndEmptyArrays: false } },
     { $match: bookingMatch },
+    {
+      $lookup: {
+        from: "users",
+        localField: "bookings.user",
+        foreignField: "_id",
+        as: "bookingUser",
+        pipeline: [{ $project: { name: 1, email: 1, username: 1, avatar: 1, phone: 1 } }],
+      },
+    },
+    {
+      $lookup: {
+        from: "events",
+        localField: "bookings.event",
+        foreignField: "_id",
+        as: "bookingEvent",
+        pipeline: [{ $project: { name: 1, date: 1, status: 1, category: 1, images: 1 } }],
+      },
+    },
+  ];
+
+  if (search && search.trim().length >= 2) {
+    const searchRegex = new RegExp(search.trim(), "i");
+    pipeline.push({
+      $match: {
+        $or: [
+          { name: searchRegex },
+          { "location.city": searchRegex },
+          { "location.address": searchRegex },
+          { "bookings.notes": searchRegex },
+          { "bookingUser.name": searchRegex },
+          { "bookingUser.email": searchRegex },
+          { "bookingUser.username": searchRegex },
+          { "bookingEvent.name": searchRegex },
+        ],
+      },
+    });
+  }
+
+  const result = await Venue.aggregate([
+    ...pipeline,
     {
       $facet: {
         data: [
           { $sort: { "bookings.bookingDate": -1 } },
           { $skip: skip },
           { $limit: limit },
-          {
-            $lookup: {
-              from: "users",
-              localField: "bookings.user",
-              foreignField: "_id",
-              as: "bookingUser",
-              pipeline: [{ $project: { name: 1, email: 1, username: 1, avatar: 1 } }],
-            },
-          },
-          {
-            $lookup: {
-              from: "events",
-              localField: "bookings.event",
-              foreignField: "_id",
-              as: "bookingEvent",
-              pipeline: [{ $project: { name: 1, date: 1, status: 1 } }],
-            },
-          },
           {
             $project: {
               _id: 0,
@@ -1369,6 +2112,9 @@ export const getAdminBookings = asyncHandler(async (req, res) => {
                 _id: "$_id",
                 name: "$name",
                 location: "$location",
+                sports: "$sports",
+                pricing: "$pricing",
+                primaryImage: { $arrayElemAt: ["$images", 0] },
               },
               user: { $arrayElemAt: ["$bookingUser", 0] },
               event: { $arrayElemAt: ["$bookingEvent", 0] },
@@ -1381,6 +2127,7 @@ export const getAdminBookings = asyncHandler(async (req, res) => {
             $group: {
               _id: null,
               totalBookings: { $sum: 1 },
+              totalHours: { $sum: { $ifNull: ["$bookings.duration", 0] } },
               pending: {
                 $sum: {
                   $cond: [{ $eq: ["$bookings.status", "pending"] }, 1, 0],
@@ -1405,8 +2152,22 @@ export const getAdminBookings = asyncHandler(async (req, res) => {
                   ],
                 },
               },
+              averageAmount: {
+                $avg: {
+                  $ifNull: ["$bookings.totalAmount", { $ifNull: ["$bookings.amount", 0] }],
+                },
+              },
             },
           },
+        ],
+        statusBreakdown: [
+          { $group: { _id: "$bookings.status", count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ],
+        cityBreakdown: [
+          { $group: { _id: "$location.city", count: { $sum: 1 } } },
+          { $sort: { count: -1, _id: 1 } },
+          { $limit: 8 },
         ],
       },
     },
@@ -1424,6 +2185,18 @@ export const getAdminBookings = asyncHandler(async (req, res) => {
       confirmed: 0,
       cancelled: 0,
       totalRevenue: 0,
+      totalHours: 0,
+      averageAmount: 0,
+    },
+    breakdowns: {
+      statuses: (response.statusBreakdown || []).map((item) => ({
+        status: item._id || "unknown",
+        count: item.count,
+      })),
+      cities: (response.cityBreakdown || []).map((item) => ({
+        city: item._id || "Unknown",
+        count: item.count,
+      })),
     },
     pagination: {
       page,
@@ -1530,7 +2303,7 @@ export const getAdminNotifications = asyncHandler(async (req, res) => {
     ];
   }
 
-  const [notifications, total] = await Promise.all([
+  const [notifications, total, statsResult, typeBreakdown, recipientBreakdown] = await Promise.all([
     Notification.find(query)
       .populate("createdBy", "_id name email")
       .sort({ createdAt: -1 })
@@ -1538,11 +2311,75 @@ export const getAdminNotifications = asyncHandler(async (req, res) => {
       .limit(limit)
       .lean(),
     Notification.countDocuments(query),
+    Notification.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          draft: { $sum: { $cond: [{ $eq: ["$status", "draft"] }, 1, 0] } },
+          scheduled: { $sum: { $cond: [{ $eq: ["$status", "scheduled"] }, 1, 0] } },
+          sent: { $sum: { $cond: [{ $eq: ["$status", "sent"] }, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+          cancelled: { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+          highPriority: { $sum: { $cond: [{ $eq: ["$priority", "high"] }, 1, 0] } },
+          totalRecipients: { $sum: { $ifNull: ["$recipientCount", 0] } },
+          delivered: { $sum: { $ifNull: ["$deliveredCount", 0] } },
+          read: { $sum: { $ifNull: ["$readCount", 0] } },
+          failedDeliveries: { $sum: { $ifNull: ["$failedCount", 0] } },
+          clicks: { $sum: { $ifNull: ["$statistics.clicks", 0] } },
+        },
+      },
+    ]),
+    Notification.aggregate([
+      { $match: query },
+      { $group: { _id: "$type", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+    ]),
+    Notification.aggregate([
+      { $match: query },
+      { $group: { _id: "$recipients", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+    ]),
   ]);
+
+  const mappedNotifications = notifications.map((notification) => ({
+    ...notification,
+    deliveryLogCount: Array.isArray(notification.deliveryLogs) ? notification.deliveryLogs.length : 0,
+    calculatedReadRate:
+      Number(notification.recipientCount) > 0
+        ? Math.round(((notification.readCount || 0) / notification.recipientCount) * 100)
+        : 0,
+    actionUrl: notification.metadata?.actionUrl || "",
+  }));
+
+  const stats = statsResult[0] || {
+    total: 0,
+    draft: 0,
+    scheduled: 0,
+    sent: 0,
+    failed: 0,
+    cancelled: 0,
+    highPriority: 0,
+    totalRecipients: 0,
+    delivered: 0,
+    read: 0,
+    failedDeliveries: 0,
+    clicks: 0,
+  };
 
   res.status(200).json({
     success: true,
-    data: notifications,
+    data: mappedNotifications,
+    stats: {
+      ...stats,
+      readRate: stats.totalRecipients > 0 ? Math.round((stats.read / stats.totalRecipients) * 100) : 0,
+      deliveryRate: stats.totalRecipients > 0 ? Math.round((stats.delivered / stats.totalRecipients) * 100) : 0,
+    },
+    breakdowns: {
+      types: typeBreakdown.map((item) => ({ type: item._id || "unknown", count: item.count })),
+      recipients: recipientBreakdown.map((item) => ({ recipients: item._id || "unknown", count: item.count })),
+    },
     pagination: {
       page,
       limit,
@@ -1689,7 +2526,7 @@ export const getAdminAuditLogs = asyncHandler(async (req, res) => {
     query.admin = adminId;
   }
 
-  const [logs, total] = await Promise.all([
+  const [logs, total, statsResult, entityBreakdown, actionBreakdown] = await Promise.all([
     AdminAuditLog.find(query)
       .populate("admin", "_id name email")
       .sort({ createdAt: -1 })
@@ -1697,11 +2534,62 @@ export const getAdminAuditLogs = asyncHandler(async (req, res) => {
       .limit(limit)
       .lean(),
     AdminAuditLog.countDocuments(query),
+    AdminAuditLog.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          success: { $sum: { $cond: [{ $eq: ["$status", "success"] }, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] } },
+          uniqueAdmins: { $addToSet: "$admin" },
+          uniqueEntities: { $addToSet: "$entityId" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          total: 1,
+          success: 1,
+          failed: 1,
+          adminCount: { $size: "$uniqueAdmins" },
+          entityCount: { $size: "$uniqueEntities" },
+        },
+      },
+    ]),
+    AdminAuditLog.aggregate([
+      { $match: query },
+      { $group: { _id: "$entityType", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+    ]),
+    AdminAuditLog.aggregate([
+      { $match: query },
+      { $group: { _id: "$action", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+      { $limit: 8 },
+    ]),
   ]);
 
   res.status(200).json({
     success: true,
     data: logs,
+    stats: statsResult[0] || {
+      total: 0,
+      success: 0,
+      failed: 0,
+      adminCount: 0,
+      entityCount: 0,
+    },
+    breakdowns: {
+      entities: entityBreakdown.map((item) => ({
+        entityType: item._id || "unknown",
+        count: item.count,
+      })),
+      actions: actionBreakdown.map((item) => ({
+        action: item._id || "unknown",
+        count: item.count,
+      })),
+    },
     pagination: {
       page,
       limit,

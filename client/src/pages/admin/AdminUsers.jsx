@@ -38,6 +38,7 @@ import AdminMetricGrid from "@/components/admin/AdminMetricGrid";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -335,7 +336,7 @@ const AdminUsers = () => {
       {usersQuery.isLoading ? (
         <AdminLoadingBlock rows={7} />
       ) : usersQuery.data?.data?.length ? (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="space-y-4">
           {usersQuery.data.data.map((user) => (
             <Card key={user._id} className="overflow-hidden rounded-lg border-border/60 bg-card shadow-sm">
               <CardContent className="p-0">
@@ -422,7 +423,7 @@ const AdminUsers = () => {
             </Card>
           ))}
 
-          <div className="xl:col-span-2">
+          <div>
             <AdminPagination
               pagination={usersQuery.data?.pagination}
               onPageChange={(page) => updateFilter("users", { page })}
@@ -434,215 +435,228 @@ const AdminUsers = () => {
       )}
 
       <Dialog open={dialogType === "role"} onOpenChange={(open) => (!open ? closeDialog() : null)}>
-        <DialogContent className="rounded-lg">
-          <DialogHeader>
+        <DialogContent className="max-h-[88vh] rounded-lg p-0">
+          <DialogHeader className="px-6 pt-6">
             <DialogTitle>Update role</DialogTitle>
             <DialogDescription>
               Change platform privileges for {selectedUser?.name || "this user"}.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-2">
-            <Label>Role</Label>
-            <Select
-              value={roleForm.watch("role")}
-              onValueChange={(value) => roleForm.setValue("role", value, { shouldValidate: true })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            {roleForm.formState.errors.role ? (
-              <p className="text-xs text-rose-600">{roleForm.formState.errors.role.message}</p>
-            ) : null}
-          </div>
+          <ScrollArea className="max-h-[70vh] px-6 pb-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Role</Label>
+                <Select
+                  value={roleForm.watch("role")}
+                  onValueChange={(value) => roleForm.setValue("role", value, { shouldValidate: true })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+                {roleForm.formState.errors.role ? (
+                  <p className="text-xs text-rose-600">{roleForm.formState.errors.role.message}</p>
+                ) : null}
+              </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
-              Cancel
-            </Button>
-            <Button onClick={handleRoleSubmit} disabled={updateRoleMutation.isPending}>
-              Save role
-            </Button>
-          </DialogFooter>
+              <DialogFooter>
+                <Button variant="outline" onClick={closeDialog}>
+                  Cancel
+                </Button>
+                <Button onClick={handleRoleSubmit} disabled={updateRoleMutation.isPending}>
+                  Save role
+                </Button>
+              </DialogFooter>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
       <Dialog open={dialogType === "status"} onOpenChange={(open) => (!open ? closeDialog() : null)}>
-        <DialogContent className="rounded-lg">
-          <DialogHeader>
+        <DialogContent className="max-h-[88vh] rounded-lg p-0">
+          <DialogHeader className="px-6 pt-6">
             <DialogTitle>Update account status</DialogTitle>
             <DialogDescription>
               Moderate access for {selectedUser?.name || "this user"} and keep an audit trail.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <Label>Status</Label>
-              <Select
-                value={statusForm.watch("accountStatus")}
-                onValueChange={(value) => statusForm.setValue("accountStatus", value, { shouldValidate: true })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                  <SelectItem value="banned">Banned</SelectItem>
-                </SelectContent>
-              </Select>
+          <ScrollArea className="max-h-[70vh] px-6 pb-6">
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label>Status</Label>
+                  <Select
+                    value={statusForm.watch("accountStatus")}
+                    onValueChange={(value) => statusForm.setValue("accountStatus", value, { shouldValidate: true })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="banned">Banned</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Reason</Label>
+                  <Input
+                    value={statusForm.watch("reason") || ""}
+                    onChange={(event) => statusForm.setValue("reason", event.target.value, { shouldValidate: true })}
+                    placeholder="Policy, payment, spam, safety"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Internal note</Label>
+                  <Textarea
+                    value={statusForm.watch("note") || ""}
+                    onChange={(event) => statusForm.setValue("note", event.target.value, { shouldValidate: true })}
+                    placeholder="Add context for the next admin reviewing this account"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={closeDialog}>
+                  Cancel
+                </Button>
+                <Button onClick={handleStatusSubmit} disabled={updateStatusMutation.isPending}>
+                  Save status
+                </Button>
+              </DialogFooter>
+
+              {statusForm.formState.errors.accountStatus ? (
+                <p className="text-xs text-rose-600">{statusForm.formState.errors.accountStatus.message}</p>
+              ) : null}
+              {statusForm.formState.errors.reason ? (
+                <p className="text-xs text-rose-600">{statusForm.formState.errors.reason.message}</p>
+              ) : null}
+              {statusForm.formState.errors.note ? (
+                <p className="text-xs text-rose-600">{statusForm.formState.errors.note.message}</p>
+              ) : null}
             </div>
-
-            <div className="space-y-1">
-              <Label>Reason</Label>
-              <Input
-                value={statusForm.watch("reason") || ""}
-                onChange={(event) => statusForm.setValue("reason", event.target.value, { shouldValidate: true })}
-                placeholder="Policy, payment, spam, safety"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label>Internal note</Label>
-              <Textarea
-                value={statusForm.watch("note") || ""}
-                onChange={(event) => statusForm.setValue("note", event.target.value, { shouldValidate: true })}
-                placeholder="Add context for the next admin reviewing this account"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
-              Cancel
-            </Button>
-            <Button onClick={handleStatusSubmit} disabled={updateStatusMutation.isPending}>
-              Save status
-            </Button>
-          </DialogFooter>
-
-          {statusForm.formState.errors.accountStatus ? (
-            <p className="text-xs text-rose-600">{statusForm.formState.errors.accountStatus.message}</p>
-          ) : null}
-          {statusForm.formState.errors.reason ? (
-            <p className="text-xs text-rose-600">{statusForm.formState.errors.reason.message}</p>
-          ) : null}
-          {statusForm.formState.errors.note ? (
-            <p className="text-xs text-rose-600">{statusForm.formState.errors.note.message}</p>
-          ) : null}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
       <Dialog open={dialogType === "notification"} onOpenChange={(open) => (!open ? closeDialog() : null)}>
-        <DialogContent className="rounded-lg">
-          <DialogHeader>
+        <DialogContent className="max-h-[88vh] rounded-lg p-0">
+          <DialogHeader className="px-6 pt-6">
             <DialogTitle>Send direct notification</DialogTitle>
             <DialogDescription>
               Reach {selectedUser?.name || "this user"} with an in-app SportsBuddy message.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <Label>Type</Label>
-                <Select
-                  value={notificationForm.watch("type")}
-                  onValueChange={(value) => notificationForm.setValue("type", value, { shouldValidate: true })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {notificationTypes.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <ScrollArea className="max-h-[70vh] px-6 pb-6">
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label>Type</Label>
+                    <Select
+                      value={notificationForm.watch("type")}
+                      onValueChange={(value) => notificationForm.setValue("type", value, { shouldValidate: true })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {notificationTypes.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label>Priority</Label>
+                    <Select
+                      value={notificationForm.watch("priority")}
+                      onValueChange={(value) => notificationForm.setValue("priority", value, { shouldValidate: true })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="normal">Normal</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Title</Label>
+                  <Input
+                    value={notificationForm.watch("title")}
+                    onChange={(event) => notificationForm.setValue("title", event.target.value, { shouldValidate: true })}
+                    placeholder="Venue booking update"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Message</Label>
+                  <Textarea
+                    value={notificationForm.watch("message")}
+                    onChange={(event) => notificationForm.setValue("message", event.target.value, { shouldValidate: true })}
+                    placeholder="Write a clear, helpful message for this user"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Action URL</Label>
+                  <Input
+                    value={notificationForm.watch("actionUrl") || ""}
+                    onChange={(event) => notificationForm.setValue("actionUrl", event.target.value, { shouldValidate: true })}
+                    placeholder="https://..."
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <Label>Priority</Label>
-                <Select
-                  value={notificationForm.watch("priority")}
-                  onValueChange={(value) => notificationForm.setValue("priority", value, { shouldValidate: true })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={closeDialog}>
+                  Cancel
+                </Button>
+                <Button onClick={handleNotificationSubmit} disabled={sendNotificationMutation.isPending}>
+                  Send notification
+                </Button>
+              </DialogFooter>
+
+              {Object.values(notificationForm.formState.errors).map((error) => (
+                <p key={error.message} className="text-xs text-rose-600">
+                  {error.message}
+                </p>
+              ))}
             </div>
-
-            <div className="space-y-1">
-              <Label>Title</Label>
-              <Input
-                value={notificationForm.watch("title")}
-                onChange={(event) => notificationForm.setValue("title", event.target.value, { shouldValidate: true })}
-                placeholder="Venue booking update"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label>Message</Label>
-              <Textarea
-                value={notificationForm.watch("message")}
-                onChange={(event) => notificationForm.setValue("message", event.target.value, { shouldValidate: true })}
-                placeholder="Write a clear, helpful message for this user"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label>Action URL</Label>
-              <Input
-                value={notificationForm.watch("actionUrl") || ""}
-                onChange={(event) => notificationForm.setValue("actionUrl", event.target.value, { shouldValidate: true })}
-                placeholder="https://..."
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
-              Cancel
-            </Button>
-            <Button onClick={handleNotificationSubmit} disabled={sendNotificationMutation.isPending}>
-              Send notification
-            </Button>
-          </DialogFooter>
-
-          {Object.values(notificationForm.formState.errors).map((error) => (
-            <p key={error.message} className="text-xs text-rose-600">
-              {error.message}
-            </p>
-          ))}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
       <Dialog open={Boolean(detailsUser)} onOpenChange={(open) => (!open ? setDetailsUser(null) : null)}>
-        <DialogContent className="max-w-3xl rounded-lg">
-          <DialogHeader>
+        <DialogContent className="max-h-[88vh] max-w-3xl rounded-lg p-0">
+          <DialogHeader className="px-6 pt-6">
             <DialogTitle>{detail?.name || "User details"}</DialogTitle>
             <DialogDescription>{detail?.email || "No email"}</DialogDescription>
           </DialogHeader>
 
-          {detailsQuery.isLoading ? (
-            <AdminLoadingBlock rows={4} />
-          ) : detail ? (
-            <div className="space-y-4 text-sm">
+          <ScrollArea className="max-h-[70vh] px-6 pb-6">
+            {detailsQuery.isLoading ? (
+              <AdminLoadingBlock rows={4} />
+            ) : detail ? (
+              <div className="space-y-4 text-sm">
               <div className="flex flex-col gap-4 rounded-lg border border-border/60 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar className="h-14 w-14 border border-border/70">
@@ -723,8 +737,9 @@ const AdminUsers = () => {
                   <Link to={`/profile/${detail._id}`}>Open public profile</Link>
                 </Button>
               </div>
-            </div>
-          ) : null}
+              </div>
+            ) : null}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>

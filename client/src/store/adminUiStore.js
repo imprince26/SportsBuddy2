@@ -21,6 +21,7 @@ const defaultFilters = {
     page: 1,
     limit: 20,
     search: "",
+    category: "all",
     isActive: "all",
     isPrivate: "all",
   },
@@ -35,8 +36,12 @@ const defaultFilters = {
   bookings: {
     page: 1,
     limit: 20,
+    search: "",
     status: "all",
     venueId: "",
+    city: "",
+    dateFrom: "",
+    dateTo: "",
   },
   eventPayments: {
     page: 1,
@@ -61,6 +66,8 @@ const defaultFilters = {
     entityType: "all",
     status: "all",
     action: "",
+    dateFrom: "",
+    dateTo: "",
   },
 };
 
